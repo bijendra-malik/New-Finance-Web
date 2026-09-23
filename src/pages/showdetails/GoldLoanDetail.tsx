@@ -262,6 +262,7 @@ const GoldLoanDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     applySlug="goldloan"
+    docsHref="/requireddocument/gold-loan"
     sections={sections}
   />
 );

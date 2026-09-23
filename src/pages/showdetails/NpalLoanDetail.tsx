@@ -156,6 +156,7 @@ const NpalLoanDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     applySlug="npa"
+    docsHref="/requireddocument/npa"
     sections={sections}
   />
 );
