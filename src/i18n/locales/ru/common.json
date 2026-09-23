@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Главная",
+    "loanProduct": "Кредитный продукт",
+    "emiCalculator": "Калькулятор EMI",
+    "eligibilityCalculator": "Калькулятор права",
+    "franchiseLogin": "Вход для франшизы",
+    "beAnAssociate": "Стать партнёром",
+    "contactUs": "Связаться с нами",
+    "applyNow": "Подать заявку"
+  },
+  "hero": {
+    "title": "Полный центр кредитования",
+    "titleHighlight": "кредитования",
+    "description": "Откройте для себя мир умных кредитов в IndexiaFinance. Мы предлагаем финансовые решения, которые делают жизнь проще. Управление вашими мечтами больше не должно быть сложным.",
+    "creditScoreBtn": "Получить кредитный рейтинг бесплатно"
+  },
+  "loanProducts": {
+    "title": "Кредитные продукты",
+    "personalLoan": "Личный кредит",
+    "businessLoan": "Бизнес-кредит",
+    "homeLoan": "Ипотека",
+    "loanAgainstProperty": "Кредит под залог недвижимости",
+    "balanceTransfer": "Перевод баланса",
+    "projectLoan": "Проектный кредит",
+    "carLoan": "Автокредит",
+    "educationLoan": "Образовательный кредит",
+    "creditCard": "Кредитная карта",
+    "commercialPurchase": "Коммерческая покупка",
+    "workingCapital": "Оборотный капитал",
+    "leaseRentalDiscounting": "Лизинговый дисконт",
+    "odCcLimit": "Лимит овердрафта",
+    "loanAgainstShare": "Кредит под акции",
+    "filmLoan": "Кредит на фильм",
+    "constructionLoan": "Строительный кредит",
+    "npaLoan": "NPA кредит"
+  },
+  "creditScore": {
+    "heading": "Получите свой",
+    "headingHighlight": "бесплатный кредитный рейтинг",
+    "headingEnd": "и отчёт",
+    "powered": "Работает на Equifax · Мгновенное обновление · Без влияния на рейтинг",
+    "yourScoreIs": "Ваш кредитный рейтинг",
+    "betterThan": "Лучше, чем {{percent}}% пользователей",
+    "knowYourScore": "Узнать рейтинг",
+    "disclaimer": "Проверка собственного кредитного рейтинга не влияет на него.",
+    "labels": {
+      "paymentHistory": "История платежей",
+      "paymentHistoryTip": "Ваша история своевременных платежей по счетам и EMI",
+      "ageType": "Возраст и тип кредита",
+      "ageTypeTip": "Продолжительность кредитной истории и разнообразие типов кредита",
+      "utilization": "% использования кредита",
+      "utilizationTip": "Сколько доступного кредитного лимита вы используете",
+      "totalBalances": "Общий баланс/долг",
+      "totalBalancesTip": "Общая сумма задолженности по всем кредитам и картам",
+      "recentBehavior": "Недавнее кредитное поведение",
+      "recentBehaviorTip": "Новые кредитные заявки и недавние открытия счетов",
+      "availableCredit": "Доступный кредит",
+      "availableCreditTip": "Общий кредитный лимит минус текущий остаток"
+    },
+    "ratings": { "poor": "Плохо", "fair": "Удовлетворительно", "good": "Хорошо", "veryGood": "Очень хорошо", "excellent": "Отлично" }
+  },
+  "partners": { "title": "Наши партнёры" },
+  "testimonials": { "title": "Отзывы клиентов" },
+  "faq": { "title": "Часто задаваемые вопросы" },
+  "footer": { "about": "О нас", "privacy": "Политика конфиденциальности", "terms": "Условия использования", "contact": "Контакты" },
+  "forms": {
+    "name": "Полное имя", "email": "Электронная почта", "phone": "Номер телефона",
+    "aadhaar": "Номер Aadhaar", "pan": "Номер PAN",
+    "applicationId": "ID заявки", "transactionId": "ID транзакции",
+    "loanAmount": "Сумма кредита", "submit": "Отправить", "cancel": "Отмена"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "首页",
+    "loanProduct": "贷款产品",
+    "emiCalculator": "EMI计算器",
+    "eligibilityCalculator": "资格计算器",
+    "franchiseLogin": "特许经营登录",
+    "beAnAssociate": "成为合伙人",
+    "contactUs": "联系我们",
+    "applyNow": "立即申请"
+  },
+  "hero": {
+    "title": "完整的贷款目的地",
+    "titleHighlight": "贷款",
+    "description": "在IndexiaFinance探索智能贷款的世界。我们为您提供让生活更顺畅的金融解决方案。因为管理您的梦想不应再复杂。",
+    "creditScoreBtn": "免费获取信用评分"
+  },
+  "loanProducts": {
+    "title": "贷款产品",
+    "personalLoan": "个人贷款",
+    "businessLoan": "商业贷款",
+    "homeLoan": "住房贷款",
+    "loanAgainstProperty": "房产抵押贷款",
+    "balanceTransfer": "余额转移",
+    "projectLoan": "项目贷款",
+    "carLoan": "汽车贷款",
+    "educationLoan": "教育贷款",
+    "creditCard": "信用卡",
+    "commercialPurchase": "商业采购",
+    "workingCapital": "营运资金",
+    "leaseRentalDiscounting": "租赁折扣",
+    "odCcLimit": "透支额度",
+    "loanAgainstShare": "股票抵押贷款",
+    "filmLoan": "影视贷款",
+    "constructionLoan": "建筑贷款",
+    "npaLoan": "NPA贷款"
+  },
+  "creditScore": {
+    "heading": "获取您的",
+    "headingHighlight": "免费信用评分",
+    "headingEnd": "和报告",
+    "powered": "由Equifax提供支持 · 即时更新 · 不影响评分",
+    "yourScoreIs": "您的信用评分是",
+    "betterThan": "优于{{percent}}%的用户",
+    "knowYourScore": "了解您的评分",
+    "disclaimer": "查看您自己的信用评分不会影响它。",
+    "labels": {
+      "paymentHistory": "还款历史",
+      "paymentHistoryTip": "您按时支付账单和EMI的记录",
+      "ageType": "信用年龄和类型",
+      "ageTypeTip": "您的信用历史长度和信用类型多样性",
+      "utilization": "信用使用率",
+      "utilizationTip": "您目前使用了多少可用信用额度",
+      "totalBalances": "总余额/债务",
+      "totalBalancesTip": "您所有贷款和信用卡的总未偿金额",
+      "recentBehavior": "近期信用行为",
+      "recentBehaviorTip": "新的信用申请和近期开户",
+      "availableCredit": "可用信用",
+      "availableCreditTip": "总信用额度减去当前未偿余额"
+    },
+    "ratings": { "poor": "差", "fair": "一般", "good": "良好", "veryGood": "很好", "excellent": "优秀" }
+  },
+  "partners": { "title": "我们的合作伙伴" },
+  "testimonials": { "title": "客户评价" },
+  "faq": { "title": "常见问题" },
+  "footer": { "about": "关于我们", "privacy": "隐私政策", "terms": "条款和条件", "contact": "联系" },
+  "forms": {
+    "name": "全名", "email": "电子邮件", "phone": "电话号码",
+    "aadhaar": "Aadhaar号码", "pan": "PAN号码",
+    "applicationId": "申请编号", "transactionId": "交易编号",
+    "loanAmount": "贷款金额", "submit": "提交", "cancel": "取消"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

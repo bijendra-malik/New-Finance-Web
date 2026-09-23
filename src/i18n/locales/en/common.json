@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "home": "Home",
+    "loanProduct": "Loan Product",
+    "emiCalculator": "EMI Calculator",
+    "eligibilityCalculator": "Loan Eligibility",
+    "franchiseLogin": "Franchise Login",
+    "beAnAssociate": "Be An Associate",
+    "contactUs": "Contact Us",
+    "applyNow": "Apply Now"
+  },
+  "hero": {
+    "title": " An Entire Loan Destination",
+    "titleHighlight": "Loan",
+    "description": "Discover the world of smart loans at IndexiaFinance. We bring you financial solutions that make living smoother. Because managing your dreams shouldn't be complicated anymore.",
+    "creditScoreBtn": "Get credit score for free"
+  },
+  "loanProducts": {
+    "title": "Loan Products",
+    "personalLoan": "Personal Loan",
+    "businessLoan": "Business Loan",
+    "homeLoan": "Home Loan",
+    "loanAgainstProperty": "Loan Against Property",
+    "balanceTransfer": "Balance Transfer",
+    "carLoan": "Car Loan",
+    "creditCard": "Credit Card",
+    "educationLoan": "Education Loan",
+    "projectLoan": "Project Loan",
+    "commercialPurchase": "Commercial Purchase",
+    "leaseRentalDiscounting": "Lease Rental Discounting",
+    "workingCapital": "Working Capital",
+    "odCcLimit": "OD CC Limit",
+    "loanAgainstShare": "Loan Against Share",
+    "filmLoanFunding": "Film Funding",
+    "npalLoan": "NPA",
+    "goldLoan": "Gold Loan",
+    "fdi": "FDI"
+  },
+  "creditScore": {
+    "heading": "Get Your",
+    "headingHighlight": "Free Credit Score",
+    "headingEnd": "and Report",
+    "powered": "Powered by Equifax · Updated instantly · No impact on score",
+    "yourScoreIs": "Your credit score is",
+    "betterThan": "Better than {{percent}}% of users",
+    "knowYourScore": "Know Your Score",
+    "disclaimer": "Checking your own credit score doesn't affect it.",
+    "labels": {
+      "paymentHistory": "Payment History",
+      "paymentHistoryTip": "Your track record of on-time bill & EMI payments",
+      "ageType": "Age & Type of Credit",
+      "ageTypeTip": "Length of your credit history and variety of credit types",
+      "utilization": "% of Credit Utilization",
+      "utilizationTip": "How much of your available credit limit you are currently using",
+      "totalBalances": "Total Balances/Debt",
+      "totalBalancesTip": "Total outstanding amount across all your loans and credit cards",
+      "recentBehavior": "Recent Credit Behavior",
+      "recentBehaviorTip": "New credit applications and recent account openings",
+      "availableCredit": "Available Credit",
+      "availableCreditTip": "Total credit limit minus current outstanding balance"
+    },
+    "ratings": {
+      "poor": "Poor",
+      "fair": "Fair",
+      "good": "Good",
+      "veryGood": "Very Good",
+      "excellent": "Excellent"
+    }
+  },
+  "partners": {
+    "title": "Our Partners"
+  },
+  "testimonials": {
+    "title": "What Our Customers Say"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions"
+  },
+  "footer": {
+    "about": "About Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "contact": "Contact"
+  },
+  "forms": {
+    "name": "Full Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "aadhaar": "Aadhaar Number",
+    "pan": "PAN Number",
+    "applicationId": "Application ID",
+    "transactionId": "Transaction ID",
+    "loanAmount": "Loan Amount",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
+}

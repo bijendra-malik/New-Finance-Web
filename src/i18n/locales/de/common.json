@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "loanProduct": "Kreditprodukt",
+    "emiCalculator": "EMI-Rechner",
+    "eligibilityCalculator": "Berechtigungsrechner",
+    "franchiseLogin": "Franchise-Login",
+    "beAnAssociate": "Partner werden",
+    "contactUs": "Kontaktieren Sie uns",
+    "applyNow": "Jetzt beantragen"
+  },
+  "hero": {
+    "title": "Ein komplettes Kreditangebot",
+    "titleHighlight": "Kreditangebot",
+    "description": "Entdecken Sie die Welt der intelligenten Kredite bei IndexiaFinance. Wir bringen Ihnen Finanzlösungen, die das Leben einfacher machen. Denn die Verwaltung Ihrer Träume sollte nicht kompliziert sein.",
+    "creditScoreBtn": "Kostenlos Kreditwürdigkeit abrufen"
+  },
+  "loanProducts": {
+    "title": "Kreditprodukte",
+    "personalLoan": "Privatkredit",
+    "businessLoan": "Geschäftskredit",
+    "homeLoan": "Wohnungskredit",
+    "loanAgainstProperty": "Darlehen gegen Immobilien",
+    "balanceTransfer": "Saldoübertragung",
+    "projectLoan": "Projektkredit",
+    "carLoan": "Autokredit",
+    "educationLoan": "Bildungsdarlehen",
+    "creditCard": "Kreditkarte",
+    "commercialPurchase": "Kommerzieller Kauf",
+    "workingCapital": "Betriebskapital",
+    "leaseRentalDiscounting": "Leasingzinsabschlag",
+    "odCcLimit": "OD CC-Grenze",
+    "loanAgainstShare": "Darlehen gegen Aktien"
+  },
+  "creditScore": {
+    "heading": "Holen Sie sich Ihre",
+    "headingHighlight": "kostenlose Kreditwürdigkeit",
+    "headingEnd": "und Bericht",
+    "powered": "Powered by Equifax · Sofort aktualisiert · Keine Auswirkung auf Score",
+    "yourScoreIs": "Ihre Kreditwürdigkeit ist",
+    "betterThan": "Besser als {{percent}}% der Nutzer",
+    "knowYourScore": "Score ermitteln",
+    "disclaimer": "Die Überprüfung Ihrer eigenen Kreditwürdigkeit hat keinen Einfluss darauf.",
+    "labels": {
+      "paymentHistory": "Zahlungshistorie",
+      "paymentHistoryTip": "Ihre Erfolgsbilanz bei pünktlichen Rechnungs- und EMI-Zahlungen",
+      "ageType": "Alter & Art des Kredits",
+      "ageTypeTip": "Länge Ihrer Kredithistorie und Vielfalt der Kreditarten",
+      "utilization": "% Kreditauslastung",
+      "utilizationTip": "Wie viel Ihres verfügbaren Kreditlimits Sie derzeit nutzen",
+      "totalBalances": "Gesamtguthaben/Schulden",
+      "totalBalancesTip": "Gesamtausstehender Betrag über alle Ihre Kredite und Kreditkarten",
+      "recentBehavior": "Aktuelles Kreditverhalten",
+      "recentBehaviorTip": "Neue Kreditanträge und kürzlich eröffnete Konten",
+      "availableCredit": "Verfügbarer Kredit",
+      "availableCreditTip": "Gesamtkreditlimit abzüglich des aktuellen ausstehenden Saldos"
+    },
+    "ratings": {
+      "poor": "Schlecht",
+      "fair": "Ausreichend",
+      "good": "Gut",
+      "veryGood": "Sehr gut",
+      "excellent": "Hervorragend"
+    }
+  },
+  "partners": {
+    "title": "Unsere Partner"
+  },
+  "testimonials": {
+    "title": "Was unsere Kunden sagen"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen"
+  },
+  "footer": {
+    "about": "Über uns",
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "contact": "Kontakt"
+  },
+  "forms": {
+    "name": "Vollständiger Name",
+    "email": "E-Mail",
+    "phone": "Telefonnummer",
+    "aadhaar": "Aadhaar-Nummer",
+    "pan": "PAN-Nummer",
+    "applicationId": "Antrags-ID",
+    "transactionId": "Transaktions-ID",
+    "loanAmount": "Kreditbetrag",
+    "submit": "Einreichen",
+    "cancel": "Abbrechen"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
+}

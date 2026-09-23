@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "loanProduct": "ローン商品",
+    "emiCalculator": "EMI計算機",
+    "eligibilityCalculator": "資格計算機",
+    "franchiseLogin": "フランチャイズログイン",
+    "beAnAssociate": "アソシエイトになる",
+    "contactUs": "お問い合わせ",
+    "applyNow": "今すぐ申し込む"
+  },
+  "hero": {
+    "title": "総合ローンの目的地",
+    "titleHighlight": "ローン",
+    "description": "IndexiaFinanceでスマートローンの世界を探索してください。生活をよりスムーズにする金融ソリューションをお届けします。夢の管理をもう複雑にする必要はありません。",
+    "creditScoreBtn": "無料でクレジットスコアを取得"
+  },
+  "loanProducts": {
+    "title": "ローン商品",
+    "personalLoan": "個人ローン",
+    "businessLoan": "ビジネスローン",
+    "homeLoan": "住宅ローン",
+    "loanAgainstProperty": "不動産担保ローン",
+    "balanceTransfer": "残高移転",
+    "projectLoan": "プロジェクトローン",
+    "carLoan": "カーローン",
+    "educationLoan": "教育ローン",
+    "creditCard": "クレジットカード",
+    "commercialPurchase": "商業購入",
+    "workingCapital": "運転資金",
+    "leaseRentalDiscounting": "リース割引",
+    "odCcLimit": "当座貸越限度",
+    "loanAgainstShare": "株式担保ローン",
+    "filmLoan": "映画ローン",
+    "constructionLoan": "建設ローン",
+    "npaLoan": "NPAローン"
+  },
+  "creditScore": {
+    "heading": "あなたの",
+    "headingHighlight": "無料クレジットスコア",
+    "headingEnd": "とレポートを取得",
+    "powered": "Equifax提供 · 即時更新 · スコアへの影響なし",
+    "yourScoreIs": "あなたのクレジットスコアは",
+    "betterThan": "ユーザーの{{percent}}%より優れています",
+    "knowYourScore": "スコアを確認する",
+    "disclaimer": "自分のクレジットスコアを確認してもスコアに影響しません。",
+    "labels": {
+      "paymentHistory": "支払い履歴",
+      "paymentHistoryTip": "請求書とEMIの時間通りの支払い記録",
+      "ageType": "クレジットの年齢と種類",
+      "ageTypeTip": "クレジット履歴の長さとクレジットの種類の多様性",
+      "utilization": "クレジット利用率",
+      "utilizationTip": "利用可能なクレジット限度のうち現在使用している割合",
+      "totalBalances": "総残高/債務",
+      "totalBalancesTip": "すべてのローンとクレジットカードの未払総額",
+      "recentBehavior": "最近のクレジット行動",
+      "recentBehaviorTip": "新しいクレジット申請と最近の口座開設",
+      "availableCredit": "利用可能クレジット",
+      "availableCreditTip": "総クレジット限度から現在の未払残高を引いた額"
+    },
+    "ratings": { "poor": "悪い", "fair": "普通", "good": "良い", "veryGood": "とても良い", "excellent": "優秀" }
+  },
+  "partners": { "title": "パートナー" },
+  "testimonials": { "title": "お客様の声" },
+  "faq": { "title": "よくある質問" },
+  "footer": { "about": "会社概要", "privacy": "プライバシーポリシー", "terms": "利用規約", "contact": "お問い合わせ" },
+  "forms": {
+    "name": "氏名", "email": "メール", "phone": "電話番号",
+    "aadhaar": "Aadhaar番号", "pan": "PAN番号",
+    "applicationId": "申請ID", "transactionId": "取引ID",
+    "loanAmount": "ローン金額", "submit": "送信", "cancel": "キャンセル"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

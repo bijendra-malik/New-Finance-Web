@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "home": "होम",
+    "loanProduct": "लोन प्रोडक्ट",
+    "emiCalculator": "ईएमआई कैलकुलेटर",
+    "eligibilityCalculator": "पात्रता कैलकुलेटर",
+    "franchiseLogin": "फ्रेंचाइज लॉगिन",
+    "beAnAssociate": "सहयोगी बनें",
+    "contactUs": "हमसे संपर्क करें",
+    "applyNow": "अभी आवेदन करें"
+  },
+  "hero": {
+    "title": "एक संपूर्ण ऋण गंतव्य",
+    "titleHighlight": "ऋण",
+    "description": "इंडेक्सिया फाइनेंस पर स्मार्ट लोन की दुनिया की खोज करें। हम आपको वित्तीय समाधान लाते हैं जो जीवन को आसान बनाते हैं। क्योंकि आपने सपनों को प्रबंधित करना मुश्किल नहीं होना चाहिए।",
+    "creditScoreBtn": "मुफ्त में क्रेडिट स्कोर प्राप्त करें"
+  },
+  "loanProducts": {
+    "title": "ऋण उत्पाद",
+    "personalLoan": "व्यक्तिगत लोन",
+    "businessLoan": "व्यावसायिक लोन",
+    "homeLoan": "होम लोन",
+    "loanAgainstProperty": "संपत्ति के विरुद्ध लोन",
+    "balanceTransfer": "शेष हस्तांतरण",
+    "projectLoan": "प्रोजेक्ट लोन",
+    "carLoan": "कार लोन",
+    "educationLoan": "शिक्षा लोन",
+    "creditCard": "क्रेडिट कार्ड",
+    "commercialPurchase": "वाणिज्यिक खरीद",
+    "workingCapital": "कार्यशील पूंजी",
+    "leaseRentalDiscounting": "पट्टा किराया छूट",
+    "odCcLimit": "ओडी सीसी सीमा",
+    "loanAgainstShare": "शेयर के विरुद्ध लोन"
+  },
+  "creditScore": {
+    "heading": "अपना",
+    "headingHighlight": "मुफ्त क्रेडिट स्कोर",
+    "headingEnd": "और रिपोर्ट प्राप्त करें",
+    "powered": "Equifax द्वारा संचालित · तुरंत अपडेट · स्कोर पर कोई प्रभाव नहीं",
+    "yourScoreIs": "आपका क्रेडिट स्कोर है",
+    "betterThan": "{{percent}}% उपयोगकर्ताओं से बेहतर",
+    "knowYourScore": "अपना स्कोर जानें",
+    "disclaimer": "अपना क्रेडिट स्कोर जांचने से उस पर कोई असर नहीं पड़ता।",
+    "labels": {
+      "paymentHistory": "भुगतान इतिहास",
+      "paymentHistoryTip": "समय पर बिल और ईएमआई भुगतान का आपका रिकॉर्ड",
+      "ageType": "क्रेडिट की आयु और प्रकार",
+      "ageTypeTip": "आपके क्रेडिट इतिहास की लंबाई और क्रेडिट के प्रकारों की विविधता",
+      "utilization": "% क्रेडिट उपयोग",
+      "utilizationTip": "आप वर्तमान में अपनी उपलब्ध क्रेडिट सीमा का कितना उपयोग कर रहे हैं",
+      "totalBalances": "कुल शेष/ऋण",
+      "totalBalancesTip": "आपके सभी लोन और क्रेडिट कार्ड पर कुल बकाया राशि",
+      "recentBehavior": "हालिया क्रेडिट व्यवहार",
+      "recentBehaviorTip": "नए क्रेडिट आवेदन और हाल ही में खोले गए खाते",
+      "availableCredit": "उपलब्ध क्रेडिट",
+      "availableCreditTip": "कुल क्रेडिट सीमा घटाकर वर्तमान बकाया शेष"
+    },
+    "ratings": {
+      "poor": "खराब",
+      "fair": "ठीक",
+      "good": "अच्छा",
+      "veryGood": "बहुत अच्छा",
+      "excellent": "उत्कृष्ट"
+    }
+  },
+  "partners": {
+    "title": "हमारे भागीदार"
+  },
+  "testimonials": {
+    "title": "हमारे ग्राहक क्या कहते हैं"
+  },
+  "faq": {
+    "title": "अक्सर पूछे जाने वाले प्रश्न"
+  },
+  "footer": {
+    "about": "हमारे बारे में",
+    "privacy": "गोपनीयता नीति",
+    "terms": "शर्तें और शर्तें",
+    "contact": "संपर्क"
+  },
+  "forms": {
+    "name": "पूरा नाम",
+    "email": "ईमेल",
+    "phone": "फोन नंबर",
+    "aadhaar": "आधार नंबर",
+    "pan": "पैन नंबर",
+    "applicationId": "आवेदन आईडी",
+    "transactionId": "लेनदेन आईडी",
+    "loanAmount": "ऋण राशि",
+    "submit": "जमा करें",
+    "cancel": "रद्द करें"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
+}

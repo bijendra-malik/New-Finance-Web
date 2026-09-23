@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "गृहपृष्ठ",
+    "loanProduct": "ऋण उत्पाद",
+    "emiCalculator": "EMI क्याल्कुलेटर",
+    "eligibilityCalculator": "पात्रता क्याल्कुलेटर",
+    "franchiseLogin": "फ्रेन्चाइज लगइन",
+    "beAnAssociate": "सहयोगी बन्नुहोस्",
+    "contactUs": "हामीलाई सम्पर्क गर्नुहोस्",
+    "applyNow": "अहिले आवेदन दिनुहोस्"
+  },
+  "hero": {
+    "title": "सम्पूर्ण ऋण गन्तव्य",
+    "titleHighlight": "ऋण",
+    "description": "IndexiaFinance मा स्मार्ट ऋणको दुनियाँ अन्वेषण गर्नुहोस्। हामी तपाईंलाई जीवनलाई सहज बनाउने वित्तीय समाधानहरू ल्याउँछौं।",
+    "creditScoreBtn": "नि:शुल्क क्रेडिट स्कोर पाउनुहोस्"
+  },
+  "loanProducts": {
+    "title": "ऋण उत्पादहरू",
+    "personalLoan": "व्यक्तिगत ऋण",
+    "businessLoan": "व्यापारिक ऋण",
+    "homeLoan": "गृह ऋण",
+    "loanAgainstProperty": "सम्पत्ति विरुद्ध ऋण",
+    "balanceTransfer": "ब्यालेन्स ट्रान्सफर",
+    "projectLoan": "परियोजना ऋण",
+    "carLoan": "कार ऋण",
+    "educationLoan": "शिक्षा ऋण",
+    "creditCard": "क्रेडिट कार्ड",
+    "commercialPurchase": "व्यापारिक खरिद",
+    "workingCapital": "कार्यशील पूँजी",
+    "leaseRentalDiscounting": "लिज भाडा छुट",
+    "odCcLimit": "OD CC सीमा",
+    "loanAgainstShare": "शेयर विरुद्ध ऋण",
+    "filmLoan": "फिल्म ऋण",
+    "constructionLoan": "निर्माण ऋण",
+    "npaLoan": "NPA ऋण"
+  },
+  "creditScore": {
+    "heading": "आफ्नो",
+    "headingHighlight": "नि:शुल्क क्रेडिट स्कोर",
+    "headingEnd": "र रिपोर्ट पाउनुहोस्",
+    "powered": "Equifax द्वारा संचालित · तुरुन्त अपडेट · स्कोरमा कुनै प्रभाव छैन",
+    "yourScoreIs": "तपाईंको क्रेडिट स्कोर हो",
+    "betterThan": "{{percent}}% प्रयोगकर्ताहरू भन्दा राम्रो",
+    "knowYourScore": "आफ्नो स्कोर जान्नुहोस्",
+    "disclaimer": "आफ्नो क्रेडिट स्कोर जाँच गर्दा यसलाई असर गर्दैन।",
+    "labels": {
+      "paymentHistory": "भुक्तानी इतिहास",
+      "paymentHistoryTip": "समयमा बिल र EMI भुक्तानीको तपाईंको रेकर्ड",
+      "ageType": "क्रेडिटको उमेर र प्रकार",
+      "ageTypeTip": "तपाईंको क्रेडिट इतिहासको लम्बाइ र क्रेडिट प्रकारको विविधता",
+      "utilization": "% क्रेडिट उपयोग",
+      "utilizationTip": "तपाईं हाल आफ्नो उपलब्ध क्रेडिट सीमाको कति उपयोग गर्दै हुनुहुन्छ",
+      "totalBalances": "कुल ब्यालेन्स/ऋण",
+      "totalBalancesTip": "तपाईंका सबै ऋण र क्रेडिट कार्डमा कुल बाँकी रकम",
+      "recentBehavior": "हालैको क्रेडिट व्यवहार",
+      "recentBehaviorTip": "नयाँ क्रेडिट आवेदन र हालैको खाता खोलाइ",
+      "availableCredit": "उपलब्ध क्रेडिट",
+      "availableCreditTip": "कुल क्रेडिट सीमा घटाउँदा हालको बाँकी ब्यालेन्स"
+    },
+    "ratings": { "poor": "खराब", "fair": "ठीक", "good": "राम्रो", "veryGood": "धेरै राम्रो", "excellent": "उत्कृष्ट" }
+  },
+  "partners": { "title": "हाम्रा साझेदारहरू" },
+  "testimonials": { "title": "हाम्रा ग्राहकहरू के भन्छन्" },
+  "faq": { "title": "बारम्बार सोधिने प्रश्नहरू" },
+  "footer": { "about": "हाम्रोबारे", "privacy": "गोपनीयता नीति", "terms": "नियम र सर्तहरू", "contact": "सम्पर्क" },
+  "forms": {
+    "name": "पूरा नाम", "email": "इमेल", "phone": "फोन नम्बर",
+    "aadhaar": "Aadhaar नम्बर", "pan": "PAN नम्बर",
+    "applicationId": "आवेदन ID", "transactionId": "कारोबार ID",
+    "loanAmount": "ऋण रकम", "submit": "पेश गर्नुहोस्", "cancel": "रद्द गर्नुहोस्"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

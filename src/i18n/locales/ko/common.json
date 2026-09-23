@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "홈",
+    "loanProduct": "대출 상품",
+    "emiCalculator": "EMI 계산기",
+    "eligibilityCalculator": "자격 계산기",
+    "franchiseLogin": "프랜차이즈 로그인",
+    "beAnAssociate": "파트너 되기",
+    "contactUs": "문의하기",
+    "applyNow": "지금 신청"
+  },
+  "hero": {
+    "title": "완전한 대출 목적지",
+    "titleHighlight": "대출",
+    "description": "IndexiaFinance에서 스마트 대출의 세계를 탐험하세요. 생활을 더 원활하게 만드는 금융 솔루션을 제공합니다. 꿈을 관리하는 것이 더 이상 복잡하지 않아도 됩니다.",
+    "creditScoreBtn": "무료 신용 점수 받기"
+  },
+  "loanProducts": {
+    "title": "대출 상품",
+    "personalLoan": "개인 대출",
+    "businessLoan": "사업 대출",
+    "homeLoan": "주택 대출",
+    "loanAgainstProperty": "부동산 담보 대출",
+    "balanceTransfer": "잔액 이전",
+    "projectLoan": "프로젝트 대출",
+    "carLoan": "자동차 대출",
+    "educationLoan": "교육 대출",
+    "creditCard": "신용카드",
+    "commercialPurchase": "상업 구매",
+    "workingCapital": "운전 자본",
+    "leaseRentalDiscounting": "임대 할인",
+    "odCcLimit": "당좌 한도",
+    "loanAgainstShare": "주식 담보 대출",
+    "filmLoan": "영화 대출",
+    "constructionLoan": "건설 대출",
+    "npaLoan": "NPA 대출"
+  },
+  "creditScore": {
+    "heading": "무료",
+    "headingHighlight": "신용 점수",
+    "headingEnd": "및 리포트 받기",
+    "powered": "Equifax 제공 · 즉시 업데이트 · 점수에 영향 없음",
+    "yourScoreIs": "귀하의 신용 점수는",
+    "betterThan": "사용자의 {{percent}}%보다 우수",
+    "knowYourScore": "점수 확인하기",
+    "disclaimer": "본인의 신용 점수 확인은 점수에 영향을 주지 않습니다.",
+    "labels": {
+      "paymentHistory": "납부 이력",
+      "paymentHistoryTip": "청구서 및 EMI 납부 실적",
+      "ageType": "신용 연령 및 유형",
+      "ageTypeTip": "신용 이력 기간 및 신용 유형 다양성",
+      "utilization": "신용 사용률",
+      "utilizationTip": "현재 사용 중인 신용 한도 비율",
+      "totalBalances": "총 잔액/부채",
+      "totalBalancesTip": "모든 대출 및 신용카드 미지급 총액",
+      "recentBehavior": "최근 신용 활동",
+      "recentBehaviorTip": "새로운 신용 신청 및 최근 계좌 개설",
+      "availableCredit": "가용 신용",
+      "availableCreditTip": "총 신용 한도에서 현재 미지급 잔액을 뺀 금액"
+    },
+    "ratings": { "poor": "나쁨", "fair": "보통", "good": "좋음", "veryGood": "매우 좋음", "excellent": "우수" }
+  },
+  "partners": { "title": "파트너사" },
+  "testimonials": { "title": "고객 후기" },
+  "faq": { "title": "자주 묻는 질문" },
+  "footer": { "about": "회사 소개", "privacy": "개인정보 처리방침", "terms": "이용약관", "contact": "연락처" },
+  "forms": {
+    "name": "성명", "email": "이메일", "phone": "전화번호",
+    "aadhaar": "Aadhaar 번호", "pan": "PAN 번호",
+    "applicationId": "신청 ID", "transactionId": "거래 ID",
+    "loanAmount": "대출 금액", "submit": "제출", "cancel": "취소"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "loanProduct": "Produit de prêt",
+    "emiCalculator": "Calculatrice EMI",
+    "eligibilityCalculator": "Calculatrice d'admissibilité",
+    "franchiseLogin": "Connexion franchisée",
+    "beAnAssociate": "Devenir associé",
+    "contactUs": "Nous contacter",
+    "applyNow": "Postuler maintenant"
+  },
+  "hero": {
+    "title": "Une destination complète pour les prêts",
+    "titleHighlight": "prêts",
+    "description": "Découvrez le monde des prêts intelligents chez IndexiaFinance. Nous vous apportons des solutions financières qui rendent la vie plus facile. Parce que gérer vos rêves ne devrait pas être compliqué.",
+    "creditScoreBtn": "Obtenez gratuitement votre score de crédit"
+  },
+  "loanProducts": {
+    "title": "Produits de prêt",
+    "personalLoan": "Prêt personnel",
+    "businessLoan": "Prêt commercial",
+    "homeLoan": "Prêt immobilier",
+    "loanAgainstProperty": "Prêt sur propriété",
+    "balanceTransfer": "Transfert de solde",
+    "projectLoan": "Prêt projet",
+    "carLoan": "Prêt automobile",
+    "educationLoan": "Prêt étudiant",
+    "creditCard": "Carte de crédit",
+    "commercialPurchase": "Achat commercial",
+    "workingCapital": "Fonds de roulement",
+    "leaseRentalDiscounting": "Remise de location-bail",
+    "odCcLimit": "Limite OD CC",
+    "loanAgainstShare": "Prêt contre actions"
+  },
+  "creditScore": {
+    "heading": "Obtenez votre",
+    "headingHighlight": "score de crédit gratuit",
+    "headingEnd": "et rapport",
+    "powered": "Propulsé par Equifax · Mis à jour instantanément · Sans impact sur le score",
+    "yourScoreIs": "Votre score de crédit est",
+    "betterThan": "Mieux que {{percent}}% des utilisateurs",
+    "knowYourScore": "Connaître mon score",
+    "disclaimer": "Vérifier votre propre score de crédit ne l'affecte pas.",
+    "labels": {
+      "paymentHistory": "Historique de paiement",
+      "paymentHistoryTip": "Votre bilan de paiements de factures et d'EMI à temps",
+      "ageType": "Âge et type de crédit",
+      "ageTypeTip": "Durée de votre historique de crédit et variété des types de crédit",
+      "utilization": "% d'utilisation du crédit",
+      "utilizationTip": "Quelle part de votre limite de crédit disponible vous utilisez actuellement",
+      "totalBalances": "Soldes/dettes totaux",
+      "totalBalancesTip": "Montant total impayé sur tous vos prêts et cartes de crédit",
+      "recentBehavior": "Comportement récent en matière de crédit",
+      "recentBehaviorTip": "Nouvelles demandes de crédit et ouvertures de comptes récentes",
+      "availableCredit": "Crédit disponible",
+      "availableCreditTip": "Limite de crédit totale moins le solde impayé actuel"
+    },
+    "ratings": {
+      "poor": "Mauvais",
+      "fair": "Passable",
+      "good": "Bien",
+      "veryGood": "Très bien",
+      "excellent": "Excellent"
+    }
+  },
+  "partners": {
+    "title": "Nos partenaires"
+  },
+  "testimonials": {
+    "title": "Que disent nos clients"
+  },
+  "faq": {
+    "title": "Questions fréquemment posées"
+  },
+  "footer": {
+    "about": "À propos de nous",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions générales",
+    "contact": "Contact"
+  },
+  "forms": {
+    "name": "Nom complet",
+    "email": "Email",
+    "phone": "Numéro de téléphone",
+    "aadhaar": "Numéro Aadhaar",
+    "pan": "Numéro PAN",
+    "applicationId": "ID d'application",
+    "transactionId": "ID de transaction",
+    "loanAmount": "Montant du prêt",
+    "submit": "Soumettre",
+    "cancel": "Annuler"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
+}

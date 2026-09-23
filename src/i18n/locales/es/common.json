@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "loanProduct": "Producto de préstamo",
+    "emiCalculator": "Calculadora EMI",
+    "eligibilityCalculator": "Calculadora de elegibilidad",
+    "franchiseLogin": "Inicio de sesión de franquicia",
+    "beAnAssociate": "Ser un asociado",
+    "contactUs": "Contáctenos",
+    "applyNow": "Solicitar ahora"
+  },
+  "hero": {
+    "title": "Un destino completo de préstamos",
+    "titleHighlight": "préstamos",
+    "description": "Descubre el mundo de los préstamos inteligentes en IndexiaFinance. Te traemos soluciones financieras que hacen la vida más fácil. Porque administrar tus sueños no debería ser complicado.",
+    "creditScoreBtn": "Obtén tu puntuación de crédito gratis"
+  },
+  "loanProducts": {
+    "title": "Productos de préstamo",
+    "personalLoan": "Préstamo personal",
+    "businessLoan": "Préstamo comercial",
+    "homeLoan": "Préstamo hipotecario",
+    "loanAgainstProperty": "Préstamo contra propiedad",
+    "balanceTransfer": "Transferencia de saldo",
+    "projectLoan": "Préstamo de proyecto",
+    "carLoan": "Préstamo de automóvil",
+    "educationLoan": "Préstamo educativo",
+    "creditCard": "Tarjeta de crédito",
+    "commercialPurchase": "Compra comercial",
+    "workingCapital": "Capital de trabajo",
+    "leaseRentalDiscounting": "Descuento de arrendamiento",
+    "odCcLimit": "Límite OD CC",
+    "loanAgainstShare": "Préstamo contra acciones"
+  },
+  "creditScore": {
+    "heading": "Obtén tu",
+    "headingHighlight": "puntuación de crédito gratis",
+    "headingEnd": "e informe",
+    "powered": "Impulsado por Equifax · Actualizado al instante · Sin impacto en la puntuación",
+    "yourScoreIs": "Tu puntuación de crédito es",
+    "betterThan": "Mejor que el {{percent}}% de los usuarios",
+    "knowYourScore": "Conocer mi puntuación",
+    "disclaimer": "Verificar tu propia puntuación de crédito no la afecta.",
+    "labels": {
+      "paymentHistory": "Historial de pagos",
+      "paymentHistoryTip": "Tu historial de pagos puntuales de facturas y EMI",
+      "ageType": "Edad y tipo de crédito",
+      "ageTypeTip": "Duración de tu historial crediticio y variedad de tipos de crédito",
+      "utilization": "% de utilización de crédito",
+      "utilizationTip": "Cuánto de tu límite de crédito disponible estás usando actualmente",
+      "totalBalances": "Saldos/deudas totales",
+      "totalBalancesTip": "Monto total pendiente en todos tus préstamos y tarjetas de crédito",
+      "recentBehavior": "Comportamiento crediticio reciente",
+      "recentBehaviorTip": "Nuevas solicitudes de crédito y aperturas de cuentas recientes",
+      "availableCredit": "Crédito disponible",
+      "availableCreditTip": "Límite de crédito total menos el saldo pendiente actual"
+    },
+    "ratings": {
+      "poor": "Deficiente",
+      "fair": "Regular",
+      "good": "Bueno",
+      "veryGood": "Muy bueno",
+      "excellent": "Excelente"
+    }
+  },
+  "partners": {
+    "title": "Nuestros socios"
+  },
+  "testimonials": {
+    "title": "Lo que dicen nuestros clientes"
+  },
+  "faq": {
+    "title": "Preguntas frecuentes"
+  },
+  "footer": {
+    "about": "Acerca de nosotros",
+    "privacy": "Política de privacidad",
+    "terms": "Términos y condiciones",
+    "contact": "Contacto"
+  },
+  "forms": {
+    "name": "Nombre completo",
+    "email": "Correo electrónico",
+    "phone": "Número de teléfono",
+    "aadhaar": "Número Aadhaar",
+    "pan": "Número PAN",
+    "applicationId": "ID de solicitud",
+    "transactionId": "ID de transacción",
+    "loanAmount": "Monto del préstamo",
+    "submit": "Enviar",
+    "cancel": "Cancelar"
+  },
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
+}
