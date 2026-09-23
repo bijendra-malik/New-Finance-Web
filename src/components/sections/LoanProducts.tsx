@@ -197,6 +197,10 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
+      style={{
+        position: "relative",
+        zIndex: hovered ? 20 : 1,
+      }}
     >
       {/* ── Globe circle ── */}
       <div
