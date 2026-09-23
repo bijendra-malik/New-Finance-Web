@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Bosh sahifa",
+    "loanProduct": "Kredit mahsuloti",
+    "emiCalculator": "EMI kalkulyatori",
+    "eligibilityCalculator": "Muvofiqllik kalkulyatori",
+    "franchiseLogin": "Fransiza kirish",
+    "beAnAssociate": "Hamkor bo'ling",
+    "contactUs": "Biz bilan bog'laning",
+    "applyNow": "Hozir murojaat qiling"
+  },
+  "hero": {
+    "title": "To'liq kredit manzili",
+    "titleHighlight": "kredit",
+    "description": "IndexiaFinance'da aqlli kreditlar dunyosini kashf eting. Biz sizga hayotni osonlashtiradigan moliyaviy yechimlar taqdim etamiz.",
+    "creditScoreBtn": "Kredit reytingini bepul oling"
+  },
+  "loanProducts": {
+    "title": "Kredit mahsulotlari",
+    "personalLoan": "Shaxsiy kredit",
+    "businessLoan": "Biznes kredit",
+    "homeLoan": "Uy krediti",
+    "loanAgainstProperty": "Ko'chmas mulk garovi bo'yicha kredit",
+    "balanceTransfer": "Balans o'tkazish",
+    "projectLoan": "Loyiha krediti",
+    "carLoan": "Avtomobil krediti",
+    "educationLoan": "Ta'lim krediti",
+    "creditCard": "Kredit karta",
+    "commercialPurchase": "Tijorat xaridi",
+    "workingCapital": "Aylanma kapital",
+    "leaseRentalDiscounting": "Ijara chegirmasi",
+    "odCcLimit": "Overdraft limiti",
+    "loanAgainstShare": "Aksiyalar garovi bo'yicha kredit",
+    "filmLoan": "Film krediti",
+    "constructionLoan": "Qurilish krediti",
+    "npaLoan": "NPA krediti"
+  },
+  "creditScore": {
+    "heading": "O'zingizning",
+    "headingHighlight": "bepul kredit reytingingizni",
+    "headingEnd": "va hisobotni oling",
+    "powered": "Equifax tomonidan quvvatlangan · Tezda yangilanadi · Reytingga ta'sir yo'q",
+    "yourScoreIs": "Sizning kredit reytingingiz",
+    "betterThan": "Foydalanuvchilarning {{percent}}% dan yaxshiroq",
+    "knowYourScore": "Reytingni bilish",
+    "disclaimer": "O'z kredit reytingingizni tekshirish unga ta'sir qilmaydi.",
+    "labels": {
+      "paymentHistory": "To'lov tarixi",
+      "paymentHistoryTip": "Hisob-faktura va EMI to'lovlarini o'z vaqtida amalga oshirish tarixi",
+      "ageType": "Kredit yoshi va turi",
+      "ageTypeTip": "Kredit tarixi davomiyligi va kredit turlarining xilma-xilligi",
+      "utilization": "% kredit foydalanishi",
+      "utilizationTip": "Mavjud kredit limitingizdan qancha foydalanayotganingiz",
+      "totalBalances": "Jami qoldiq/qarz",
+      "totalBalancesTip": "Barcha kreditlar va kredit kartalar bo'yicha jami qarz",
+      "recentBehavior": "So'nggi kredit xatti-harakati",
+      "recentBehaviorTip": "Yangi kredit arizalari va so'nggi hisob ochilishi",
+      "availableCredit": "Mavjud kredit",
+      "availableCreditTip": "Jami kredit limiti minus joriy qoldiq"
+    },
+    "ratings": { "poor": "Yomon", "fair": "O'rtacha", "good": "Yaxshi", "veryGood": "Juda yaxshi", "excellent": "A'lo" }
+  },
+  "partners": { "title": "Bizning hamkorlar" },
+  "testimonials": { "title": "Mijozlarimiz nima deydi" },
+  "faq": { "title": "Ko'p so'raladigan savollar" },
+  "footer": { "about": "Biz haqimizda", "privacy": "Maxfiylik siyosati", "terms": "Shartlar va qoidalar", "contact": "Aloqa" },
+  "forms": {
+    "name": "To'liq ism", "email": "Elektron pochta", "phone": "Telefon raqami",
+    "aadhaar": "Aadhaar raqami", "pan": "PAN raqami",
+    "applicationId": "Ariza ID", "transactionId": "Tranzaksiya ID",
+    "loanAmount": "Kredit miqdori", "submit": "Yuborish", "cancel": "Bekor qilish"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

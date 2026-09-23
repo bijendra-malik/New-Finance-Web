@@ -1,0 +1,897 @@
+import { useMemo, useState } from "react";
+import { useAuth } from "../../../../../context/AuthContext";
+import { THEME as C } from "../../../../../constants/theme";
+import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
+import { OTHER_OPTION } from "../../../../../constants/masters";
+import { useMasters } from "../../../../../hooks/useMasters";
+import { formatPAN, pincodeLocationKey } from "../../../../../utils/formatters";
+import {
+  DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
+  MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeSelectField, SelectField, SelectWithOther,
+  TenureYearsField, TextField,
+} from "../../../../../components/form/FormControls";
+
+// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
+// Field set mirrors LoanAgainstProperty's ApplicationForm — NPA resolution is
+// typically negotiated against the same kind of property collateral.
+export interface NPAApplication {
+  _id: string;
+  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
+  state: string; city: string; pincode: string; residenceStatus: string;
+  collateralPropertyType: string; collateralPropertyMarketValue: number; collateralPropertyAge: number;
+  collateralPropertyState: string; collateralPropertyCity: string; collateralPropertyPincode: string;
+  npaStatus: string; npaStatusOther?: string; otsOfferAmount?: number;
+  npaPrincipalLoanAmount: number; npaCurrentOutstandingAmount: number;
+  employmentType: string;
+  companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
+  businessName?: string; businessType?: string;
+  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
+  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
+  lastYearTurnover?: number; last2YearsTurnover?: number;
+  lastYearNetIncome?: number; last2YearsNetIncome?: number;
+  profession?: string;
+  currentYearTurnover?: number; priorYearTurnover?: number;
+  currentYearNetIncome?: number; previousYearNetIncome?: number;
+  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
+  loanAmount: number; loanTenure: number;
+  existingEMI: number; existingLoanAmount: number;
+  existingBanksNpa: string[]; existingBanksNpaOther?: string[];
+  existingBanksNonNpa: string[]; existingBanksNonNpaOther?: string[];
+  existingLoanTypesNpa: string[]; existingLoanTypesNpaOther?: string[];
+  existingLoanTypesNonNpa: string[]; existingLoanTypesNonNpaOther?: string[];
+  status: "Pending";
+  createdAt: string;
+}
+
+const SALARIED = "Salaried";
+const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
+const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
+const MULTIPLE_TRANSACTION_BANKS = "Multiple Transaction Banks";
+const OTS_OFFER_OPTION = "OTS Offer";
+const NPA_STATUS_OPTIONS = [
+  "1-6 Months", "12 Months", "More Than 1 Year", "More Than 2 Years", "More Than 3 Years",
+  OTS_OFFER_OPTION, "Case in NCLT", "Property Recovered By Bank", "Property Is About To Auctioned",
+  OTHER_OPTION,
+];
+
+interface ApplicationFormProps {
+  userName?: string;
+  userEmail?: string;
+  onSubmit?: (id: string, app: NPAApplication) => void;
+}
+interface FormData {
+  fullName:string; mobile:string; email:string; dob:string; panNumber:string;
+  state:string; city:string; pincode:string; pincodeOther:string; residenceStatus:string; residenceStatusOther:string;
+  collateralPropertyType:string; collateralPropertyTypeOther:string;
+  collateralPropertyMarketValue:number; collateralPropertyAge:string;
+  collateralPropertyState:string; collateralPropertyCity:string; collateralPropertyPincode:string; collateralPropertyPincodeOther:string;
+  npaStatus:string; npaStatusOther:string; otsOfferAmount:number;
+  npaPrincipalLoanAmount:number; npaCurrentOutstandingAmount:number;
+  employmentType:string;
+  companyName:string; companyType:string; companyTypeOther:string; monthlyNetSalary:number; salaryReceivedAs:string; salaryBankName:string; salaryBankNameOther:string;
+  businessName:string; businessType:string; businessTypeOther:string;
+  gstNumber:string; companyPanNumber:string; natureOfBusiness:string; natureOfBusinessOther:string;
+  industryType:string; industryTypeOther:string; subIndustry:string;
+  businessEstablishedDate:string; transactionBankName:string; transactionBankNameOther:string; transactionBanks:string[];
+  lastYearTurnover:number; last2YearsTurnover:number;
+  lastYearNetIncome:number; last2YearsNetIncome:number;
+  profession:string; professionOther:string;
+  currentYearTurnover:number; priorYearTurnover:number;
+  currentYearNetIncome:number; previousYearNetIncome:number;
+  businessState:string; businessCity:string;
+  businessPincode:string; businessPincodeOther:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
+  loanAmount:number; loanTenureYears:number; loanTenureYearsCustom:number; existingEMI:string; existingLoanAmount:string;
+  existingBanksNpa:string[]; existingBanksNpaOther:string[];
+  existingBanksNonNpa:string[]; existingBanksNonNpaOther:string[];
+  existingLoanTypesNpa:string[]; existingLoanTypesNpaOther:string[];
+  existingLoanTypesNonNpa:string[]; existingLoanTypesNonNpaOther:string[];
+}
+
+const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
+  const {user} = useAuth();
+  const {masters} = useMasters();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedApp, setSubmittedApp] = useState<NPAApplication|null>(null);
+  const [agreed, setAgreed] = useState(true);
+  const [form, setForm] = useState<FormData>({
+    fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
+    dob:"", panNumber:"", state:"", city:"", pincode:"", pincodeOther:"", residenceStatus:"", residenceStatusOther:"",
+    collateralPropertyType:"", collateralPropertyTypeOther:"",
+    collateralPropertyMarketValue:0, collateralPropertyAge:"",
+    collateralPropertyState:"", collateralPropertyCity:"", collateralPropertyPincode:"", collateralPropertyPincodeOther:"",
+    npaStatus:"", npaStatusOther:"", otsOfferAmount:0,
+    npaPrincipalLoanAmount:0, npaCurrentOutstandingAmount:0,
+    employmentType:"",
+    companyName:"", companyType:"", companyTypeOther:"", monthlyNetSalary:0, salaryReceivedAs:"", salaryBankName:"", salaryBankNameOther:"",
+    businessName:"", businessType:"", businessTypeOther:"",
+    gstNumber:"", companyPanNumber:"", natureOfBusiness:"", natureOfBusinessOther:"",
+    industryType:"", industryTypeOther:"", subIndustry:"",
+    businessEstablishedDate:"", transactionBankName:"", transactionBankNameOther:"", transactionBanks:[],
+    lastYearTurnover:0, last2YearsTurnover:0, lastYearNetIncome:0, last2YearsNetIncome:0,
+    profession:"", professionOther:"",
+    currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
+    businessState:"", businessCity:"",
+    businessPincode:"", businessPincodeOther:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
+    loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
+    existingBanksNpa:[], existingBanksNpaOther:[], existingBanksNonNpa:[], existingBanksNonNpaOther:[],
+    existingLoanTypesNpa:[], existingLoanTypesNpaOther:[], existingLoanTypesNonNpa:[], existingLoanTypesNonNpaOther:[],
+  });
+  const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
+
+  const cityOptions = useMemo(
+    () => form.state ? masters.citiesByState[form.state] ?? [] : [],
+    [form.state, masters.citiesByState]
+  );
+
+  const pincodeOptions = useMemo(
+    () => form.state && form.city ? masters.pincodesByLocation[pincodeLocationKey(form.state, form.city)] ?? [] : [],
+    [form.state, form.city, masters.pincodesByLocation]
+  );
+
+  const collateralPropertyCityOptions = useMemo(
+    () => form.collateralPropertyState ? masters.citiesByState[form.collateralPropertyState] ?? [] : [],
+    [form.collateralPropertyState, masters.citiesByState]
+  );
+
+  const collateralPropertyPincodeOptions = useMemo(
+    () => form.collateralPropertyState && form.collateralPropertyCity ? masters.pincodesByLocation[pincodeLocationKey(form.collateralPropertyState, form.collateralPropertyCity)] ?? [] : [],
+    [form.collateralPropertyState, form.collateralPropertyCity, masters.pincodesByLocation]
+  );
+
+  const businessCityOptions = useMemo(
+    () => form.businessState ? masters.citiesByState[form.businessState] ?? [] : [],
+    [form.businessState, masters.citiesByState]
+  );
+
+  const businessPincodeOptions = useMemo(
+    () => form.businessState && form.businessCity ? masters.pincodesByLocation[pincodeLocationKey(form.businessState, form.businessCity)] ?? [] : [],
+    [form.businessState, form.businessCity, masters.pincodesByLocation]
+  );
+
+  const transactionBankOptions = useMemo(() => {
+    const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
+    return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
+  }, [masters.banks]);
+
+  const addOtherBankNpa = (value:string) =>
+    setForm(p=>({...p, existingBanksNpaOther:[...p.existingBanksNpaOther, value]}));
+  const removeOtherBankNpa = (idx:number) =>
+    setForm(p=>({...p, existingBanksNpaOther:p.existingBanksNpaOther.filter((_,i)=>i!==idx)}));
+
+  const addOtherBankNonNpa = (value:string) =>
+    setForm(p=>({...p, existingBanksNonNpaOther:[...p.existingBanksNonNpaOther, value]}));
+  const removeOtherBankNonNpa = (idx:number) =>
+    setForm(p=>({...p, existingBanksNonNpaOther:p.existingBanksNonNpaOther.filter((_,i)=>i!==idx)}));
+
+  const addOtherLoanTypeNpa = (value:string) =>
+    setForm(p=>({...p, existingLoanTypesNpaOther:[...p.existingLoanTypesNpaOther, value]}));
+  const removeOtherLoanTypeNpa = (idx:number) =>
+    setForm(p=>({...p, existingLoanTypesNpaOther:p.existingLoanTypesNpaOther.filter((_,i)=>i!==idx)}));
+
+  const addOtherLoanTypeNonNpa = (value:string) =>
+    setForm(p=>({...p, existingLoanTypesNonNpaOther:[...p.existingLoanTypesNonNpaOther, value]}));
+  const removeOtherLoanTypeNonNpa = (idx:number) =>
+    setForm(p=>({...p, existingLoanTypesNonNpaOther:p.existingLoanTypesNonNpaOther.filter((_,i)=>i!==idx)}));
+
+  const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
+    setForm(p=>({...p,[f]:v}));
+    setTouched(p=>(p[f]?p:{...p,[f]:true}));
+  };
+
+  const setEmploymentType = (v:string) => {
+    setForm(p=>({
+      ...p, employmentType:v,
+      companyName:"", companyType:"", companyTypeOther:"", monthlyNetSalary:0, salaryReceivedAs:"", salaryBankName:"", salaryBankNameOther:"",
+      businessName:"", businessType:"", businessTypeOther:"",
+      gstNumber:"", companyPanNumber:"", natureOfBusiness:"", natureOfBusinessOther:"",
+      industryType:"", industryTypeOther:"", subIndustry:"",
+      businessEstablishedDate:"", transactionBankName:"", transactionBankNameOther:"", transactionBanks:[],
+      lastYearTurnover:0, last2YearsTurnover:0, lastYearNetIncome:0, last2YearsNetIncome:0,
+      profession:"", professionOther:"",
+      currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
+      businessState:"", businessCity:"",
+      businessPincode:"", businessPincodeOther:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
+    }));
+    setTouched(p=>(p.employmentType?p:{...p,employmentType:true}));
+  };
+
+  const addTransactionBank = (value:string) =>
+    setForm(p=>({...p, transactionBanks:[...p.transactionBanks, value]}));
+  const removeTransactionBank = (idx:number) =>
+    setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
+
+  const computeErrors = (draft:FormData = form) => {
+    const e:Partial<Record<keyof FormData,string>> = {};
+    if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
+    if(!draft.loanTenureYears) e.loanTenureYears="Select settlement tenure (minimum 3 years)";
+
+    if(!draft.collateralPropertyType) e.collateralPropertyType="Please select the collateral property backing this account";
+    else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention collateral property type";
+    if(!draft.collateralPropertyMarketValue) e.collateralPropertyMarketValue="Collateral property market value is required";
+    if(!draft.collateralPropertyAge.trim()) e.collateralPropertyAge="Collateral property age is required";
+    if(!draft.collateralPropertyState) e.collateralPropertyState="Collateral property state is required";
+    if(!draft.collateralPropertyCity) e.collateralPropertyCity="Collateral property city is required";
+    if(!draft.collateralPropertyPincode) e.collateralPropertyPincode="Collateral property pincode is required";
+    else if(draft.collateralPropertyPincode===OTHER_OPTION){
+      if(!draft.collateralPropertyPincodeOther.trim()) e.collateralPropertyPincodeOther="Please mention pincode";
+      else if(!/^\d{6}$/.test(draft.collateralPropertyPincodeOther)) e.collateralPropertyPincodeOther="Enter valid 6-digit pincode";
+    }
+
+    if(!draft.npaStatus) e.npaStatus="NPA status is required";
+    else if(draft.npaStatus===OTS_OFFER_OPTION&&!draft.otsOfferAmount) e.otsOfferAmount="OTS offer amount is required";
+    else if(draft.npaStatus===OTHER_OPTION&&!draft.npaStatusOther.trim()) e.npaStatusOther="Please mention NPA status";
+    if(!draft.npaPrincipalLoanAmount) e.npaPrincipalLoanAmount="NPA principal loan amount is required";
+    if(!draft.npaCurrentOutstandingAmount) e.npaCurrentOutstandingAmount="NPA current outstanding amount is required";
+
+    if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
+    if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
+
+    if(!draft.employmentType) e.employmentType="Employment type is required";
+
+    if(draft.employmentType===SALARIED){
+      if(!draft.companyName.trim()) e.companyName="Company name is required";
+      if(!draft.companyType) e.companyType="Company type is required";
+      else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
+      if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
+      else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
+      else if(draft.salaryReceivedAs!=="Cash"){
+        if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
+        else if(draft.salaryBankName===OTHER_OPTION&&!draft.salaryBankNameOther.trim()) e.salaryBankNameOther="Please mention salary bank name";
+      }
+    }
+
+    if(draft.employmentType===SELF_EMPLOYED_BUSINESS){
+      if(!draft.businessName.trim()) e.businessName="Company full name is required";
+      if(!draft.businessType) e.businessType="Company type is required";
+      else if(draft.businessType===OTHER_OPTION&&!draft.businessTypeOther.trim()) e.businessTypeOther="Please mention company type";
+
+      if(draft.gstNumber.trim()&&!/^[0-9A-Z]{15}$/.test(draft.gstNumber.toUpperCase())) e.gstNumber="Enter a valid 15-character GST number";
+      if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
+      else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
+      if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
+      else if(draft.natureOfBusiness===OTHER_OPTION&&!draft.natureOfBusinessOther.trim()) e.natureOfBusinessOther="Please mention nature of business";
+      if(!draft.industryType) e.industryType="Industry type is required";
+      else if(draft.industryType===OTHER_OPTION&&!draft.industryTypeOther.trim()) e.industryTypeOther="Please mention industry type";
+      if(!draft.businessEstablishedDate) e.businessEstablishedDate="Date of business establishment is required";
+      if(draft.transactionBankName===OTHER_OPTION&&!draft.transactionBankNameOther.trim()) e.transactionBankNameOther="Please mention bank name";
+      else if(draft.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&draft.transactionBanks.length===0) e.transactionBanks="Please add at least one bank";
+      if(!draft.lastYearTurnover) e.lastYearTurnover="Last year turnover is required";
+      if(!draft.lastYearNetIncome) e.lastYearNetIncome="Annual income cannot be zero";
+    }
+
+    if(draft.employmentType===SELF_EMPLOYED_PROFESSIONAL){
+      if(!draft.profession) e.profession="Profession is required";
+      else if(draft.profession===OTHER_OPTION&&!draft.professionOther.trim()) e.professionOther="Please mention profession";
+      if(!draft.currentYearTurnover) e.currentYearTurnover="Current year turnover is required";
+      if(!draft.priorYearTurnover) e.priorYearTurnover="Last (2 years old) turnover is required";
+      if(!draft.currentYearNetIncome) e.currentYearNetIncome="Current year net income is required";
+      if(!draft.previousYearNetIncome) e.previousYearNetIncome="Previous year net income is required";
+    }
+
+    if(draft.employmentType===SELF_EMPLOYED_BUSINESS||draft.employmentType===SELF_EMPLOYED_PROFESSIONAL){
+      if(!draft.businessState) e.businessState="Business state is required";
+      if(!draft.businessCity) e.businessCity="Business city is required";
+      if(!draft.businessPincode) e.businessPincode="Business pincode is required";
+      else if(draft.businessPincode===OTHER_OPTION){
+        if(!draft.businessPincodeOther.trim()) e.businessPincodeOther="Please mention pincode";
+        else if(!/^\d{6}$/.test(draft.businessPincodeOther)) e.businessPincodeOther="Enter valid 6-digit pincode";
+      }
+      if(!draft.businessPlaceStatus) e.businessPlaceStatus="Status of business place is required";
+      else if(draft.businessPlaceStatus===OTHER_OPTION&&!draft.businessPlaceStatusOther.trim()) e.businessPlaceStatusOther="Please mention status of business place";
+    }
+
+    if(!draft.fullName.trim()) e.fullName="Name is required";
+    if(!draft.mobile.trim()) e.mobile="Mobile is required";
+    else if(!/^\d{10}$/.test(draft.mobile)) e.mobile="Enter valid 10-digit number";
+    if(!draft.email.trim()) e.email="Email is required";
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) e.email="Enter valid email";
+    if(!draft.dob) e.dob="Date of birth is required";
+    else {
+      const dobDate = new Date(draft.dob+"T00:00:00");
+      const today = new Date(); today.setHours(0,0,0,0);
+      if(dobDate>today) e.dob="Date of birth cannot be in the future";
+      else {
+        const eighteenYearsAgo = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
+        if(dobDate>eighteenYearsAgo) e.dob="You must be at least 18 years old";
+      }
+    }
+    if(!draft.panNumber.trim()) e.panNumber="PAN is required";
+    else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.panNumber.toUpperCase())) e.panNumber="Invalid PAN format";
+    if(!draft.state) e.state="State is required";
+    if(!draft.city) e.city="City is required";
+    if(!draft.pincode) e.pincode="Pincode is required";
+    else if(draft.pincode===OTHER_OPTION){
+      if(!draft.pincodeOther.trim()) e.pincodeOther="Please mention pincode";
+      else if(!/^\d{6}$/.test(draft.pincodeOther)) e.pincodeOther="Enter valid 6-digit pincode";
+    }
+    if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
+    else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
+
+    return e;
+  };
+
+  const allErrors = computeErrors();
+  const errors:Partial<Record<keyof FormData,string>> = {};
+  (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
+
+  // No backend yet — validate, then build the confirmation view purely from local state.
+  const handleSubmit = async (e:React.FormEvent) => {
+    e.preventDefault();
+    if(!agreed){ setApiError("Please accept the Terms of Use and Privacy Policy to continue."); return; }
+    const errs = computeErrors();
+    if(Object.keys(errs).length>0){
+      setTouched(p=>{
+        const next = {...p};
+        (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
+        return next;
+      });
+      document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
+      return;
+    }
+    setIsSubmitting(true); setApiError("");
+    await new Promise(res=>setTimeout(res,600));
+    const app: NPAApplication = {
+      _id: `NPA${Date.now()}`,
+      fullName:form.fullName, mobile:form.mobile, email:form.email,
+      dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
+      state:form.state, city:form.city, pincode:form.pincode===OTHER_OPTION?form.pincodeOther:form.pincode,
+      residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+      collateralPropertyType:form.collateralPropertyType===OTHER_OPTION?form.collateralPropertyTypeOther:form.collateralPropertyType,
+      collateralPropertyMarketValue:form.collateralPropertyMarketValue,
+      collateralPropertyAge:parseInt(form.collateralPropertyAge)||0,
+      collateralPropertyState:form.collateralPropertyState,
+      collateralPropertyCity:form.collateralPropertyCity,
+      collateralPropertyPincode:form.collateralPropertyPincode===OTHER_OPTION?form.collateralPropertyPincodeOther:form.collateralPropertyPincode,
+      npaStatus:form.npaStatus===OTHER_OPTION?form.npaStatusOther:form.npaStatus,
+      otsOfferAmount:form.npaStatus===OTS_OFFER_OPTION?form.otsOfferAmount:undefined,
+      npaPrincipalLoanAmount:form.npaPrincipalLoanAmount,
+      npaCurrentOutstandingAmount:form.npaCurrentOutstandingAmount,
+      employmentType:form.employmentType,
+      companyName:form.employmentType===SALARIED?form.companyName:undefined,
+      companyType:form.employmentType===SALARIED
+        ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
+        :undefined,
+      monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
+      salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
+      salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
+        ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+        :undefined,
+      businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
+      businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
+        ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
+        :undefined,
+      gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
+      companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
+      natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
+        ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
+        :undefined,
+      industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
+        ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
+        :undefined,
+      subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
+      businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
+        ?new Date(form.businessEstablishedDate).toISOString()
+        :undefined,
+      transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
+        ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName||undefined)
+        :undefined,
+      transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
+        ?form.transactionBanks
+        :undefined,
+      lastYearTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearTurnover:undefined,
+      last2YearsTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsTurnover:undefined,
+      lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
+      last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
+      profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
+        ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
+        :undefined,
+      currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
+      priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
+      currentYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearNetIncome:undefined,
+      previousYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.previousYearNetIncome:undefined,
+      businessState:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)?form.businessState:undefined,
+      businessCity:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+        ?form.businessCity
+        :undefined,
+      businessPincode:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+        ?(form.businessPincode===OTHER_OPTION?form.businessPincodeOther:form.businessPincode)
+        :undefined,
+      businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+        ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
+        :undefined,
+      loanAmount:form.loanAmount,
+      loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
+      existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
+      existingBanksNpa:form.existingBanksNpa, existingBanksNpaOther:form.existingBanksNpaOther,
+      existingBanksNonNpa:form.existingBanksNonNpa, existingBanksNonNpaOther:form.existingBanksNonNpaOther,
+      existingLoanTypesNpa:form.existingLoanTypesNpa, existingLoanTypesNpaOther:form.existingLoanTypesNpaOther,
+      existingLoanTypesNonNpa:form.existingLoanTypesNonNpa, existingLoanTypesNonNpaOther:form.existingLoanTypesNonNpaOther,
+      status:"Pending", createdAt:new Date().toISOString(),
+    };
+    setSubmittedApp(app); setSubmitted(true);
+    setIsSubmitting(false);
+    if(onSubmit) onSubmit(app._id, app);
+  };
+
+  if(submitted && submittedApp) return (
+    <div className="max-w-2xl mx-auto">
+      <div className="rounded-3xl overflow-hidden shadow-xl" style={{border:`1px solid ${C.teal}33`}}>
+        <div className="h-1.5" style={{background:`linear-gradient(90deg,${C.teal},${C.navy})`}}/>
+        <div className="p-10 text-center bg-white">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
+            style={{background:`linear-gradient(135deg,${C.teal}22,${C.navy}22)`,border:`2px solid ${C.teal}`}}>
+            <svg className="w-10 h-10" style={{color:C.teal}} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-1" style={{color:C.dark}}>Application Submitted!</h2>
+          <p className="text-sm mb-3" style={{color:C.gray}}>Your NPA account details are under review</p>
+          <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-7"
+            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
+            ID: {submittedApp._id.slice(-10).toUpperCase()}
+          </span>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left mb-6">
+            {[
+              ["Loan Amount",  `₹${submittedApp.loanAmount.toLocaleString("en-IN")}`],
+              ["Tenure",       `${submittedApp.loanTenure} months`],
+              ["Collateral",   submittedApp.collateralPropertyType||"—"],
+              ["Property City",submittedApp.collateralPropertyCity],
+              ["Property State",submittedApp.collateralPropertyState],
+              ["Status",       submittedApp.status],
+            ].map(([l, v]) => (
+              <div key={l} className="rounded-xl p-3" style={{background:C.navyBg,border:`1px solid ${C.navy}22`}}>
+                <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{color:C.gray}}>{l}</p>
+                <p className="font-bold text-sm" style={{color:C.dark}}>{v}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs" style={{color:C.gray}}>
+            We'll reach out on <strong>+91 {submittedApp.mobile}</strong> and <strong>{submittedApp.email}</strong> within 24 hours.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold" style={{color:C.dark}}>
+          Unlock the best NPA offers suitable for your needs from 43+ lenders
+        </h1>
+        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory</p>
+      </div>
+
+      {/* ── NPA DETAILS ──────────────────────────────────────────────── */}
+      <FormCard title="NPA Details" subtitle="Tell us about the current status of this NPA account">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <SelectWithOther
+            id="npaStatus" label="NPA Status (For how long account in NPA)" required
+            value={form.npaStatus} onChange={v=>{
+              set("npaStatus",v);
+              if(v!==OTS_OFFER_OPTION) set("otsOfferAmount",0);
+              if(v!==OTHER_OPTION) set("npaStatusOther","");
+            }} options={NPA_STATUS_OPTIONS} err={errors.npaStatus}
+            otherId="npaStatusOther" otherLabel="Mention NPA Status"
+            otherValue={form.npaStatusOther} onOtherChange={v=>set("npaStatusOther",v)}
+            otherPlaceholder="Enter NPA status" otherErr={errors.npaStatusOther}
+          />
+          {form.npaStatus===OTS_OFFER_OPTION&&(
+            <div id="otsOfferAmount"><FieldLabel label="OTS Offer By Bank" required/>
+              <TextField type="number" value={form.otsOfferAmount===0?"":String(form.otsOfferAmount)}
+                onChange={v=>set("otsOfferAmount",Math.max(0,parseInt(v)||0))} placeholder="Enter OTS offer amount" err={errors.otsOfferAmount}/>
+            </div>
+          )}
+          <div id="npaPrincipalLoanAmount"><FieldLabel label="NPA Principal Loan Amount" required/>
+            <TextField type="number" value={form.npaPrincipalLoanAmount===0?"":String(form.npaPrincipalLoanAmount)}
+              onChange={v=>set("npaPrincipalLoanAmount",Math.max(0,parseInt(v)||0))} placeholder="e.g. 2000000" err={errors.npaPrincipalLoanAmount}/>
+          </div>
+          <div id="npaCurrentOutstandingAmount"><FieldLabel label="NPA Current Outstanding Amount" required/>
+            <TextField type="number" value={form.npaCurrentOutstandingAmount===0?"":String(form.npaCurrentOutstandingAmount)}
+              onChange={v=>set("npaCurrentOutstandingAmount",Math.max(0,parseInt(v)||0))} placeholder="e.g. 2000000" err={errors.npaCurrentOutstandingAmount}/>
+          </div>
+        </div>
+      </FormCard>
+
+      {/* ── EXISTING LOAN EXPOSURE ───────────────────────────────────── */}
+      <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no other existing loans">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+          <div id="existingEMI"><FieldLabel label="Existing Loan EMI (Total)" required/>
+            <TextField type="number" value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+          </div>
+          <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
+            <TextField type="number" value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <FieldLabel label="Existing Loan Bank's Name (NPA)"/>
+          <PillMultiSelect options={masters.banks} selected={form.existingBanksNpa}
+            onChange={vals=>setForm(p=>({...p,existingBanksNpa:vals, existingBanksNpaOther:vals.includes(OTHER_OPTION)?p.existingBanksNpaOther:[]}))}
+            color={C.teal}/>
+
+          {form.existingBanksNpa.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Bank Name (NPA)" placeholder="Enter other bank name"
+              items={form.existingBanksNpaOther} onAdd={addOtherBankNpa} onRemove={removeOtherBankNpa} color={C.teal} existingOptions={masters.banks}/>
+          )}
+        </div>
+
+        <div className="mb-5">
+          <FieldLabel label="Existing Loan Types (NPA)"/>
+          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypesNpa}
+            onChange={vals=>setForm(p=>({...p,existingLoanTypesNpa:vals, existingLoanTypesNpaOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesNpaOther:[]}))}
+            color={C.navy}/>
+
+          {form.existingLoanTypesNpa.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Types (NPA)" placeholder="Enter other loan type"
+              items={form.existingLoanTypesNpaOther} onAdd={addOtherLoanTypeNpa} onRemove={removeOtherLoanTypeNpa} color={C.navy} existingOptions={masters.existingLoanTypes}/>
+          )}
+        </div>
+
+        <div className="mb-5">
+          <FieldLabel label="Existing Loan Bank's Name (Non NPA)"/>
+          <PillMultiSelect options={masters.banks} selected={form.existingBanksNonNpa}
+            onChange={vals=>setForm(p=>({...p,existingBanksNonNpa:vals, existingBanksNonNpaOther:vals.includes(OTHER_OPTION)?p.existingBanksNonNpaOther:[]}))}
+            color={C.teal}/>
+
+          {form.existingBanksNonNpa.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Bank Name (Non NPA)" placeholder="Enter other bank name"
+              items={form.existingBanksNonNpaOther} onAdd={addOtherBankNonNpa} onRemove={removeOtherBankNonNpa} color={C.teal} existingOptions={masters.banks}/>
+          )}
+        </div>
+
+        <div>
+          <FieldLabel label="Existing Loan Types (Non NPA)"/>
+          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypesNonNpa}
+            onChange={vals=>setForm(p=>({...p,existingLoanTypesNonNpa:vals, existingLoanTypesNonNpaOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesNonNpaOther:[]}))}
+            color={C.navy}/>
+
+          {form.existingLoanTypesNonNpa.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Types (Non NPA)" placeholder="Enter other loan type"
+              items={form.existingLoanTypesNonNpaOther} onAdd={addOtherLoanTypeNonNpa} onRemove={removeOtherLoanTypeNonNpa} color={C.navy} existingOptions={masters.existingLoanTypes}/>
+          )}
+        </div>
+      </FormCard>
+
+      {/* ── SETTLEMENT REQUIREMENTS ─────────────────────────────────────── */}
+      <FormCard title="New Loan Requirements" subtitle="How much do you need and for how long?">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
+            <TextField type="number" value={form.loanAmount===0?"":String(form.loanAmount)}
+              onChange={v=>set("loanAmount",Math.max(0,parseInt(v)||0))} placeholder="NPA + New loan amount e.g. 3000000" err={errors.loanAmount}/>
+          </div>
+          <TenureYearsField
+            id="loanTenureYears" label="Required Tenure (not less than 3 year)"
+            value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
+            customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
+            options={masters.npaTenureYears} err={errors.loanTenureYears}
+          />
+          <SelectWithOther
+            id="collateralPropertyType" label="Collateral Property Type" required
+            value={form.collateralPropertyType} onChange={v=>{
+              set("collateralPropertyType",v);
+              if(v!==OTHER_OPTION) set("collateralPropertyTypeOther","");
+            }} options={masters.collateralPropertyTypes} err={errors.collateralPropertyType}
+            otherId="collateralPropertyTypeOther" otherLabel="Mention Collateral Property Type"
+            otherValue={form.collateralPropertyTypeOther} onOtherChange={v=>set("collateralPropertyTypeOther",v)}
+            otherPlaceholder="Enter property type" otherErr={errors.collateralPropertyTypeOther}
+          />
+          <div id="collateralPropertyMarketValue"><FieldLabel label="Collateral Property Market Value (Approx)" required/>
+            <TextField type="number" value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)}
+              onChange={v=>set("collateralPropertyMarketValue",Math.max(0,parseInt(v)||0))} placeholder="e.g. 5000000" err={errors.collateralPropertyMarketValue}/>
+          </div>
+          <div id="collateralPropertyAge"><FieldLabel label="Collateral Property Age (in years)" required/>
+            <TextField type="number" value={form.collateralPropertyAge} onChange={v=>set("collateralPropertyAge",v.replace(/\D/g,""))}
+              placeholder="In Years" err={errors.collateralPropertyAge}/>
+          </div>
+          <div id="collateralPropertyState"><FieldLabel label="Collateral Property State" required/>
+            <SelectField value={form.collateralPropertyState} onChange={v=>{
+              set("collateralPropertyState",v); set("collateralPropertyCity","");
+            }} options={masters.states} placeholder="Select" err={errors.collateralPropertyState}/>
+          </div>
+          <div id="collateralPropertyCity"><FieldLabel label="Collateral Property City" required/>
+            <SelectField value={form.collateralPropertyCity} onChange={v=>set("collateralPropertyCity",v)}
+              options={collateralPropertyCityOptions} placeholder={form.collateralPropertyState?"Select city":"Select state first"} disabled={!form.collateralPropertyState} err={errors.collateralPropertyCity}/>
+          </div>
+          <PincodeSelectField
+            id="collateralPropertyPincode" label="Collateral Property Pincode"
+            options={collateralPropertyPincodeOptions} cityReady={!!form.collateralPropertyCity}
+            value={form.collateralPropertyPincode} onChange={v=>set("collateralPropertyPincode",v)} err={errors.collateralPropertyPincode}
+            otherId="collateralPropertyPincodeOther" otherValue={form.collateralPropertyPincodeOther}
+            onOtherChange={v=>set("collateralPropertyPincodeOther",v)} otherErr={errors.collateralPropertyPincodeOther}
+          />
+        </div>
+      </FormCard>
+
+      {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
+      <FormCard title="Income Details" subtitle="Tell us about your employment and income">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2" id="employmentType"><FieldLabel label="Employment Type" required/>
+            <SelectField value={form.employmentType} onChange={setEmploymentType} options={masters.npaEmploymentTypes} placeholder="Select" err={errors.employmentType}/>
+          </div>
+
+          {form.employmentType===SALARIED&&(<>
+            <div id="companyName"><FieldLabel label="Company Name" required/>
+              <TextField value={form.companyName} onChange={v=>set("companyName",v)} placeholder="Company full name" err={errors.companyName}/>
+            </div>
+            <SelectWithOther
+              id="companyType" label="Company Type" required
+              value={form.companyType} onChange={v=>{
+                set("companyType",v);
+                if(v!==OTHER_OPTION) set("companyTypeOther","");
+              }} options={masters.companyTypes} err={errors.companyType}
+              otherId="companyTypeOther" otherLabel="Mention Company Type"
+              otherValue={form.companyTypeOther} onOtherChange={v=>set("companyTypeOther",v)}
+              otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
+            />
+            <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
+              <TextField type="number" value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)}
+                onChange={v=>set("monthlyNetSalary",Math.max(0,parseInt(v)||0))} placeholder="Take home salary"
+                err={errors.monthlyNetSalary}/>
+            </div>
+            <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
+              <SelectField value={form.salaryReceivedAs} onChange={v=>{
+                set("salaryReceivedAs",v);
+                if(v==="Cash"){ set("salaryBankName",""); set("salaryBankNameOther",""); }
+              }} options={masters.salaryModes} placeholder="Select" err={errors.salaryReceivedAs}/>
+            </div>
+            {form.salaryReceivedAs&&form.salaryReceivedAs!=="Cash"&&(
+              <SelectWithOther
+                id="salaryBankName" label="Salary Bank Name" required
+                value={form.salaryBankName} onChange={v=>{
+                  set("salaryBankName",v);
+                  if(v!==OTHER_OPTION) set("salaryBankNameOther","");
+                }} options={masters.banks} err={errors.salaryBankName}
+                otherId="salaryBankNameOther" otherLabel="Mention Salary Bank Name"
+                otherValue={form.salaryBankNameOther} onOtherChange={v=>set("salaryBankNameOther",v)}
+                otherPlaceholder="Enter bank name" otherErr={errors.salaryBankNameOther}
+              />
+            )}
+          </>)}
+
+          {form.employmentType===SELF_EMPLOYED_PROFESSIONAL&&(<>
+            <SelectWithOther
+              id="profession" label="Profession" required
+              value={form.profession} onChange={v=>{
+                set("profession",v);
+                if(v!==OTHER_OPTION) set("professionOther","");
+              }} options={masters.professions} err={errors.profession}
+              otherId="professionOther" otherLabel="Mention Profession"
+              otherValue={form.professionOther} onOtherChange={v=>set("professionOther",v)}
+              otherPlaceholder="Enter profession" otherErr={errors.professionOther}
+            />
+            <div id="currentYearTurnover"><FieldLabel label="Current Year Turn Over" required/>
+              <TextField type="number" value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)}
+                onChange={v=>set("currentYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Current turn over" err={errors.currentYearTurnover}/>
+            </div>
+            <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
+              <TextField type="number" value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)}
+                onChange={v=>set("priorYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.priorYearTurnover}/>
+            </div>
+            <div id="currentYearNetIncome"><FieldLabel label="Current Year Net Income" required/>
+              <TextField type="number" value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)}
+                onChange={v=>set("currentYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Current year net profit" err={errors.currentYearNetIncome}/>
+            </div>
+            <div id="previousYearNetIncome"><FieldLabel label="Previous Year Net Income" required/>
+              <TextField type="number" value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)}
+                onChange={v=>set("previousYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.previousYearNetIncome}/>
+            </div>
+          </>)}
+
+          {form.employmentType===SELF_EMPLOYED_BUSINESS&&(<>
+            <div className="md:col-span-2">
+              <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>
+            </div>
+            <SelectWithOther
+              id="businessType" label="Company Type" required
+              value={form.businessType} onChange={v=>{
+                set("businessType",v);
+                if(v!==OTHER_OPTION) set("businessTypeOther","");
+              }} options={masters.businessTypes} err={errors.businessType}
+              otherId="businessTypeOther" otherLabel="Mention Company Type"
+              otherValue={form.businessTypeOther} onOtherChange={v=>set("businessTypeOther",v)}
+              otherPlaceholder="Enter company type" otherErr={errors.businessTypeOther}
+            />
+            <div id="businessName"><FieldLabel label="Company Full Name" required/>
+              <TextField value={form.businessName} onChange={v=>set("businessName",v)} placeholder="Registered business / firm name" err={errors.businessName}/>
+            </div>
+
+            <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
+                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",v.toUpperCase())} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
+              </div>
+              <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
+                <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="AAAAA9999A" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>
+              </div>
+              <SelectWithOther
+                id="natureOfBusiness" label="Nature Of Business" required
+                value={form.natureOfBusiness} onChange={v=>{
+                  set("natureOfBusiness",v);
+                  if(v!==OTHER_OPTION) set("natureOfBusinessOther","");
+                }} options={masters.natureOfBusiness} err={errors.natureOfBusiness}
+                otherId="natureOfBusinessOther" otherLabel="Mention Nature Of Business"
+                otherValue={form.natureOfBusinessOther} onOtherChange={v=>set("natureOfBusinessOther",v)}
+                otherPlaceholder="Enter nature of business" otherErr={errors.natureOfBusinessOther}
+              />
+
+              <SelectWithOther
+                id="industryType" label="Industry Type" required
+                value={form.industryType} onChange={v=>{
+                  set("industryType",v);
+                  if(v!==OTHER_OPTION) set("industryTypeOther","");
+                  else set("subIndustry","");
+                }} options={masters.industryTypes} err={errors.industryType}
+                otherId="industryTypeOther" otherLabel="Mention Industry Type"
+                otherValue={form.industryTypeOther} onOtherChange={v=>set("industryTypeOther",v)}
+                otherPlaceholder="Enter industry type" otherErr={errors.industryTypeOther}
+              />
+              {form.industryType!==OTHER_OPTION&&(
+                <div id="subIndustry"><FieldLabel label="Sub Industry"/>
+                  <TextField value={form.subIndustry} onChange={v=>set("subIndustry",v)} placeholder="Optional"/>
+                </div>
+              )}
+
+              <div id="businessEstablishedDate"><FieldLabel label="Date Of Business Establishment" required/>
+                <DateField value={form.businessEstablishedDate} onChange={v=>set("businessEstablishedDate",v)}
+                  err={errors.businessEstablishedDate} maxDate={new Date(new Date().getFullYear()+50,11,31)} minDate={new Date(new Date().getFullYear()-100,0,1)}
+                  portalId="npa-business-established-datepicker-portal"/>
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div id="transactionBankName"><FieldLabel label="Transaction Bank Name"/>
+                    <SelectField value={form.transactionBankName} onChange={v=>{
+                      set("transactionBankName",v);
+                      if(v!==OTHER_OPTION) set("transactionBankNameOther","");
+                      if(v!==MULTIPLE_TRANSACTION_BANKS) setForm(p=>({...p, transactionBanks:[]}));
+                    }} options={transactionBankOptions} placeholder="Select" err={errors.transactionBankName}/>
+                  </div>
+                  {form.transactionBankName===OTHER_OPTION&&(
+                    <div id="transactionBankNameOther"><FieldLabel label="Mention Bank Name" required/>
+                      <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter bank name" err={errors.transactionBankNameOther}/>
+                    </div>
+                  )}
+                </div>
+                {form.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&(
+                  <div className="mt-4" id="transactionBanks">
+                    <OtherOptionList label="Transaction Banks" placeholder="Enter bank name"
+                      items={form.transactionBanks} onAdd={addTransactionBank} onRemove={removeTransactionBank} color={C.teal}/>
+                    <FieldError msg={errors.transactionBanks}/>
+                  </div>
+                )}
+              </div>
+
+              <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
+                <TextField type="number" value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)}
+                  onChange={v=>set("lastYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company last year turnover" err={errors.lastYearTurnover}/>
+              </div>
+              <div id="last2YearsTurnover"><FieldLabel label="Last (2 Years old) Turnover"/>
+                <TextField type="number" value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)}
+                  onChange={v=>set("last2YearsTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company turnover 2 years ago"/>
+              </div>
+              <div id="lastYearNetIncome"><FieldLabel label="Last Year Net Income" required/>
+                <TextField type="number" value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)}
+                  onChange={v=>set("lastYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company last year net profit" err={errors.lastYearNetIncome}/>
+              </div>
+              <div id="last2YearsNetIncome"><FieldLabel label="Last (2 Years old) Net Income"/>
+                <TextField type="number" value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)}
+                  onChange={v=>set("last2YearsNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company net income 2 years ago"/>
+              </div>
+          </>)}
+
+          {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(<>
+            <div id="businessState"><FieldLabel label="Current Business State" required/>
+              <SelectField value={form.businessState} onChange={v=>{
+                set("businessState",v); set("businessCity","");
+              }} options={masters.states} placeholder="Select" err={errors.businessState}/>
+            </div>
+            <div id="businessCity"><FieldLabel label="Current Business City" required/>
+              <SelectField value={form.businessCity} onChange={v=>set("businessCity",v)}
+                options={businessCityOptions} placeholder={form.businessState?"Select city":"Select state first"} disabled={!form.businessState} err={errors.businessCity}/>
+            </div>
+            <PincodeSelectField
+              id="businessPincode" label="Current Business Pincode"
+              options={businessPincodeOptions} cityReady={!!form.businessCity}
+              value={form.businessPincode} onChange={v=>set("businessPincode",v)} err={errors.businessPincode}
+              otherId="businessPincodeOther" otherValue={form.businessPincodeOther}
+              onOtherChange={v=>set("businessPincodeOther",v)} otherErr={errors.businessPincodeOther}
+            />
+            <SelectWithOther
+              id="businessPlaceStatus" label="Status Of Business Place" required
+              value={form.businessPlaceStatus} onChange={v=>{
+                set("businessPlaceStatus",v);
+                if(v!==OTHER_OPTION) set("businessPlaceStatusOther","");
+              }} options={masters.businessPlaceStatuses} err={errors.businessPlaceStatus}
+              otherId="businessPlaceStatusOther" otherLabel="Mention Status Of Business Place"
+              otherValue={form.businessPlaceStatusOther} onOtherChange={v=>set("businessPlaceStatusOther",v)}
+              otherPlaceholder="Enter status of business place" otherErr={errors.businessPlaceStatusOther}
+            />
+          </>)}
+        </div>
+      </FormCard>
+
+      {/* ── PERSONAL DETAILS ─────────────────────────────────────────── */}
+      <FormCard title="Personal Details" subtitle="Basic details as per your official documents">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div id="fullName"><FieldLabel label="Full Name" required/>
+            <TextField value={form.fullName} onChange={v=>set("fullName",v)} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
+          </div>
+          <div id="mobile"><FieldLabel label="Mobile Number" required/>
+            <div className="flex items-center rounded-xl overflow-hidden"
+              style={{border:`1.5px solid ${errors.mobile?"#ef4444":"#e2e8f0"}`,background:"#fafafa"}}>
+              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:"#e2e8f0"}}>🇮🇳 +91</span>
+              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number"
+                onChange={e=>set("mobile",e.target.value.replace(/\D/g,""))}
+                className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>
+            </div><FieldError msg={errors.mobile}/>
+          </div>
+          <div id="email"><FieldLabel label="Email Address" required/>
+            <TextField type="email" value={form.email} onChange={v=>set("email",v)} placeholder="your@email.com" err={errors.email}/>
+          </div>
+          <div id="dob"><FieldLabel label="Date of Birth (as per PAN card)" required/>
+            <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
+          </div>
+          <div className="md:col-span-2" id="panNumber"><FieldLabel label="PAN Number" required/>
+            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - AAAAA9999A" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
+          </div>
+          <div id="state"><FieldLabel label="Current Residence State" required/>
+            <SelectField value={form.state} onChange={v=>{
+              set("state",v); set("city","");
+            }} options={masters.states} placeholder="Select" err={errors.state}/>
+          </div>
+          <div id="city"><FieldLabel label="Current Residence City" required/>
+            <SelectField value={form.city} onChange={v=>set("city",v)}
+              options={cityOptions} placeholder={form.state?"Select city":"Select state first"} disabled={!form.state} err={errors.city}/>
+          </div>
+          <PincodeSelectField
+            id="pincode" label="Current Residence Pincode"
+            options={pincodeOptions} cityReady={!!form.city}
+            value={form.pincode} onChange={v=>set("pincode",v)} err={errors.pincode}
+            otherId="pincodeOther" otherValue={form.pincodeOther}
+            onOtherChange={v=>set("pincodeOther",v)} otherErr={errors.pincodeOther}
+          />
+          <SelectWithOther
+            id="residenceStatus" label="Status of Current Residence" required
+            value={form.residenceStatus} onChange={v=>{
+              set("residenceStatus",v);
+              if(v!==OTHER_OPTION) set("residenceStatusOther","");
+            }} options={masters.residenceStatuses} err={errors.residenceStatus}
+            otherId="residenceStatusOther" otherLabel="Mention Status of Residence"
+            otherValue={form.residenceStatusOther} onOtherChange={v=>set("residenceStatusOther",v)}
+            otherPlaceholder="Enter residence status type" otherErr={errors.residenceStatusOther}
+          />
+        </div>
+      </FormCard>
+
+      {/* ── Consent + Submit ─────────────────────────────────────────── */}
+      <label className="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
+        <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded shrink-0" style={{accentColor:C.teal}}/>
+        <span className="text-xs" style={{color:C.gray}}>
+          By continuing, you agree to Indexia Finance <a href={TERMS_OF_USE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Terms of Use</a> and <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Privacy Policy</a>.
+        </span>
+      </label>
+
+      {apiError&&(
+        <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
+          <span className="shrink-0 mt-0.5">⚠️</span>{apiError}
+        </div>
+      )}
+
+      <button type="submit" disabled={isSubmitting}
+        className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-lg hover:opacity-90"
+        style={{background:`linear-gradient(135deg,${C.teal},${C.navy})`}}>
+        {isSubmitting?(
+          <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25"/>
+            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          </svg>Submitting...</>
+        ):"✓ Submit Application"}
+      </button>
+    </form>
+  );
+};
+
+export default ApplicationForm;

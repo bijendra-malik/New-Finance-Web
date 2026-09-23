@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "בית",
+    "loanProduct": "מוצר הלוואה",
+    "emiCalculator": "מחשבון EMI",
+    "eligibilityCalculator": "מחשבון זכאות",
+    "franchiseLogin": "כניסת זכיינות",
+    "beAnAssociate": "היה שותף",
+    "contactUs": "צור קשר",
+    "applyNow": "הגש בקשה עכשיו"
+  },
+  "hero": {
+    "title": "יעד הלוואות שלם",
+    "titleHighlight": "הלוואות",
+    "description": "גלה את עולם ההלוואות החכמות ב-IndexiaFinance. אנו מביאים לך פתרונות פיננסיים שהופכים את החיים לחלקים יותר.",
+    "creditScoreBtn": "קבל ניקוד אשראי חינם"
+  },
+  "loanProducts": {
+    "title": "מוצרי הלוואה",
+    "personalLoan": "הלוואה אישית",
+    "businessLoan": "הלוואה עסקית",
+    "homeLoan": "הלוואת דיור",
+    "loanAgainstProperty": "הלוואה כנגד נכס",
+    "balanceTransfer": "העברת יתרה",
+    "projectLoan": "הלוואת פרויקט",
+    "carLoan": "הלוואת רכב",
+    "educationLoan": "הלוואת לימודים",
+    "creditCard": "כרטיס אשראי",
+    "commercialPurchase": "רכישה מסחרית",
+    "workingCapital": "הון חוזר",
+    "leaseRentalDiscounting": "היוון דמי שכירות",
+    "odCcLimit": "מסגרת אשראי",
+    "loanAgainstShare": "הלוואה כנגד מניות",
+    "filmLoan": "הלוואת סרטים",
+    "constructionLoan": "הלוואת בנייה",
+    "npaLoan": "הלוואת NPA"
+  },
+  "creditScore": {
+    "heading": "קבל את",
+    "headingHighlight": "ניקוד האשראי החינמי",
+    "headingEnd": "והדוח שלך",
+    "powered": "מופעל על ידי Equifax · מתעדכן מיידית · ללא השפעה על הניקוד",
+    "yourScoreIs": "ניקוד האשראי שלך הוא",
+    "betterThan": "טוב יותר מ-{{percent}}% מהמשתמשים",
+    "knowYourScore": "דע את הניקוד שלך",
+    "disclaimer": "בדיקת ניקוד האשראי שלך אינה משפיעה עליו.",
+    "labels": {
+      "paymentHistory": "היסטוריית תשלומים",
+      "paymentHistoryTip": "רשומת התשלומים בזמן של חשבונות ו-EMI",
+      "ageType": "גיל וסוג אשראי",
+      "ageTypeTip": "אורך היסטוריית האשראי וגיוון סוגי האשראי",
+      "utilization": "% ניצול אשראי",
+      "utilizationTip": "כמה מהמסגרת הזמינה אתה משתמש כעת",
+      "totalBalances": "יתרות/חובות כולל",
+      "totalBalancesTip": "סכום כולל בכל ההלוואות וכרטיסי האשראי",
+      "recentBehavior": "התנהגות אשראי אחרונה",
+      "recentBehaviorTip": "בקשות אשראי חדשות ופתיחת חשבונות אחרונה",
+      "availableCredit": "אשראי זמין",
+      "availableCreditTip": "מסגרת אשראי כוללת פחות יתרה שוטפת"
+    },
+    "ratings": { "poor": "גרוע", "fair": "בינוני", "good": "טוב", "veryGood": "טוב מאוד", "excellent": "מצוין" }
+  },
+  "partners": { "title": "השותפים שלנו" },
+  "testimonials": { "title": "מה אומרים לקוחותינו" },
+  "faq": { "title": "שאלות נפוצות" },
+  "footer": { "about": "אודות", "privacy": "מדיניות פרטיות", "terms": "תנאים והגבלות", "contact": "צור קשר" },
+  "forms": {
+    "name": "שם מלא", "email": "אימייל", "phone": "מספר טלפון",
+    "aadhaar": "מספר Aadhaar", "pan": "מספר PAN",
+    "applicationId": "מזהה בקשה", "transactionId": "מזהה עסקה",
+    "loanAmount": "סכום הלוואה", "submit": "שלח", "cancel": "ביטול"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

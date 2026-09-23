@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "මුල් පිටුව",
+    "loanProduct": "ණය නිෂ්පාදන",
+    "emiCalculator": "EMI ගණකය",
+    "eligibilityCalculator": "සුදුසුකම් ගණකය",
+    "franchiseLogin": "ෆ්‍රැන්චයිස් පිවිසුම",
+    "beAnAssociate": "සහකාරයෙකු වන්න",
+    "contactUs": "අප හා සම්බන්ධ වන්න",
+    "applyNow": "දැන් ඉල්ලුම් කරන්න"
+  },
+  "hero": {
+    "title": "සම්පූර්ණ ණය ගමනාන්තය",
+    "titleHighlight": "ණය",
+    "description": "IndexiaFinance හිදී දක්ෂ ණය ලෝකය ගවේෂණය කරන්න. ජීවිතය සුමට කරන මූල්‍ය විසඳුම් ඔබට ලබා දෙන්නෙමු.",
+    "creditScoreBtn": "නොමිලේ ණය ලකුණු ලබා ගන්න"
+  },
+  "loanProducts": {
+    "title": "ණය නිෂ්පාදන",
+    "personalLoan": "පෞද්ගලික ණය",
+    "businessLoan": "ව්‍යාපාර ණය",
+    "homeLoan": "නිවාස ණය",
+    "loanAgainstProperty": "දේපළ ඇපකරට ණය",
+    "balanceTransfer": "ශේෂය මාරු කිරීම",
+    "projectLoan": "ව්‍යාපෘති ණය",
+    "carLoan": "මෝටර් රථ ණය",
+    "educationLoan": "අධ්‍යාපන ණය",
+    "creditCard": "ණය කාඩ්පත",
+    "commercialPurchase": "වාණිජ මිලදී ගැනීම",
+    "workingCapital": "ක්‍රියාකාරී ප්‍රාග්ධනය",
+    "leaseRentalDiscounting": "කල්බදු වට්ටම්",
+    "odCcLimit": "OD CC සීමාව",
+    "loanAgainstShare": "කොටස් ඇපකරට ණය",
+    "filmLoan": "චිත්‍රපට ණය",
+    "constructionLoan": "ඉදිකිරීම් ණය",
+    "npaLoan": "NPA ණය"
+  },
+  "creditScore": {
+    "heading": "ඔබේ",
+    "headingHighlight": "නොමිලේ ණය ලකුණු",
+    "headingEnd": "සහ වාර්තාව ලබා ගන්න",
+    "powered": "Equifax මගින් ක්‍රියාත්මකයි · ක්ෂණිකව යාවත්කාලීන · ලකුණු කෙරෙහි බලපෑමක් නැත",
+    "yourScoreIs": "ඔබේ ණය ලකුණු",
+    "betterThan": "පරිශීලකයන්ගේ {{percent}}% ට වඩා හොඳ",
+    "knowYourScore": "ලකුණු දැනගන්න",
+    "disclaimer": "ඔබේ ණය ලකුණු පරීක්ෂා කිරීම ඒවාට බලපාන්නේ නැත.",
+    "labels": {
+      "paymentHistory": "ගෙවීම් ඉතිහාසය",
+      "paymentHistoryTip": "කාලෝචිත බිල් සහ EMI ගෙවීම් ලේඛනය",
+      "ageType": "ණය වයස සහ වර්ගය",
+      "ageTypeTip": "ණය ඉතිහාසයේ දිග සහ ණය වර්ගවල විවිධත්වය",
+      "utilization": "% ණය භාවිතය",
+      "utilizationTip": "ඔබ දැනට භාවිත කරන ණය සීමාව",
+      "totalBalances": "මුළු ශේෂය/ණය",
+      "totalBalancesTip": "සියලු ණය සහ ණය කාඩ්පත් හරහා මුළු ශේෂය",
+      "recentBehavior": "මෑත ණය හැසිරීම",
+      "recentBehaviorTip": "නව ණය ඉල්ලුම් සහ මෑත ගිණුම් විවෘත කිරීම",
+      "availableCredit": "ලබාගත හැකි ණය",
+      "availableCreditTip": "මුළු ණය සීමාවෙන් දැනට ශේෂය අඩු කිරීම"
+    },
+    "ratings": { "poor": "දුර්වල", "fair": "සාමාන්‍ය", "good": "හොඳ", "veryGood": "ඉතා හොඳ", "excellent": "විශිෂ්ට" }
+  },
+  "partners": { "title": "අපේ හවුල්කරුවන්" },
+  "testimonials": { "title": "අපේ ගනුදෙනුකරුවන් කියන දේ" },
+  "faq": { "title": "නිතර අසන ප්‍රශ්න" },
+  "footer": { "about": "අප ගැන", "privacy": "රහස්‍යතා ප්‍රතිපත්තිය", "terms": "නියම සහ කොන්දේසි", "contact": "සම්බන්ධතා" },
+  "forms": {
+    "name": "සම්පූර්ණ නම", "email": "විද්‍යුත් තැපෑල", "phone": "දුරකථන අංකය",
+    "aadhaar": "Aadhaar අංකය", "pan": "PAN අංකය",
+    "applicationId": "අයදුම්පත් ID", "transactionId": "ගනුදෙනු ID",
+    "loanAmount": "ණය ප්‍රමාණය", "submit": "ඉදිරිපත් කරන්න", "cancel": "අවලංගු කරන්න"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

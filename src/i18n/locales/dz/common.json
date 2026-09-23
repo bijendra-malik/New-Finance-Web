@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "གཙོ་ངོས།",
+    "loanProduct": "ཁེ་འབྲེལ་རིན་ཐང།",
+    "emiCalculator": "EMI རྩིས་འཁོར།",
+    "eligibilityCalculator": "འོས་འབབ་རྩིས་འཁོར།",
+    "franchiseLogin": "ཕྲེན་ཆའི་ས་ཐོག་ལྡི་མིག",
+    "beAnAssociate": "ཟུང་འབྲེལ་ཅིག་ཆགས།",
+    "contactUs": "ང་བཅས་དང་འབྲེལ་བ།",
+    "applyNow": "ད་ལྟ་ཞུ་ཡིག་གཞུགས།"
+  },
+  "hero": {
+    "title": "ཡོངས་རྫོགས་ཁེ་འབྲེལ་ལམ།",
+    "titleHighlight": "ཁེ་འབྲེལ།",
+    "description": "IndexiaFinance ནང་ལྟ་གསལ་ཁེ་འབྲེལ་དབྱིབས་ཀྱི་འཛམ་གླིང་ཞིབ་འཚོལ་གནང།",
+    "creditScoreBtn": "གྲངས་ཀ་དངུལ་འཛིན་རིན་མེད་ལེན།"
+  },
+  "loanProducts": {
+    "title": "ཁེ་འབྲེལ་རིན་ཐང་།",
+    "personalLoan": "མི་སྒེར་ཁེ་འབྲེལ།",
+    "businessLoan": "ཚོང་ལས་ཁེ་འབྲེལ།",
+    "homeLoan": "ཁྱིམ་ཁེ་འབྲེལ།",
+    "loanAgainstProperty": "ཁྱིམ་ཡུལ་ལ་ཐད་ཀར་ཁེ་འབྲེལ།",
+    "balanceTransfer": "ཐལ་འབབ་བརྗེ་སྤོར།",
+    "projectLoan": "ལས་གཞི་ཁེ་འབྲེལ།",
+    "carLoan": "མོ་ཊར་ཁེ་འབྲེལ།",
+    "educationLoan": "སློབ་གསོ་ཁེ་འབྲེལ།",
+    "creditCard": "དངུལ་འཛིན་ཤོག་བྱང་།",
+    "commercialPurchase": "ཚོང་རིམ་ཉོ་ཚོང།",
+    "workingCapital": "བྱ་བ་གཞི་རྩའི་དངུལ།",
+    "leaseRentalDiscounting": "བལྟ་སྤྱོད་མི་མཐུན་ཞི།",
+    "odCcLimit": "OD CC ཚད།",
+    "loanAgainstShare": "རྒྱུ་ཆ་ལ་ཐད་ཀར་ཁེ་འབྲེལ།",
+    "filmLoan": "གློག་བརྙན་ཁེ་འབྲེལ།",
+    "constructionLoan": "བཟོ་སྐྲུན་ཁེ་འབྲེལ།",
+    "npaLoan": "NPA ཁེ་འབྲེལ།"
+  },
+  "creditScore": {
+    "heading": "ཁྱོད་ཀྱི།",
+    "headingHighlight": "རིན་མེད་དངུལ་འཛིན་གྲངས་ཀ།",
+    "headingEnd": "དང་སྙན་ཞུ་ལེན།",
+    "powered": "Equifax གིས་འཁྱུད། · ཕྱི་མར་གསར་བཅོས། · གྲངས་ཀར་ཤུགས་རྐྱེན་མེད།",
+    "yourScoreIs": "ཁྱོད་ཀྱི་དངུལ་འཛིན་གྲངས་ཀ་ནི།",
+    "betterThan": "སྤྱོད་མཁན་{{percent}}% ལས་ལེགས།",
+    "knowYourScore": "གྲངས་ཀ་ཤེས།",
+    "disclaimer": "ཁྱོད་ཀྱི་དངུལ་འཛིན་གྲངས་ཀ་ལྟ་ཞིབ་གནང་ན་གྲངས་ཀར་ཤུགས་རྐྱེན་མི་ཐོབ།",
+    "labels": {
+      "paymentHistory": "འབབ་འཇུག་ལོ་རྒྱུས།",
+      "paymentHistoryTip": "དུས་ཚོད་ལ་རྩིས་ཞིབ་དང་EMI འབབ་འཇུག་གི་ལོ་རྒྱུས།",
+      "ageType": "དངུལ་འཛིན་ལོ་དང་དབྱིབས།",
+      "ageTypeTip": "དངུལ་འཛིན་ལོ་རྒྱུས་ཀྱི་རིང་ཐུང་དང་དབྱིབས་མི་འདྲ།",
+      "utilization": "% དངུལ་འཛིན་བེད་སྤྱོད།",
+      "utilizationTip": "ད་ལྟ་ཁྱོད་ཀྱིས་ཐོབ་ཐུབ་པའི་དངུལ་འཛིན་ཚད་ག་ཚད་བེད་སྤྱོད་གནང།",
+      "totalBalances": "ཡོངས་གྲུབ་ཐལ་འབབ།",
+      "totalBalancesTip": "ཁེ་འབྲེལ་དང་དངུལ་འཛིན་ཤོག་བྱང་ཡོངས་ཀྱི་ཐལ་འབབ།",
+      "recentBehavior": "ཉེ་བའི་དངུལ་འཛིན་བྱ་སྤྱོད།",
+      "recentBehaviorTip": "ལས་གཞི་གསར་བ་དང་གློག་ཁ་གཞུགས།",
+      "availableCredit": "ཐོབ་ཐུབ་དངུལ་འཛིན།",
+      "availableCreditTip": "ཡོངས་གྲུབ་ཚད་ལས་ད་ལྟའི་ཐལ་འབབ་བཤལ།"
+    },
+    "ratings": { "poor": "ཉམ་ཆུང།", "fair": "འབྲིང་རིམ།", "good": "བཟང་།", "veryGood": "ཧ་ཅང་བཟང་།", "excellent": "མཆོག་གྲུབ།" }
+  },
+  "partners": { "title": "ང་བཅས་ཀྱི་མཉམ་ལས་པ།" },
+  "testimonials": { "title": "ང་བཅས་ཀྱི་གྲོགས་པོར་ཞུ།" },
+  "faq": { "title": "ཡང་ཡང་དྲིས་པའི་དྲི་བ།" },
+  "footer": { "about": "ང་བཅས་སྐོར།", "privacy": "གསང་དོན་སྲིད་བྱུས།", "terms": "ཆ་རྐྱེན་དང་གནས་ཚུལ།", "contact": "འབྲེལ་བ།" },
+  "forms": {
+    "name": "མིང་ཡོངས།", "email": "གློག་འཕྲིན།", "phone": "ཁ་པར་ཨང།",
+    "aadhaar": "Aadhaar ཨང།", "pan": "PAN ཨང།",
+    "applicationId": "ཞུ་ཡིག་ID།", "transactionId": "བསྡུར་བ་ID།",
+    "loanAmount": "ཁེ་འབྲེལ་གྲངས།", "submit": "འབུལ།", "cancel": "ལོག།"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}

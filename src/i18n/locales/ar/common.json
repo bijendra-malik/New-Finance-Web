@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "loanProduct": "منتج القرض",
+    "emiCalculator": "حاسبة EMI",
+    "eligibilityCalculator": "حاسبة الأهلية",
+    "franchiseLogin": "دخول الامتياز",
+    "beAnAssociate": "كن شريكاً",
+    "contactUs": "اتصل بنا",
+    "applyNow": "قدّم الآن"
+  },
+  "hero": {
+    "title": "وجهة القروض الشاملة",
+    "titleHighlight": "القروض",
+    "description": "اكتشف عالم القروض الذكية في IndexiaFinance. نقدم لك حلولاً مالية تجعل الحياة أكثر سلاسة.",
+    "creditScoreBtn": "احصل على درجة الائتمان مجاناً"
+  },
+  "loanProducts": {
+    "title": "منتجات القروض",
+    "personalLoan": "قرض شخصي",
+    "businessLoan": "قرض تجاري",
+    "homeLoan": "قرض عقاري",
+    "loanAgainstProperty": "قرض مقابل عقار",
+    "balanceTransfer": "تحويل الرصيد",
+    "projectLoan": "قرض مشروع",
+    "carLoan": "قرض سيارة",
+    "educationLoan": "قرض تعليمي",
+    "creditCard": "بطاقة ائتمان",
+    "commercialPurchase": "شراء تجاري",
+    "workingCapital": "رأس المال العامل",
+    "leaseRentalDiscounting": "خصم الإيجار التمويلي",
+    "odCcLimit": "حد السحب على المكشوف",
+    "loanAgainstShare": "قرض مقابل أسهم",
+    "filmLoan": "قرض أفلام",
+    "constructionLoan": "قرض بناء",
+    "npaLoan": "قرض NPA"
+  },
+  "creditScore": {
+    "heading": "احصل على",
+    "headingHighlight": "درجة الائتمان المجانية",
+    "headingEnd": "والتقرير",
+    "powered": "مدعوم من Equifax · تحديث فوري · بدون تأثير على الدرجة",
+    "yourScoreIs": "درجة الائتمان الخاصة بك هي",
+    "betterThan": "أفضل من {{percent}}% من المستخدمين",
+    "knowYourScore": "اعرف درجتك",
+    "disclaimer": "التحقق من درجة الائتمان الخاصة بك لا يؤثر عليها.",
+    "labels": {
+      "paymentHistory": "سجل الدفع",
+      "paymentHistoryTip": "سجلك في سداد الفواتير والأقساط في الوقت المحدد",
+      "ageType": "عمر ونوع الائتمان",
+      "ageTypeTip": "مدة تاريخك الائتماني وتنوع أنواع الائتمان",
+      "utilization": "نسبة استخدام الائتمان",
+      "utilizationTip": "مقدار الحد الائتماني المتاح الذي تستخدمه حالياً",
+      "totalBalances": "إجمالي الأرصدة/الديون",
+      "totalBalancesTip": "إجمالي المبالغ المستحقة على جميع قروضك وبطاقاتك",
+      "recentBehavior": "السلوك الائتماني الأخير",
+      "recentBehaviorTip": "طلبات الائتمان الجديدة وفتح الحسابات الأخيرة",
+      "availableCredit": "الائتمان المتاح",
+      "availableCreditTip": "الحد الائتماني الإجمالي مطروحاً منه الرصيد المستحق الحالي"
+    },
+    "ratings": { "poor": "ضعيف", "fair": "مقبول", "good": "جيد", "veryGood": "جيد جداً", "excellent": "ممتاز" }
+  },
+  "partners": { "title": "شركاؤنا" },
+  "testimonials": { "title": "ماذا يقول عملاؤنا" },
+  "faq": { "title": "الأسئلة المتكررة" },
+  "footer": { "about": "من نحن", "privacy": "سياسة الخصوصية", "terms": "الشروط والأحكام", "contact": "اتصل" },
+  "forms": {
+    "name": "الاسم الكامل", "email": "البريد الإلكتروني", "phone": "رقم الهاتف",
+    "aadhaar": "رقم Aadhaar", "pan": "رقم PAN",
+    "applicationId": "معرف الطلب", "transactionId": "معرف المعاملة",
+    "loanAmount": "مبلغ القرض", "submit": "إرسال", "cancel": "إلغاء"
+  },
+  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+}
