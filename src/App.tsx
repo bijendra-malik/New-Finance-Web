@@ -47,6 +47,9 @@ import LoanAgainstShareDetail from "./pages/showdetails/LoanAgainstShareDetail";
 import NpalLoanDetail from "./pages/showdetails/NpalLoanDetail";
 import GoldLoanDetail from "./pages/showdetails/GoldLoanDetail";
 import FDIDetail from "./pages/showdetails/FDIDetail";
+import FranchiseLoginPage from "./pages/FranchiseLoginPage";
+import BeAnAssociatePage from "./pages/BeAnAssociatePage";
+import ContactPage from "./pages/ContactPage";
 import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
 import EMICalculatorPage from "./pages/EMICalculatorPage";
 import EducationLoanDocs from "./pages/requireddocument/EducationLoanDocs";
@@ -297,6 +300,15 @@ function App() {
             <Route path="/showdetails/npa"                 element={<NpalLoanDetail />} />
             <Route path="/showdetails/gold-loan"           element={<GoldLoanDetail />} />
             <Route path="/showdetails/fdi"                 element={<FDIDetail />} />
+
+            {/* Franchise Login */}
+            <Route path="/franchise-login" element={<FranchiseLoginPage />} />
+
+            {/* Be An Associate */}
+            <Route path="/be-an-associate" element={<BeAnAssociatePage />} />
+
+            {/* Contact Us */}
+            <Route path="/contact" element={<ContactPage />} />
 
             {/* EMI Calculator */}
             <Route path="/emi-calculator" element={<EMICalculatorPage />} />
