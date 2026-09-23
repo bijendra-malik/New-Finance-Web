@@ -65,7 +65,7 @@ const Header = () => {
 
   const navLinks = [
     { key: "nav.home", href: "/" },
-    { key: "nav.loanProduct", href: "/loans", dropdown: true },
+    { key: "nav.loanProduct", dropdown: true },  // trigger only — no href, opens dropdown on hover/tap
     { key: "nav.emiCalculator", href: "/emi-calculator" },
     { key: "nav.eligibilityCalculator", href: "/eligibility-calculator" },
     { key: "nav.franchiseLogin", href: "/franchise-login" },
@@ -135,7 +135,15 @@ const Header = () => {
                       onMouseEnter={() => setLoanOpen(true)}
                       onMouseLeave={() => setLoanOpen(false)}
                     >
-                      <a href={link.href} className="nav-link flex items-center gap-1">
+                      {/* Non-clickable dropdown trigger — opens on hover (desktop) */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-haspopup="true"
+                        aria-expanded={loanOpen}
+                        onClick={(e) => e.preventDefault()}
+                        className="nav-link flex items-center gap-1 select-none"
+                      >
                         {t(link.key)}
                         <svg
                           className={`h-3 w-3 transition-transform duration-300 ${
@@ -150,7 +158,7 @@ const Header = () => {
                             clipRule="evenodd"
                           />
                         </svg>
-                      </a>
+                      </span>
 
                       {/* Mega dropdown */}
                       <div
@@ -160,7 +168,7 @@ const Header = () => {
                             : "opacity-0 invisible -translate-y-2"
                         }`}
                       >
-                        <div className="w-[640px] rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
+                        <div className="w-160 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
                           <p className="mb-4 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
                             {t("loanProducts.title")}
                           </p>
@@ -228,7 +236,7 @@ const Header = () => {
                       onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
                       className="w-full text-left flex items-center justify-between px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
                     >
-                      {t(link.key)}
+                      <span className="pointer-events-none">{t(link.key)}</span>
                       <svg
                         className={`h-4 w-4 transition-transform duration-300 ${
                           mobileSubmenuOpen ? "rotate-180" : ""
