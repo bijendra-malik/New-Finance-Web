@@ -66,7 +66,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
     <>
       {/* ── BANNER ─────────────────────────────────────────────────── */}
       <section
-        className="relative w-full min-h-[300px] md:min-h-[360px] flex items-center overflow-hidden mt-10"
+        className="relative w-full min-h-75 md:min-h-90 flex items-center overflow-hidden mt-10"
         style={{
           backgroundImage: `url(${bg})`,
           backgroundSize: "cover",
@@ -108,7 +108,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
             </div>
 
             {/* RIGHT — Apply button only */}
-            <div className="flex flex-col items-start lg:items-end gap-4 flex-shrink-0">
+            <div className="flex flex-col items-start lg:items-end gap-4 shrink-0">
               {/* Animated spinning border button */}
               <div className="apply-btn-wrap">
                 <button
@@ -166,7 +166,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                 .apply-btn-inner:hover {
                   transform: translateY(-2px);
                   box-shadow: 0 8px 28px rgba(27,108,168,0.5);
-                  background: linear-gradient(135deg, #066a9c0%, #26ae90 100%);
+                  background: linear-gradient(135deg, #066a9c 0%, #26ae90 100%);
                 }
                 .apply-btn-inner:active {
                   transform: scale(0.96);
@@ -187,14 +187,14 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-2">
               <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)", boxShadow: "0 0 7px rgba(39,174,144,0.65)" }}
               />
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#066a9c]">
                 Document Checklist
               </span>
               <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
+                className="w-2 h-2 rounded-full shrink-0"
                 style={{ background: "linear-gradient(135deg,#066a9c,#27ae90)", boxShadow: "0 0 7px rgba(6,106,156,0.65)" }}
               />
             </div>
@@ -204,7 +204,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                 <span style={{ color: "#27ae90" }}>{loanName}</span>
               </h2>
               <div
-                className="mt-1.5 h-[3px] w-full rounded-full"
+                className="mt-1.5 h-0.75 w-full rounded-full"
                 style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 55%,transparent 100%)" }}
               />
             </div>
@@ -230,7 +230,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                 >
                   {/* step number */}
                   <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white flex-shrink-0"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0"
                     style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)", boxShadow: "0 0 8px rgba(39,174,144,0.4)" }}
                   >
                     {sIdx + 1}
@@ -244,7 +244,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                       {section.title}
                     </h3>
                     <div
-                      className="mt-0.5 h-[2px] w-full rounded-full"
+                      className="mt-0.5 h-0.5 w-full rounded-full"
                       style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 60%,transparent 100%)" }}
                     />
                   </div>
@@ -267,7 +267,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                     >
                       {/* tick icon */}
                       <div
-                        className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-110"
+                        className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110"
                         style={{
                           background: "linear-gradient(135deg,#27ae90,#066a9c)",
                           boxShadow: "0 2px 6px rgba(39,174,144,0.30)",
@@ -317,14 +317,14 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
             <div className="flex flex-col items-center mb-6">
               <div className="flex items-center gap-2 mb-2">
                 <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: "linear-gradient(135deg,#27ae90,#22d3ee)", boxShadow: "0 0 7px rgba(34,211,238,0.7)" }}
                 />
                 <span className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "#22d3ee" }}>
                   How It Works
                 </span>
                 <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2 h-2 rounded-full shrink-0"
                   style={{ background: "linear-gradient(135deg,#22d3ee,#27ae90)", boxShadow: "0 0 7px rgba(34,211,238,0.7)" }}
                 />
               </div>
@@ -333,7 +333,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg
                   5 Simple Steps to Your Loan
                 </h2>
                 <div
-                  className="mt-1.5 h-[3px] w-full rounded-full"
+                  className="mt-1.5 h-0.75 w-full rounded-full"
                   style={{ background: "linear-gradient(90deg,transparent 0%,#22d3ee 30%,#27ae90 70%,transparent 100%)" }}
                 />
               </div>
