@@ -57,6 +57,9 @@ import WorkingCapitalDocs from "./pages/requireddocument/WorkingCapitalDocs";
 import FilmLoanDocs from "./pages/requireddocument/FilmLoanDocs";
 import ODCCLimitDocs from "./pages/requireddocument/ODCCLimitDocs";
 import LoanAgainstShareDocs from "./pages/requireddocument/LoanAgainstShareDocs";
+import NpaDocs from "./pages/requireddocument/NpaDocs";
+import GoldLoanDocs from "./pages/requireddocument/GoldLoanDocs";
+import FdiDocs from "./pages/requireddocument/FdiDocs";
 
 // Protected wrapper — redirects to home if not logged in
 function ProtectedDashboard() {
@@ -271,6 +274,9 @@ function App() {
             <Route path="/requireddocument/film-funding"           element={<FilmLoanDocs />} />
             <Route path="/requireddocument/od-cc-limit"            element={<ODCCLimitDocs />} />
             <Route path="/requireddocument/loan-against-share"     element={<LoanAgainstShareDocs />} />
+            <Route path="/requireddocument/npa"                    element={<NpaDocs />} />
+            <Route path="/requireddocument/gold-loan"              element={<GoldLoanDocs />} />
+            <Route path="/requireddocument/fdi"                    element={<FdiDocs />} />
 
             {/* Show Details pages */}
             <Route path="/showdetails/personal-loan"       element={<PersonalLoanDetail />} />
