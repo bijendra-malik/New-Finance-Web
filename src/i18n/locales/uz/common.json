@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "Ijara chegirmasi",
     "odCcLimit": "Overdraft limiti",
     "loanAgainstShare": "Aksiyalar garovi bo'yicha kredit",
-    "filmLoan": "Film krediti",
-    "constructionLoan": "Qurilish krediti",
+    "filmLoanFunding": "Film Moliyasi",
+    "npalLoan": "NPA (Muammoli Aktivlar)",
+    "goldLoan": "Oltin Kredit",
+    "fdi": "TDB (To‘g‘ridan-to‘g‘ri Chetkiy Investitsiyalar)",
     "npaLoan": "NPA krediti"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "Mavjud kredit",
       "availableCreditTip": "Jami kredit limiti minus joriy qoldiq"
     },
-    "ratings": { "poor": "Yomon", "fair": "O'rtacha", "good": "Yaxshi", "veryGood": "Juda yaxshi", "excellent": "A'lo" }
+    "ratings": {
+      "poor": "Yomon",
+      "fair": "O'rtacha",
+      "good": "Yaxshi",
+      "veryGood": "Juda yaxshi",
+      "excellent": "A'lo"
+    }
   },
-  "partners": { "title": "Bizning hamkorlar" },
-  "testimonials": { "title": "Mijozlarimiz nima deydi" },
-  "faq": { "title": "Ko'p so'raladigan savollar" },
-  "footer": { "about": "Biz haqimizda", "privacy": "Maxfiylik siyosati", "terms": "Shartlar va qoidalar", "contact": "Aloqa" },
+  "partners": {
+    "title": "Bizning hamkorlar"
+  },
+  "testimonials": {
+    "title": "Mijozlarimiz nima deydi"
+  },
+  "faq": {
+    "title": "Ko'p so'raladigan savollar"
+  },
+  "footer": {
+    "about": "Biz haqimizda",
+    "privacy": "Maxfiylik siyosati",
+    "terms": "Shartlar va qoidalar",
+    "contact": "Aloqa"
+  },
   "forms": {
-    "name": "To'liq ism", "email": "Elektron pochta", "phone": "Telefon raqami",
-    "aadhaar": "Aadhaar raqami", "pan": "PAN raqami",
-    "applicationId": "Ariza ID", "transactionId": "Tranzaksiya ID",
-    "loanAmount": "Kredit miqdori", "submit": "Yuborish", "cancel": "Bekor qilish"
+    "name": "To'liq ism",
+    "email": "Elektron pochta",
+    "phone": "Telefon raqami",
+    "aadhaar": "Aadhaar raqami",
+    "pan": "PAN raqami",
+    "applicationId": "Ariza ID",
+    "transactionId": "Tranzaksiya ID",
+    "loanAmount": "Kredit miqdori",
+    "submit": "Yuborish",
+    "cancel": "Bekor qilish"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

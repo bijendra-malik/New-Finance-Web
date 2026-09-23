@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "היוון דמי שכירות",
     "odCcLimit": "מסגרת אשראי",
     "loanAgainstShare": "הלוואה כנגד מניות",
-    "filmLoan": "הלוואת סרטים",
-    "constructionLoan": "הלוואת בנייה",
+    "filmLoanFunding": "מימון סרטים",
+    "npalLoan": "NPA (נכסים בלתי מניבים)",
+    "goldLoan": "הלוואת זהב",
+    "fdi": "FDI (השקעה זרה ישירה)",
     "npaLoan": "הלוואת NPA"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "אשראי זמין",
       "availableCreditTip": "מסגרת אשראי כוללת פחות יתרה שוטפת"
     },
-    "ratings": { "poor": "גרוע", "fair": "בינוני", "good": "טוב", "veryGood": "טוב מאוד", "excellent": "מצוין" }
+    "ratings": {
+      "poor": "גרוע",
+      "fair": "בינוני",
+      "good": "טוב",
+      "veryGood": "טוב מאוד",
+      "excellent": "מצוין"
+    }
   },
-  "partners": { "title": "השותפים שלנו" },
-  "testimonials": { "title": "מה אומרים לקוחותינו" },
-  "faq": { "title": "שאלות נפוצות" },
-  "footer": { "about": "אודות", "privacy": "מדיניות פרטיות", "terms": "תנאים והגבלות", "contact": "צור קשר" },
+  "partners": {
+    "title": "השותפים שלנו"
+  },
+  "testimonials": {
+    "title": "מה אומרים לקוחותינו"
+  },
+  "faq": {
+    "title": "שאלות נפוצות"
+  },
+  "footer": {
+    "about": "אודות",
+    "privacy": "מדיניות פרטיות",
+    "terms": "תנאים והגבלות",
+    "contact": "צור קשר"
+  },
   "forms": {
-    "name": "שם מלא", "email": "אימייל", "phone": "מספר טלפון",
-    "aadhaar": "מספר Aadhaar", "pan": "מספר PAN",
-    "applicationId": "מזהה בקשה", "transactionId": "מזהה עסקה",
-    "loanAmount": "סכום הלוואה", "submit": "שלח", "cancel": "ביטול"
+    "name": "שם מלא",
+    "email": "אימייל",
+    "phone": "מספר טלפון",
+    "aadhaar": "מספר Aadhaar",
+    "pan": "מספר PAN",
+    "applicationId": "מזהה בקשה",
+    "transactionId": "מזהה עסקה",
+    "loanAmount": "סכום הלוואה",
+    "submit": "שלח",
+    "cancel": "ביטול"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

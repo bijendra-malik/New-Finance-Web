@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "租赁折扣",
     "odCcLimit": "透支额度",
     "loanAgainstShare": "股票抵押贷款",
-    "filmLoan": "影视贷款",
-    "constructionLoan": "建筑贷款",
+    "filmLoanFunding": "电影融资",
+    "npalLoan": "NPA（不良资产）",
+    "goldLoan": "黄金贷款",
+    "fdi": "FDI（外商直接投资）",
     "npaLoan": "NPA贷款"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "可用信用",
       "availableCreditTip": "总信用额度减去当前未偿余额"
     },
-    "ratings": { "poor": "差", "fair": "一般", "good": "良好", "veryGood": "很好", "excellent": "优秀" }
+    "ratings": {
+      "poor": "差",
+      "fair": "一般",
+      "good": "良好",
+      "veryGood": "很好",
+      "excellent": "优秀"
+    }
   },
-  "partners": { "title": "我们的合作伙伴" },
-  "testimonials": { "title": "客户评价" },
-  "faq": { "title": "常见问题" },
-  "footer": { "about": "关于我们", "privacy": "隐私政策", "terms": "条款和条件", "contact": "联系" },
+  "partners": {
+    "title": "我们的合作伙伴"
+  },
+  "testimonials": {
+    "title": "客户评价"
+  },
+  "faq": {
+    "title": "常见问题"
+  },
+  "footer": {
+    "about": "关于我们",
+    "privacy": "隐私政策",
+    "terms": "条款和条件",
+    "contact": "联系"
+  },
   "forms": {
-    "name": "全名", "email": "电子邮件", "phone": "电话号码",
-    "aadhaar": "Aadhaar号码", "pan": "PAN号码",
-    "applicationId": "申请编号", "transactionId": "交易编号",
-    "loanAmount": "贷款金额", "submit": "提交", "cancel": "取消"
+    "name": "全名",
+    "email": "电子邮件",
+    "phone": "电话号码",
+    "aadhaar": "Aadhaar号码",
+    "pan": "PAN号码",
+    "applicationId": "申请编号",
+    "transactionId": "交易编号",
+    "loanAmount": "贷款金额",
+    "submit": "提交",
+    "cancel": "取消"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

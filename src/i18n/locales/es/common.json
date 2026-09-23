@@ -30,7 +30,11 @@
     "workingCapital": "Capital de trabajo",
     "leaseRentalDiscounting": "Descuento de arrendamiento",
     "odCcLimit": "Límite OD CC",
-    "loanAgainstShare": "Préstamo contra acciones"
+    "loanAgainstShare": "Préstamo contra acciones",
+    "filmLoanFunding": "Financiación de Cine",
+    "npalLoan": "NPA (Activos Improductivos)",
+    "goldLoan": "Préstamo Oro",
+    "fdi": "IED (Inversión Extranjera Directa)"
   },
   "creditScore": {
     "heading": "Obtén tu",

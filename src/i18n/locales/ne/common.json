@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "लिज भाडा छुट",
     "odCcLimit": "OD CC सीमा",
     "loanAgainstShare": "शेयर विरुद्ध ऋण",
-    "filmLoan": "फिल्म ऋण",
-    "constructionLoan": "निर्माण ऋण",
+    "filmLoanFunding": "फिल्म फन्डिङ",
+    "npalLoan": "एनपीए",
+    "goldLoan": "गोल्ड लोन",
+    "fdi": "एफडीआई",
     "npaLoan": "NPA ऋण"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "उपलब्ध क्रेडिट",
       "availableCreditTip": "कुल क्रेडिट सीमा घटाउँदा हालको बाँकी ब्यालेन्स"
     },
-    "ratings": { "poor": "खराब", "fair": "ठीक", "good": "राम्रो", "veryGood": "धेरै राम्रो", "excellent": "उत्कृष्ट" }
+    "ratings": {
+      "poor": "खराब",
+      "fair": "ठीक",
+      "good": "राम्रो",
+      "veryGood": "धेरै राम्रो",
+      "excellent": "उत्कृष्ट"
+    }
   },
-  "partners": { "title": "हाम्रा साझेदारहरू" },
-  "testimonials": { "title": "हाम्रा ग्राहकहरू के भन्छन्" },
-  "faq": { "title": "बारम्बार सोधिने प्रश्नहरू" },
-  "footer": { "about": "हाम्रोबारे", "privacy": "गोपनीयता नीति", "terms": "नियम र सर्तहरू", "contact": "सम्पर्क" },
+  "partners": {
+    "title": "हाम्रा साझेदारहरू"
+  },
+  "testimonials": {
+    "title": "हाम्रा ग्राहकहरू के भन्छन्"
+  },
+  "faq": {
+    "title": "बारम्बार सोधिने प्रश्नहरू"
+  },
+  "footer": {
+    "about": "हाम्रोबारे",
+    "privacy": "गोपनीयता नीति",
+    "terms": "नियम र सर्तहरू",
+    "contact": "सम्पर्क"
+  },
   "forms": {
-    "name": "पूरा नाम", "email": "इमेल", "phone": "फोन नम्बर",
-    "aadhaar": "Aadhaar नम्बर", "pan": "PAN नम्बर",
-    "applicationId": "आवेदन ID", "transactionId": "कारोबार ID",
-    "loanAmount": "ऋण रकम", "submit": "पेश गर्नुहोस्", "cancel": "रद्द गर्नुहोस्"
+    "name": "पूरा नाम",
+    "email": "इमेल",
+    "phone": "फोन नम्बर",
+    "aadhaar": "Aadhaar नम्बर",
+    "pan": "PAN नम्बर",
+    "applicationId": "आवेदन ID",
+    "transactionId": "कारोबार ID",
+    "loanAmount": "ऋण रकम",
+    "submit": "पेश गर्नुहोस्",
+    "cancel": "रद्द गर्नुहोस्"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

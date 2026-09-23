@@ -30,7 +30,11 @@
     "workingCapital": "Fonds de roulement",
     "leaseRentalDiscounting": "Remise de location-bail",
     "odCcLimit": "Limite OD CC",
-    "loanAgainstShare": "Prêt contre actions"
+    "loanAgainstShare": "Prêt contre actions",
+    "filmLoanFunding": "Financement de Films",
+    "npalLoan": "NPA (Créances Douteuses)",
+    "goldLoan": "Prêt sur Or",
+    "fdi": "IDE (Investissements Directs Étrangers)"
   },
   "creditScore": {
     "heading": "Obtenez votre",

@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "ส่วนลดเช่าทางการเงิน",
     "odCcLimit": "วงเงินเบิกเกินบัญชี",
     "loanAgainstShare": "สินเชื่อหลักทรัพย์",
-    "filmLoan": "สินเชื่อภาพยนตร์",
-    "constructionLoan": "สินเชื่อก่อสร้าง",
+    "filmLoanFunding": "การเงินภาพยนตร์",
+    "npalLoan": "NPA (สินทรัพย์ที่มีปัญหา)",
+    "goldLoan": "สินเชื่อทองคำ",
+    "fdi": "FDI (การลงทุนโดยตรงจากต่างประเทศ)",
     "npaLoan": "สินเชื่อ NPA"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "เครดิตที่ใช้ได้",
       "availableCreditTip": "วงเงินเครดิตรวมหักยอดค้างชำระปัจจุบัน"
     },
-    "ratings": { "poor": "แย่", "fair": "พอใช้", "good": "ดี", "veryGood": "ดีมาก", "excellent": "ยอดเยี่ยม" }
+    "ratings": {
+      "poor": "แย่",
+      "fair": "พอใช้",
+      "good": "ดี",
+      "veryGood": "ดีมาก",
+      "excellent": "ยอดเยี่ยม"
+    }
   },
-  "partners": { "title": "พันธมิตรของเรา" },
-  "testimonials": { "title": "ลูกค้าพูดว่าอะไร" },
-  "faq": { "title": "คำถามที่พบบ่อย" },
-  "footer": { "about": "เกี่ยวกับเรา", "privacy": "นโยบายความเป็นส่วนตัว", "terms": "ข้อกำหนดและเงื่อนไข", "contact": "ติดต่อ" },
+  "partners": {
+    "title": "พันธมิตรของเรา"
+  },
+  "testimonials": {
+    "title": "ลูกค้าพูดว่าอะไร"
+  },
+  "faq": {
+    "title": "คำถามที่พบบ่อย"
+  },
+  "footer": {
+    "about": "เกี่ยวกับเรา",
+    "privacy": "นโยบายความเป็นส่วนตัว",
+    "terms": "ข้อกำหนดและเงื่อนไข",
+    "contact": "ติดต่อ"
+  },
   "forms": {
-    "name": "ชื่อเต็ม", "email": "อีเมล", "phone": "เบอร์โทรศัพท์",
-    "aadhaar": "หมายเลข Aadhaar", "pan": "หมายเลข PAN",
-    "applicationId": "รหัสใบสมัคร", "transactionId": "รหัสธุรกรรม",
-    "loanAmount": "จำนวนเงินกู้", "submit": "ส่ง", "cancel": "ยกเลิก"
+    "name": "ชื่อเต็ม",
+    "email": "อีเมล",
+    "phone": "เบอร์โทรศัพท์",
+    "aadhaar": "หมายเลข Aadhaar",
+    "pan": "หมายเลข PAN",
+    "applicationId": "รหัสใบสมัคร",
+    "transactionId": "รหัสธุรกรรม",
+    "loanAmount": "จำนวนเงินกู้",
+    "submit": "ส่ง",
+    "cancel": "ยกเลิก"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

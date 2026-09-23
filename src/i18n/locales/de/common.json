@@ -30,7 +30,11 @@
     "workingCapital": "Betriebskapital",
     "leaseRentalDiscounting": "Leasingzinsabschlag",
     "odCcLimit": "OD CC-Grenze",
-    "loanAgainstShare": "Darlehen gegen Aktien"
+    "loanAgainstShare": "Darlehen gegen Aktien",
+    "filmLoanFunding": "Filmfinanzierung",
+    "npalLoan": "NPA (Notleidende Kredite)",
+    "goldLoan": "Goldkredit",
+    "fdi": "Auslandsdirektinvestitionen"
   },
   "creditScore": {
     "heading": "Holen Sie sich Ihre",

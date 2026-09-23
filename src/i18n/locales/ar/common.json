@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "خصم الإيجار التمويلي",
     "odCcLimit": "حد السحب على المكشوف",
     "loanAgainstShare": "قرض مقابل أسهم",
-    "filmLoan": "قرض أفلام",
-    "constructionLoan": "قرض بناء",
+    "filmLoanFunding": "تمويل الأفلام",
+    "npalLoan": "أصول متعثرة (NPA)",
+    "goldLoan": "قرض ذهبي",
+    "fdi": "استثمار أجنبي مباشر",
     "npaLoan": "قرض NPA"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "الائتمان المتاح",
       "availableCreditTip": "الحد الائتماني الإجمالي مطروحاً منه الرصيد المستحق الحالي"
     },
-    "ratings": { "poor": "ضعيف", "fair": "مقبول", "good": "جيد", "veryGood": "جيد جداً", "excellent": "ممتاز" }
+    "ratings": {
+      "poor": "ضعيف",
+      "fair": "مقبول",
+      "good": "جيد",
+      "veryGood": "جيد جداً",
+      "excellent": "ممتاز"
+    }
   },
-  "partners": { "title": "شركاؤنا" },
-  "testimonials": { "title": "ماذا يقول عملاؤنا" },
-  "faq": { "title": "الأسئلة المتكررة" },
-  "footer": { "about": "من نحن", "privacy": "سياسة الخصوصية", "terms": "الشروط والأحكام", "contact": "اتصل" },
+  "partners": {
+    "title": "شركاؤنا"
+  },
+  "testimonials": {
+    "title": "ماذا يقول عملاؤنا"
+  },
+  "faq": {
+    "title": "الأسئلة المتكررة"
+  },
+  "footer": {
+    "about": "من نحن",
+    "privacy": "سياسة الخصوصية",
+    "terms": "الشروط والأحكام",
+    "contact": "اتصل"
+  },
   "forms": {
-    "name": "الاسم الكامل", "email": "البريد الإلكتروني", "phone": "رقم الهاتف",
-    "aadhaar": "رقم Aadhaar", "pan": "رقم PAN",
-    "applicationId": "معرف الطلب", "transactionId": "معرف المعاملة",
-    "loanAmount": "مبلغ القرض", "submit": "إرسال", "cancel": "إلغاء"
+    "name": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "aadhaar": "رقم Aadhaar",
+    "pan": "رقم PAN",
+    "applicationId": "معرف الطلب",
+    "transactionId": "معرف المعاملة",
+    "loanAmount": "مبلغ القرض",
+    "submit": "إرسال",
+    "cancel": "إلغاء"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

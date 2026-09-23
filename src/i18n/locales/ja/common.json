@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "リース割引",
     "odCcLimit": "当座貸越限度",
     "loanAgainstShare": "株式担保ローン",
-    "filmLoan": "映画ローン",
-    "constructionLoan": "建設ローン",
+    "filmLoanFunding": "映画融資",
+    "npalLoan": "NPA（不良債権）",
+    "goldLoan": "ゴールドローン",
+    "fdi": "FDI（外国直接投資）",
     "npaLoan": "NPAローン"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "利用可能クレジット",
       "availableCreditTip": "総クレジット限度から現在の未払残高を引いた額"
     },
-    "ratings": { "poor": "悪い", "fair": "普通", "good": "良い", "veryGood": "とても良い", "excellent": "優秀" }
+    "ratings": {
+      "poor": "悪い",
+      "fair": "普通",
+      "good": "良い",
+      "veryGood": "とても良い",
+      "excellent": "優秀"
+    }
   },
-  "partners": { "title": "パートナー" },
-  "testimonials": { "title": "お客様の声" },
-  "faq": { "title": "よくある質問" },
-  "footer": { "about": "会社概要", "privacy": "プライバシーポリシー", "terms": "利用規約", "contact": "お問い合わせ" },
+  "partners": {
+    "title": "パートナー"
+  },
+  "testimonials": {
+    "title": "お客様の声"
+  },
+  "faq": {
+    "title": "よくある質問"
+  },
+  "footer": {
+    "about": "会社概要",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ"
+  },
   "forms": {
-    "name": "氏名", "email": "メール", "phone": "電話番号",
-    "aadhaar": "Aadhaar番号", "pan": "PAN番号",
-    "applicationId": "申請ID", "transactionId": "取引ID",
-    "loanAmount": "ローン金額", "submit": "送信", "cancel": "キャンセル"
+    "name": "氏名",
+    "email": "メール",
+    "phone": "電話番号",
+    "aadhaar": "Aadhaar番号",
+    "pan": "PAN番号",
+    "applicationId": "申請ID",
+    "transactionId": "取引ID",
+    "loanAmount": "ローン金額",
+    "submit": "送信",
+    "cancel": "キャンセル"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

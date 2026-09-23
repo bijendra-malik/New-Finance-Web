@@ -30,7 +30,11 @@
     "workingCapital": "कार्यशील पूंजी",
     "leaseRentalDiscounting": "पट्टा किराया छूट",
     "odCcLimit": "ओडी सीसी सीमा",
-    "loanAgainstShare": "शेयर के विरुद्ध लोन"
+    "loanAgainstShare": "शेयर के विरुद्ध लोन",
+    "filmLoanFunding": "फिल्म फंडिंग",
+    "npalLoan": "एनपीए",
+    "goldLoan": "गोल्ड लोन",
+    "fdi": "एफडीआई"
   },
   "creditScore": {
     "heading": "अपना",

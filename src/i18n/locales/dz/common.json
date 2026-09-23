@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "བལྟ་སྤྱོད་མི་མཐུན་ཞི།",
     "odCcLimit": "OD CC ཚད།",
     "loanAgainstShare": "རྒྱུ་ཆ་ལ་ཐད་ཀར་ཁེ་འབྲེལ།",
-    "filmLoan": "གློག་བརྙན་ཁེ་འབྲེལ།",
-    "constructionLoan": "བཟོ་སྐྲུན་ཁེ་འབྲེལ།",
+    "filmLoanFunding": "Film Funding",
+    "npalLoan": "NPA",
+    "goldLoan": "Gold Loan",
+    "fdi": "FDI",
     "npaLoan": "NPA ཁེ་འབྲེལ།"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "ཐོབ་ཐུབ་དངུལ་འཛིན།",
       "availableCreditTip": "ཡོངས་གྲུབ་ཚད་ལས་ད་ལྟའི་ཐལ་འབབ་བཤལ།"
     },
-    "ratings": { "poor": "ཉམ་ཆུང།", "fair": "འབྲིང་རིམ།", "good": "བཟང་།", "veryGood": "ཧ་ཅང་བཟང་།", "excellent": "མཆོག་གྲུབ།" }
+    "ratings": {
+      "poor": "ཉམ་ཆུང།",
+      "fair": "འབྲིང་རིམ།",
+      "good": "བཟང་།",
+      "veryGood": "ཧ་ཅང་བཟང་།",
+      "excellent": "མཆོག་གྲུབ།"
+    }
   },
-  "partners": { "title": "ང་བཅས་ཀྱི་མཉམ་ལས་པ།" },
-  "testimonials": { "title": "ང་བཅས་ཀྱི་གྲོགས་པོར་ཞུ།" },
-  "faq": { "title": "ཡང་ཡང་དྲིས་པའི་དྲི་བ།" },
-  "footer": { "about": "ང་བཅས་སྐོར།", "privacy": "གསང་དོན་སྲིད་བྱུས།", "terms": "ཆ་རྐྱེན་དང་གནས་ཚུལ།", "contact": "འབྲེལ་བ།" },
+  "partners": {
+    "title": "ང་བཅས་ཀྱི་མཉམ་ལས་པ།"
+  },
+  "testimonials": {
+    "title": "ང་བཅས་ཀྱི་གྲོགས་པོར་ཞུ།"
+  },
+  "faq": {
+    "title": "ཡང་ཡང་དྲིས་པའི་དྲི་བ།"
+  },
+  "footer": {
+    "about": "ང་བཅས་སྐོར།",
+    "privacy": "གསང་དོན་སྲིད་བྱུས།",
+    "terms": "ཆ་རྐྱེན་དང་གནས་ཚུལ།",
+    "contact": "འབྲེལ་བ།"
+  },
   "forms": {
-    "name": "མིང་ཡོངས།", "email": "གློག་འཕྲིན།", "phone": "ཁ་པར་ཨང།",
-    "aadhaar": "Aadhaar ཨང།", "pan": "PAN ཨང།",
-    "applicationId": "ཞུ་ཡིག་ID།", "transactionId": "བསྡུར་བ་ID།",
-    "loanAmount": "ཁེ་འབྲེལ་གྲངས།", "submit": "འབུལ།", "cancel": "ལོག།"
+    "name": "མིང་ཡོངས།",
+    "email": "གློག་འཕྲིན།",
+    "phone": "ཁ་པར་ཨང།",
+    "aadhaar": "Aadhaar ཨང།",
+    "pan": "PAN ཨང།",
+    "applicationId": "ཞུ་ཡིག་ID།",
+    "transactionId": "བསྡུར་བ་ID།",
+    "loanAmount": "ཁེ་འབྲེལ་གྲངས།",
+    "submit": "འབུལ།",
+    "cancel": "ལོག།"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

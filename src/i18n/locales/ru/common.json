@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "Лизинговый дисконт",
     "odCcLimit": "Лимит овердрафта",
     "loanAgainstShare": "Кредит под акции",
-    "filmLoan": "Кредит на фильм",
-    "constructionLoan": "Строительный кредит",
+    "filmLoanFunding": "Финансирование Кино",
+    "npalLoan": "NPA (Проблемные Активы)",
+    "goldLoan": "Золотой Кредит",
+    "fdi": "ПИИ (Прямые Иностранные Инвестиции)",
     "npaLoan": "NPA кредит"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "Доступный кредит",
       "availableCreditTip": "Общий кредитный лимит минус текущий остаток"
     },
-    "ratings": { "poor": "Плохо", "fair": "Удовлетворительно", "good": "Хорошо", "veryGood": "Очень хорошо", "excellent": "Отлично" }
+    "ratings": {
+      "poor": "Плохо",
+      "fair": "Удовлетворительно",
+      "good": "Хорошо",
+      "veryGood": "Очень хорошо",
+      "excellent": "Отлично"
+    }
   },
-  "partners": { "title": "Наши партнёры" },
-  "testimonials": { "title": "Отзывы клиентов" },
-  "faq": { "title": "Часто задаваемые вопросы" },
-  "footer": { "about": "О нас", "privacy": "Политика конфиденциальности", "terms": "Условия использования", "contact": "Контакты" },
+  "partners": {
+    "title": "Наши партнёры"
+  },
+  "testimonials": {
+    "title": "Отзывы клиентов"
+  },
+  "faq": {
+    "title": "Часто задаваемые вопросы"
+  },
+  "footer": {
+    "about": "О нас",
+    "privacy": "Политика конфиденциальности",
+    "terms": "Условия использования",
+    "contact": "Контакты"
+  },
   "forms": {
-    "name": "Полное имя", "email": "Электронная почта", "phone": "Номер телефона",
-    "aadhaar": "Номер Aadhaar", "pan": "Номер PAN",
-    "applicationId": "ID заявки", "transactionId": "ID транзакции",
-    "loanAmount": "Сумма кредита", "submit": "Отправить", "cancel": "Отмена"
+    "name": "Полное имя",
+    "email": "Электронная почта",
+    "phone": "Номер телефона",
+    "aadhaar": "Номер Aadhaar",
+    "pan": "Номер PAN",
+    "applicationId": "ID заявки",
+    "transactionId": "ID транзакции",
+    "loanAmount": "Сумма кредита",
+    "submit": "Отправить",
+    "cancel": "Отмена"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }

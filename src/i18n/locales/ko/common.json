@@ -31,8 +31,10 @@
     "leaseRentalDiscounting": "임대 할인",
     "odCcLimit": "당좌 한도",
     "loanAgainstShare": "주식 담보 대출",
-    "filmLoan": "영화 대출",
-    "constructionLoan": "건설 대출",
+    "filmLoanFunding": "영화 파이낸싱",
+    "npalLoan": "NPA (부실채권)",
+    "goldLoan": "골드론",
+    "fdi": "FDI (외국인 직접투자)",
     "npaLoan": "NPA 대출"
   },
   "creditScore": {
@@ -58,17 +60,46 @@
       "availableCredit": "가용 신용",
       "availableCreditTip": "총 신용 한도에서 현재 미지급 잔액을 뺀 금액"
     },
-    "ratings": { "poor": "나쁨", "fair": "보통", "good": "좋음", "veryGood": "매우 좋음", "excellent": "우수" }
+    "ratings": {
+      "poor": "나쁨",
+      "fair": "보통",
+      "good": "좋음",
+      "veryGood": "매우 좋음",
+      "excellent": "우수"
+    }
   },
-  "partners": { "title": "파트너사" },
-  "testimonials": { "title": "고객 후기" },
-  "faq": { "title": "자주 묻는 질문" },
-  "footer": { "about": "회사 소개", "privacy": "개인정보 처리방침", "terms": "이용약관", "contact": "연락처" },
+  "partners": {
+    "title": "파트너사"
+  },
+  "testimonials": {
+    "title": "고객 후기"
+  },
+  "faq": {
+    "title": "자주 묻는 질문"
+  },
+  "footer": {
+    "about": "회사 소개",
+    "privacy": "개인정보 처리방침",
+    "terms": "이용약관",
+    "contact": "연락처"
+  },
   "forms": {
-    "name": "성명", "email": "이메일", "phone": "전화번호",
-    "aadhaar": "Aadhaar 번호", "pan": "PAN 번호",
-    "applicationId": "신청 ID", "transactionId": "거래 ID",
-    "loanAmount": "대출 금액", "submit": "제출", "cancel": "취소"
+    "name": "성명",
+    "email": "이메일",
+    "phone": "전화번호",
+    "aadhaar": "Aadhaar 번호",
+    "pan": "PAN 번호",
+    "applicationId": "신청 ID",
+    "transactionId": "거래 ID",
+    "loanAmount": "대출 금액",
+    "submit": "제출",
+    "cancel": "취소"
   },
-  "language": { "english": "English", "hindi": "हिन्दी", "german": "Deutsch", "french": "Français", "spanish": "Español" }
+  "language": {
+    "english": "English",
+    "hindi": "हिन्दी",
+    "german": "Deutsch",
+    "french": "Français",
+    "spanish": "Español"
+  }
 }
