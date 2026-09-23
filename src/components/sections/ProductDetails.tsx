@@ -205,19 +205,55 @@ const products: Product[] = [
     ],
   },
   {
-    id: "construction-loan",
-    label: "Construction Loan",
-    heading: "Construction Loan",
-    subtitle: "Build your dream projects with construction loans up to ₹10 Crores",
+    id: "od-cc-limit",
+    label: "OD CC Limit",
+    heading: "OD & CC Limit",
+    subtitle: "Flexible Overdraft and Cash Credit limits against your property — pay interest only on what you use",
     features: [
-      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Milestone-based Disbursement", desc: "Funds released as construction progresses" },
-      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Competitive Rates", desc: "Industry-best rates starting from 8.9% p.a." },
-      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Extended Tenure", desc: "Repayment up to 15 years post-construction completion" },
-      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Project Management", desc: "Expert guidance throughout construction period" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Pay-As-You-Use", desc: "Interest charged only on the utilised amount, not on the sanctioned limit" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Renewable Limit", desc: "Renew your limit annually with minimal documentation and no fresh processing" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Against Property", desc: "Sanctioned against residential, commercial, or industrial property at attractive rates" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Instant Top-Up", desc: "Withdraw and deposit funds anytime within your sanctioned limit" },
     ],
   },
   {
-    id: "npa-loan",
+    id: "loan-against-share",
+    label: "Loan Against Share",
+    heading: "Loan Against Share",
+    subtitle: "Unlock liquidity from your shares and securities without selling your portfolio",
+    features: [
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 3v18h18M8 16l4-6 4 4 4-8" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Stay Invested", desc: "Keep your portfolio intact while accessing funds against pledged securities" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Same-Day Liquidity", desc: "Funds disbursed quickly after pledge creation in your Demat account" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Lower Interest", desc: "Secured against shares and mutual funds — rates lower than personal loans" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "No Selling Pressure", desc: "Avoid capital gains tax and market-timing pressure — pledge instead of selling" },
+    ],
+  },
+  {
+    id: "gold-loan",
+    label: "Gold Loan",
+    heading: "Gold Loan",
+    subtitle: "Get instant cash against your gold jewellery at attractive interest rates",
+    features: [
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "45-Minute Approval", desc: "Walk in with your gold, walk out with funds — approval within the hour" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Safe Custody", desc: "Your gold is insured and stored in tamper-proof sealed packets" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Best Valuation", desc: "Transparent, certified valuation of your ornaments at the highest market rates" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Flexible Repayment", desc: "Pay only interest during the tenure and principal at maturity, or choose EMIs" },
+    ],
+  },
+  {
+    id: "fdi",
+    label: "FDI",
+    heading: "Foreign Direct Investment (FDI)",
+    subtitle: "Structured FDI funding solutions for businesses expanding into India",
+    features: [
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "End-to-End Structuring", desc: "Complete guidance on FEMA-compliant FDI structure and documentation" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Regulatory Compliance", desc: "RBI reporting, sectoral caps, and approval-route filings handled by experts" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Competitive Funding", desc: "Funding against company valuation or collateral property, on a case-by-case basis" },
+      { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Growth Capital", desc: "Long-tenure capital for expansion, capex, and working-capital needs" },
+    ],
+  },
+  {
+    id: "npa",
     label: "NPA (Non-Performing Assets)",
     heading: "NPA Resolution Loan",
     subtitle: "Restructure and resolve NPAs with specialized financial solutions",
@@ -246,9 +282,12 @@ const PRODUCT_META: Record<string, { rate: string; tagColor: string }> = {
   "commercial-purchase": { rate: "From 11% p.a.",  tagColor: "#8b5cf6" },
   "lease-rental":     { rate: "From 10% p.a.",  tagColor: "#14b8a6" },
   "working-capital":  { rate: "From 9.5% p.a.", tagColor: "#06b6d4" },
-  "film-funding":     { rate: "From 14% p.a.", tagColor: "#f97316" },
-  "construction-loan": { rate: "From 8.9% p.a.", tagColor: "#eab308" },
-  "npa-loan":         { rate: "From 15% p.a.",  tagColor: "#ef4444" },
+  "film-funding":       { rate: "From 14% p.a.", tagColor: "#f97316" },
+  "od-cc-limit":        { rate: "From 9% p.a.", tagColor: "#0ea5e9" },
+  "loan-against-share": { rate: "From 10.5% p.a.", tagColor: "#a3e635" },
+  "gold-loan":          { rate: "From 9.2% p.a.", tagColor: "#f59e0b" },
+  "fdi":                { rate: "Case-by-case", tagColor: "#eab308" },
+  "npa":                { rate: "From 15% p.a.", tagColor: "#ef4444" },
 };
 
 const ProductDetails = () => {
@@ -351,7 +390,7 @@ const ProductDetails = () => {
 
       <section
         ref={sectionRef}
-        className="relative w-full min-h-[450px] flex items-stretch overflow-hidden"
+        className="relative w-full min-h-112.5 flex items-stretch overflow-hidden"
         style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}
       >
         {/* Dark overlay — brand gradient */}
@@ -387,8 +426,8 @@ const ProductDetails = () => {
               {/* Accent + rate pill */}
               <div className="flex items-center gap-3 mb-4 mt-2">
                 <div className="flex gap-1.5">
-                  <div className="h-[3px] w-8 rounded-full" style={{ background: "#26ae90" }} />
-                  <div className="h-[3px] w-8 rounded-full" style={{ background: "#f2f231" }} />
+                  <div className="h-0.75 w-8 rounded-full" style={{ background: "#26ae90" }} />
+                  <div className="h-0.75 w-8 rounded-full" style={{ background: "#f2f231" }} />
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border" style={{ color: "#ffffffff" }}>
                   {meta.rate}
@@ -424,6 +463,11 @@ const ProductDetails = () => {
                       "lease-rental":     "/requireddocument/lease-rental",
                       "working-capital":  "/requireddocument/working-capital",
                       "film-funding":     "/requireddocument/film-funding",
+                      "od-cc-limit":      "/requireddocument/od-cc-limit",
+                      "loan-against-share": "/requireddocument/loan-against-share",
+                      "gold-loan":        "/requireddocument/gold-loan",
+                      "npa":              "/requireddocument/npa",
+                      "fdi":              "/requireddocument/fdi",
                     };
                     return docRouteMap[active.id] || `/requireddocument?loan=${encodeURIComponent(active.heading)}`;
                   })()}
@@ -458,7 +502,7 @@ const ProductDetails = () => {
           </div>
 
           {/* ── RIGHT: scrollable button list ── */}
-          <div className="lg:w-56 flex flex-col gap-0 flex-shrink-0">
+          <div className="lg:w-56 flex flex-col gap-0 shrink-0">
 
             {/* Up chevron */}
             <button
@@ -488,7 +532,7 @@ const ProductDetails = () => {
                     onClick={() => handleSelect(p.id)}
                     onMouseEnter={() => setHoveredId(p.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className="pd-product-btn w-full text-left px-3 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap flex-shrink-0 flex items-center gap-2.5"
+                    className="pd-product-btn w-full text-left px-3 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap shrink-0 flex items-center gap-2.5"
                     style={{
                       borderRadius: "10px",
                       // active: teal bg + dark text | hovered: teal tint + lime text | default: subtle
@@ -577,7 +621,7 @@ const FeatureItem = ({
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center mb-1 flex-shrink-0 transition-all duration-300"
+        className="w-10 h-10 rounded-full flex items-center justify-center mb-1 shrink-0 transition-all duration-300"
         style={{
           background: hovered ? "rgba(38,174,144,0.25)" : "rgba(38,174,144,0.12)",
           border: hovered ? "1px solid rgba(38,174,144,0.70)" : "1px solid rgba(38,174,144,0.30)",
