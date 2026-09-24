@@ -1,22 +1,22 @@
 import axiosInstance from "./axiosInstance";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types (aligned with the backend's PersonalLoan document) ─────────────────
 
 export interface PersonalLoanPayload {
   loanAmount: number;
-  loanTenure: number;
+  loanTenure: number; // months
   employmentType: string;
   companyName?: string;
   companyType?: string;
-  monthlyNetSalary?: number;
+  monthlySalary?: number;
   salaryReceivedAs?: string;
   salaryBankName?: string;
   existingEMI: number;
   existingLoanAmount: number;
   existingBanks: string[];
-  existingBanksOther?: string[];
+  otherBankList?: string[];
   existingLoanTypes: string[];
-  existingLoanTypesOther?: string[];
+  otherLoanList?: string[];
   fullName: string;
   mobile: string;
   email: string;
@@ -31,15 +31,21 @@ export interface PersonalLoanPayload {
 export interface PersonalLoanApplication {
   _id: string;
   user?: string;
+  loanType?: string;
   loanAmount: number;
   loanTenure: number;
   employmentType: string;
+  companyName?: string;
+  companyType?: string;
+  monthlySalary?: number;
+  salaryReceivedAs?: string;
+  salaryBankName?: string;
   existingEMI: number;
   existingLoanAmount: number;
   existingBanks: string[];
-  existingBanksOther?: string[];
+  otherBankList?: string[];
   existingLoanTypes: string[];
-  existingLoanTypesOther?: string[];
+  otherLoanList?: string[];
   fullName: string;
   mobile: string;
   email: string;
@@ -49,7 +55,7 @@ export interface PersonalLoanApplication {
   city: string;
   pincode: string;
   residenceStatus: string;
-  status: "Pending" | "Under Review" | "Approved" | "Rejected" | "Disbursed";
+  status: "Submitted" | "Pending" | "Under Review" | "Approved" | "Rejected" | "Disbursed";
   createdAt: string;
   updatedAt: string;
 }
