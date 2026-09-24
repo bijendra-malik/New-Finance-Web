@@ -4,10 +4,10 @@ import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
-import { formatPAN, pincodeLocationKey } from "../../../../../utils/formatters";
+import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
-  OtherOptionList, PillMultiSelect, PincodeSelectField, SelectField, SelectWithOther, TextField,
+  OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
 } from "../../../../../components/form/FormControls";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
@@ -49,10 +49,10 @@ interface ApplicationFormProps {
 }
 interface FormData {
   fullName:string; mobile:string; email:string; dob:string; panNumber:string;
-  state:string; city:string; pincode:string; pincodeOther:string; residenceStatus:string; residenceStatusOther:string;
+  state:string; city:string; pincode:string; residenceStatus:string; residenceStatusOther:string;
   collateralPropertyType:string; collateralPropertyTypeOther:string;
   collateralPropertyMarketValue:number; collateralPropertyAge:string;
-  collateralPropertyState:string; collateralPropertyCity:string; collateralPropertyPincode:string; collateralPropertyPincodeOther:string;
+  collateralPropertyState:string; collateralPropertyCity:string; collateralPropertyPincode:string;
   employmentType:string;
   companyName:string; companyType:string; companyTypeOther:string; monthlyNetSalary:number; salaryReceivedAs:string; salaryBankName:string; salaryBankNameOther:string;
   businessName:string; businessType:string; businessTypeOther:string;
@@ -65,7 +65,7 @@ interface FormData {
   currentYearTurnover:number; priorYearTurnover:number;
   currentYearNetIncome:number; previousYearNetIncome:number;
   businessState:string; businessCity:string;
-  businessPincode:string; businessPincodeOther:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
+  businessPincode:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
   loanAmount:number; loanTenureYears:number; existingEMI:string; existingLoanAmount:string;
   existingBanks:string[]; existingLoanTypes:string[]; existingBanksOther:string[]; existingLoanTypesOther:string[];
 }
@@ -80,10 +80,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [agreed, setAgreed] = useState(true);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
-    dob:"", panNumber:"", state:"", city:"", pincode:"", pincodeOther:"", residenceStatus:"", residenceStatusOther:"",
+    dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
     collateralPropertyType:"", collateralPropertyTypeOther:"",
     collateralPropertyMarketValue:0, collateralPropertyAge:"",
-    collateralPropertyState:"", collateralPropertyCity:"", collateralPropertyPincode:"", collateralPropertyPincodeOther:"",
+    collateralPropertyState:"", collateralPropertyCity:"", collateralPropertyPincode:"",
     employmentType:"",
     companyName:"", companyType:"", companyTypeOther:"", monthlyNetSalary:0, salaryReceivedAs:"", salaryBankName:"", salaryBankNameOther:"",
     businessName:"", businessType:"", businessTypeOther:"",
@@ -94,7 +94,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     profession:"", professionOther:"",
     currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     businessState:"", businessCity:"",
-    businessPincode:"", businessPincodeOther:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
+    businessPincode:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
     loanAmount:0, loanTenureYears:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
@@ -104,26 +104,14 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     () => form.state ? masters.citiesByState[form.state] ?? [] : [],
     [form.state, masters.citiesByState]
   );
-  const pincodeOptions = useMemo(
-    () => form.state && form.city ? masters.pincodesByLocation[pincodeLocationKey(form.state, form.city)] ?? [] : [],
-    [form.state, form.city, masters.pincodesByLocation]
-  );
   const collateralPropertyCityOptions = useMemo(
     () => form.collateralPropertyState ? masters.citiesByState[form.collateralPropertyState] ?? [] : [],
     [form.collateralPropertyState, masters.citiesByState]
-  );
-  const collateralPropertyPincodeOptions = useMemo(
-    () => form.collateralPropertyState && form.collateralPropertyCity ? masters.pincodesByLocation[pincodeLocationKey(form.collateralPropertyState, form.collateralPropertyCity)] ?? [] : [],
-    [form.collateralPropertyState, form.collateralPropertyCity, masters.pincodesByLocation]
   );
 
   const businessCityOptions = useMemo(
     () => form.businessState ? masters.citiesByState[form.businessState] ?? [] : [],
     [form.businessState, masters.citiesByState]
-  );
-  const businessPincodeOptions = useMemo(
-    () => form.businessState && form.businessCity ? masters.pincodesByLocation[pincodeLocationKey(form.businessState, form.businessCity)] ?? [] : [],
-    [form.businessState, form.businessCity, masters.pincodesByLocation]
   );
 
   const transactionBankOptions = useMemo(() => {
@@ -196,10 +184,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.collateralPropertyState) e.collateralPropertyState="Collateral property state is required";
       if(!draft.collateralPropertyCity) e.collateralPropertyCity="Collateral property city is required";
       if(!draft.collateralPropertyPincode) e.collateralPropertyPincode="Collateral property pincode is required";
-      else if(draft.collateralPropertyPincode===OTHER_OPTION){
-        if(!draft.collateralPropertyPincodeOther.trim()) e.collateralPropertyPincodeOther="Please mention pincode";
-        else if(!/^\d{6}$/.test(draft.collateralPropertyPincodeOther)) e.collateralPropertyPincodeOther="Enter valid 6-digit pincode";
-      }
+      else if(!/^\d{6}$/.test(draft.collateralPropertyPincode)) e.collateralPropertyPincode="Enter valid 6-digit pincode";
     }
 
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
@@ -252,10 +237,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.businessState) e.businessState="Business state is required";
       if(!draft.businessCity) e.businessCity="Business city is required";
       if(!draft.businessPincode) e.businessPincode="Business pincode is required";
-      else if(draft.businessPincode===OTHER_OPTION){
-        if(!draft.businessPincodeOther.trim()) e.businessPincodeOther="Please mention pincode";
-        else if(!/^\d{6}$/.test(draft.businessPincodeOther)) e.businessPincodeOther="Enter valid 6-digit pincode";
-      }
+      else if(!/^\d{6}$/.test(draft.businessPincode)) e.businessPincode="Enter valid 6-digit pincode";
       if(!draft.businessPlaceStatus) e.businessPlaceStatus="Status of business place is required";
       else if(draft.businessPlaceStatus===OTHER_OPTION&&!draft.businessPlaceStatusOther.trim()) e.businessPlaceStatusOther="Please mention status of business place";
     }
@@ -280,10 +262,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.state) e.state="State is required";
     if(!draft.city) e.city="City is required";
     if(!draft.pincode) e.pincode="Pincode is required";
-    else if(draft.pincode===OTHER_OPTION){
-      if(!draft.pincodeOther.trim()) e.pincodeOther="Please mention pincode";
-      else if(!/^\d{6}$/.test(draft.pincodeOther)) e.pincodeOther="Enter valid 6-digit pincode";
-    }
+    else if(!/^\d{6}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
     if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
     else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
 
@@ -314,14 +293,14 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       _id: `ODCC${Date.now()}`,
       fullName:form.fullName, mobile:form.mobile, email:form.email,
       dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
-      state:form.state, city:form.city, pincode:form.pincode===OTHER_OPTION?form.pincodeOther:form.pincode,
+      state:form.state, city:form.city, pincode:form.pincode,
       residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
       collateralPropertyType:form.collateralPropertyType===OTHER_OPTION?form.collateralPropertyTypeOther:form.collateralPropertyType,
       collateralPropertyMarketValue:form.collateralPropertyType===UNSECURED?0:form.collateralPropertyMarketValue,
       collateralPropertyAge:form.collateralPropertyType===UNSECURED?0:parseInt(form.collateralPropertyAge)||0,
       collateralPropertyState:form.collateralPropertyType===UNSECURED?"":form.collateralPropertyState,
       collateralPropertyCity:form.collateralPropertyType===UNSECURED?"":form.collateralPropertyCity,
-      collateralPropertyPincode:form.collateralPropertyType===UNSECURED?"":(form.collateralPropertyPincode===OTHER_OPTION?form.collateralPropertyPincodeOther:form.collateralPropertyPincode),
+      collateralPropertyPincode:form.collateralPropertyType===UNSECURED?"":(form.collateralPropertyPincode),
       employmentType:form.employmentType,
       companyName:form.employmentType===SALARIED?form.companyName:undefined,
       companyType:form.employmentType===SALARIED
@@ -370,7 +349,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         ?form.businessCity
         :undefined,
       businessPincode:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-        ?(form.businessPincode===OTHER_OPTION?form.businessPincodeOther:form.businessPincode)
+        ?(form.businessPincode)
         :undefined,
       businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
         ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
@@ -455,12 +434,12 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
                 setForm(p=>({
                   ...p, collateralPropertyType:v, collateralPropertyTypeOther:"",
                   collateralPropertyMarketValue:0, collateralPropertyAge:"",
-                  collateralPropertyState:"", collateralPropertyCity:"", collateralPropertyPincode:"", collateralPropertyPincodeOther:"",
+                  collateralPropertyState:"", collateralPropertyCity:"", collateralPropertyPincode:"",
                 }));
                 setTouched(p=>{
                   const next = {...p};
                   delete next.collateralPropertyMarketValue; delete next.collateralPropertyAge;
-                  delete next.collateralPropertyState; delete next.collateralPropertyCity; delete next.collateralPropertyPincode; delete next.collateralPropertyPincodeOther;
+                  delete next.collateralPropertyState; delete next.collateralPropertyCity; delete next.collateralPropertyPincode;
                   return next;
                 });
               }
@@ -487,12 +466,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               <SelectField value={form.collateralPropertyCity} onChange={v=>set("collateralPropertyCity",v)}
                 options={collateralPropertyCityOptions} placeholder={form.collateralPropertyState?"Select city":"Select state first"} disabled={!form.collateralPropertyState} err={errors.collateralPropertyCity}/>
             </div>
-            <PincodeSelectField
+            <PincodeInputField
               id="collateralPropertyPincode" label="Collateral Property Pincode"
-              options={collateralPropertyPincodeOptions} cityReady={!!form.collateralPropertyCity}
               value={form.collateralPropertyPincode} onChange={v=>set("collateralPropertyPincode",v)} err={errors.collateralPropertyPincode}
-              otherId="collateralPropertyPincodeOther" otherValue={form.collateralPropertyPincodeOther}
-              onOtherChange={v=>set("collateralPropertyPincodeOther",v)} otherErr={errors.collateralPropertyPincodeOther}
             />
           </>)}
         </div>
@@ -683,12 +659,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               <SelectField value={form.businessCity} onChange={v=>set("businessCity",v)}
                 options={businessCityOptions} placeholder={form.businessState?"Select city":"Select state first"} disabled={!form.businessState} err={errors.businessCity}/>
             </div>
-            <PincodeSelectField
+            <PincodeInputField
               id="businessPincode" label="Current Business Pincode"
-              options={businessPincodeOptions} cityReady={!!form.businessCity}
               value={form.businessPincode} onChange={v=>set("businessPincode",v)} err={errors.businessPincode}
-              otherId="businessPincodeOther" otherValue={form.businessPincodeOther}
-              onOtherChange={v=>set("businessPincodeOther",v)} otherErr={errors.businessPincodeOther}
             />
             <SelectWithOther
               id="businessPlaceStatus" label="Status Of Business Place" required
@@ -773,12 +746,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             <SelectField value={form.city} onChange={v=>set("city",v)}
               options={cityOptions} placeholder={form.state?"Select city":"Select state first"} disabled={!form.state} err={errors.city}/>
           </div>
-          <PincodeSelectField
+          <PincodeInputField
             id="pincode" label="Current Residence Pincode"
-            options={pincodeOptions} cityReady={!!form.city}
             value={form.pincode} onChange={v=>set("pincode",v)} err={errors.pincode}
-            otherId="pincodeOther" otherValue={form.pincodeOther}
-            onOtherChange={v=>set("pincodeOther",v)} otherErr={errors.pincodeOther}
           />
           <SelectWithOther
             id="residenceStatus" label="Status of Current Residence" required

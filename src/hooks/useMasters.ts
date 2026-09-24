@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchMasters } from "../api/masters";
-import { MASTERS, CITIES_BY_STATE, PINCODES_BY_LOCATION } from "../constants/masters";
+import { MASTERS, CITIES_BY_STATE } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
 interface UseMastersResult {
@@ -12,7 +12,6 @@ interface UseMastersResult {
 const DEFAULT_MASTERS: Masters = {
   ...MASTERS,
   citiesByState: CITIES_BY_STATE,
-  pincodesByLocation: PINCODES_BY_LOCATION,
 };
 
 export const useMasters = (): UseMastersResult => {
@@ -34,7 +33,6 @@ export const useMasters = (): UseMastersResult => {
           ...DEFAULT_MASTERS,
           ...data,
           citiesByState: { ...DEFAULT_MASTERS.citiesByState, ...data.citiesByState },
-          pincodesByLocation: { ...DEFAULT_MASTERS.pincodesByLocation, ...data.pincodesByLocation },
         });
       })
       .catch(() => {

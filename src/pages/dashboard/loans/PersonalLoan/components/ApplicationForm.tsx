@@ -1,16 +1,17 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import { applyPersonalLoan } from "../../../../../api/loanApplication";
+import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplication";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
-import { formatPAN, pincodeLocationKey } from "../../../../../utils/formatters";
+import { formatPAN } from "../../../../../utils/formatters";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import {
   DateOfBirthPicker, FieldError, FieldLabel, FormCard,
-  MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeSelectField, SelectField, SelectWithOther,
+  MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
 
@@ -21,7 +22,7 @@ interface ApplicationFormProps {
 }
 interface FormData {
   fullName:string; mobile:string; email:string; dob:string; panNumber:string;
-  state:string; city:string; pincode:string; pincodeOther:string; residenceStatus:string; residenceStatusOther:string;
+  state:string; city:string; pincode:string; residenceStatus:string; residenceStatusOther:string;
   employmentType:string; companyName:string; companyType:string; companyTypeOther:string; monthlyNetSalary:number; salaryReceivedAs:string; salaryBankName:string; salaryBankNameOther:string;
   loanAmount:number; loanTenureYears:number; loanTenureYearsCustom:number; existingEMI:string; existingLoanAmount:string;
   existingBanks:string[]; existingLoanTypes:string[]; existingBanksOther:string[]; existingLoanTypesOther:string[];
@@ -37,7 +38,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [agreed, setAgreed] = useState(true);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
-    dob:"", panNumber:"", state:"", city:"", pincode:"", pincodeOther:"", residenceStatus:"", residenceStatusOther:"",
+    dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
     employmentType:"", companyName:"", companyType:"", companyTypeOther:"", monthlyNetSalary:0, salaryReceivedAs:"", salaryBankName:"", salaryBankNameOther:"",
     loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
@@ -49,10 +50,6 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [form.state, masters.citiesByState]
   );
 
-  const pincodeOptions = useMemo(
-    () => form.state && form.city ? masters.pincodesByLocation[pincodeLocationKey(form.state, form.city)] ?? [] : [],
-    [form.state, form.city, masters.pincodesByLocation]
-  );
 
   const addOtherBank = (value:string) =>
     setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
@@ -110,10 +107,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.state) e.state="State is required";
     if(!draft.city) e.city="City is required";
     if(!draft.pincode) e.pincode="Pincode is required";
-    else if(draft.pincode===OTHER_OPTION){
-      if(!draft.pincodeOther.trim()) e.pincodeOther="Please mention pincode";
-      else if(!/^\d{6}$/.test(draft.pincodeOther)) e.pincodeOther="Enter valid 6-digit pincode";
-    }
+    else if(!/^\d{6}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
     if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
     else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
 
@@ -139,10 +133,13 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     }
     setIsSubmitting(true); setApiError("");
     try {
+      if(form.existingBanksOther.length>0){
+        await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
+      }
       const res = await applyPersonalLoan({
         fullName:form.fullName, mobile:form.mobile, email:form.email,
         dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
-        state:form.state, city:form.city, pincode:form.pincode===OTHER_OPTION?form.pincodeOther:form.pincode,
+        state:form.state, city:form.city, pincode:form.pincode,
         residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
         employmentType:form.employmentType, companyName:form.companyName,
         companyType:form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType,
@@ -344,12 +341,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             <SelectField value={form.city} onChange={v=>set("city",v)}
               options={cityOptions} placeholder={form.state?"Select city":"Select state first"} disabled={!form.state} err={errors.city}/>
           </div>
-          <PincodeSelectField
+          <PincodeInputField
             id="pincode" label="Current Residence Pincode"
-            options={pincodeOptions} cityReady={!!form.city}
             value={form.pincode} onChange={v=>set("pincode",v)} err={errors.pincode}
-            otherId="pincodeOther" otherValue={form.pincodeOther}
-            onOtherChange={v=>set("pincodeOther",v)} otherErr={errors.pincodeOther}
           />
           <SelectWithOther
             id="residenceStatus" label="Status of Current Residence" required

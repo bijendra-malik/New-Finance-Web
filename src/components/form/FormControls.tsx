@@ -46,8 +46,10 @@ TextField.displayName = "TextField";
 
 interface SelectFieldProps {
   value: string; onChange: (v: string) => void; options: readonly string[]; placeholder: string; err?: string; disabled?: boolean;
+  /** Optional per-option label override — defaults to the raw value. */
+  formatOption?: (value: string) => string;
 }
-export const SelectField = memo(({ value, onChange, options, placeholder, err, disabled = false }: SelectFieldProps) => (
+export const SelectField = memo(({ value, onChange, options, placeholder, err, disabled = false, formatOption }: SelectFieldProps) => (
   <>
     <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
       className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
@@ -55,7 +57,7 @@ export const SelectField = memo(({ value, onChange, options, placeholder, err, d
       onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal}22`; } }}
       onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}>
       <option value="">{placeholder}</option>
-      {options.map(o => <option key={o} value={o}>{o}</option>)}
+      {options.map(o => <option key={o} value={o}>{formatOption ? formatOption(o) : o}</option>)}
     </select>
     <FieldError msg={err} />
   </>
@@ -301,26 +303,22 @@ export const SelectWithOther = memo(({
 });
 SelectWithOther.displayName = "SelectWithOther";
 
-interface PincodeSelectFieldProps {
+interface PincodeInputFieldProps {
   id: string; label: string; required?: boolean;
-  options: readonly string[]; cityReady: boolean;
   value: string; onChange: (v: string) => void; err?: string;
-  otherId: string; otherValue: string; onOtherChange: (v: string) => void; otherErr?: string;
 }
-// Dependent on state+city — `options` is that location's known pincode list (resolved by the
-// caller from masters.pincodesByLocation), with "Other" always offered as a manual fallback.
-export const PincodeSelectField = memo(({
-  id, label, required = true, options, cityReady, value, onChange, err,
-  otherId, otherValue, onOtherChange, otherErr,
-}: PincodeSelectFieldProps) => (
-  <SelectWithOther
-    id={id} label={label} required={required}
-    value={value} onChange={v => { onChange(v); if (v !== OTHER_OPTION) onOtherChange(""); }}
-    options={[...options, OTHER_OPTION]}
-    placeholder={cityReady ? "Select pincode" : "Select city first"} disabled={!cityReady} err={err}
-    otherId={otherId} otherLabel={`Mention ${label}`}
-    otherValue={otherValue} onOtherChange={v => onOtherChange(v.replace(/\D/g, "").slice(0, 6))}
-    otherPlaceholder="Enter 6-digit pincode" otherErr={otherErr}
-  />
+// Simple 6-digit pincode entry — digits only, no dropdowns.
+export const PincodeInputField = memo(({
+  id, label, required = true, value, onChange, err,
+}: PincodeInputFieldProps) => (
+  <div id={id}>
+    <FieldLabel label={label} required={required} />
+    <TextField
+      value={value}
+      onChange={v => onChange(v.replace(/\D/g, "").slice(0, 6))}
+      placeholder="Enter 6-digit pincode"
+      err={err}
+    />
+  </div>
 ));
-PincodeSelectField.displayName = "PincodeSelectField";
+PincodeInputField.displayName = "PincodeInputField";
