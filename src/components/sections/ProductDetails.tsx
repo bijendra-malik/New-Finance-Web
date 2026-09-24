@@ -344,21 +344,29 @@ const ProductDetails = () => {
 
   return (
     <>
-      <style>{`
-        @keyframes slideInFromRight {
+      <style>{`        @keyframes slideInFromRight {
           from { opacity: 0; transform: translateX(36px); }
-          to   { opacity: 1; transform: translateX(0); }
+          /* transform: none (not translateX(0)) — releases the pinned stacking
+             context once the entrance finishes, so hover z-ordering works */
+          to { opacity: 1; transform: none; }
         }
         .pd-enter { animation: slideInFromRight 0.3s cubic-bezier(0.22,1,0.36,1) both; }
         .pd-btn-list::-webkit-scrollbar { display: none; }
-        .pd-btn-list { scrollbar-width: none; }
+        .pd-btn-list { scrollbar-width: none; overflow-x: hidden; }
         @keyframes pdFadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         .pd-fade-up { animation: pdFadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 
-        /* Diagonal sweep: bottom-left → top-right on hover */
+        /* CTA buttons — paint-only hover (brightness/shadow/arrow nudge).
+           The arrow nudges INSIDE the button's own padding, never outside. */
+        .pd-cta svg { transition: transform 0.2s ease; }
+        .pd-cta:hover svg { transform: translateX(3px); }
+
+        /* Product list buttons — ALL hover effects are painted INSIDE the
+           button's own border-box. No translate/scale on the button itself,
+           so it can never escape its box, clip, or slide under a sibling. */
         .pd-product-btn {
           position: relative;
           overflow: hidden;
@@ -381,6 +389,26 @@ const ProductDetails = () => {
         }
         .pd-product-btn:hover::before {
           transform: translateX(0%) translateY(0%);
+        }
+        /* chevron indicator — absolutely positioned INSIDE the box,
+           slides in from the inner edge on hover */
+        .pd-product-btn::after {
+          content: "";
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          width: 6px;
+          height: 6px;
+          border-top: 2px solid currentColor;
+          border-right: 2px solid currentColor;
+          transform: translateY(-50%) rotate(45deg) translateX(-5px);
+          opacity: 0;
+          transition: opacity 0.25s ease, transform 0.25s ease;
+          z-index: 1;
+        }
+        .pd-product-btn:hover::after {
+          opacity: 0.9;
+          transform: translateY(-50%) rotate(45deg) translateX(0);
         }
         .pd-product-btn > * {
           position: relative;
@@ -446,7 +474,7 @@ const ProductDetails = () => {
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="relative z-20 flex items-center gap-4 flex-wrap">
                 <a
                   href={(() => {
                     const docRouteMap: Record<string, string> = {
@@ -471,7 +499,7 @@ const ProductDetails = () => {
                     };
                     return docRouteMap[active.id] || `/requireddocument?loan=${encodeURIComponent(active.heading)}`;
                   })()}
-                  className="inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-white text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 hover:scale-105 active:scale-95"
+                  className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-white text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 active:scale-95"
                   style={{
                     background: "linear-gradient(135deg, #066a9c, #26ae90)",
                     boxShadow: "0 4px 16px rgba(38,174,144,0.40)",
@@ -485,7 +513,7 @@ const ProductDetails = () => {
                 </a>
                 <a
                   href={`/showdetails/${active.id}`}
-                  className="inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-125 active:scale-95"
                   style={{
                     color: "#f2f231",
                     border: "1px solid rgba(255, 255, 255, 1)",
@@ -532,7 +560,7 @@ const ProductDetails = () => {
                     onClick={() => handleSelect(p.id)}
                     onMouseEnter={() => setHoveredId(p.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className="pd-product-btn w-full text-left px-3 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap shrink-0 flex items-center gap-2.5"
+                    className="pd-product-btn w-full text-left pl-3 pr-8 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap shrink-0 flex items-center gap-2.5"
                     style={{
                       borderRadius: "10px",
                       // active: teal bg + dark text | hovered: teal tint + lime text | default: subtle
@@ -554,9 +582,10 @@ const ProductDetails = () => {
                       boxShadow: isActive
                         ? "0 4px 16px rgba(6,106,156,0.45)"
                         : isHovered
-                        ? "0 2px 8px rgba(38,174,144,0.20)"
+                        ? "inset 0 0 0 1px rgba(38,174,144,0.35), inset 0 0 14px rgba(38,174,144,0.18)"
                         : "none",
-                      transform: isHovered && !isActive ? "translateX(4px)" : "none",
+                      /* no transform on hover — the redesign keeps every hover
+                         effect inside the button's own box (see CSS above) */
                       fontWeight: isActive ? 700 : 500,
                       opacity: sectionVisible ? 1 : 0,
                       transitionProperty: "opacity, transform, background, border, box-shadow, color",

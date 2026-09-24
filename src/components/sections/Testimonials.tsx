@@ -203,7 +203,7 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
 
   return (
     <div
-      className="flex-shrink-0 w-[370px] sm:w-[340px] md:w-[360px] snap-start group"
+      className="shrink-0 w-92.5 sm:w-85 md:w-90 snap-start group"
       style={{
         animation: `slideUpFade 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) ${
           index * 0.12
@@ -211,20 +211,25 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
       }}
     >
       <div
-        className="relative h-full rounded-[24px] overflow-hidden transition-all duration-500 cursor-pointer backdrop-blur-md"
+        className="relative h-full rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: "rgba(255,255,255,0.92)",
-          border: `2px solid ${t.accent}40`,
-          transform: hovered
-            ? "translateY(-16px) scale(1.02)"
-            : "translateY(0) scale(1)",
+          background: hovered ? "#ffffff" : "rgba(255,255,255,0.96)",
+          border: `2px solid ${hovered ? t.accent + "aa" : t.accent + "40"}`,
+          /* inside-the-box hover: NO translate/scale on the card itself —
+             the "lift" is simulated with a raised inner shadow (top-light /
+             bottom-deep), so the card can never escape its box or overlap
+             neighbours in the carousel row */
+          boxShadow: hovered
+            ? `0 -6px 18px -6px ${t.accent}35, inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 6px ${t.accent}14`
+            : "0 2px 12px rgba(6,106,156,0.06)",
         }}
       >
-        {/* Premium badge */}
+        {/* Premium badge — INSIDE the card's top accent bar (no negative
+            offset, so nothing paints outside the card box on hover) */}
         <div
-          className="absolute -top-1 right-4 px-3 py-1 rounded-b-lg text-[9px] font-bold text-white tracking-wider z-20"
+          className="absolute top-1.5 right-4 px-3 py-0.5 rounded-full text-[9px] font-bold text-white tracking-wider z-30"
           style={{
             background: `linear-gradient(90deg, ${t.accent}, ${t.accent}CC)`,
             boxShadow: `0 4px 12px ${t.accent}40`,
@@ -251,7 +256,7 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
           }}
         >
           <div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300"
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 transition-opacity duration-300"
             style={{
               animation: hovered ? "shimmerBar 2s infinite" : "none",
             }}
@@ -286,7 +291,7 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
 
           {/* Quote Text */}
           <p
-            className="text-[14px] md:text-[15px] leading-relaxed font-medium mb-2 min-h-[88px] group-hover:text-opacity-100 transition-all"
+            className="text-[14px] md:text-[15px] leading-relaxed font-medium mb-2 min-h-22 group-hover:text-opacity-100 transition-all"
             style={{
               color: BRAND_COLORS.NAVY_DARK,
               fontStyle: "italic",
@@ -308,7 +313,7 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
             {/* Avatar & Info */}
             <div className="flex items-center gap-3 flex-1">
               <div
-                className="relative flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-[16px] shadow-lg ring-2 ring-offset-2 group-hover:scale-110 transition-transform duration-300 overflow-hidden"
+                className="relative shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-[16px] shadow-lg ring-2 ring-offset-2 group-hover:scale-110 transition-transform duration-300 overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${t.accent}, ${t.accent}CC)`,
                 }}
@@ -353,7 +358,7 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
             {/* Verified Badge */}
             {t.isVerified && (
               <div
-                className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg ml-2 animate-pulse"
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg ml-2 animate-pulse"
                 style={{
                   background: `${BRAND_COLORS.BISLERI_GREEN}20`,
                   border: `1px solid ${BRAND_COLORS.BISLERI_GREEN}60`,
@@ -434,24 +439,24 @@ const TrustMetric = ({
   label: string;
   color: string;
   index: number;
-}) => (
+}) => {
+  const [hoveredMetric, setHoveredMetric] = useState(false);
+  return (
   <div
-    className="flex flex-col items-start gap-3 px-5 py-2 rounded-[16px] hover:scale-105 transition-all duration-300 group cursor-pointer relative overflow-hidden"
+    className="flex flex-col items-start gap-3 px-5 py-2 rounded-2xl transition-all duration-300 group cursor-pointer relative"
     style={{
       background: "#ffffff",
       border: `1.5px solid ${color}40`,
-      boxShadow: "0 2px 12px rgba(6,106,156,0.08)",
+      /* inside-the-box hover: tinted ring + glow painted via box-shadow,
+         no scale — the metric card never leaves its grid cell */
+      boxShadow: hoveredMetric
+        ? `0 0 0 3px ${color}25, 0 4px 16px -2px ${color}40`
+        : "0 2px 12px rgba(6,106,156,0.08)",
       animation: `fadeInLeft 0.6s ease-out ${index * 0.1}s both`,
     }}
+    onMouseEnter={() => setHoveredMetric(true)}
+    onMouseLeave={() => setHoveredMetric(false)}
   >
-    {/* Hover glow effect */}
-    {/* <div
-      className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-      style={{
-        background: color,
-      }}
-    /> */}
-
       <div className="relative z-10 flex items-center gap-4 w-full">
         <div
           className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
@@ -467,7 +472,8 @@ const TrustMetric = ({
         </div>
       </div>
   </div>
-);
+  );
+};
 
 const Testimonials = () => {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -593,7 +599,7 @@ const Testimonials = () => {
           {/* Scroll Container */}
           <div
             ref={scrollerRef}
-            className="flex gap-6 overflow-x-auto pb-2 pt-5 ml-4 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-6 overflow-x-auto pb-2 pt-5 ml-4 snap-x snap-mandatory scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden"
           >
             {TESTIMONIALS.map((t, i) => (
               <TestimonialCard key={t.id} t={t} index={i} />
@@ -661,7 +667,9 @@ const Testimonials = () => {
       <style>{`
         @keyframes slideUpFade {
           from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
+          /* transform: none (not translateY(0)) — releases the pinned stacking
+             context once the entrance finishes, so hover z-ordering works */
+          to { opacity: 1; transform: none; }
         }
         @keyframes shimmerBar {
           0% { transform: translateX(-100%); }
