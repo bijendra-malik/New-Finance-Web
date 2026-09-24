@@ -83,13 +83,13 @@ export const loginUser = async (
 
 /**
  * Verify OTP and receive JWT token + user data.
- * POST /auth/login/verify
+ * POST /auth/verify-otp
  */
 export const verifyOTP = async (
   payload: VerifyOTPPayload
 ): Promise<VerifyOTPResponse> => {
   const response = await axiosInstance.post<VerifyOTPResponse>(
-    "/auth/login/verify",
+    "/auth/verify-otp",
     payload
   );
   return response.data;
