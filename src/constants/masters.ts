@@ -283,10 +283,7 @@ export const PINCODES_BY_LOCATION: PincodesByLocation = {
 };
 
 
-export const BANK_NAMES = [
-  "HDFC", "SBI", "Bank Of India", "ICICI", "Punjab National Bank",
-  "Kotak Mahindra Bank", "AXIS", "Citibank", OTHER_OPTION,
-] as const;
+export const BANK_NAMES = [] as const;
 
 export const EXISTING_LOAN_TYPES = [
   "Personal loan", "Business loan", "Home loan", "Car loan", "Working Capital",
@@ -548,8 +545,9 @@ export const MASTERS = {
 } as const;
 
 export type Masters = {
-  [K in keyof typeof MASTERS]: ReadonlyArray<(typeof MASTERS)[K][number]>;
+  [K in Exclude<keyof typeof MASTERS, "banks">]: ReadonlyArray<(typeof MASTERS)[K][number]>;
 } & {
+  banks: readonly string[];
   citiesByState: CitiesByState;
   pincodesByLocation: PincodesByLocation;
 };
