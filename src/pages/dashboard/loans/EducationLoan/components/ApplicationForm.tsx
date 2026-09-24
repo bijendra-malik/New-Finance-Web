@@ -4,6 +4,8 @@ import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
+import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
+import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
@@ -414,43 +416,43 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   };
 
   if(submitted && submittedApp) return (
-    <div className="max-w-2xl mx-auto">
-      <div className="rounded-3xl overflow-hidden shadow-xl" style={{border:`1px solid ${C.teal}33`}}>
-        <div className="h-1.5" style={{background:`linear-gradient(90deg,${C.teal},${C.navy})`}}/>
-        <div className="p-10 text-center bg-white">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
-            style={{background:`linear-gradient(135deg,${C.teal}22,${C.navy}22)`,border:`2px solid ${C.teal}`}}>
-            <svg className="w-10 h-10" style={{color:C.teal}} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold mb-1" style={{color:C.dark}}>Application Submitted!</h2>
-          <p className="text-sm mb-3" style={{color:C.gray}}>Your application is under review</p>
-          <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold mb-7"
-            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-            ID: {submittedApp._id.slice(-10).toUpperCase()}
-          </span>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-left mb-6">
-            {[
-              ["Loan Amount",  `₹${submittedApp.loanAmount.toLocaleString("en-IN")}`],
-              ["Tenure",       `${submittedApp.loanTenure} months`],
-              ["Course",       submittedApp.courseName||"—"],
-              ["University",   submittedApp.university||"—"],
-              ["Country",      submittedApp.educationCountry],
-              ["Status",       submittedApp.status],
-            ].map(([l, v]) => (
-              <div key={l} className="rounded-xl p-3" style={{background:C.navyBg,border:`1px solid ${C.navy}22`}}>
-                <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{color:C.gray}}>{l}</p>
-                <p className="font-bold text-sm" style={{color:C.dark}}>{v}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs" style={{color:C.gray}}>
-            We'll reach out on <strong>+91 {submittedApp.mobile}</strong> and <strong>{submittedApp.email}</strong> within 24 hours.
-          </p>
-        </div>
-      </div>
-    </div>
+    <SubmissionSuccess
+      refNo={submittedApp._id.slice(-10).toUpperCase()}
+      fullId={submittedApp._id}
+      createdAt={submittedApp.createdAt}
+      productName="Education Loan"
+      applicantName={submittedApp.fullName}
+      mobile={submittedApp.mobile}
+      email={submittedApp.email}
+      sections={buildSuccessSections(submittedApp, {
+        productSection: {
+          title: "Education Details",
+          rows: [
+            { label: "Country of Study", value: submittedApp.educationCountry },
+            { label: "Field of Study", value: submittedApp.fieldOfStudy },
+            { label: "Course", value: submittedApp.courseName },
+            { label: "University", value: submittedApp.university },
+            { label: "Institute", value: submittedApp.instituteName },
+            { label: "Enrollment Status", value: submittedApp.enrollmentStatus },
+            { label: "Course Duration", value: submittedApp.courseDuration ? `${submittedApp.courseDuration.toLocaleString("en-IN")} years` : undefined },
+            { label: "Course Cost", value: submittedApp.educationCost ? `₹${submittedApp.educationCost.toLocaleString("en-IN")}` : undefined },
+          ],
+        },
+        extraSections: [{
+          title: "Co-applicant (Parent) Details",
+          rows: [
+            { label: "Relationship", value: submittedApp.parentRelationship },
+            { label: "Full Name", value: submittedApp.parentFullName },
+            { label: "Mobile", value: submittedApp.parentMobile ? `+91 ${submittedApp.parentMobile}` : undefined },
+            { label: "Email", value: submittedApp.parentEmail },
+            { label: "Date of Birth", value: submittedApp.parentDob },
+            { label: "PAN Number", value: submittedApp.parentPanNumber },
+            { label: "Residence", value: [submittedApp.parentCity, submittedApp.parentState].filter(Boolean).join(", ") || undefined },
+            { label: "Residence Status", value: submittedApp.parentResidenceStatus },
+          ],
+        }],
+      })}
+    />
   );
 
   return (
