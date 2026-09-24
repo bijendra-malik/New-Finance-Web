@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchMasters } from "../api/masters";
-import { MASTERS } from "../constants/masters";
+import { MASTERS, CITIES_BY_STATE, PINCODES_BY_LOCATION } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
 interface UseMastersResult {
@@ -9,7 +9,11 @@ interface UseMastersResult {
   error: boolean;
 }
 
-const DEFAULT_MASTERS: Masters = { ...MASTERS, citiesByState: {}, pincodesByLocation: {} };
+const DEFAULT_MASTERS: Masters = {
+  ...MASTERS,
+  citiesByState: CITIES_BY_STATE,
+  pincodesByLocation: PINCODES_BY_LOCATION,
+};
 
 export const useMasters = (): UseMastersResult => {
   const [masters, setMasters] = useState<Masters>(DEFAULT_MASTERS);
@@ -24,7 +28,14 @@ export const useMasters = (): UseMastersResult => {
         if (cancelled) return;
         // Merge over defaults — a master type missing from the DB (e.g. stale seed)
         // falls back to its local default instead of leaving the field undefined.
-        setMasters({ ...DEFAULT_MASTERS, ...data });
+        // Location maps merge per-key so a partial server seed doesn't wipe the
+        // static fallbacks.
+        setMasters({
+          ...DEFAULT_MASTERS,
+          ...data,
+          citiesByState: { ...DEFAULT_MASTERS.citiesByState, ...data.citiesByState },
+          pincodesByLocation: { ...DEFAULT_MASTERS.pincodesByLocation, ...data.pincodesByLocation },
+        });
       })
       .catch(() => {
         if (cancelled) return;
