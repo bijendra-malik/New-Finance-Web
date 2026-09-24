@@ -146,15 +146,15 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
         employmentType:form.employmentType, companyName:form.companyName,
         companyType:form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType,
-        monthlyNetSalary:form.monthlyNetSalary, salaryReceivedAs:form.salaryReceivedAs,
+        monthlySalary:form.monthlyNetSalary, salaryReceivedAs:form.salaryReceivedAs,
         salaryBankName:form.salaryReceivedAs!=="Cash"
           ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
           :undefined,
         loanAmount:form.loanAmount,
         loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
         existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-        existingBanks:form.existingBanks, existingBanksOther:form.existingBanksOther,
-        existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
+        existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+        existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
       });
       setSubmittedApp(res.data); setSubmitted(true);
       if(onSubmit) onSubmit(res.data._id, res.data);
