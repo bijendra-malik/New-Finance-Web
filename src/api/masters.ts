@@ -48,3 +48,17 @@ export const fetchMasterByType = async (type: MasterKey): Promise<Masters[Master
   if (type !== "banks") return res.data.data;
   return bankNamesToBanks(normalizeBankNames(res.data.data)) as Masters[typeof type];
 };
+
+export interface CustomBankNameResponse {
+  success: boolean;
+  message?: string;
+  data?: unknown;
+}
+
+export const addCustomBankName = async (value: string): Promise<CustomBankNameResponse> => {
+  const res = await axiosInstance.post<CustomBankNameResponse>(
+    "/masters/bankNames/custom",
+    { value }
+  );
+  return res.data;
+};
