@@ -10,7 +10,6 @@ export * from "./education";
 export * from "./gold";
 
 import { YES_NO } from "./common";
-import { INDIAN_STATES } from "./location";
 import type { CitiesByState } from "./location";
 import { BANK_NAMES } from "./banks";
 import {
@@ -37,7 +36,6 @@ import { EDUCATION_COUNTRIES, FIELD_OF_STUDY, ENROLLMENT_STATUSES, PARENT_RELATI
 import { GOLD_LOAN_TYPES, GOLD_CARATS_JEWELRY, GOLD_CARATS_NON_JEWELRY } from "./gold";
 
 export const MASTERS = {
-  states: INDIAN_STATES,
   banks: BANK_NAMES,
   existingLoanTypes: EXISTING_LOAN_TYPES,
   residenceStatuses: RESIDENCE_STATUSES,
@@ -96,6 +94,7 @@ export type Masters = {
   [K in Exclude<keyof typeof MASTERS, "banks">]: ReadonlyArray<(typeof MASTERS)[K][number]>;
 } & {
   banks: readonly string[];
+  states: readonly string[];
   citiesByState: CitiesByState;
 };
 
