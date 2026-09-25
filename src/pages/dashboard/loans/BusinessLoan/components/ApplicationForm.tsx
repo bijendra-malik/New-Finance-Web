@@ -3,6 +3,10 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";
+import { addCustomBankName } from "../../../../../api/masters";
+import { applyBusinessLoan } from "../../../../../api/loanApplication";
+import type { BusinessLoanApplication } from "../../../../../api/loanApplication";
+import { getApiErrorMessage } from "../../../../../utils/apiError";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { buildSuccessSections } from "../../../../../components/form/successSections";
@@ -13,27 +17,9 @@ import {
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
 
-// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-export interface BusinessLoanApplication {
-  _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
-  employmentType: string; businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; existingBanksOther?: string[];
-  existingLoanTypes: string[]; existingLoanTypesOther?: string[];
-  status: "Pending";
-  createdAt: string;
-}
+// Type lives in the API layer now (aligned with the backend's BusinessLoan document);
+// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+export type { BusinessLoanApplication };
 
 const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
 const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
@@ -64,7 +50,7 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();
-  const {masters} = useMasters();
+  const {masters, loadCities} = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -88,13 +74,13 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   const cityOptions = useMemo(
-    () => form.state ? masters.citiesByState[form.state] ?? [] : [],
-    [form.state, masters.citiesByState]
+    () => loadCities(form.state),
+    [form.state, loadCities]
   );
 
   const businessCityOptions = useMemo(
-    () => form.businessState ? masters.citiesByState[form.businessState] ?? [] : [],
-    [form.businessState, masters.citiesByState]
+    () => loadCities(form.businessState),
+    [form.businessState, loadCities]
   );
 
   const transactionBankOptions = useMemo(() => {
@@ -226,7 +212,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const errors:Partial<Record<keyof FormData,string>> = {};
   (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
 
-  // No backend yet — validate, then build the confirmation view purely from local state.
+  // Validate, then submit to the backend; the success screen renders the saved document.
   const handleSubmit = async (e:React.FormEvent) => {
     e.preventDefault();
     if(!agreed){ setApiError("Please accept the Terms of Use and Privacy Policy to continue."); return; }
@@ -241,9 +227,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       return;
     }
     setIsSubmitting(true); setApiError("");
-    await new Promise(res=>setTimeout(res,600));
-    const app: BusinessLoanApplication = {
-      _id: `BL${Date.now()}`,
+    try {
+      const res = await applyBusinessLoan({
       fullName:form.fullName, mobile:form.mobile, email:form.email,
       dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
       state:form.state, city:form.city, pincode:form.pincode,
@@ -295,13 +280,17 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       loanAmount:form.loanAmount,
       loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-      existingBanks:form.existingBanks, existingBanksOther:form.existingBanksOther,
-      existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
-      status:"Pending", createdAt:new Date().toISOString(),
-    };
-    setSubmittedApp(app); setSubmitted(true);
-    setIsSubmitting(false);
-    if(onSubmit) onSubmit(app._id, app);
+      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+      existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+      });
+      if(form.existingBanksOther.length>0){
+        await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
+      }
+      setSubmittedApp(res.data); setSubmitted(true);
+      if(onSubmit) onSubmit(res.data._id, res.data);
+    } catch(err) {
+      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
+    } finally { setIsSubmitting(false); }
   };
 
   if(submitted && submittedApp) return (
@@ -481,7 +470,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(<>
             <div id="businessState"><FieldLabel label="Current Business State" required/>
               <SelectField value={form.businessState} onChange={v=>{
-                set("businessState",v); set("businessCity","");
+                set("businessState",v); set("businessCity",""); loadCities(v);
               }} options={masters.states} placeholder="Select" err={errors.businessState}/>
             </div>
             <div id="businessCity"><FieldLabel label="Current Business City" required/>
@@ -568,7 +557,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
-              set("state",v); set("city","");
+              set("state",v); set("city",""); loadCities(v);
             }} options={masters.states} placeholder="Select" err={errors.state}/>
           </div>
           <div id="city"><FieldLabel label="Current Residence City" required/>

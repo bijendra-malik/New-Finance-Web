@@ -72,7 +72,7 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();
-  const {masters} = useMasters();
+  const {masters, loadCities} = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -100,18 +100,18 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   const cityOptions = useMemo(
-    () => form.state ? masters.citiesByState[form.state] ?? [] : [],
-    [form.state, masters.citiesByState]
+    () => loadCities(form.state),
+    [form.state, loadCities]
   );
 
   const buyingPropertyCityOptions = useMemo(
-    () => form.buyingPropertyState ? masters.citiesByState[form.buyingPropertyState] ?? [] : [],
-    [form.buyingPropertyState, masters.citiesByState]
+    () => loadCities(form.buyingPropertyState),
+    [form.buyingPropertyState, loadCities]
   );
 
   const businessCityOptions = useMemo(
-    () => form.businessState ? masters.citiesByState[form.businessState] ?? [] : [],
-    [form.businessState, masters.citiesByState]
+    () => loadCities(form.businessState),
+    [form.businessState, loadCities]
   );
 
   const transactionBankOptions = useMemo(() => {
@@ -422,7 +422,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </div>
           <div id="buyingPropertyState"><FieldLabel label="Buying Property State" required/>
             <SelectField value={form.buyingPropertyState} onChange={v=>{
-              set("buyingPropertyState",v); set("buyingPropertyCity","");
+              set("buyingPropertyState",v); set("buyingPropertyCity",""); loadCities(v);
             }} options={masters.states} placeholder="Select" err={errors.buyingPropertyState}/>
           </div>
           <div id="buyingPropertyCity"><FieldLabel label="Buying Property City" required/>
@@ -614,7 +614,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(<>
             <div id="businessState"><FieldLabel label="Current Business State" required/>
               <SelectField value={form.businessState} onChange={v=>{
-                set("businessState",v); set("businessCity","");
+                set("businessState",v); set("businessCity",""); loadCities(v);
               }} options={masters.states} placeholder="Select" err={errors.businessState}/>
             </div>
             <div id="businessCity"><FieldLabel label="Current Business City" required/>
@@ -701,7 +701,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
-              set("state",v); set("city","");
+              set("state",v); set("city",""); loadCities(v);
             }} options={masters.states} placeholder="Select" err={errors.state}/>
           </div>
           <div id="city"><FieldLabel label="Current Residence City" required/>
