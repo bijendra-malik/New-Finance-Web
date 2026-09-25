@@ -49,6 +49,23 @@ export const fetchMasterByType = async (type: MasterKey): Promise<Masters[Master
   return bankNamesToBanks(normalizeBankNames(res.data.data)) as Masters[typeof type];
 };
 
+export interface StringListResponse {
+  success: boolean;
+  data: string[];
+}
+
+/** GET /masters/states → all states. */
+export const fetchStates = async (): Promise<string[]> => {
+  const res = await axiosInstance.get<StringListResponse>("/masters/states");
+  return res.data.data;
+};
+
+/** GET /masters/cities?state={state} → cities for the given state. */
+export const fetchCitiesByState = async (state: string): Promise<string[]> => {
+  const res = await axiosInstance.get<StringListResponse>("/masters/cities", { params: { state } });
+  return res.data.data;
+};
+
 export interface CustomBankNameResponse {
   success: boolean;
   message?: string;
