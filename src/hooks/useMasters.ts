@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
-import { fetchMasters } from "../api/masters";
-import { MASTERS, CITIES_BY_STATE } from "../constants/masters";
+import { useCallback, useEffect, useState } from "react";
+import { fetchMasters, fetchStates, fetchCitiesByState } from "../api/masters";
+import { MASTERS } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
 interface UseMastersResult {
   masters: Masters;
   loading: boolean;
   error: boolean;
+  loadCities: (state: string) => string[];
 }
 
 const DEFAULT_MASTERS: Masters = {
   ...MASTERS,
-  citiesByState: CITIES_BY_STATE,
+  states: [],
+  citiesByState: {},
 };
 
 export const useMasters = (): UseMastersResult => {
@@ -22,22 +24,19 @@ export const useMasters = (): UseMastersResult => {
   useEffect(() => {
     let cancelled = false;
 
-    fetchMasters()
-      .then((data) => {
+    Promise.allSettled([fetchMasters(), fetchStates()])
+      .then(([mastersRes, statesRes]) => {
         if (cancelled) return;
-        // Merge over defaults — a master type missing from the DB (e.g. stale seed)
-        // falls back to its local default instead of leaving the field undefined.
-        // Location maps merge per-key so a partial server seed doesn't wipe the
-        // static fallbacks.
+        const failed = mastersRes.status === "rejected" || statesRes.status === "rejected";
+        if (failed) setError(true);
+        const data = mastersRes.status === "fulfilled" ? mastersRes.value : null;
+        const states = statesRes.status === "fulfilled" ? statesRes.value : [];
         setMasters({
           ...DEFAULT_MASTERS,
-          ...data,
-          citiesByState: { ...DEFAULT_MASTERS.citiesByState, ...data.citiesByState },
+          ...(data ?? {}),
+          states,
+          citiesByState: {},
         });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError(true);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -46,5 +45,23 @@ export const useMasters = (): UseMastersResult => {
     return () => { cancelled = true; };
   }, []);
 
-  return { masters, loading, error };
+  const loadCities = useCallback((state: string): string[] => {
+    if (!state) return [];
+    const cached = masters.citiesByState[state];
+    if (cached) return [...cached];
+
+    fetchCitiesByState(state)
+      .then((cities) => {
+        setMasters(prev => ({
+          ...prev,
+          citiesByState: { ...prev.citiesByState, [state]: cities },
+        }));
+      })
+      .catch(() => {
+      });
+
+    return [];
+  }, [masters.citiesByState]);
+
+  return { masters, loading, error, loadCities };
 };
