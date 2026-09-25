@@ -169,11 +169,12 @@ DateOfBirthPicker.displayName = "DateOfBirthPicker";
 
 interface PillMultiSelectProps {
   options: readonly string[]; selected: string[]; onChange: (v: string[]) => void; color?: string;
+  disabled?: boolean;
 }
-export const PillMultiSelect = memo(({ options, selected, onChange, color = C.teal }: PillMultiSelectProps) => {
-  const toggle = (item: string) => onChange(selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item]);
+export const PillMultiSelect = memo(({ options, selected, onChange, color = C.teal, disabled = false }: PillMultiSelectProps) => {
+  const toggle = (item: string) => { if (!disabled) onChange(selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item]); };
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={`flex flex-wrap gap-2 ${disabled ? "opacity-50 pointer-events-none select-none" : ""}`} aria-disabled={disabled}>
       {options.map(opt => {
         const active = selected.includes(opt);
         return (
