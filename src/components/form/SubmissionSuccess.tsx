@@ -9,7 +9,7 @@ import { THEME as C } from "../../constants/theme";
  */
 
 const Section = ({ section }: { section: SuccessSection }) => {
-  const rows = section.rows.filter(r => !r.omit && !(r.value === undefined || r.value === null || String(r.value).trim() === "" || String(r.value).trim() === "0"));
+  const rows = section.rows.filter(r => !r.omit && (r.force || !(r.value === undefined || r.value === null || String(r.value).trim() === "" || String(r.value).trim() === "0")));
   if (rows.length === 0) return null;
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: `1px solid ${C.teal}1f` }}>
