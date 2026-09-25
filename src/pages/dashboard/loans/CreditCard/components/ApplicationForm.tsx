@@ -287,7 +287,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         ?new Date(form.businessEstablishedDate).toISOString()
         :undefined,
       transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName||undefined)
+        ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
         :undefined,
       transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
         ?form.transactionBanks
@@ -367,7 +367,12 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
       <FormCard title="Income Details" subtitle="Tell us about your employment and income">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="md:col-span-2" id="employmentType"><FieldLabel label="Employment Type" required/>
+          {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
+            <div>
+              <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>
+            </div>
+          )}
+          <div id="employmentType"><FieldLabel label="Employment Type" required/>
             <SelectField value={form.employmentType} onChange={setEmploymentType} options={masters.homeEmploymentTypes} placeholder="Select" err={errors.employmentType}/>
           </div>
 
@@ -440,9 +445,6 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </>)}
 
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(<>
-            <div className="md:col-span-2">
-              <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>
-            </div>
             <SelectWithOther
               id="businessType" label="Company Type" required
               value={form.businessType} onChange={v=>{
@@ -497,29 +499,25 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
                   portalId="creditcard-business-established-datepicker-portal"/>
               </div>
 
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div id="transactionBankName"><FieldLabel label="Transaction Bank Name"/>
-                    <SelectField value={form.transactionBankName} onChange={v=>{
-                      set("transactionBankName",v);
-                      if(v!==OTHER_OPTION) set("transactionBankNameOther","");
-                      if(v!==MULTIPLE_TRANSACTION_BANKS) setForm(p=>({...p, transactionBanks:[]}));
-                    }} options={transactionBankOptions} placeholder="Select" err={errors.transactionBankName}/>
-                  </div>
-                  {form.transactionBankName===OTHER_OPTION&&(
-                    <div id="transactionBankNameOther"><FieldLabel label="Mention Bank Name" required/>
-                      <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter bank name" err={errors.transactionBankNameOther}/>
-                    </div>
-                  )}
-                </div>
-                {form.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&(
-                  <div className="mt-4" id="transactionBanks">
-                    <OtherOptionList label="Transaction Banks" placeholder="Enter bank name"
-                      items={form.transactionBanks} onAdd={addTransactionBank} onRemove={removeTransactionBank} color={C.teal}/>
-                    <FieldError msg={errors.transactionBanks}/>
-                  </div>
-                )}
+              <div id="transactionBankName"><FieldLabel label="Transaction Bank Name"/>
+                <SelectField value={form.transactionBankName} onChange={v=>{
+                  set("transactionBankName",v);
+                  if(v!==OTHER_OPTION) set("transactionBankNameOther","");
+                  if(v!==MULTIPLE_TRANSACTION_BANKS) setForm(p=>({...p, transactionBanks:[]}));
+                }} options={transactionBankOptions} placeholder="Select" err={errors.transactionBankName}/>
               </div>
+              {form.transactionBankName===OTHER_OPTION&&(
+                <div id="transactionBankNameOther"><FieldLabel label="Mention Bank Name" required/>
+                  <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter bank name" err={errors.transactionBankNameOther}/>
+                </div>
+              )}
+              {form.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&(
+                <div className="md:col-span-2 mt-4" id="transactionBanks">
+                  <OtherOptionList label="Transaction Banks" placeholder="Enter bank name"
+                    items={form.transactionBanks} onAdd={addTransactionBank} onRemove={removeTransactionBank} color={C.teal}/>
+                  <FieldError msg={errors.transactionBanks}/>
+                </div>
+              )}
 
               <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
                 <TextField type="number" value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)}
@@ -588,7 +586,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           <div id="dob"><FieldLabel label="Date of Birth (as per PAN card)" required/>
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
           </div>
-          <div className="md:col-span-2" id="panNumber"><FieldLabel label="PAN Number" required/>
+          <div id="panNumber"><FieldLabel label="PAN Number" required/>
             <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - AAAAA9999A" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
