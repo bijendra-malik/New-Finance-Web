@@ -76,6 +76,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<BalanceTransferApplication|null>(null);
+  const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
   const [agreed, setAgreed] = useState(true);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
@@ -100,6 +101,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
   const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
 
   const cityOptions = useMemo(
     () => loadCities(form.state),
@@ -164,24 +166,32 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const removeTransactionBank = (idx:number) =>
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
 
+  const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+  const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
+
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
     if(!draft.balanceTransferType) e.balanceTransferType="Type of balance transfer is required";
     else if(draft.balanceTransferType===OTHER_OPTION&&!draft.balanceTransferTypeOther.trim()) e.balanceTransferTypeOther="Please mention type of balance transfer";
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
+    else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select balance transfer tenure";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>30)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 30 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
+    if(pillLoanTypesSelected&&!hasExposure) e.existingEMI="Since existing loan banks/types are selected, existing EMI or existing loan amount must be greater than 0 (unselect both if you have no existing loans)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
 
     if(draft.employmentType===SALARIED){
       if(!draft.companyName.trim()) e.companyName="Company name is required";
+      else if(!NAME_REGEX.test(draft.companyName.trim())) e.companyName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(parseInt(draft.existingEMI)>draft.monthlyNetSalary*0.6) e.existingEMI="Existing Total EMI should be at most 60% of monthly net salary (FOIR check)"; // FOIR check
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -191,10 +201,13 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
     if(draft.employmentType===SELF_EMPLOYED_BUSINESS){
       if(!draft.businessName.trim()) e.businessName="Company full name is required";
+      else if(!NAME_REGEX.test(draft.businessName.trim())) e.businessName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
       if(!draft.businessType) e.businessType="Company type is required";
       else if(draft.businessType===OTHER_OPTION&&!draft.businessTypeOther.trim()) e.businessTypeOther="Please mention company type";
 
-      if(draft.gstNumber.trim()&&!/^[0-9A-Z]{15}$/.test(draft.gstNumber.toUpperCase())) e.gstNumber="Enter a valid 15-character GST number";
+      if(draft.gstNumber.trim()&&!GSTIN_REGEX.test(draft.gstNumber.toUpperCase())) e.gstNumber="Enter a valid GST number (15-character GSTIN)";
+      const lastYearGstBase = Math.max(draft.lastYearTurnover, draft.currentYearTurnover, draft.priorYearTurnover);
+      if(lastYearGstBase>=4000000&&!draft.gstNumber.trim()) e.gstNumber="GST number is required for annual turnover of ₹40 lakh or more";
       if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
       else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
       if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
@@ -205,6 +218,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(draft.transactionBankName===OTHER_OPTION&&!draft.transactionBankNameOther.trim()) e.transactionBankNameOther="Please mention bank name";
       else if(draft.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&draft.transactionBanks.length===0) e.transactionBanks="Please add at least one bank";
       if(!draft.lastYearTurnover) e.lastYearTurnover="Last year turnover is required";
+      if(draft.lastYearTurnover&&draft.lastYearNetIncome>draft.lastYearTurnover) e.lastYearNetIncome="Last year net income cannot be greater than last year turnover";
       if(!draft.lastYearNetIncome) e.lastYearNetIncome="Annual income cannot be zero";
     }
 
@@ -212,7 +226,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.profession) e.profession="Profession is required";
       else if(draft.profession===OTHER_OPTION&&!draft.professionOther.trim()) e.professionOther="Please mention profession";
       if(!draft.currentYearTurnover) e.currentYearTurnover="Current year turnover is required";
+      if(draft.currentYearTurnover&&draft.currentYearNetIncome>draft.currentYearTurnover) e.currentYearNetIncome="Current year net income cannot be greater than current year turnover";
       if(!draft.priorYearTurnover) e.priorYearTurnover="Last (2 years old) turnover is required";
+      if(draft.priorYearTurnover&&draft.previousYearNetIncome>draft.priorYearTurnover) e.previousYearNetIncome="Previous year net income cannot be greater than prior year turnover";
       if(!draft.currentYearNetIncome) e.currentYearNetIncome="Current year net income is required";
       if(!draft.previousYearNetIncome) e.previousYearNetIncome="Previous year net income is required";
     }
@@ -227,8 +243,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     }
 
     if(!draft.fullName.trim()) e.fullName="Name is required";
+    else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
     if(!draft.mobile.trim()) e.mobile="Mobile is required";
-    else if(!/^\d{10}$/.test(draft.mobile)) e.mobile="Enter valid 10-digit number";
+    else if(!/^[6-9]\d{9}$/.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number (starting with 6-9)";
     if(!draft.email.trim()) e.email="Email is required";
     else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) e.email="Enter valid email";
     if(!draft.dob) e.dob="Date of birth is required";
@@ -238,6 +255,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(dobDate>today) e.dob="Date of birth cannot be in the future";
       else {
         const eighteenYearsAgo = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
+        const ageCeiling = new Date(today.getFullYear()-70, today.getMonth(), today.getDate());
+        if(dobDate<ageCeiling) e.dob="Maximum application age is 70 years for this loan";
         if(dobDate>eighteenYearsAgo) e.dob="You must be at least 18 years old";
       }
     }
@@ -346,8 +365,17 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(onSubmit) onSubmit(app._id, app);
   };
 
-  if(submitted && submittedApp) return (
-    <SubmissionSuccess
+  if(submitted && submittedApp && !showFormAfterSubmit) return (
+    <div className="max-w-3xl mx-auto space-y-5">
+      <div className="rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
+        <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted successfully</p>
+        <button type="button" onClick={()=>setShowFormAfterSubmit(true)}
+          className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
+          style={{background:C.navy}}>
+          ← Back to Application Form
+        </button>
+      </div>
+      <SubmissionSuccess
       refNo={submittedApp._id.slice(-10).toUpperCase()}
       fullId={submittedApp._id}
       createdAt={submittedApp.createdAt}
@@ -363,10 +391,24 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         ],
       })}
     />
+    </div>
   );
 
   return (
     <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+      {submitted&&submittedApp&&(
+        <div className="mb-6 rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
+          <div>
+            <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted — Ref No. {submittedApp._id.slice(-10).toUpperCase()}</p>
+            <p className="text-xs mt-0.5" style={{color:C.gray}}>Your details are saved and shown below.</p>
+          </div>
+          <button type="button" onClick={()=>setShowFormAfterSubmit(false)}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
+            style={{background:C.navy}}>
+            View Receipt
+          </button>
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{color:C.dark}}>
           Unlock the best Balance Transfer offers suitable for your needs from 43+ lenders
@@ -420,7 +462,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
           {form.employmentType===SALARIED&&(<>
             <div id="companyName"><FieldLabel label="Company Name" required/>
-              <TextField value={form.companyName} onChange={v=>set("companyName",v)} placeholder="Company full name" err={errors.companyName}/>
+              <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company full name" err={errors.companyName}/>
             </div>
             <SelectWithOther
               id="companyType" label="Company Type" required
@@ -498,7 +540,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter company type" otherErr={errors.businessTypeOther}
             />
             <div id="businessName"><FieldLabel label="Company Full Name" required/>
-              <TextField value={form.businessName} onChange={v=>set("businessName",v)} placeholder="Registered business / firm name" err={errors.businessName}/>
+              <TextField value={form.businessName} onChange={v=>set("businessName",v.slice(0,100))} maxLength={100} placeholder="Registered business / firm name" err={errors.businessName}/>
             </div>
 
             <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
@@ -537,7 +579,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
               <div id="businessEstablishedDate"><FieldLabel label="Date Of Business Establishment" required/>
                 <DateField value={form.businessEstablishedDate} onChange={v=>set("businessEstablishedDate",v)}
-                  err={errors.businessEstablishedDate} maxDate={new Date(new Date().getFullYear()+50,11,31)} minDate={new Date(new Date().getFullYear()-100,0,1)}
+                  err={errors.businessEstablishedDate} maxDate={new Date()} minDate={new Date(new Date().getFullYear()-100,0,1)}
                   portalId="balance-transfer-business-established-datepicker-portal"/>
               </div>
 
@@ -635,7 +677,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Personal Details" subtitle="Basic details as per your official documents">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div id="fullName"><FieldLabel label="Full Name" required/>
-            <TextField value={form.fullName} onChange={v=>set("fullName",v)} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
+            <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
           </div>
           <div id="mobile"><FieldLabel label="Mobile Number" required/>
             <div className="flex items-center rounded-xl overflow-hidden"
