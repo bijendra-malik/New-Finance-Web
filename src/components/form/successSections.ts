@@ -81,12 +81,19 @@ export const fmtTenure = (months?: number | null) => {
 /** Joins a string list → "a, b, c", tolerating empty. */
 export const fmtList = (arr?: string[] | null) => (arr && arr.length > 0 ? arr.join(", ") : dash);
 
-/** Transaction bank display: the backend may not persist the individual banks list,
- *  so fall back to the stored name itself ("Multiple Transaction Banks"). */
-export const fmtTxnBank = (name?: string, banks?: string[]) =>
-  name === "Multiple Transaction Banks" && banks && banks.length > 0 ? fmtList(banks) : fmtText(name);
+export const fmtTxnBank = (
+  name?: string | { displayName?: string; banks?: string[] },
+  banks?: string[]
+) => {
+  if (name && typeof name === "object") {
+    const list = name.banks ?? [];
+    return name.displayName === "Multiple Transaction Banks" && list.length > 0
+      ? fmtList(list)
+      : fmtText(name.displayName);
+  }
+  return name === "Multiple Transaction Banks" && banks && banks.length > 0 ? fmtList(banks) : fmtText(name);
+};
 
-/** The backend merges custom entries into the arrays; drop the "Other" sentinel for display. */
 export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !== "Other");
 
 // ── Section builder ───────────────────────────────────────────────────────────
@@ -108,7 +115,9 @@ interface CommonApp {
   businessName?: string; businessType?: string;
   gstNumber?: string; companyPanNumber?: string;
   natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
+  businessEstablishedDate?: string;
+  transactionBankName?: string | { displayName?: string; banks?: string[] };
+  transactionBanks?: string[];
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
   profession?: string;
