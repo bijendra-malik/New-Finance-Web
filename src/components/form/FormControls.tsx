@@ -308,12 +308,8 @@ interface PincodeInputFieldProps {
   id: string; label: string; required?: boolean;
   value: string; onChange: (v: string) => void; err?: string;
 }
-
-/** Indian pincodes are exactly 6 digits and never start with 0. */
-export const PINCODE_RE = /^[1-9]\d{5}$/;
-export const isValidPincode = (value: string) => PINCODE_RE.test(value);
-
-export const sanitizePincode = (raw: string) =>
+/** Digits only, max 6, no leading zero (Indian pincodes never start with 0) — matches /^[1-9]\d{5}$/ used in each form's computeErrors(). */
+const sanitizePincode = (raw: string) =>
   raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
 
 // Simple 6-digit pincode entry — digits only, no dropdowns.
