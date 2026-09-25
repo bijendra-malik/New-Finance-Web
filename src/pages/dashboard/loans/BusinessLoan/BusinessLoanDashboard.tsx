@@ -2,16 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationForm from "./components/ApplicationForm";
 import LoanStatus from "./components/LoanStatus";
-import DocumentUpload from "./components/DocumentUpload";
 import { useAuth } from "../../../../context/AuthContext";
 import type { BusinessLoanApplication } from "./components/ApplicationForm";
 
-type Tab = "application" | "status" | "documents";
+type Tab = "application" | "status";
 
 const TABS: { key: Tab; label: string; icon: string; desc: string }[] = [
   { key: "application", label: "Application Form",   icon: "📝", desc: "Fill your loan details"    },
   { key: "status",      label: "Application Status", icon: "📊", desc: "Track your application"    },
-  { key: "documents",   label: "Documents",          icon: "📄", desc: "Upload required documents"  },
 ];
 
 const C = { teal:"#26ae90", navy:"#066a9c", dark:"#286090", yellow:"#f2f231", gray:"#7b7b7b" };
@@ -143,9 +141,6 @@ const BusinessLoanDashboard = () => {
           {activeTab === "status" && (
             <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
           )}
-          {activeTab === "documents" && (
-            <DocumentUpload applicationId={applicationId} />
-          )}
         </div>
       </main>
 
@@ -188,7 +183,7 @@ const BusinessLoanDashboard = () => {
                 {initials}
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold leading-tight truncate max-w-[100px]" style={{ color: "#1e293b" }}>
+                <p className="text-sm font-semibold leading-tight truncate max-w-25" style={{ color: "#1e293b" }}>
                   {user.name}
                 </p>
                 <p className="text-xs leading-tight" style={{ color: "#94a3b8" }}>+91 {user.mobile}</p>
