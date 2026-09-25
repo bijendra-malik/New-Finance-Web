@@ -188,7 +188,7 @@ const HomeLoanDashboard = () => {
                 {initials}
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold leading-tight truncate max-w-[100px]" style={{ color: "#1e293b" }}>
+                <p className="text-sm font-semibold leading-tight truncate max-w-25" style={{ color: "#1e293b" }}>
                   {user.name}
                 </p>
                 <p className="text-xs leading-tight" style={{ color: "#94a3b8" }}>+91 {user.mobile}</p>
