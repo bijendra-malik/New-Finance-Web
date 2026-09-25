@@ -87,6 +87,41 @@ export const fetchCitiesByState = (state: string): Promise<string[]> => {
   return promise;
 };
 
+// GET /employment-types/{loanType} → employment types registered for that loan.
+export interface EmploymentTypesResponse {
+  success: boolean;
+  data: { loanType: string; employmentTypes: string[] };
+}
+
+const employmentTypesPromises = new Map<string, Promise<string[]>>();
+export const fetchEmploymentTypes = (loanType: string): Promise<string[]> => {
+  const key = loanType.trim().toLowerCase();
+  let promise = employmentTypesPromises.get(key);
+  if (!promise) {
+    promise = axiosInstance
+      .get<EmploymentTypesResponse>(`/employment-types/${key}`)
+      .then((res) => res.data.data.employmentTypes)
+      .catch((err) => {
+        employmentTypesPromises.delete(key);
+        throw err;
+      });
+    employmentTypesPromises.set(key, promise);
+  }
+  return promise;
+};
+
+export const getEmploymentTypes = async (
+  loanType: string,
+  fallback: readonly string[]
+): Promise<string[]> => {
+  try {
+    const types = await fetchEmploymentTypes(loanType);
+    return types.length > 0 ? types : [...fallback];
+  } catch {
+    return [...fallback];
+  }
+};
+
 export interface CustomBankNameResponse {
   success: boolean;
   message?: string;
