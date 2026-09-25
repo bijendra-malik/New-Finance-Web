@@ -1,4 +1,4 @@
-import type { PersonalLoanApplication } from "../../../../../api/loanApplication";
+import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { fmtTenure } from "../../../../../components/form/successSections";
 
 interface LoanStatusProps {

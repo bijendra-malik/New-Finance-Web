@@ -2,16 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationForm from "./components/ApplicationForm";
 import LoanStatus from "./components/LoanStatus";
-import DocumentUpload from "./components/DocumentUpload";
 import { useAuth } from "../../../../context/AuthContext";
 import type { BalanceTransferApplication } from "./components/ApplicationForm";
 
-type Tab = "application" | "status" | "documents";
+type Tab = "application" | "status";
 
 const TABS: { key: Tab; label: string; icon: string; desc: string }[] = [
   { key: "application", label: "Application Form",   icon: "📝", desc: "Fill your loan details"    },
   { key: "status",      label: "Application Status", icon: "📊", desc: "Track your application"    },
-  { key: "documents",   label: "Documents",          icon: "📄", desc: "Upload required documents"  },
 ];
 
 const C = { teal:"#26ae90", navy:"#066a9c", dark:"#286090", yellow:"#f2f231", gray:"#7b7b7b" };
@@ -142,9 +140,6 @@ const BalanceTransferDashboard = () => {
         </div>
           {activeTab === "status" && (
             <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-          )}
-          {activeTab === "documents" && (
-            <DocumentUpload applicationId={applicationId} />
           )}
         </div>
       </main>

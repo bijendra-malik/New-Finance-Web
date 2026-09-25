@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
-import { applyPersonalLoan } from "../../../../../api/loanApplication";
+import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
-import type { PersonalLoanApplication } from "../../../../../api/loanApplication";
+import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";

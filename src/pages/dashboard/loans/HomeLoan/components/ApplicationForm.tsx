@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
+import { applyHomeLoan } from "../../../../../api/loanApplications";
+import type { HomeLoanApplication } from "../../../../../api/loanApplications";
+import { getApiErrorMessage } from "../../../../../utils/apiError";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION } from "../../../../../constants/masters";
+import { addCustomBankName } from "../../../../../api/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { buildSuccessSections } from "../../../../../components/form/successSections";
@@ -12,31 +16,9 @@ import {
   OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
 } from "../../../../../components/form/FormControls";
 
-// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-export interface HomeLoanApplication {
-  _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
-  buyingPropertyType: string; buyingPropertyAge: number;
-  buyingPropertyState: string; buyingPropertyCity: string; buyingPropertyPincode: string;
-  employmentType: string;
-  companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
-  businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; existingBanksOther?: string[];
-  existingLoanTypes: string[]; existingLoanTypesOther?: string[];
-  status: "Pending";
-  createdAt: string;
-}
+// Type lives in the API layer now (aligned with the backend's HomeLoan document);
+// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+export type { HomeLoanApplication };
 
 const SALARIED = "Salaried";
 const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
@@ -332,9 +314,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       return;
     }
     setIsSubmitting(true); setApiError("");
-    await new Promise(res=>setTimeout(res,600));
-    const app: HomeLoanApplication = {
-      _id: `HL${Date.now()}`,
+    try {
+      if(form.existingBanksOther.length>0){
+        await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
+      }
+      const res = await applyHomeLoan({
       fullName:form.fullName, mobile:form.mobile, email:form.email,
       dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
       state:form.state, city:form.city, pincode:form.pincode,
@@ -371,10 +355,14 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         ?new Date(form.businessEstablishedDate).toISOString()
         :undefined,
       transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+        ?(form.transactionBankName===OTHER_OPTION
+          ?undefined
+          :form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
+            ?{displayName:MULTIPLE_TRANSACTION_BANKS, banks:form.transactionBanks}
+            :form.transactionBankName||undefined)
         :undefined,
-      transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
-        ?form.transactionBanks
+      transactionBankOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===OTHER_OPTION
+        ?(form.transactionBankNameOther.trim()||undefined)
         :undefined,
       lastYearTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearTurnover:undefined,
       last2YearsTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsTurnover:undefined,
@@ -399,13 +387,14 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         :undefined,
       loanAmount:form.loanAmount, loanTenure:form.loanTenureYears*12,
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-      existingBanks:form.existingBanks, existingBanksOther:form.existingBanksOther,
-      existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
-      status:"Pending", createdAt:new Date().toISOString(),
-    };
-    setSubmittedApp(app); setSubmitted(true);
-    setIsSubmitting(false);
-    if(onSubmit) onSubmit(app._id, app);
+      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+      existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+      });
+      setSubmittedApp(res.data); setSubmitted(true);
+      if(onSubmit) onSubmit(res.data._id, res.data);
+    } catch(err) {
+      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
+    } finally { setIsSubmitting(false); }
   };
 
   if(submitted && submittedApp && !showFormAfterSubmit) return (
