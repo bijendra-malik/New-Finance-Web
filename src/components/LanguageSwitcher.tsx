@@ -236,12 +236,12 @@ const LanguageSwitcher = () => {
       {/* ── Dropdown panel ── */}
       {isOpen && (
         <div
-          className="absolute right-0 top-10 z-[9999] flex shadow-2xl rounded-2xl ring-1 ring-slate-900/10 overflow-visible"
+          className="absolute right-0 top-10 z-9999 flex flex-row-reverse shadow-2xl rounded-2xl ring-1 ring-slate-900/10 overflow-visible"
           style={{ minWidth: 160 }}
         >
-          {/* LEFT — country list */}
+          {/* RIGHT — country list (fixed column; flyout expands to its left) */}
           <div
-            className="bg-white rounded-l-2xl py-2 overflow-y-auto"
+            className="bg-white rounded-r-2xl py-2 overflow-y-auto"
             style={{ width: 160, maxHeight: 340 }}
             onMouseLeave={handleMouseLeavePanel}
           >
@@ -255,21 +255,21 @@ const LanguageSwitcher = () => {
                   }`}
                   onMouseEnter={() => handleMouseEnterCountry(country)}
                 >
-                  <span className={`fi fi-${country.flagCode} text-base rounded-sm flex-shrink-0`} />
-                  <span className="text-xs font-medium truncate">{country.name}</span>
-                  {/* Right arrow indicator */}
-                  <svg className="w-3 h-3 ml-auto flex-shrink-0 opacity-40" viewBox="0 0 20 20" fill="currentColor">
+                  {/* Left arrow indicator — flyout opens to the left */}
+                  <svg className="w-3 h-3 shrink-0 opacity-40 rotate-180" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                   </svg>
+                  <span className={`fi fi-${country.flagCode} text-base rounded-sm shrink-0`} />
+                  <span className="text-xs font-medium truncate">{country.name}</span>
                 </div>
               );
             })}
           </div>
 
-          {/* RIGHT — language options (flyout, shown on hover) */}
+          {/* LEFT — language options (flyout, expands leftward, shown on hover) */}
           {hoveredCountry && (
             <div
-              className="bg-white border-l border-slate-100 rounded-r-2xl py-2 flex flex-col justify-center"
+              className="bg-white border-r border-slate-100 rounded-l-2xl py-2 flex flex-col justify-center"
               style={{ width: 140 }}
               onMouseEnter={handleMouseEnterLanguages}
               onMouseLeave={handleMouseLeavePanel}
@@ -289,10 +289,10 @@ const LanguageSwitcher = () => {
                         : 'hover:bg-slate-50 text-slate-600'
                     }`}
                   >
-                    <span className={`fi fi-${lang.flagCode} text-base rounded-sm flex-shrink-0`} />
+                    <span className={`fi fi-${lang.flagCode} text-base rounded-sm shrink-0`} />
                     <span className="text-xs font-medium">{lang.label}</span>
                     {isActive && (
-                      <svg className="w-3.5 h-3.5 ml-auto text-emerald-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="w-3.5 h-3.5 ml-auto text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                       </svg>
                     )}
