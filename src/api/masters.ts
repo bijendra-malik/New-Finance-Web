@@ -54,16 +54,37 @@ export interface StringListResponse {
   data: string[];
 }
 
-/** GET /masters/states → all states. */
-export const fetchStates = async (): Promise<string[]> => {
-  const res = await axiosInstance.get<StringListResponse>("/masters/states");
-  return res.data.data;
+// GET /masters/states → all states.
+let statesPromise: Promise<string[]> | null = null;
+export const fetchStates = (): Promise<string[]> => {
+  if (!statesPromise) {
+    statesPromise = axiosInstance
+      .get<StringListResponse>("/masters/states")
+      .then((res) => res.data.data)
+      .catch((err) => {
+        statesPromise = null;
+        throw err;
+      });
+  }
+  return statesPromise;
 };
 
-/** GET /masters/cities?state={state} → cities for the given state. */
-export const fetchCitiesByState = async (state: string): Promise<string[]> => {
-  const res = await axiosInstance.get<StringListResponse>("/masters/cities", { params: { state } });
-  return res.data.data;
+// GET /masters/cities?state={state} → cities for the given state.
+const citiesPromises = new Map<string, Promise<string[]>>();
+export const fetchCitiesByState = (state: string): Promise<string[]> => {
+  const key = state.trim();
+  let promise = citiesPromises.get(key);
+  if (!promise) {
+    promise = axiosInstance
+      .get<StringListResponse>("/masters/cities", { params: { state: key } })
+      .then((res) => res.data.data)
+      .catch((err) => {
+        citiesPromises.delete(key);
+        throw err;
+      });
+    citiesPromises.set(key, promise);
+  }
+  return promise;
 };
 
 export interface CustomBankNameResponse {
