@@ -37,6 +37,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<PersonalLoanApplication|null>(null);
+  // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
+  const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
   const [agreed, setAgreed] = useState(true);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
@@ -49,6 +51,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
   const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+  // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
+  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
+  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
 
   const cityOptions = useMemo(
     () => loadCities(form.state),
@@ -71,21 +76,32 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     setTouched(p=>(p[f]?p:{...p,[f]:true}));
   };
 
+// ── Shared validation constants (used by computeErrors below) ──
+  const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
+
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
+    // Pincode ↔ State/City consistency (15) and duplicate-application
+    // detection (16) are enforced server-side; the frontend validates the
+    // pincode format itself below.
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
+    else if(draft.loanAmount>5000000) e.loanAmount="Maximum loan amount is ₹50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>7)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 7 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
+    if((pillBanksSelected||pillLoanTypesSelected)&&!hasExposure) e.existingEMI="Since existing loan banks/types are selected, existing EMI or existing loan amount must be greater than 0 (unselect both if you have no existing loans)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
     if(draft.employmentType==="Salaried"){
       if(!draft.companyName.trim()) e.companyName="Company name is required";
+      else if(!NAME_REGEX.test(draft.companyName.trim())) e.companyName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(parseInt(draft.existingEMI)>draft.monthlyNetSalary*0.6) e.existingEMI="Existing Total EMI should be at most 60% of monthly net salary (FOIR check)"; // FOIR check
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -94,8 +110,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     }
 
     if(!draft.fullName.trim()) e.fullName="Name is required";
+    else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
     if(!draft.mobile.trim()) e.mobile="Mobile is required";
-    else if(!/^\d{10}$/.test(draft.mobile)) e.mobile="Enter valid 10-digit number";
+    else if(!/^[6-9]\d{9}$/.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number (starting with 6-9)";
     if(!draft.email.trim()) e.email="Email is required";
     else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) e.email="Enter valid email";
     if(!draft.dob) e.dob="Date of birth is required";
@@ -105,6 +122,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(dobDate>today) e.dob="Date of birth cannot be in the future";
       else {
         const eighteenYearsAgo = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
+        const ageCeiling = new Date(today.getFullYear()-60, today.getMonth(), today.getDate());
+        if(dobDate<ageCeiling) e.dob="Maximum application age is 60 years for this loan";
         if(dobDate>eighteenYearsAgo) e.dob="You must be at least 18 years old";
       }
     }
@@ -166,8 +185,17 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     } finally { setIsSubmitting(false); }
   };
 
-  if(submitted && submittedApp) return (
-    <SubmissionSuccess
+  if(submitted && submittedApp && !showFormAfterSubmit) return (
+    <div className="max-w-3xl mx-auto space-y-5">
+      <div className="rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
+        <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted successfully</p>
+        <button type="button" onClick={()=>setShowFormAfterSubmit(true)}
+          className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
+          style={{background:C.navy}}>
+          ← Back to Application Form
+        </button>
+      </div>
+      <SubmissionSuccess
       refNo={submittedApp._id.slice(-10).toUpperCase()}
       fullId={submittedApp._id}
       createdAt={submittedApp.createdAt}
@@ -177,10 +205,24 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       email={submittedApp.email}
       sections={buildSuccessSections(submittedApp, { amountLabel: "Loan Amount" })}
     />
+    </div>
   );
 
   return (
     <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+      {submitted&&submittedApp&&(
+        <div className="mb-6 rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
+          <div>
+            <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted — Ref No. {submittedApp._id.slice(-10).toUpperCase()}</p>
+            <p className="text-xs mt-0.5" style={{color:C.gray}}>Your details are saved and shown below.</p>
+          </div>
+          <button type="button" onClick={()=>setShowFormAfterSubmit(false)}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
+            style={{background:C.navy}}>
+            View Receipt
+          </button>
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{color:C.dark}}>
           Unlock the best Personal Loan offers suitable for your needs from 43+ lenders
@@ -212,7 +254,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </div>
           {form.employmentType==="Salaried"&&(<>
             <div id="companyName"><FieldLabel label="Company Name" required/>
-              <TextField value={form.companyName} onChange={v=>set("companyName",v)} placeholder="Company full name" err={errors.companyName}/>
+              <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company full name" err={errors.companyName}/>
             </div>
             <SelectWithOther
               id="companyType" label="Company Type" required
@@ -291,7 +333,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Personal Details" subtitle="Basic details as per your official documents">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div id="fullName"><FieldLabel label="Full Name" required/>
-            <TextField value={form.fullName} onChange={v=>set("fullName",v)} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
+            <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
           </div>
           <div id="mobile"><FieldLabel label="Mobile Number" required/>
             <div className="flex items-center rounded-xl overflow-hidden"
