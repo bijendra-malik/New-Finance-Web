@@ -361,7 +361,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               <TextField type="number" value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)}
                 onChange={v=>set("currentYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Current turn over" err={errors.currentYearTurnover}/>
             </div>
-            <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
+            <div id="priorYearTurnover"><FieldLabel label="Prior Year Turnover" required/>
               <TextField type="number" value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)}
                 onChange={v=>set("priorYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.priorYearTurnover}/>
             </div>
