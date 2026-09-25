@@ -47,6 +47,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   });
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
+  // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
+  const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+
   const cityOptions = useMemo(
     () => loadCities(form.state),
     [form.state, loadCities]
@@ -74,6 +77,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
+    else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
     if(draft.employmentType==="Salaried"){
@@ -260,11 +264,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
         <div className="mb-5">
           <FieldLabel label="Existing Loan Bank's Name"/>
-          <PillMultiSelect options={masters.banks} selected={form.existingBanks}
+          <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
             onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
             color={C.teal}/>
 
-          {form.existingBanks.includes(OTHER_OPTION)&&(
+          {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
             <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
               items={form.existingBanksOther} onAdd={addOtherBank} onRemove={removeOtherBank} color={C.teal} existingOptions={masters.banks}/>
           )}
@@ -272,11 +276,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
         <div>
           <FieldLabel label="Existing Loan Types"/>
-          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes}
+          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
             onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
             color={C.navy}/>
 
-          {form.existingLoanTypes.includes(OTHER_OPTION)&&(
+          {hasExposure&&form.existingLoanTypes.includes(OTHER_OPTION)&&(
             <OtherOptionList label="Other Existing Loan Types" placeholder="Enter other loan type"
               items={form.existingLoanTypesOther} onAdd={addOtherLoanType} onRemove={removeOtherLoanType} color={C.navy} existingOptions={masters.existingLoanTypes}/>
           )}
@@ -304,7 +308,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           <div id="dob"><FieldLabel label="Date of Birth (as per PAN card)" required/>
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
           </div>
-          <div className="md:col-span-2" id="panNumber"><FieldLabel label="PAN Number" required/>
+          <div id="panNumber"><FieldLabel label="PAN Number" required/>
             <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - AAAAA9999A" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
