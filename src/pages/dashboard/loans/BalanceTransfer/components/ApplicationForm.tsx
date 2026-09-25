@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
@@ -71,7 +71,7 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();
-  const {masters, loadCities} = useMasters();
+  const {masters, loadCities, getEmploymentTypesFor} = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -100,7 +100,23 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+  // Employment types come from the backend per loan type, with the local
+  // constants list as fallback while/if the loan type is not registered.
+  const [employmentTypesState, setEmploymentTypesState] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getEmploymentTypesFor("balance-transfer", "homeEmploymentTypes")
+      .then(types => { if (!cancelled) setEmploymentTypesState(types); })
+      .catch(() => { /* fallback already returned by the helper */ });
+    return () => { cancelled = true; };
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const employmentTypeOptions = useMemo(
+    () => (employmentTypesState.length > 0 ? employmentTypesState : [...masters.homeEmploymentTypes]),
+    [employmentTypesState, masters.homeEmploymentTypes]
+  );
+
+const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
   const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
 
   const cityOptions = useMemo(
@@ -457,7 +473,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             </div>
           )}
           <div id="employmentType"><FieldLabel label="Employment Type" required/>
-            <SelectField value={form.employmentType} onChange={setEmploymentType} options={masters.homeEmploymentTypes} placeholder="Select" err={errors.employmentType}/>
+            <SelectField value={form.employmentType} onChange={setEmploymentType} options={employmentTypeOptions} placeholder="Select" err={errors.employmentType}/>
           </div>
 
           {form.employmentType===SALARIED&&(<>

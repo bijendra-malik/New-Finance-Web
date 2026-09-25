@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import { applyPersonalLoan } from "../../../../../api/loanApplication";
 import { addCustomBankName } from "../../../../../api/masters";
@@ -32,7 +32,7 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();
-  const {masters, loadCities} = useMasters();
+  const {masters, loadCities, getEmploymentTypesFor} = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -50,6 +50,22 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
+  // Employment types come from the backend per loan type, with the local
+  // constants list as fallback while/if the loan type is not registered.
+  const [employmentTypesState, setEmploymentTypesState] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getEmploymentTypesFor("personal", "personalEmploymentTypes")
+      .then(types => { if (!cancelled) setEmploymentTypesState(types); })
+      .catch(() => { /* fallback already returned by the helper */ });
+    return () => { cancelled = true; };
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  const employmentTypeOptions = useMemo(
+    () => (employmentTypesState.length > 0 ? employmentTypesState : [...masters.personalEmploymentTypes]),
+    [employmentTypesState, masters.personalEmploymentTypes]
+  );
+
   const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
   // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
   const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
@@ -250,7 +266,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Income Details" subtitle="Tell us about your employment and income">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div id="employmentType"><FieldLabel label="Employment Type" required/>
-            <SelectField value={form.employmentType} onChange={v=>set("employmentType",v)} options={masters.personalEmploymentTypes} placeholder="Select" err={errors.employmentType}/>
+            <SelectField value={form.employmentType} onChange={v=>set("employmentType",v)} options={employmentTypeOptions} placeholder="Select" err={errors.employmentType}/>
           </div>
           {form.employmentType==="Salaried"&&(<>
             <div id="companyName"><FieldLabel label="Company Name" required/>
