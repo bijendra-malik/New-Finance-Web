@@ -1,4 +1,5 @@
 import type { BusinessLoanApplication } from "./ApplicationForm";
+import { fmtTenure } from "../../../../../components/form/successSections";
 
 interface LoanStatusProps {
   applicationId: string;
@@ -9,31 +10,42 @@ interface LoanStatusProps {
 const C = { teal:"#26ae90", navy:"#066a9c", dark:"#286090", gray:"#7b7b7b",
   tealBg:"rgba(38,174,144,0.08)", navyBg:"rgba(6,106,156,0.08)" };
 
-const STATUS_STEPS = [
-  { key:"Submitted",    icon:"✅", desc:"Application received"          },
-  { key:"Under Review", icon:"🔍", desc:"Team is verifying your details"  },
-  { key:"Verification", icon:"📄", desc:"Documents being verified"        },
-  { key:"Approved",     icon:"👍", desc:"Loan officer approved"           },
-  { key:"Disbursed",    icon:"💰", desc:"Funds transferred to account"    },
-];
-
-// Determine how far the status has progressed
-const getStepIndex = (status: string) => {
-  const map: Record<string,number> = {
-    "Pending":     1,
-    "Submitted":   1,
-    "Under Review":2,
-    "Verification":3,
-    "Approved":    4,
-    "Disbursed":   5,
-    "Rejected":    -1,
-  };
-  return map[status] ?? 1;
+const dash = "—";
+const inr = (n?: number) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
+const dt = (v?: string) => {
+  if (!v) return dash;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? dash : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 };
+const list = (arr?: string[]) => (arr && arr.length > 0 ? arr.join(", ") : dash);
+
+/** Transaction bank display: the backend may not persist the individual banks
+ *  list, so fall back to the stored name itself ("Multiple Transaction Banks"). */
+const txnBank = (name?: string, banks?: string[]) =>
+  name === "Multiple Transaction Banks" && banks && banks.length > 0 ? list(banks) : (name ?? dash);
+
+/** The backend merges custom entries into the arrays; drop the "Other" sentinel for display. */
+const withoutOther = (arr?: string[]) => (arr ?? []).filter(b => b !== "Other");
+
+/** One labelled row; value falls back to — so every collected field stays visible. */
+const Row = ({ label, value }: { label: string; value?: string | number | null }) => (
+  <div className="flex items-center justify-between gap-4 py-2 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
+    <span className="text-xs font-semibold uppercase tracking-wide shrink-0" style={{ color: C.gray }}>{label}</span>
+    <span className="text-sm font-bold text-right truncate" style={{ color: C.dark }}>{value ?? dash}</span>
+  </div>
+);
+
+const Card = ({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) => (
+  <div className="bg-white rounded-2xl p-6 shadow-sm" style={{ border: `1px solid ${accent}18` }}>
+    <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: accent }}>{title}</p>
+    {children}
+  </div>
+);
 
 const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProps) => {
+  const app = submittedApp;
 
-  if (!isSubmitted) {
+  if (!isSubmitted || !app) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
@@ -44,8 +56,10 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
     );
   }
 
-  const currentStep = getStepIndex(submittedApp?.status ?? "Pending");
-  const isRejected  = false;
+  const isBusiness   = app.employmentType === "Self Employed - Business";
+  const isProfessional = app.employmentType === "Self Employed - Professional";
+  const banks    = withoutOther([...(app.existingBanks ?? []), ...(app.existingBanksOther ?? app.otherBankList ?? [])]);
+  const loanTypes = withoutOther([...(app.existingLoanTypes ?? []), ...(app.existingLoanTypesOther ?? app.otherLoanList ?? [])]);
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -63,162 +77,99 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
                 ID: <span style={{color:C.teal}}>{applicationId.slice(-10).toUpperCase()}</span>
               </p>
               <p className="text-xs mt-0.5" style={{color:C.gray}}>
-                {submittedApp?.createdAt
-                  ? new Date(submittedApp.createdAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})
-                  : "—"}
+                {dt(app.createdAt)}
               </p>
+              <p className="text-[10px] mt-0.5" style={{color:C.gray}}>Ref ID: {applicationId}</p>
             </div>
           </div>
           <span className="self-start sm:self-center px-4 py-1.5 rounded-full text-sm font-bold"
-            style={isRejected
-              ?{background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}
-              :{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-            {submittedApp?.status ?? "Pending"}
+            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
+            {app.status}
           </span>
         </div>
       </div>
 
-      {/* ── Two-column layout: Status timeline + Application details ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Loan requirement ── */}
+      <Card title="Loan Requirement" accent={C.navy}>
+        <Row label="Loan Type" value={app.loanType ?? "Business Loan"} />
+        <Row label="Loan Amount" value={inr(app.loanAmount)} />
+        <Row label="Tenure" value={fmtTenure(app.loanTenure)} />
+        <Row label="Employment Type" value={app.employmentType} />
+      </Card>
 
-        {/* LEFT — Timeline */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid ${C.teal}18`}}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-5" style={{color:C.navy}}>Application Progress</p>
-          <div className="space-y-0">
-            {STATUS_STEPS.map((s, i) => {
-              const done    = i + 1 <= currentStep;
-              const active  = i + 1 === currentStep;
-              const last    = i === STATUS_STEPS.length - 1;
-              return (
-                <div key={s.key} className="flex gap-4">
-                  {/* Icon + line */}
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-base transition-all"
-                      style={done
-                        ?{background:C.teal,boxShadow:active?`0 0 0 4px ${C.teal}22`:"none"}
-                        :{background:"#f1f5f9",color:C.gray}}>
-                      {done
-                        ? <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        : <span className="text-base">{s.icon}</span>
-                      }
-                    </div>
-                    {!last && <div className="w-0.5 h-8 my-1" style={{background:done?C.teal+"44":"#e2e8f0"}}/>}
-                  </div>
-                  {/* Text */}
-                  <div className="pb-6 min-w-0 pt-1.5">
-                    <p className={`text-sm font-bold leading-tight`}
-                      style={{color:done?C.dark:C.gray}}>{s.key}</p>
-                    <p className="text-xs mt-0.5" style={{color:C.gray}}>{s.desc}</p>
-                    {active&&(
-                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-                        In Progress
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* ── Employment & income (branch-specific fields) ── */}
+      <Card title="Employment & Income" accent={C.teal}>
+        {isBusiness && (
+          <>
+            <Row label="Business Name" value={app.businessName} />
+            <Row label="Business Type" value={app.businessType} />
+            <Row label="GST Number" value={app.gstNumber} />
+            <Row label="Company PAN" value={app.companyPanNumber} />
+            <Row label="Nature of Business" value={app.natureOfBusiness} />
+            <Row label="Industry Type" value={[app.industryType, app.subIndustry].filter(Boolean).join(" — ") || dash} />
+            <Row label="Established On" value={dt(app.businessEstablishedDate)} />
+            <Row label="Transaction Bank" value={txnBank(app.transactionBankName, app.transactionBanks)} />
+            <Row label="Last Year Turnover" value={inr(app.lastYearTurnover)} />
+            <Row label="Last 2 Years Turnover" value={inr(app.last2YearsTurnover)} />
+            <Row label="Last Year Net Income" value={inr(app.lastYearNetIncome)} />
+            <Row label="Last 2 Years Net Income" value={inr(app.last2YearsNetIncome)} />
+          </>
+        )}
+        {isProfessional && (
+          <>
+            <Row label="Profession" value={app.profession} />
+            <Row label="GST Number" value={app.gstNumber} />
+            <Row label="Company PAN" value={app.companyPanNumber} />
+            <Row label="Transaction Bank" value={txnBank(app.transactionBankName, app.transactionBanks)} />
+            <Row label="Current Year Turnover" value={inr(app.currentYearTurnover)} />
+            <Row label="Current Year Net Income" value={inr(app.currentYearNetIncome)} />
+            <Row label="Previous Year Turnover" value={inr(app.priorYearTurnover)} />
+            <Row label="Previous Year Net Income" value={inr(app.previousYearNetIncome)} />
+          </>
+        )}
+        {!isBusiness && !isProfessional && (
+          <Row label="Employment Type" value={app.employmentType} />
+        )}
+      </Card>
 
-        {/* RIGHT — Details */}
-        <div className="space-y-4">
+      {/* ── Business location (self-employed branches) ── */}
+      {(isBusiness || isProfessional) && (
+        <Card title="Business Location" accent={C.navy}>
+          <Row label="State" value={app.businessState} />
+          <Row label="City" value={app.businessCity} />
+          <Row label="Pincode" value={app.businessPincode} />
+          <Row label="Business Place Status" value={app.businessPlaceStatus} />
+        </Card>
+      )}
 
-          {/* Loan summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid ${C.navy}18`}}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{color:C.navy}}>Loan Details</p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ["Loan Amount",   `₹${(submittedApp?.loanAmount??0).toLocaleString("en-IN")}`],
-                ["Tenure",        `${submittedApp?.loanTenure??0} months`],
-                ["Business Type", submittedApp?.businessType??"—"],
-                ["Residence",     submittedApp?.residenceStatus??"—"],
-              ].map(([l,v])=>(
-                <div key={l} className="rounded-xl p-3" style={{background:C.navyBg,border:`1px solid ${C.navy}18`}}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{color:C.gray}}>{l}</p>
-                  <p className="text-sm font-bold truncate" style={{color:C.dark}}>{v}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ── Applicant details ── */}
+      <Card title="Applicant Details" accent={C.teal}>
+        <Row label="Full Name" value={app.fullName} />
+        <Row label="Date of Birth" value={dt(app.dob)} />
+        <Row label="PAN Number" value={app.panNumber?.toUpperCase()} />
+        <Row label="Mobile" value={app.mobile ? `+91 ${app.mobile}` : dash} />
+        <Row label="Email" value={app.email} />
+        <Row label="State" value={app.state} />
+        <Row label="City" value={app.city} />
+        <Row label="Pincode" value={app.pincode} />
+        <Row label="Residence Status" value={app.residenceStatus} />
+      </Card>
 
-          {/* Business details */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid ${C.teal}18`}}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{color:C.teal}}>Business Details</p>
-            <div className="space-y-3">
-              {[
-                ["Business Name",  submittedApp?.businessName??submittedApp?.profession??"—"],
-                ["Turnover",       `₹${(submittedApp?.lastYearTurnover??submittedApp?.currentYearTurnover??0).toLocaleString("en-IN")}`],
-              ].map(([l,v])=>(
-                <div key={l} className="flex items-center justify-between gap-4 py-2 border-b last:border-0"
-                  style={{borderColor:"#f1f5f9"}}>
-                  <span className="text-xs font-semibold uppercase tracking-wide shrink-0" style={{color:C.gray}}>{l}</span>
-                  <span className="text-sm font-bold text-right truncate" style={{color:C.dark}}>{v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Personal details */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid ${C.teal}18`}}>
-            <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{color:C.teal}}>Applicant Details</p>
-            <div className="space-y-3">
-              {[
-                ["Name",    submittedApp?.fullName??"—"],
-                ["Mobile",  `+91 ${submittedApp?.mobile??"—"}`],
-                ["Email",   submittedApp?.email??"—"],
-                ["City",    `${submittedApp?.city??""}, ${submittedApp?.state??""}`],
-                ["PAN",     submittedApp?.panNumber??"—"],
-              ].map(([l,v])=>(
-                <div key={l} className="flex items-center justify-between gap-4 py-2 border-b last:border-0"
-                  style={{borderColor:"#f1f5f9"}}>
-                  <span className="text-xs font-semibold uppercase tracking-wide shrink-0" style={{color:C.gray}}>{l}</span>
-                  <span className="text-sm font-bold text-right truncate" style={{color:C.dark}}>{v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Existing loans */}
-          {((submittedApp?.existingBanks?.length??0) > 0 || (submittedApp?.existingLoanAmount??0) > 0) && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid #e2e8f0`}}>
-              <p className="text-xs font-bold uppercase tracking-wide mb-4" style={{color:C.gray}}>Existing Obligations</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl p-3" style={{background:"#f8fafc"}}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{color:C.gray}}>Monthly EMI</p>
-                  <p className="text-sm font-bold" style={{color:C.dark}}>₹{(submittedApp?.existingEMI??0).toLocaleString("en-IN")}</p>
-                </div>
-                <div className="rounded-xl p-3" style={{background:"#f8fafc"}}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{color:C.gray}}>Outstanding</p>
-                  <p className="text-sm font-bold" style={{color:C.dark}}>₹{(submittedApp?.existingLoanAmount??0).toLocaleString("en-IN")}</p>
-                </div>
-              </div>
-              {(submittedApp?.existingBanks?.length??0)>0&&(
-                <div className="mt-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{color:C.gray}}>Banks</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {submittedApp?.existingBanks.map(b=>(
-                      <span key={b} className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}33`}}>{b}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* ── Existing loan obligations ── */}
+      <Card title="Existing Loan Obligations" accent={C.gray}>
+        <Row label="Existing Total EMI" value={inr(app.existingEMI)} />
+        <Row label="Existing Loan Amount" value={inr(app.existingLoanAmount)} />
+        <Row label="Existing Banks" value={list(banks)} />
+        <Row label="Existing Loan Types" value={list(loanTypes)} />
+      </Card>
 
       {/* Contact note */}
       <div className="rounded-xl px-5 py-4 flex items-start gap-3"
         style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
         <span className="text-lg shrink-0">📞</span>
         <p className="text-sm" style={{color:C.dark}}>
-          Our team will contact you on <strong>+91 {submittedApp?.mobile}</strong> and{" "}
-          <strong>{submittedApp?.email}</strong> within <strong>24 hours</strong>.
+          Our team will contact you on <strong>+91 {app.mobile}</strong> and{" "}
+          <strong>{app.email}</strong> within <strong>24 hours</strong>.
         </p>
       </div>
     </div>
