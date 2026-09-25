@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchMasters, fetchStates, fetchCitiesByState } from "../api/masters";
+import { fetchMasters, fetchStates, fetchCitiesByState, getEmploymentTypes } from "../api/masters";
 import { MASTERS } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
@@ -8,6 +8,8 @@ interface UseMastersResult {
   loading: boolean;
   error: boolean;
   loadCities: (state: string) => string[];
+  /** Employment types for a loan type, backend-first with local-constants fallback. */
+  getEmploymentTypesFor: (loanType: string, fallbackKey: keyof typeof MASTERS) => Promise<string[]>;
 }
 
 const DEFAULT_MASTERS: Masters = {
@@ -63,5 +65,11 @@ export const useMasters = (): UseMastersResult => {
     return [];
   }, [masters.citiesByState]);
 
-  return { masters, loading, error, loadCities };
+  const getEmploymentTypesFor = useCallback(
+    async (loanType: string, fallbackKey: keyof typeof MASTERS): Promise<string[]> =>
+      getEmploymentTypes(loanType, MASTERS[fallbackKey] as readonly string[]),
+    []
+  );
+
+  return { masters, loading, error, loadCities, getEmploymentTypesFor };
 };
