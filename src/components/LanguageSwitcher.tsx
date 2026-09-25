@@ -176,7 +176,9 @@ const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen]             = useState(false);
   const [hoveredCountry, setHoveredCountry] = useState<Country | null>(null);
+  const [flyoutTop, setFlyoutTop]       = useState(0);
   const dropdownRef                     = useRef<HTMLDivElement>(null);
+  const countryListRef                  = useRef<HTMLDivElement>(null);
   const closeTimer                      = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close when clicking outside
@@ -233,17 +235,19 @@ const LanguageSwitcher = () => {
         </svg>
       </button>
 
-      {/* ── Dropdown panel ── */}
+      {/* ── Dropdown panel — single glass surface ── */}
       {isOpen && (
         <div
-          className="absolute right-0 top-10 z-9999 flex flex-row-reverse shadow-2xl rounded-2xl ring-1 ring-slate-900/10 overflow-visible"
+          className="absolute right-0 top-10 z-9999 rounded-2xl shadow-2xl ring-1 ring-white/60 bg-white/90 backdrop-blur-2xl overflow-visible"
           style={{ minWidth: 160 }}
         >
-          {/* RIGHT — country list (fixed column; flyout expands to its left) */}
+          {/* RIGHT — country list (fixed column; flyout floats to its left) */}
           <div
-            className="bg-white rounded-r-2xl py-2 overflow-y-auto"
+            ref={countryListRef}
+            className="py-2 overflow-y-auto"
             style={{ width: 160, maxHeight: 340 }}
             onMouseLeave={handleMouseLeavePanel}
+            onScroll={() => setHoveredCountry(null)}
           >
             {COUNTRIES.map((country) => {
               const isHovered = hoveredCountry?.name === country.name;
@@ -251,9 +255,12 @@ const LanguageSwitcher = () => {
                 <div
                   key={country.name}
                   className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors duration-150 ${
-                    isHovered ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'
+                    isHovered ? 'bg-emerald-500/10 text-emerald-700' : 'hover:bg-slate-900/5 text-slate-600'
                   }`}
-                  onMouseEnter={() => handleMouseEnterCountry(country)}
+                  onMouseEnter={(e) => {
+                    handleMouseEnterCountry(country);
+                    setFlyoutTop(Math.max(0, e.currentTarget.offsetTop - (countryListRef.current?.scrollTop ?? 0)));
+                  }}
                 >
                   {/* Left arrow indicator — flyout opens to the left */}
                   <svg className="w-3 h-3 shrink-0 opacity-40 rotate-180" viewBox="0 0 20 20" fill="currentColor">
@@ -266,15 +273,15 @@ const LanguageSwitcher = () => {
             })}
           </div>
 
-          {/* LEFT — language options (flyout, expands leftward, shown on hover) */}
+          {/* LEFT — language options (floating glass card, top-aligned with the hovered country row) */}
           {hoveredCountry && (
             <div
-              className="bg-white border-r border-slate-100 rounded-l-2xl py-2 flex flex-col justify-center"
-              style={{ width: 140 }}
+              className="absolute right-full rounded-2xl shadow-2xl ring-1 ring-white/60 bg-white/70 backdrop-blur-2xl py-2"
+              style={{ top: flyoutTop, width: 140 }}
               onMouseEnter={handleMouseEnterLanguages}
               onMouseLeave={handleMouseLeavePanel}
             >
-              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400/90">
                 {hoveredCountry.name}
               </p>
               {hoveredCountry.languages.map((lang) => {
@@ -285,8 +292,8 @@ const LanguageSwitcher = () => {
                     onClick={() => handleLanguageSelect(lang.code)}
                     className={`flex items-center gap-2 px-3 py-2 w-full text-left transition-colors duration-150 cursor-pointer ${
                       isActive
-                        ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                        : 'hover:bg-slate-50 text-slate-600'
+                        ? 'bg-emerald-500/15 text-emerald-700 font-semibold'
+                        : 'hover:bg-slate-900/5 text-slate-600'
                     }`}
                   >
                     <span className={`fi fi-${lang.flagCode} text-base rounded-sm shrink-0`} />
