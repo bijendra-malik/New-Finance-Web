@@ -109,7 +109,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.state) e.state="State is required";
     if(!draft.city) e.city="City is required";
     if(!draft.pincode) e.pincode="Pincode is required";
-    else if(!/^\d{6}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
+    else if(!/^[1-9]\d{5}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
     if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
     else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
 

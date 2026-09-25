@@ -28,11 +28,12 @@ export const FieldError = ({ msg }: { msg?: string }) => msg
 interface TextFieldProps {
   type?: string; value: string; onChange: (v: string) => void; placeholder: string;
   err?: string; maxLength?: number; extraCls?: string; disabled?: boolean; min?: number; max?: number;
+  inputMode?: "text" | "numeric" | "decimal" | "tel" | "email" | "url" | "search" | "none";
 }
-export const TextField = memo(({ type = "text", value, onChange, placeholder, err, maxLength, extraCls = "", disabled = false, min, max }: TextFieldProps) => (
+export const TextField = memo(({ type = "text", value, onChange, placeholder, err, maxLength, extraCls = "", disabled = false, min, max, inputMode }: TextFieldProps) => (
   <>
     <input type={type} value={value} placeholder={placeholder}
-      maxLength={maxLength} disabled={disabled} min={min} max={max}
+      maxLength={maxLength} disabled={disabled} min={min} max={max} inputMode={inputMode}
       onChange={e => onChange(e.target.value)}
       className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 ${extraCls}`}
       style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: disabled ? "#f8fafc" : "#fafafa" }}
@@ -307,6 +308,14 @@ interface PincodeInputFieldProps {
   id: string; label: string; required?: boolean;
   value: string; onChange: (v: string) => void; err?: string;
 }
+
+/** Indian pincodes are exactly 6 digits and never start with 0. */
+export const PINCODE_RE = /^[1-9]\d{5}$/;
+export const isValidPincode = (value: string) => PINCODE_RE.test(value);
+
+export const sanitizePincode = (raw: string) =>
+  raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
+
 // Simple 6-digit pincode entry — digits only, no dropdowns.
 export const PincodeInputField = memo(({
   id, label, required = true, value, onChange, err,
@@ -315,9 +324,11 @@ export const PincodeInputField = memo(({
     <FieldLabel label={label} required={required} />
     <TextField
       value={value}
-      onChange={v => onChange(v.replace(/\D/g, "").slice(0, 6))}
+      onChange={v => onChange(sanitizePincode(v))}
       placeholder="Enter 6-digit pincode"
       err={err}
+      maxLength={6}
+      inputMode="numeric"
     />
   </div>
 ));

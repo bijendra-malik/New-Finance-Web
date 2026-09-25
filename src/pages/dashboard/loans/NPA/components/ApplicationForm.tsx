@@ -204,7 +204,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.collateralPropertyState) e.collateralPropertyState="Collateral property state is required";
     if(!draft.collateralPropertyCity) e.collateralPropertyCity="Collateral property city is required";
     if(!draft.collateralPropertyPincode) e.collateralPropertyPincode="Collateral property pincode is required";
-    else if(!/^\d{6}$/.test(draft.collateralPropertyPincode)) e.collateralPropertyPincode="Enter valid 6-digit pincode";
+    else if(!/^[1-9]\d{5}$/.test(draft.collateralPropertyPincode)) e.collateralPropertyPincode="Enter valid 6-digit pincode";
 
     if(!draft.npaStatus) e.npaStatus="NPA status is required";
     else if(draft.npaStatus===OTS_OFFER_OPTION&&!draft.otsOfferAmount) e.otsOfferAmount="OTS offer amount is required";
@@ -262,7 +262,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.businessState) e.businessState="Business state is required";
       if(!draft.businessCity) e.businessCity="Business city is required";
       if(!draft.businessPincode) e.businessPincode="Business pincode is required";
-      else if(!/^\d{6}$/.test(draft.businessPincode)) e.businessPincode="Enter valid 6-digit pincode";
+      else if(!/^[1-9]\d{5}$/.test(draft.businessPincode)) e.businessPincode="Enter valid 6-digit pincode";
       if(!draft.businessPlaceStatus) e.businessPlaceStatus="Status of business place is required";
       else if(draft.businessPlaceStatus===OTHER_OPTION&&!draft.businessPlaceStatusOther.trim()) e.businessPlaceStatusOther="Please mention status of business place";
     }
@@ -287,7 +287,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(!draft.state) e.state="State is required";
     if(!draft.city) e.city="City is required";
     if(!draft.pincode) e.pincode="Pincode is required";
-    else if(!/^\d{6}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
+    else if(!/^[1-9]\d{5}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
     if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
     else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
 
