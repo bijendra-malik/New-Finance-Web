@@ -1,4 +1,5 @@
 import type { EducationLoanApplication } from "./ApplicationForm";
+import { fmtTenure } from "../../../../../components/form/successSections";
 
 interface LoanStatusProps {
   applicationId: string;
@@ -133,7 +134,7 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
             <div className="grid grid-cols-2 gap-3">
               {[
                 ["Loan Amount",   `₹${(submittedApp?.loanAmount??0).toLocaleString("en-IN")}`],
-                ["Tenure",        `${submittedApp?.loanTenure??0} months`],
+                ["Tenure", fmtTenure(submittedApp?.loanTenure)],
                 ["Country",       submittedApp?.educationCountry??"—"],
                 ["Field of Study",submittedApp?.fieldOfStudy??"—"],
               ].map(([l,v])=>(

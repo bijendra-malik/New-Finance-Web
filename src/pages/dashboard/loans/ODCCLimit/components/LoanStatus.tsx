@@ -1,4 +1,5 @@
 import type { ODCCLimitApplication } from "./ApplicationForm";
+import { fmtTenure } from "../../../../../components/form/successSections";
 
 interface LoanStatusProps {
   applicationId: string;
@@ -133,7 +134,7 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
             <div className="grid grid-cols-2 gap-3">
               {[
                 ["Limit Amount",  `₹${(submittedApp?.loanAmount??0).toLocaleString("en-IN")}`],
-                ["Tenure",        `${submittedApp?.loanTenure??0} months`],
+                ["Tenure", fmtTenure(submittedApp?.loanTenure)],
                 ["Collateral",    submittedApp?.collateralPropertyType??"—"],
                 ["Employment",    submittedApp?.employmentType??"—"],
               ].map(([l,v])=>(
