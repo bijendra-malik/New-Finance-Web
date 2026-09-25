@@ -137,9 +137,9 @@ const GoldLoanDashboard = () => {
               style={{ background:`linear-gradient(90deg,${C.teal},${C.navy})` }}/>
           </div>
 
-          {activeTab === "application" && (
-            <ApplicationForm userName={user.name} userEmail={user.email} onSubmit={handleApplicationSubmit} />
-          )}
+          <div style={activeTab === "application" ? undefined : { display: "none" }}>
+          <ApplicationForm userName={user.name} userEmail={user.email} onSubmit={handleApplicationSubmit} />
+        </div>
           {activeTab === "status" && (
             <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
           )}
