@@ -12,6 +12,7 @@ export interface SuccessRow {
   value?: string | number | null;
   /** Hide the row entirely when true (used for conditional product fields). */
   omit?: boolean;
+  force?: boolean;
 }
 
 export interface SuccessSection {
@@ -68,8 +69,25 @@ export const fmtDateTime = (v?: string | null) => {
 export const fmtQty = (n: number | undefined | null, unit: string) =>
   n === undefined || n === null || isNaN(n) || n === 0 ? dash : `${n.toLocaleString("en-IN")} ${unit}`;
 
+export const fmtTenure = (months?: number | null) => {
+  if (months === undefined || months === null || isNaN(months) || months <= 0) return dash;
+  if (months % 12 === 0) {
+    const years = months / 12;
+    return `${years.toLocaleString("en-IN")} ${years === 1 ? "year" : "years"}`;
+  }
+  return `${months.toLocaleString("en-IN")} months`;
+};
+
 /** Joins a string list → "a, b, c", tolerating empty. */
 export const fmtList = (arr?: string[] | null) => (arr && arr.length > 0 ? arr.join(", ") : dash);
+
+/** Transaction bank display: the backend may not persist the individual banks list,
+ *  so fall back to the stored name itself ("Multiple Transaction Banks"). */
+export const fmtTxnBank = (name?: string, banks?: string[]) =>
+  name === "Multiple Transaction Banks" && banks && banks.length > 0 ? fmtList(banks) : fmtText(name);
+
+/** The backend merges custom entries into the arrays; drop the "Other" sentinel for display. */
+export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !== "Other");
 
 // ── Section builder ───────────────────────────────────────────────────────────
 
@@ -129,7 +147,7 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
     title: opts.loanSectionTitle ?? "Loan Requirement",
     rows: [
       ...(app.loanAmount !== undefined ? [{ label: opts.amountLabel ?? "Loan Amount", value: fmtINR(app.loanAmount) }] : []),
-      ...(app.loanTenure !== undefined ? [{ label: "Tenure", value: fmtQty(app.loanTenure, "months") }] : []),
+      ...(app.loanTenure !== undefined ? [{ label: "Tenure", value: fmtTenure(app.loanTenure) }] : []),
       ...(opts.extraLoanRows ?? []),
     ],
   });
@@ -173,42 +191,47 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Nature of Business", value: app.natureOfBusiness },
       { label: "Industry Type", value: [app.industryType, app.subIndustry].filter(Boolean).join(" — ") || undefined },
       { label: "Established On", value: fmtDate(app.businessEstablishedDate) },
-      { label: "Transaction Bank", value: app.transactionBankName === "Multiple Transaction Banks" ? fmtList(app.transactionBanks) : app.transactionBankName },
-      { label: "Last Year Turnover", value: app.lastYearTurnover ? fmtINR(app.lastYearTurnover) : undefined },
-      { label: "Last Year Net Income", value: app.lastYearNetIncome ? fmtINR(app.lastYearNetIncome) : undefined },
+      { label: "Transaction Bank", value: fmtTxnBank(app.transactionBankName, app.transactionBanks) },
+      { label: "Last Year Turnover", value: app.lastYearTurnover !== undefined ? fmtINR(app.lastYearTurnover) : undefined, force: true },
+      { label: "Last 2 Years Turnover", value: app.last2YearsTurnover !== undefined ? fmtINR(app.last2YearsTurnover) : undefined, force: true },
+      { label: "Last Year Net Income", value: app.lastYearNetIncome !== undefined ? fmtINR(app.lastYearNetIncome) : undefined, force: true },
+      { label: "Last 2 Years Net Income", value: app.last2YearsNetIncome !== undefined ? fmtINR(app.last2YearsNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
+      { label: "Business Pincode", value: app.businessPincode },
+      { label: "Business Place Status", value: app.businessPlaceStatus },
     );
   } else if (app.employmentType === "Self Employed - Professional") {
     employment.push(
       { label: "Profession", value: app.profession },
       { label: "GST Number", value: app.gstNumber },
       { label: "Company PAN", value: app.companyPanNumber },
-      { label: "Transaction Bank", value: app.transactionBankName === "Multiple Transaction Banks" ? fmtList(app.transactionBanks) : app.transactionBankName },
-      { label: "Current Year Turnover", value: app.currentYearTurnover ? fmtINR(app.currentYearTurnover) : undefined },
-      { label: "Current Year Net Income", value: app.currentYearNetIncome ? fmtINR(app.currentYearNetIncome) : undefined },
-      { label: "Previous Year Turnover", value: app.priorYearTurnover ? fmtINR(app.priorYearTurnover) : undefined },
+      { label: "Transaction Bank", value: fmtTxnBank(app.transactionBankName, app.transactionBanks) },
+      { label: "Current Year Turnover", value: app.currentYearTurnover !== undefined ? fmtINR(app.currentYearTurnover) : undefined, force: true },
+      { label: "Current Year Net Income", value: app.currentYearNetIncome !== undefined ? fmtINR(app.currentYearNetIncome) : undefined, force: true },
+      { label: "Previous Year Turnover", value: app.priorYearTurnover !== undefined ? fmtINR(app.priorYearTurnover) : undefined, force: true },
+      { label: "Previous Year Net Income", value: app.previousYearNetIncome !== undefined ? fmtINR(app.previousYearNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
+      { label: "Business Pincode", value: app.businessPincode },
+      { label: "Business Place Status", value: app.businessPlaceStatus },
     );
   }
   sections.push({ title: "Employment & Income", rows: employment });
 
   // ── 5. Existing Loan Obligations ─────────────────────────────────────
-  const banks = [...(app.existingBanks ?? []), ...(app.existingBanksOther ?? app.otherBankList ?? [])];
-  const loanTypes = [...(app.existingLoanTypes ?? []), ...(app.existingLoanTypesOther ?? app.otherLoanList ?? [])];
-  const hasObligations =
-    (app.existingEMI ?? 0) > 0 || (app.existingLoanAmount ?? 0) > 0 || banks.length > 0 || loanTypes.length > 0;
+  const banks = stripOther([...(app.existingBanks ?? []), ...(app.existingBanksOther ?? app.otherBankList ?? [])]);
+  const loanTypes = stripOther([...(app.existingLoanTypes ?? []), ...(app.existingLoanTypesOther ?? app.otherLoanList ?? [])]);
 
-  if (hasObligations) {
-    sections.push({
-      title: "Existing Loan Obligations",
-      rows: [
-        { label: "Existing Total EMI", value: fmtINR(app.existingEMI) },
-        { label: "Existing Loan Amount", value: fmtINR(app.existingLoanAmount) },
-        { label: "Existing Banks", value: fmtList(banks) },
-        { label: "Existing Loan Types", value: fmtList(loanTypes) },
-      ],
-    });
-  }
+  // Always shown: the forms instruct "Fill 0 if you have no existing loans",
+  // so 0 is the user's entry, not an omission. force keeps ₹0 rows visible.
+  sections.push({
+    title: "Existing Loan Obligations",
+    rows: [
+      { label: "Existing Total EMI", value: fmtINR(app.existingEMI), force: true },
+      { label: "Existing Loan Amount", value: fmtINR(app.existingLoanAmount), force: true },
+      { label: "Existing Banks", value: fmtList(banks) },
+      { label: "Existing Loan Types", value: fmtList(loanTypes) },
+    ],
+  });
 
   // ── 6. Caller-supplied custom sections ──────────────────────────────
   if (opts.extraSections) sections.push(...opts.extraSections);
