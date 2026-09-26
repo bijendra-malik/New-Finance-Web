@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://indexiafinance.com/</loc><priority>1.0</priority></url>
+
+  <!-- Loan details -->
+  <url><loc>https://indexiafinance.com/showdetails/personal-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/business-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/home-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/loanAP-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/balance-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/car-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/credit-card</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/education-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/project-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/commercial-purchase</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/lease-rental</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/working-capital</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/film-funding</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/od-cc-limit</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/loan-against-share</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/npa</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/gold-loan</loc><priority>0.9</priority></url>
+  <url><loc>https://indexiafinance.com/showdetails/fdi</loc><priority>0.9</priority></url>
+
+  <!-- Required documents -->
+  <url><loc>https://indexiafinance.com/requireddocument</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/personal-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/business-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/home-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/loan-against-property</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/balance-transfer</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/car-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/credit-card</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/education-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/project-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/commercial-purchase</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/lease-rental</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/working-capital</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/film-funding</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/od-cc-limit</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/loan-against-share</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/npa</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/gold-loan</loc><priority>0.7</priority></url>
+  <url><loc>https://indexiafinance.com/requireddocument/fdi</loc><priority>0.7</priority></url>
+
+  <!-- Tools & static pages -->
+  <url><loc>https://indexiafinance.com/emi-calculator</loc><priority>0.8</priority></url>
+  <url><loc>https://indexiafinance.com/eligibility-calculator</loc><priority>0.8</priority></url>
+  <url><loc>https://indexiafinance.com/contact</loc><priority>0.6</priority></url>
+  <url><loc>https://indexiafinance.com/franchise-login</loc><priority>0.6</priority></url>
+  <url><loc>https://indexiafinance.com/be-an-associate</loc><priority>0.6</priority></url>
+  <url><loc>https://indexiafinance.com/login</loc><priority>0.3</priority></url>
+</urlset>
