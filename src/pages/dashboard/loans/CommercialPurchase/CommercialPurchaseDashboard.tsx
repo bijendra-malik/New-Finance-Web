@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationForm from "./components/ApplicationForm";
 import LoanStatus from "./components/LoanStatus";
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuth } from "../../../../context/authContext";
 import type { CommercialPurchaseApplication } from "./components/ApplicationForm";
 
 type Tab = "application" | "status";

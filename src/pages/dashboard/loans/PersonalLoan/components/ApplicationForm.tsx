@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../../../../context/AuthContext";
+import { useAuth } from "../../../../../context/authContext";
 import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";

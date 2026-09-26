@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "../../../../../context/AuthContext";
+import { useAuth } from "../../../../../context/authContext";
 import { applyHomeLoan } from "../../../../../api/loanApplications";
 import type { HomeLoanApplication } from "../../../../../api/loanApplications";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
