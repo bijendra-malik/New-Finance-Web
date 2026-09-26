@@ -7,8 +7,8 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { toISODate } from "../../utils/formatters";
 
 export const FormCard = ({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) => (
-  <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal}22` }}>
-    <div className="px-6 py-4 border-b" style={{ background: `linear-gradient(90deg,${C.tealBg},${C.navyBg})`, borderColor: `${C.teal}20` }}>
+  <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal22}` }}>
+    <div className="px-6 py-4 border-b" style={{ background: `linear-gradient(90deg,${C.teal14},${C.navy14})`, borderColor: `${C.teal20}` }}>
       <h2 className="text-base font-bold uppercase tracking-wide" style={{ color: C.dark }}>{title}</h2>
       <p className="text-xs mt-0.5" style={{ color: C.gray }}>{subtitle}</p>
     </div>
@@ -37,7 +37,7 @@ export const TextField = memo(({ type = "text", value, onChange, placeholder, er
       onChange={e => onChange(e.target.value)}
       className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 ${extraCls}`}
       style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: disabled ? "#f8fafc" : "#fafafa" }}
-      onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal}22`; } }}
+      onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; } }}
       onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}
     />
     <FieldError msg={err} />
@@ -55,7 +55,7 @@ export const SelectField = memo(({ value, onChange, options, placeholder, err, d
     <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
       className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
       style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: disabled ? "#f8fafc" : "#fafafa", color: value ? C.dark : C.gray }}
-      onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal}22`; } }}
+      onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; } }}
       onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}>
       <option value="">{placeholder}</option>
       {options.map(o => <option key={o} value={o}>{formatOption ? formatOption(o) : o}</option>)}
@@ -74,7 +74,7 @@ export const NumberSelectField = memo(({ value, onChange, options, placeholder, 
     <select value={value || ""} onChange={e => onChange(parseInt(e.target.value))}
       className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none"
       style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: "#fafafa" }}
-      onFocus={e => { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal}22`; }}
+      onFocus={e => { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; }}
       onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}>
       <option value="">{placeholder}</option>
       {options.map(n => <option key={n} value={n}>{formatOption ? formatOption(n) : n}</option>)}
@@ -126,7 +126,7 @@ interface DateInputProps { value?: string; onClick?: () => void; placeholder?: s
 const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
   ({ value, onClick, placeholder, err }, ref) => (
     <input ref={ref} value={value || ""} onClick={onClick} placeholder={placeholder} readOnly
-      className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer focus:outline-none focus:border-[#26ae90] focus:ring-2 focus:ring-[#26ae90]/20 border ${err ? "border-red-500" : "border-slate-200"}`}
+      className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer focus:outline-none focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-20) border ${err ? "border-red-500" : "border-slate-200"}`}
       style={{ background: "#fafafa", color: C.dark }} />
   )
 );
@@ -173,6 +173,12 @@ interface PillMultiSelectProps {
 }
 export const PillMultiSelect = memo(({ options, selected, onChange, color = C.teal, disabled = false }: PillMultiSelectProps) => {
   const toggle = (item: string) => { if (!disabled) onChange(selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item]); };
+  // Alpha tints can't be appended to a var() colour, so each shade is looked
+  // up by the brand colour's variable name in the :root token set.
+  const shade = (alpha: string): string => {
+    const m = /var\(--brand-([a-z-]+)\)/.exec(color);
+    return m ? `var(--brand-${m[1]}-${alpha})` : `${color}${alpha}`;
+  };
   return (
     <div className={`flex flex-wrap gap-2 ${disabled ? "opacity-50 pointer-events-none select-none" : ""}`} aria-disabled={disabled}>
       {options.map(opt => {
@@ -181,7 +187,7 @@ export const PillMultiSelect = memo(({ options, selected, onChange, color = C.te
           <button key={opt} type="button" onClick={() => toggle(opt)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
             style={active
-              ? { background: color, color: "#fff", borderColor: color, boxShadow: `0 2px 8px ${color}44` }
+              ? { background: color, color: "#fff", borderColor: color, boxShadow: `0 2px 8px ${shade("44")}` }
               : { background: "#fff", color: C.gray, borderColor: "#e2e8f0" }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.borderColor = color; }}
             onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = "#e2e8f0"; }}>
@@ -208,6 +214,11 @@ interface OtherOptionListProps {
   existingOptions?: readonly string[]; required?: boolean; max?: number;
 }
 export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemove, color = C.teal, existingOptions, required, max }: OtherOptionListProps) => {
+  // Alpha tints can't be appended to a var() colour — resolve via the token set.
+  const shade = (alpha: string): string => {
+    const m = /var\(--brand-([a-z-]+)\)/.exec(color);
+    return m ? `var(--brand-${m[1]}-${alpha})` : `${color}${alpha}`;
+  };
   const [input, setInput] = useState("");
   const [dupErr, setDupErr] = useState("");
   const limitReached = max !== undefined && items.length >= max;
@@ -241,7 +252,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
               onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
               className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none"
               style={{ border: `1.5px solid ${dupErr ? "#ef4444" : "#e2e8f0"}`, background: "#fafafa" }}
-              onFocus={e => { if (!dupErr) { e.target.style.borderColor = color; e.target.style.boxShadow = `0 0 0 3px ${color}22`; } }}
+              onFocus={e => { if (!dupErr) { e.target.style.borderColor = color; e.target.style.boxShadow = `0 0 0 3px ${shade("22")}`; } }}
               onBlur={e => { e.target.style.borderColor = dupErr ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}
             />
             <FieldError msg={dupErr} />
@@ -258,7 +269,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
         <ul className="mt-3 space-y-1.5">
           {items.map((item, i) => (
             <li key={`${item}-${i}`} className="flex items-center justify-between px-3 py-2 rounded-lg text-sm"
-              style={{ background: `${color}14`, border: `1px solid ${color}22` }}>
+              style={{ background: shade("14"), border: `1px solid ${shade("22")}` }}>
               <span style={{ color: C.dark }}>{i + 1}. {item}</span>
               <button type="button" onClick={() => onRemove(i)}
                 className="text-xs font-semibold ml-3 shrink-0 hover:underline" style={{ color: "#ef4444" }}>

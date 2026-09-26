@@ -249,7 +249,7 @@ const Header = () => {
                           <Link
                             key={item.slug}
                             to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-[#26ae90] hover:bg-[#26ae90] border-b border-slate-100 last:border-b-0"
+                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-(--brand-teal) hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
                             onClick={closeMobileMenu}
                           >
                             → {t(item.key)}
@@ -299,8 +299,8 @@ const Header = () => {
           content: "";
           position: absolute;
           inset: 0;
-          border-top: 2px solid #26ae90;
-          border-bottom: 2px solid #26ae90;
+          border-top: 2px solid var(--brand-teal);
+          border-bottom: 2px solid var(--brand-teal);
           transform: scaleY(2);
           opacity: 0;
           transition: .3s;
@@ -312,7 +312,7 @@ const Header = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background-color: #26ae90;
+          background-color: var(--brand-teal);
           transform: scale(0);
           opacity: 0;
           transition: .3s;
@@ -347,7 +347,7 @@ const Header = () => {
           opacity: 1;
           transition: opacity .3s ease, transform .3s ease;
           flex-shrink: 0;
-          color: #26ae90;
+          color: var(--brand-teal);
         }
 
         .loan-item:hover .arrow-icon {

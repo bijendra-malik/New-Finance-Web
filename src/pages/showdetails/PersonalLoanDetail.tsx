@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/personal-banner.png";
 import personaldetails from "../../assets/personal-loan/personal-loan.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
@@ -218,11 +218,11 @@ const sections: DetailSection[] = [
             },
           ].map((item) => (
             <div key={item.type} className="rounded-xl border p-4"
-              style={{ borderColor: item.recommended ? "#066a9c33" : "#e5e7eb", background: item.recommended ? "#EFF7FF" : "#FAFAFA" }}>
+              style={{ borderColor: item.recommended ? "var(--brand-navy)33" : "#e5e7eb", background: item.recommended ? "#EFF7FF" : "#FAFAFA" }}>
               <p className="font-semibold text-gray-800 text-sm mb-1.5">
                 {item.type}
                 {item.recommended && (
-                  <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "#066a9c", color: "#fff" }}>
+                  <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--brand-navy)", color: "#fff" }}>
                     Recommended
                   </span>
                 )}

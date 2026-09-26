@@ -39,7 +39,7 @@ export interface ShowDetailLayoutProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 // Shared section-heading component — gradient underline matching text width
 const SectionHeading = ({ children }: { children: React.ReactNode }) => (
@@ -47,7 +47,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
     {/* left accent bar — full height of heading */}
     <div
       className="w-0.75 rounded-full shrink-0 self-stretch"
-      style={{ background: "linear-gradient(180deg,#27ae90,#066a9c)", minHeight: "1.25rem" }}
+      style={{ background: "linear-gradient(180deg,#27ae90,var(--brand-navy))", minHeight: "1.25rem" }}
     />
     <div className="inline-block">
       <h2 className="text-base md:text-lg font-bold text-gray-900 leading-snug">
@@ -56,7 +56,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
       {/* gradient underline — only as wide as heading text */}
       <div
         className="mt-0.5 h-0.5 w-full rounded-full"
-        style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 60%,transparent 100%)" }}
+        style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 60%,transparent 100%)" }}
       />
     </div>
   </div>
@@ -131,11 +131,11 @@ const ShowDetailLayout = ({
               {/* Gradient underline — two-bar accent */}
               <div className="flex items-center gap-1.5 mb-3">
                 <div className="h-1 w-10 rounded-full" style={{ background: "#27ae90" }} />
-                <div className="h-1 w-6 rounded-full" style={{ background: "#f2f231" }} />
+                <div className="h-1 w-6 rounded-full" style={{ background: "var(--brand-yellow)" }} />
                 <div className="h-1 w-3 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
               </div>
 
-              <p className="text-base md:text-lg font-semibold italic mb-8" style={{ color: "#f2f231" }}>
+              <p className="text-base md:text-lg font-semibold italic mb-8" style={{ color: "var(--brand-yellow)" }}>
                 {bannerTagline}
               </p>
 
@@ -145,7 +145,7 @@ const ShowDetailLayout = ({
                   href={docsHref}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                   style={{
-                    background: "linear-gradient(135deg, #066a9c 0%, #26ae90 100%)",
+                    background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
                     boxShadow: "0 4px 18px rgba(6,106,156,0.45)",
                   }}
                 >
@@ -187,7 +187,7 @@ const ShowDetailLayout = ({
             transparent 0deg,
             transparent 280deg,
             #22d3ee 300deg,
-            #2563eb 330deg,
+            var(--brand-blue) 330deg,
             #10b981 355deg,
             transparent 360deg
           );
@@ -205,7 +205,7 @@ const ShowDetailLayout = ({
           font-weight: 700;
           font-size: 14px;
           color: #ffffff;
-          background: linear-gradient(135deg, #26ae90 0%, #066a9c 100%);
+          background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%);
           border: none;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -238,7 +238,7 @@ const ShowDetailLayout = ({
             <button
               onClick={() => setExpanded((v) => !v)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-xs font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50"
-              style={{ borderColor: "#066a9c55", color: ACCENT }}
+              style={{ borderColor: "var(--brand-navy-55)", color: ACCENT }}
             >
               {expanded ? "Read Less" : "Read More"}
               <svg

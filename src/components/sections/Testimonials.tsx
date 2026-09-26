@@ -22,14 +22,14 @@ import userImg6 from "../../assets/Users/testimonial-6.jpg"
 
 // Brand Color Constants — naya palette
 const BRAND_COLORS = {
-  BISLERI_GREEN: "#26ae90", // teal-green — primary accent (badges, verified tick, CTA highlights)
-  LIME_GREEN: "#f2f231",    // yellow — ratings/stars highlight color
-  DARK_BLUE: "#066a9c",     // deep blue — primary accent bar / arrows / headings
-  GREY: "#7b7b7b",          // neutral grey — secondary text
-  NAVY_DARK: "#286090",     // medium blue — main text / names / headings
+  BISLERI_GREEN: "var(--brand-teal)", // teal-green — primary accent (badges, verified tick, CTA highlights)
+  LIME_GREEN: "var(--brand-yellow)",    // yellow — ratings/stars highlight color
+  DARK_BLUE: "var(--brand-navy)",     // deep blue — primary accent bar / arrows / headings
+  GREY: "var(--brand-gray)",          // neutral grey — secondary text
+  NAVY_DARK: "var(--brand-dark)",     // medium blue — main text / names / headings
   WHITE: "#FFFFFF",
   LIGHT_BG: "#F8FAFC",
-  lime: "#f2f231",          // same yellow, used for top accent line
+  lime: "var(--brand-yellow)",          // same yellow, used for top accent line
 };
 
 interface Testimonial {
@@ -471,7 +471,7 @@ const TrustMetric = ({
           <p className="text-[18px] md:text-[20px] font-black" style={{ color: color }}>
             {value}
           </p>
-          <p className="text-[12px] font-semibold" style={{ color: "#286090" }}>{label}</p>
+          <p className="text-[12px] font-semibold" style={{ color: "var(--brand-dark)" }}>{label}</p>
         </div>
       </div>
   </div>
@@ -514,7 +514,7 @@ const Testimonials = () => {
     <section className="w-full py-8 md:py-15 px-4 md:px-8 relative overflow-hidden" style={{ background: "rgb(240, 249, 255)" }}>
       <div
         className="absolute top-0 left-0 w-full h-0.5 z-20"
-        style={{ background: "linear-gradient(90deg, #066a9c, #26ae90, #f2f231)" }}
+        style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))" }}
       />
 
       {/* Subtle overlay — same bg, just a slight tint for depth */}
@@ -530,7 +530,7 @@ const Testimonials = () => {
           {/* Main Title with Animation */}
           <h2
             className="text-3xl sm:text-3xl md:text-5xl font-black mb-4 tracking-tight animate-fade-in drop-shadow-sm"
-            style={{ color: "#066a9c" }}
+            style={{ color: "var(--brand-navy)" }}
           >
             What Our{" "}
             <span
@@ -547,7 +547,7 @@ const Testimonials = () => {
           </h2>
 
           {/* Subtitle */}
-          <p className="text-sm md:text-sm mb-0 font-medium" style={{ color: "#286090" }}>
+          <p className="text-sm md:text-sm mb-0 font-medium" style={{ color: "var(--brand-dark)" }}>
             Join over{" "}
             <span className="font-black" style={{ color: BRAND_COLORS.BISLERI_GREEN }}>
               1,00,000+ satisfied customers

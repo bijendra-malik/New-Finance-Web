@@ -12,8 +12,8 @@ const Section = ({ section }: { section: SuccessSection }) => {
   const rows = section.rows.filter(r => !r.omit && (r.force || !(r.value === undefined || r.value === null || String(r.value).trim() === "" || String(r.value).trim() === "0")));
   if (rows.length === 0) return null;
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: `1px solid ${C.teal}1f` }}>
-      <div className="px-6 py-3.5 border-b" style={{ background: C.tealBg, borderColor: `${C.teal}1f` }}>
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: `1px solid ${C.teal1f}` }}>
+      <div className="px-6 py-3.5 border-b" style={{ background: C.teal14, borderColor: `${C.teal1f}` }}>
         <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.navy }}>{section.title}</p>
       </div>
       <div className="px-6 divide-y" style={{ borderColor: "#f1f5f9" }}>
@@ -31,12 +31,12 @@ const Section = ({ section }: { section: SuccessSection }) => {
 const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantName, mobile, email, sections }: SubmissionSuccessProps) => (
   <div className="max-w-3xl mx-auto space-y-5">
     {/* ── Receipt header — letterhead style ── */}
-    <div className="rounded-2xl overflow-hidden shadow-xl bg-white" style={{ border: `1px solid ${C.teal}33` }}>
+    <div className="rounded-2xl overflow-hidden shadow-xl bg-white" style={{ border: `1px solid ${C.teal33}` }}>
       <div className="h-1.5" style={{ background: `linear-gradient(90deg,${C.teal},${C.navy})` }} />
 
       <div className="px-7 pt-8 pb-6 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-          style={{ background: `linear-gradient(135deg,${C.teal}1a,${C.navy}1a)`, border: `2px solid ${C.teal}` }}>
+          style={{ background: `linear-gradient(135deg,${C.teal1a},${C.navy1a})`, border: `2px solid ${C.teal}` }}>
           <svg className="w-8 h-8" style={{ color: C.teal }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -48,7 +48,7 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
 
         {/* Reference badge — styled like an official receipt number */}
         <div className="inline-flex flex-col items-center px-8 py-4 rounded-2xl mb-6"
-          style={{ background: C.navyBg, border: `1.5px dashed ${C.navy}55` }}>
+          style={{ background: C.navy14, border: `1.5px dashed ${C.navy55}` }}>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: C.gray }}>Application Reference No.</p>
           <p className="text-xl font-extrabold tracking-widest" style={{ color: C.navy, fontFamily: "'Courier New', monospace" }}>{refNo}</p>
           {fullId && <p className="text-[10px] mt-1.5" style={{ color: C.gray }}>Ref ID: {fullId}</p>}
@@ -62,7 +62,7 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
       </div>
 
       {/* ── At-a-glance strip: applicant + product + status ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: `${C.teal}1f`, background: "#fbfdfc" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: `${C.teal1f}`, background: "#fbfdfc" }}>
         {[
           ["Product", productName],
           ["Applicant", fmtText(applicantName)],
@@ -80,8 +80,8 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
     {sections.map(s => <Section key={s.title} section={s} />)}
 
     {/* ── What happens next + footer ── */}
-    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal}33` }}>
-      <div className="px-6 py-4 flex items-start gap-3" style={{ background: C.tealBg }}>
+    <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal33}` }}>
+      <div className="px-6 py-4 flex items-start gap-3" style={{ background: C.teal14 }}>
         <span className="text-lg shrink-0">📞</span>
         <div>
           <p className="text-sm font-bold mb-0.5" style={{ color: C.dark }}>What happens next?</p>
@@ -93,7 +93,7 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
           </p>
         </div>
       </div>
-      <div className="px-6 py-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2" style={{ borderTop: `1px solid ${C.teal}1f` }}>
+      <div className="px-6 py-3 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2" style={{ borderTop: `1px solid ${C.teal1f}` }}>
         <p className="text-[10px]" style={{ color: C.gray }}>
           This is a computer-generated acknowledgement of your submission. No signature required.
         </p>

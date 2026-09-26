@@ -31,10 +31,10 @@ const PageBanner = ({ breadcrumb, title, highlight, tagline }: PageBannerProps) 
 
       <h1 className="mb-3 text-2xl font-extrabold leading-tight text-white md:text-4xl">
         {title}{" "}
-        {highlight && <span style={{ color: "#f2f231" }}>{highlight}</span>}
+        {highlight && <span style={{ color: "var(--brand-yellow)" }}>{highlight}</span>}
       </h1>
       {tagline && (
-        <p className="text-lg font-semibold italic md:text-xl" style={{ color: "#f2f231" }}>
+        <p className="text-lg font-semibold italic md:text-xl" style={{ color: "var(--brand-yellow)" }}>
           {tagline}
         </p>
       )}

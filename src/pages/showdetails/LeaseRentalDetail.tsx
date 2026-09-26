@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/LeaseRental-banner.png";
 import LeaseRentalImg from "../../assets/personal-loan/leaserental-Details.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const NumberedList = ({ items }: { items: [string, string][] }) => (
   <ol className="space-y-3 mt-1">

@@ -7,15 +7,15 @@ import useSEO from "../hooks/useSEO";
 
 // ── Design tokens (Bisleri green / lime / deep blue / grey brief) ─────────────
 const T = {
-  navy: "#066a9c",       // deep blue — primary dark, headers, hero
+  navy: "var(--brand-navy)",       // deep blue — primary dark, headers, hero
   navyDeep: "#032B5C",   // darker blue for gradients/depth
-  gold: "#f2f231",       // lime — CTA, high-energy accents
+  gold: "var(--brand-yellow)",       // lime — CTA, high-energy accents
   goldSoft: "#E7F98F",   // soft lime for text-on-dark / highlights
   cream: "#F1FAF8",      // teal-tinted off-white background
   paper: "#FFFFFF",
   ink: "#0C2A4D",
-  inkSoft: "#7b7b7b",    // grey — secondary text
-  emerald: "#26ae90",    // bisleri green — principal, primary active color
+  inkSoft: "var(--brand-gray)",    // grey — secondary text
+  emerald: "var(--brand-teal)",    // bisleri green — principal, primary active color
   emeraldSoft: "#D7F5F1",
   rust: "#2E6FB5",       // mid-blue — interest, secondary data color
   rustSoft: "#DEEAF8",

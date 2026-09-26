@@ -91,7 +91,7 @@ function RouteFallback() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <div
-        className="h-10 w-10 animate-spin rounded-full border-4 border-[#26ae90]/25 border-t-[#26ae90]"
+        className="h-10 w-10 animate-spin rounded-full border-4 border-(--brand-teal-40) border-t-(--brand-teal)"
         role="status"
         aria-label="Loading page"
       />

@@ -73,7 +73,7 @@ const ContactPage = () => {
             >
               <div
                 className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-white"
-                style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)" }}
+                style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))" }}
               >
                 {c.icon}
               </div>
@@ -88,7 +88,7 @@ const ContactPage = () => {
         {/* Enquiry form */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#066a9c]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
               Send an Enquiry
             </span>
             <h2 className="mt-2 text-2xl font-bold text-gray-800">
@@ -96,7 +96,7 @@ const ContactPage = () => {
             </h2>
             <div
               className="mt-3 h-0.75 w-32 rounded-full"
-              style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 55%,transparent 100%)" }}
+              style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
             />
             <p className="mt-6 text-sm leading-relaxed text-gray-500">
               Tell us what you're looking for and our loan experts will guide you to the right
@@ -104,7 +104,7 @@ const ContactPage = () => {
             </p>
             <p className="mt-4 text-sm leading-relaxed text-gray-500">
               Prefer to apply directly? Head to any product page and click{" "}
-              <span className="font-semibold text-[#066a9c]">Apply Now</span> to start your
+              <span className="font-semibold text-(--brand-navy)">Apply Now</span> to start your
               application with OTP verification.
             </p>
           </div>

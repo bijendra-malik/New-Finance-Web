@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { C } from "./statusTheme";
+import { THEME as C } from "../../../../constants/theme";
 
 const LoanStatusShell = ({
   applicationId,
@@ -19,7 +19,7 @@ const LoanStatusShell = ({
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
-          style={{ background: C.navyBg }}>📊</div>
+          style={{ background: C.navy14 }}>📊</div>
         <h3 className="text-lg font-bold mb-2" style={{ color: C.dark }}>No Application Yet</h3>
         <p className="text-sm" style={{ color: C.gray }}>{emptyMessage}</p>
       </div>
@@ -30,12 +30,12 @@ const LoanStatusShell = ({
     <div className="space-y-6 max-w-3xl mx-auto">
 
       {/* ── Application ID banner ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal}33` }}>
+      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal33}` }}>
         <div className="h-1.5" style={{ background: `linear-gradient(90deg,${C.teal},${C.navy})` }} />
         <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
-              style={{ background: C.tealBg, border: `1.5px solid ${C.teal}33` }}>✅</div>
+              style={{ background: C.teal14, border: `1.5px solid ${C.teal33}` }}>✅</div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: C.gray }}>Application Submitted</p>
               <p className="text-base font-extrabold" style={{ color: C.dark }}>
@@ -49,7 +49,7 @@ const LoanStatusShell = ({
             </div>
           </div>
           <span className="self-start sm:self-center px-4 py-1.5 rounded-full text-sm font-bold"
-            style={{ background: C.tealBg, color: C.teal, border: `1px solid ${C.teal}44` }}>
+            style={{ background: C.teal14, color: C.teal, border: `1px solid ${C.teal44}` }}>
             Submitted
           </span>
         </div>

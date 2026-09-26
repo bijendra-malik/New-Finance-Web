@@ -1,7 +1,7 @@
 import type { SuccessSection } from "../../../../components/form/successSections";
 import { fmtText } from "../../../../components/form/successSections";
 import { StatusCard } from "./LoanStatusShell";
-import { C } from "./statusTheme";
+import { THEME as C } from "../../../../constants/theme";
 
 const ApplicationDetails = ({ sections, contact }: {
   sections: SuccessSection[];
@@ -27,7 +27,7 @@ const ApplicationDetails = ({ sections, contact }: {
     })}
 
     {contact && (
-      <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ background: C.tealBg, border: `1px solid ${C.teal}33` }}>
+      <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ background: C.teal14, border: `1px solid ${C.teal33}` }}>
         <span className="text-lg shrink-0">📞</span>
         <p className="text-sm" style={{ color: C.dark }}>
           Our team will contact you on <strong>+91 {contact.mobile}</strong> and{" "}

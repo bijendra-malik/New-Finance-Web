@@ -60,7 +60,7 @@ const RequiredDocumentPage = () => {
     <>
       {/* ── BANNER ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative w-full min-h-[320px] md:min-h-[380px] flex items-center overflow-hidden"
+        className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden"
         // style={{
         //   backgroundImage: `url(${bannerBg})`,
         //   backgroundSize: "cover",
@@ -114,7 +114,7 @@ const RequiredDocumentPage = () => {
                 onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 style={{
-                  background: "linear-gradient(135deg, #26ae90 0%,  #066a9c 100%)",
+                  background: "linear-gradient(135deg, var(--brand-teal) 0%,  var(--brand-navy) 100%)",
                   boxShadow: "0 4px 18px rgba(46,139,87,0.45)",
                 }}
               >

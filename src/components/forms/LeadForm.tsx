@@ -23,7 +23,7 @@ interface LeadFormProps {
 }
 
 const inputBase =
-  "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#066a9c] transition";
+  "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-navy)] transition";
 
 const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFormProps) => {
   const [values, setValues] = useState<Record<string, string>>({});
@@ -61,7 +61,7 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
   if (submitted) {
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-12 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#26ae90]">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-teal)">
           <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -121,7 +121,7 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
       <button
         type="submit"
         className="w-full rounded-lg py-3 text-sm font-bold text-white transition hover:brightness-110 active:scale-[0.99]"
-        style={{ background: "linear-gradient(135deg, #066a9c 0%, #26ae90 100%)" }}
+        style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
       >
         {submitLabel}
       </button>

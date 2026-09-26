@@ -26,7 +26,7 @@ const COLOR_STOPS: [string, number][] = [
   ["#e67e22", 0.20],
   ["#f1c40f", 0.40],
   ["#a8d150", 0.58],
-  ["#26ae90", 0.75],
+  ["var(--brand-teal)", 0.75],
   ["#1abc9c", 1.00],
 ];
 
@@ -79,7 +79,7 @@ const getRatingKey = (p: number): { key: string; color: string; comparison: numb
   if (p < 40) return { key: "creditScore.ratings.poor",      color: "#e74c3c", comparison: 12 };
   if (p < 55) return { key: "creditScore.ratings.fair",      color: "#e67e22", comparison: 31 };
   if (p < 70) return { key: "creditScore.ratings.good",      color: "#f1c40f", comparison: 52 };
-  if (p < 85) return { key: "creditScore.ratings.veryGood",  color: "#26ae90", comparison: 68 };
+  if (p < 85) return { key: "creditScore.ratings.veryGood",  color: "var(--brand-teal)", comparison: 68 };
   return             { key: "creditScore.ratings.excellent",  color: "#1abc9c", comparison: 73 };
 };
 
@@ -399,7 +399,7 @@ const CreditScore = () => {
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLElement;
-            el.style.background = "#066a9c";
+            el.style.background = "var(--brand-navy)";
             el.style.transform = "translateY(-2px)";
             el.style.boxShadow = "0 6px 18px rgba(23,162,134,0.4)";
           }}

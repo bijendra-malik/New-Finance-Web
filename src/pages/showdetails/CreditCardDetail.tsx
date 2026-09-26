@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerFallback from "../../assets/loan-images/CreditCards-banner.png";
 import creaditcarddetails from "../../assets/personal-loan/creaditcard-details.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
   <ul className="space-y-2.5 mt-1">
@@ -39,7 +39,7 @@ const sections: DetailSection[] = [
               <div className="flex flex-wrap gap-2">
                 {["Entertainment","Fuel","Co-branded","Cash-back","Student","Women","Travel","Lifetime Free","Premium","Business","Global","Low-interest"].map((type) => (
                   <span key={type} className="text-xs font-medium px-3 py-1 rounded-full"
-                    style={{ background: "#EFF7FF", color: ACCENT, border: "1px solid #066a9c22" }}>
+                    style={{ background: "#EFF7FF", color: ACCENT, border: "1px solid var(--brand-navy)22" }}>
                     {type}
                   </span>
                 ))}
@@ -61,7 +61,7 @@ const sections: DetailSection[] = [
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
           { label: "Debit Card", icon: "🏦", points: ["Spends your own money from your bank account","No credit history impact","No interest charged","Limited to your account balance"], bg: "#FAFAFA", border: "#E5E7EB" },
-          { label: "Credit Card", icon: "💳", points: ["Spends borrowed money — repay before due date","Builds your credit history and CIBIL score","Zero interest if paid in full before due date","Access to a revolving credit line"], bg: "#EFF7FF", border: "#066a9c22" },
+          { label: "Credit Card", icon: "💳", points: ["Spends borrowed money — repay before due date","Builds your credit history and CIBIL score","Zero interest if paid in full before due date","Access to a revolving credit line"], bg: "#EFF7FF", border: "var(--brand-navy)22" },
         ].map((card) => (
           <div key={card.label} className="rounded-xl p-4" style={{ background: card.bg, border: `1px solid ${card.border}` }}>
             <p className="font-semibold text-gray-800 text-sm mb-3">{card.icon} {card.label}</p>

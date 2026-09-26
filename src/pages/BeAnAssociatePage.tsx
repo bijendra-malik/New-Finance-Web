@@ -55,7 +55,7 @@ const BeAnAssociatePage = () => {
             >
               <div
                 className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl text-white"
-                style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)" }}
+                style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))" }}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -70,13 +70,13 @@ const BeAnAssociatePage = () => {
         {/* Form */}
         <div className="mx-auto max-w-3xl">
           <div className="mb-8 text-center">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#066a9c]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
               Associate Registration
             </span>
             <h2 className="mt-2 text-2xl font-bold text-gray-800">Start Earning With Us</h2>
             <div
               className="mx-auto mt-3 h-0.75 w-32 rounded-full"
-              style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 55%,transparent 100%)" }}
+              style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
             />
           </div>
 

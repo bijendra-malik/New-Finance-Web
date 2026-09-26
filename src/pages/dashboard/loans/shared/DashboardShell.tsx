@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { THEME as C } from "../../../../constants/theme";
 import { useAuth } from "../../../../context/authContext";
 
 type Tab = "application" | "status";
@@ -9,8 +10,6 @@ const TABS: { key: Tab; label: string; icon: string; desc: string }[] = [
   { key: "application", label: "Application Form",   icon: "📝", desc: "Fill your loan details" },
   { key: "status",      label: "Application Status", icon: "📊", desc: "Track your application" },
 ];
-
-const C = { teal:"#26ae90", navy:"#066a9c", dark:"#286090", yellow:"#f2f231", gray:"#7b7b7b" };
 
 export interface DashboardShellProps<T> {
   productName: string;
@@ -69,13 +68,13 @@ const DashboardShell = <T,>({
       {/* ══ COL 1: LEFT SIDEBAR ══════════════════════════════════════════════ */}
       <aside
         className="hidden md:flex flex-col w-60 shrink-0 sticky top-0 h-screen border-r"
-        style={{ background: "linear-gradient(180deg,#044e74 0%,#066a9c 100%)", borderColor:"rgba(255,255,255,0.08)" }}
+        style={{ background: "linear-gradient(180deg, var(--brand-navy-deep) 0%, var(--brand-navy) 100%)", borderColor:"rgba(255,255,255,0.08)" }}
       >
         {/* Logo */}
         <div className="px-5 py-5 border-b" style={{ borderColor:"rgba(255,255,255,0.08)" }}>
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate("/")}>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105"
-              style={{ background:"linear-gradient(135deg,#26ae90,#044e74)", boxShadow:"0 2px 10px rgba(38,174,144,0.3)" }}>
+              style={{ background:"linear-gradient(135deg,var(--brand-teal),var(--brand-navy-deep))", boxShadow:"0 2px 10px rgba(38,174,144,0.3)" }}>
               {icon}
             </div>
             <div>
@@ -127,7 +126,7 @@ const DashboardShell = <T,>({
       <main className="flex-1 overflow-y-auto">
         {/* Mobile tab bar */}
         <div className="md:hidden sticky top-0 z-20 flex border-b"
-          style={{ background:"linear-gradient(90deg,#044e74,#066a9c)", borderColor:"rgba(255,255,255,0.1)" }}>
+          style={{ background:"linear-gradient(90deg,var(--brand-navy-deep),var(--brand-navy))", borderColor:"rgba(255,255,255,0.1)" }}>
           {tabs.map(t => (
             <button key={t.key} onClick={() => setActiveTab(t.key)}
               className="flex-1 py-2.5 flex flex-col items-center gap-0.5 transition-all"
@@ -197,7 +196,7 @@ const DashboardShell = <T,>({
             >
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ background: "linear-gradient(135deg, #26ae90, #066a9c)", color: "#f2f231" }}
+                style={{ background: "linear-gradient(135deg, var(--brand-teal), var(--brand-navy))", color: "var(--brand-yellow)" }}
               >
                 {initials}
               </div>
@@ -219,11 +218,11 @@ const DashboardShell = <T,>({
             {/* Dropdown */}
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50">
-                <div className="px-4 py-4" style={{ background: "linear-gradient(135deg, #044e74, #066a9c)" }}>
+                <div className="px-4 py-4" style={{ background: "linear-gradient(135deg, var(--brand-navy-deep), var(--brand-navy))" }}>
                   <div className="flex items-center gap-3">
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold shrink-0"
-                      style={{ background: "linear-gradient(135deg, #26ae90, #f2f231)", color: "#044e74" }}
+                      style={{ background: "linear-gradient(135deg, var(--brand-teal), var(--brand-yellow))", color: "var(--brand-navy-deep)" }}
                     >
                       {initials}
                     </div>
@@ -233,7 +232,7 @@ const DashboardShell = <T,>({
                       <span
                         className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                         style={user.isVerified
-                          ? { background: "rgba(38,174,144,0.3)", color: "#26ae90", border: "1px solid rgba(38,174,144,0.4)" }
+                          ? { background: "rgba(38,174,144,0.3)", color: "var(--brand-teal)", border: "1px solid rgba(38,174,144,0.4)" }
                           : { background: "rgba(251,191,36,0.3)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.4)" }
                         }
                       >

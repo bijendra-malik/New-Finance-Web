@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/AgainstProperty-banner.png";
 import LASImg from "../../assets/personal-loan/againstloan-details.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const BL = ({ items }: { items: (string | [string, string])[] }) => (
   <ul className="space-y-2.5 mt-1">

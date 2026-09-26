@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/BlanceTransper-banner.png";
 import balanceTransferConcept from "../../assets/personal-loan/balance-transfer-03.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
   <ul className="space-y-2 mt-1">

@@ -31,7 +31,7 @@ const FranchiseLoginPage = () => {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-5">
           {/* Left: value props */}
           <div className="lg:col-span-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#066a9c]">
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
               Why Partner With Indexia Finance
             </span>
             <h2 className="mt-2 text-2xl font-bold text-gray-800">
@@ -39,7 +39,7 @@ const FranchiseLoginPage = () => {
             </h2>
             <div
               className="mt-3 h-0.75 w-32 rounded-full"
-              style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 55%,transparent 100%)" }}
+              style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
             />
 
             <div className="mt-8 space-y-6">
@@ -64,7 +64,7 @@ const FranchiseLoginPage = () => {
                 <div key={item.title} className="flex gap-4">
                   <div
                     className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
-                    style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)" }}
+                    style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))" }}
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -80,7 +80,7 @@ const FranchiseLoginPage = () => {
 
             <p className="mt-8 text-sm text-gray-500">
               Already a franchise partner and looking for the partner portal?{" "}
-              <Link to="/contact" className="font-semibold text-[#066a9c] hover:underline">
+              <Link to="/contact" className="font-semibold text-(--brand-navy) hover:underline">
                 Contact us
               </Link>{" "}
               for access.

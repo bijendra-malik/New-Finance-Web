@@ -438,7 +438,7 @@ const ProductDetails = () => {
               <div className="flex items-start gap-3 flex-wrap mb-1">
                 <h2
                   className="text-2xl sm:text-3xl lg:text-[2rem] font-bold leading-tight"
-                  style={{ color: "#f2f231" }}
+                  style={{ color: "var(--brand-yellow)" }}
                 >
                   {active.heading}
                 </h2>
@@ -454,8 +454,8 @@ const ProductDetails = () => {
               {/* Accent + rate pill */}
               <div className="flex items-center gap-3 mb-4 mt-2">
                 <div className="flex gap-1.5">
-                  <div className="h-0.75 w-8 rounded-full" style={{ background: "#26ae90" }} />
-                  <div className="h-0.75 w-8 rounded-full" style={{ background: "#f2f231" }} />
+                  <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-teal)" }} />
+                  <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-yellow)" }} />
                 </div>
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border" style={{ color: "#ffffffff" }}>
                   {meta.rate}
@@ -501,7 +501,7 @@ const ProductDetails = () => {
                   })()}
                   className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-white text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 active:scale-95"
                   style={{
-                    background: "linear-gradient(135deg, #066a9c, #26ae90)",
+                    background: "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))",
                     boxShadow: "0 4px 16px rgba(38,174,144,0.40)",
                     border: "1px solid rgba(38,174,144,0.45)",
                   }}
@@ -515,7 +515,7 @@ const ProductDetails = () => {
                   href={`/showdetails/${active.id}`}
                   className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-125 active:scale-95"
                   style={{
-                    color: "#f2f231",
+                    color: "var(--brand-yellow)",
                     border: "1px solid rgba(255, 255, 255, 1)",
                     background: "rgba(242,242,49,0.07)",
                   }}
@@ -539,7 +539,7 @@ const ProductDetails = () => {
               style={{ opacity: canScrollUp ? 1 : 0, pointerEvents: canScrollUp ? "auto" : "none", cursor: "pointer" }}
               aria-label="Scroll up"
             >
-              <svg className="w-4 h-4" style={{ color: "#26ae90" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path d="M5 15l7-7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
@@ -565,14 +565,14 @@ const ProductDetails = () => {
                       borderRadius: "10px",
                       // active: teal bg + dark text | hovered: teal tint + lime text | default: subtle
                       background: isActive
-                        ? "linear-gradient(135deg, #066a9c, #26ae90)"
+                        ? "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))"
                         : isHovered
                         ? "rgba(38,174,144,0.15)"
                         : "rgba(255,255,255,0.04)",
                       color: isActive
-                        ? "#f2f231"           // lime text on active
+                        ? "var(--brand-yellow)"           // lime text on active
                         : isHovered
-                        ? "#f2f231"           // teal text on hover
+                        ? "var(--brand-yellow)"           // teal text on hover
                         : "rgba(255, 255, 255, 1)", // muted white default
                       border: isActive
                         ? "1.5px solid rgba(38,174,144,0.80)"
@@ -608,7 +608,7 @@ const ProductDetails = () => {
               style={{ opacity: canScrollDown ? 1 : 0, pointerEvents: canScrollDown ? "auto" : "none", cursor: "pointer" }}
               aria-label="Scroll down"
             >
-              <svg className="w-4 h-4" style={{ color: "#26ae90" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
@@ -657,11 +657,11 @@ const FeatureItem = ({
           boxShadow: hovered ? "0 0 14px rgba(38,174,144,0.35)" : "none",
         }}
       >
-        <span style={{ color: "#26ae90" }}>{feat.icon}</span>
+        <span style={{ color: "var(--brand-teal)" }}>{feat.icon}</span>
       </div>
       <p
         className="font-bold text-sm leading-snug transition-colors duration-200"
-        style={{ color: hovered ? "#f2f231" : "#fff" }}
+        style={{ color: hovered ? "var(--brand-yellow)" : "#fff" }}
       >
         {feat.title}
       </p>

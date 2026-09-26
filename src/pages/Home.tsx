@@ -71,7 +71,7 @@ const Home = () => {
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 w-full h-0.75"
-        style={{ background: "linear-gradient(90deg, #066a9c, #26ae90, #f2f231)", zIndex: 2 }}
+        style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))", zIndex: 2 }}
       />
 
       {/* Mute / Unmute toggle button — bottom-right of banner */}
@@ -95,7 +95,7 @@ const Home = () => {
           </svg>
         ) : (
           /* Speaker with waves — unmuted */
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#26ae90" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>

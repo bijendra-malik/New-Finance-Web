@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/car-banner.png";
 import carloanDetails from "../../assets/personal-loan/carloan-details.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const NumberedList = ({ items }: { items: string[] }) => (
   <ol className="space-y-2.5 mt-1">
@@ -29,12 +29,12 @@ const sections: DetailSection[] = [
               We provide car loans across India and internationally, with doorstep convenience so the right
               bank comes to you.
             </p>
-            <div className="rounded-xl p-4 mt-2" style={{ background: "#EFF7FF", border: "1px solid #066a9c22" }}>
+            <div className="rounded-xl p-4 mt-2" style={{ background: "#EFF7FF", border: "1px solid var(--brand-navy)22" }}>
               <p className="text-sm font-semibold text-gray-800 mb-2">Why Indexia Finance for Car Loans?</p>
               <div className="grid grid-cols-2 gap-2">
                 {["Competitive interest rates", "Transparent terms", "Hassle-free application", "Expert guidance", "Doorstep bank service", "Pan-India coverage"].map((point) => (
                   <div key={point} className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#26ae90" }} />{point}
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "var(--brand-teal)" }} />{point}
                   </div>
                 ))}
               </div>

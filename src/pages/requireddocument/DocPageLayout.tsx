@@ -106,9 +106,9 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
             <div className="flex-1 max-w-xl">
               <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight mb-4">
                 Required Documents For{" "}
-                <span style={{ color: "#f2f231" }}>{loanName}</span>
+                <span style={{ color: "var(--brand-yellow)" }}>{loanName}</span>
               </h1>
-              <p className="text-lg md:text-xl font-semibold italic" style={{ color: "#f2f231" }}>
+              <p className="text-lg md:text-xl font-semibold italic" style={{ color: "var(--brand-yellow)" }}>
                 Now, Right Bank will come at your doorstep
               </p>
             </div>
@@ -142,7 +142,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                     transparent 0deg,
                     transparent 280deg,
                     #22d3ee 300deg,
-                    #2563eb 330deg,
+                    var(--brand-blue) 330deg,
                     #10b981 355deg,
                     transparent 360deg
                   );
@@ -162,7 +162,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                   font-weight: 700;
                   font-size: 14px;
                   color: #ffffff;
-                  background: linear-gradient(135deg, #26ae90 0%,  #066a9c 100%);
+                  background: linear-gradient(135deg, var(--brand-teal) 0%,  var(--brand-navy) 100%);
                   border: none;
                   cursor: pointer;
                   transition: all 0.3s ease;
@@ -172,7 +172,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                 .apply-btn-inner:hover {
                   transform: translateY(-2px);
                   box-shadow: 0 8px 28px rgba(27,108,168,0.5);
-                  background: linear-gradient(135deg, #066a9c 0%, #26ae90 100%);
+                  background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%);
                 }
                 .apply-btn-inner:active {
                   transform: scale(0.96);
@@ -194,14 +194,14 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
             <div className="flex items-center gap-2 mb-2">
               <span
                 className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)", boxShadow: "0 0 7px rgba(39,174,144,0.65)" }}
+                style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))", boxShadow: "0 0 7px rgba(39,174,144,0.65)" }}
               />
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#066a9c]">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
                 Document Checklist
               </span>
               <span
                 className="w-2 h-2 rounded-full shrink-0"
-                style={{ background: "linear-gradient(135deg,#066a9c,#27ae90)", boxShadow: "0 0 7px rgba(6,106,156,0.65)" }}
+                style={{ background: "linear-gradient(135deg,var(--brand-navy),#27ae90)", boxShadow: "0 0 7px rgba(6,106,156,0.65)" }}
               />
             </div>
             <div className="inline-block">
@@ -211,7 +211,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
               </h2>
               <div
                 className="mt-1.5 h-0.75 w-full rounded-full"
-                style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 55%,transparent 100%)" }}
+                style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
               />
             </div>
           </div>
@@ -237,7 +237,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                   {/* step number */}
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0"
-                    style={{ background: "linear-gradient(135deg,#27ae90,#066a9c)", boxShadow: "0 0 8px rgba(39,174,144,0.4)" }}
+                    style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))", boxShadow: "0 0 8px rgba(39,174,144,0.4)" }}
                   >
                     {sIdx + 1}
                   </div>
@@ -245,13 +245,13 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                   <div className="inline-block">
                     <h3
                       className="text-[11px] font-extrabold uppercase tracking-[0.18em]"
-                      style={{ color: "#066a9c" }}
+                      style={{ color: "var(--brand-navy)" }}
                     >
                       {section.title}
                     </h3>
                     <div
                       className="mt-0.5 h-0.5 w-full rounded-full"
-                      style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 60%,transparent 100%)" }}
+                      style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 60%,transparent 100%)" }}
                     />
                   </div>
 
@@ -275,7 +275,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                       <div
                         className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110"
                         style={{
-                          background: "linear-gradient(135deg,#27ae90,#066a9c)",
+                          background: "linear-gradient(135deg,#27ae90,var(--brand-navy))",
                           boxShadow: "0 2px 6px rgba(39,174,144,0.30)",
                         }}
                       >
@@ -285,7 +285,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-gray-800 text-sm group-hover:text-[#066a9c] transition-colors duration-150">
+                        <span className="font-semibold text-gray-800 text-sm group-hover:text-[var(--brand-navy)] transition-colors duration-150">
                           {doc.name}
                         </span>
                         {doc.note && (

@@ -20,7 +20,7 @@ const NotFoundPage = () => {
 
       <div className="bg-white">
         <div className="mx-auto max-w-2xl px-6 py-10 text-center">
-          <p className="text-7xl font-extrabold" style={{ color: "#066a9c" }}>404</p>
+          <p className="text-7xl font-extrabold" style={{ color: "var(--brand-navy)" }}>404</p>
           <p className="mt-4 text-sm leading-relaxed text-gray-500">
             Sorry, we couldn't find that page. It may have been moved, or the link
             may be out of date. Try one of these instead:
@@ -39,8 +39,8 @@ const NotFoundPage = () => {
                 className="rounded-lg px-5 py-2.5 text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
                 style={{
                   background: i === 0
-                    ? "linear-gradient(135deg, #26ae90 0%, #066a9c 100%)"
-                    : "#066a9c",
+                    ? "linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%)"
+                    : "var(--brand-navy)",
                 }}
               >
                 {l.label}

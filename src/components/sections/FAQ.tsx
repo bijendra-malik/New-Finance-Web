@@ -1,13 +1,14 @@
 // How We Work + FAQ
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
+import { THEME } from "../../constants/theme";
 
+// Legacy aliases kept so call sites stay readable
 const C = {
-  navy: "#066a9c",
-  navyDark: "#286090",
-  teal: "#26ae90",
-  lime: "#f2f231",
-  grey: "#7b7b7b",
+  ...THEME,
+  navyDark: THEME.dark,
+  lime: THEME.yellow,
+  grey: THEME.gray,
 };
 
 const STEPS = [
@@ -68,7 +69,7 @@ const FAQ = () => {
                 <h3 className="text-lg font-bold" style={{ color: C.navy }}>Our Process</h3>
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                  style={{ background: `${C.lime}30`, color: C.navyDark }}
+                  style={{ background: `C.yellow30`, color: C.navyDark }}
                 >
                   3 Steps
                 </span>
@@ -135,7 +136,7 @@ const FAQ = () => {
                           >
                             {active
                               ? <Minus size={13} color="#fff" />
-                              : <Plus  size={13} color={hovered ? "#fff" : C.grey} />}
+                              : <Plus  size={13} style={{ color: hovered ? "#fff" : C.grey }} />}
                           </div>
                         </div>
                         <div
@@ -174,7 +175,7 @@ const FAQ = () => {
                 <h3 className="text-lg font-bold" style={{ color: C.navy }}>Frequently Asked Questions</h3>
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                  style={{ background: `${C.teal}22`, color: C.teal }}
+                  style={{ background: `C.teal22`, color: C.teal }}
                 >
                   {FAQS.length} FAQs
                 </span>
@@ -194,7 +195,7 @@ const FAQ = () => {
                       border: `1.5px solid ${active || hovered ? C.teal : "#e5e7eb"}`,
                       borderLeft: `4px solid ${active || hovered ? C.teal : "#d1d5db"}`,
                       boxShadow: active
-                        ? `0 8px 20px ${C.teal}26`
+                        ? `0 8px 20px C.teal26`
                         : hovered
                         ? "0 4px 14px rgba(0,0,0,0.08)"
                         : "0 1px 3px rgba(0,0,0,0.04)",
@@ -220,7 +221,7 @@ const FAQ = () => {
                       >
                         {active
                           ? <Minus size={13} color="#fff" />
-                          : <Plus  size={13} color={hovered ? "#fff" : C.grey} />}
+                          : <Plus  size={13} style={{ color: hovered ? "#fff" : C.grey }} />}
                       </div>
                     </div>
                     <div
@@ -229,7 +230,7 @@ const FAQ = () => {
                     >
                       <div
                         className="px-4 pb-4 pt-0 text-sm leading-relaxed border-t ml-10"
-                        style={{ borderColor: `${C.teal}20`, color: C.grey }}
+                        style={{ borderColor: `C.teal20`, color: C.grey }}
                       >
                         {item.a}
                       </div>
@@ -261,7 +262,7 @@ const FAQ = () => {
       <div
         className="w-full relative overflow-hidden"
         style={{
-          background: "linear-gradient(110deg, #066a9c 0%, #26ae90 100%)",
+          background: "linear-gradient(110deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
           borderTop: "3px solid rgba(168,216,205,0.28)",
         }}
       >
@@ -314,7 +315,7 @@ const FAQ = () => {
             style={{
               background: C.lime,
               color: C.navy,
-              boxShadow: `0 4px 20px ${C.teal}60`,
+              boxShadow: `0 4px 20px C.teal60`,
             }}
           >
             Check Your Loan Eligibility

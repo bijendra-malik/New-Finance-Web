@@ -29,7 +29,7 @@ const Footer = () => {
       .ftr-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, #044e74 0%, #066a9c 60%, #0a7fba 100%);
+        background: linear-gradient(135deg, var(--brand-navy-deep) 0%, var(--brand-navy) 60%, var(--brand-navy-light) 100%);
         z-index: 0;
       }
       .ftr-bg {
@@ -57,7 +57,7 @@ const Footer = () => {
         line-height: 2;
       }
       .ftr-link:hover {
-        color: #f2f231;
+        color: var(--brand-yellow);
         transform: translateX(4px);
       }
       .ftr-heading {
@@ -71,7 +71,7 @@ const Footer = () => {
       .ftr-divider {
         width: 30px;
         height: 3px;
-        background: linear-gradient(90deg, #26ae90, #f2f231);
+        background: linear-gradient(90deg, var(--brand-teal), var(--brand-yellow));
         border-radius: 2px;
         margin-bottom: 16px;
       }
@@ -90,8 +90,8 @@ const Footer = () => {
         transition: background 0.2s, border-color 0.2s, transform 0.2s;
       }
       .ftr-social:hover {
-        background: #26ae90;
-        border-color: #26ae90;
+        background: var(--brand-teal);
+        border-color: var(--brand-teal);
         transform: translateY(-3px);
       }
       .ftr-input {
@@ -108,7 +108,7 @@ const Footer = () => {
       .ftr-input::placeholder { color: rgba(255,255,255,0.35); }
       .ftr-sub-btn {
         padding: 9px 14px;
-        background: #26ae90;
+        background: var(--brand-teal);
         color: #fff;
         font-weight: 700;
         font-size: 12px;
@@ -196,7 +196,7 @@ const Footer = () => {
       <img src={footerBg} alt="" aria-hidden="true" className="ftr-bg" />
 
       {/* Top accent line */}
-      <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,#066a9c,#26ae90,#f2f231)" }} />
+      <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
 
       {/* ── Main grid ── */}
       <div
@@ -225,7 +225,7 @@ const Footer = () => {
                 { l: "Advertise With Us", h: "#" },
               ].map(item => (
                 <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "#26ae90", fontWeight: 700, fontSize: "14px" }}>›</span>
+                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
                   {item.l}
                 </a>
               ))}
@@ -244,7 +244,7 @@ const Footer = () => {
                 { l: "Terms & Conditions", h: `${SITE_URL}/terms-conditions/` },
               ].map(item => (
                 <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "#26ae90", fontWeight: 700, fontSize: "14px" }}>›</span>
+                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
                   {item.l}
                 </a>
               ))}
@@ -255,7 +255,7 @@ const Footer = () => {
           <div className="ftr-globe-col" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "25px", textAlign: "center" }}>
             <Link to="/" style={{ textDecoration: "none" }}>
               <div style={{ display: "flex", gap: "3px", alignItems: "baseline" }}>
-                <span style={{ fontSize: "25px", fontWeight: 800, color: "#f2f231" }}>Indexia</span>
+                <span style={{ fontSize: "25px", fontWeight: 800, color: "var(--brand-yellow)" }}>Indexia</span>
                 <span style={{ fontSize: "25px", fontWeight: 800, color: "#fff" }}>Finance</span>
               </div>
             </Link>
@@ -288,7 +288,7 @@ const Footer = () => {
                 { l: "Blog",                   h: `${SITE_URL}/blog/` },
               ].map(item => (
                 <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "#26ae90", fontWeight: 700, fontSize: "14px" }}>›</span>
+                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
                   {item.l}
                 </a>
               ))}
@@ -338,7 +338,7 @@ const Footer = () => {
             ].map(t => (
               <a key={t.l} href={t.h}
                 style={{ fontSize: "12px", color: "rgba(255,255,255,0.38)", textDecoration: "none", transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#f2f231")}
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--brand-yellow)")}
                 onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.38)")}
               >
                 {t.l}

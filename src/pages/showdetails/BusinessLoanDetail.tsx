@@ -3,7 +3,7 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/business-banner.png";
 import businessloanDetails from "../../assets/personal-loan/business-details02.png";
 
-const ACCENT = "#066a9c";
+const ACCENT = "var(--brand-navy)";
 
 const sections: DetailSection[] = [
   {
