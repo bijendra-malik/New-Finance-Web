@@ -58,7 +58,7 @@ const useSEO = ({ title, description, path, image }: SeoOptions) => {
       nodes.forEach(n => n.remove());
       link?.remove();
     };
-  }, []);
+  }, [title, description, path, image]);
 };
 
 export default useSEO;
