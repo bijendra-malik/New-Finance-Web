@@ -73,31 +73,4 @@ export const StatusCard = ({ title, accent, children }: {
   </div>
 );
 
-/** Labelled row used inside StatusCard. */
-export const StatusRow = ({ label, value }: { label: string; value: ReactNode }) => (
-  <div className="flex items-center justify-between gap-4 py-2 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
-    <span className="text-xs font-semibold uppercase tracking-wide shrink-0" style={{ color: C.gray }}>{label}</span>
-    <span className="text-sm font-bold text-right truncate" style={{ color: C.dark }}>{value}</span>
-  </div>
-);
-
-/** 2-column info tile used for summary grids inside StatusCard. */
-export const StatusTile = ({ label, value }: { label: string; value: ReactNode }) => (
-  <div className="rounded-xl p-3" style={{ background: C.navyBg, border: `1px solid ${C.navy}18` }}>
-    <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: C.gray }}>{label}</p>
-    <p className="text-sm font-bold truncate" style={{ color: C.dark }}>{value}</p>
-  </div>
-);
-
-/** Contact note shown at the bottom of every status page. */
-export const ContactNote = ({ mobile, email }: { mobile?: string; email?: string }) => (
-  <div className="rounded-xl px-5 py-4 flex items-start gap-3" style={{ background: C.tealBg, border: `1px solid ${C.teal}33` }}>
-    <span className="text-lg shrink-0">📞</span>
-    <p className="text-sm" style={{ color: C.dark }}>
-      Our team will contact you on <strong>+91 {mobile}</strong> and{" "}
-      <strong>{email}</strong> within <strong>24 hours</strong>.
-    </p>
-  </div>
-);
-
 export default LoanStatusShell;
