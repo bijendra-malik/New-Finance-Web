@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser, verifyOTP } from "../../api/auth";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/authContext";
 import { getApiErrorMessage } from "../../utils/apiError";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
