@@ -1,5 +1,6 @@
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import useSEO from "../hooks/useSEO";
 
 /**
  * Be An Associate page — referral-partner onboarding enquiry.
@@ -25,7 +26,15 @@ const benefits = [
   },
 ];
 
-const BeAnAssociatePage = () => (
+const BeAnAssociatePage = () => {
+  useSEO({
+    title: "Become an Associate",
+    description:
+      "Become an Indexia Finance associate — refer loan cases, earn commissions and grow with India's fastest-growing loan distribution network.",
+    path: "/be-an-associate",
+  });
+
+  return (
   <>
     <PageBanner
       breadcrumb="Be An Associate"
@@ -111,6 +120,7 @@ const BeAnAssociatePage = () => (
       </div>
     </div>
   </>
-);
+  );
+};
 
 export default BeAnAssociatePage;

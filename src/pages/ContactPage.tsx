@@ -1,5 +1,6 @@
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import useSEO from "../hooks/useSEO";
 
 /**
  * Contact Us page — contact details + enquiry form.
@@ -40,7 +41,15 @@ const contactCards = [
   },
 ];
 
-const ContactPage = () => (
+const ContactPage = () => {
+  useSEO({
+    title: "Contact Us",
+    description:
+      "Get in touch with Indexia Finance — loan enquiries, franchise partnerships and associate onboarding. Our team responds within one working day.",
+    path: "/contact",
+  });
+
+  return (
   <>
     <PageBanner
       breadcrumb="Contact Us"
@@ -142,6 +151,7 @@ const ContactPage = () => (
       </div>
     </div>
   </>
-);
+  );
+};
 
 export default ContactPage;

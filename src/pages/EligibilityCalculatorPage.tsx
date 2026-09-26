@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useSEO from "../hooks/useSEO";
 
 // ── Static data ───────────────────────────────────────────────────────────────
 const loanProducts = [
@@ -32,6 +33,13 @@ const Icon = ({ d, cls = "w-4 h-4" }: { d: string; cls?: string }) => (
 
 // ── Main component ────────────────────────────────────────────────────────────
 const EligibilityCalculatorPage = () => {
+  useSEO({
+    title: "Loan Eligibility Calculator — Check in 2 Minutes",
+    description:
+      "Check how much loan you may be eligible for. Free and instant loan eligibility estimate based on your income and existing EMIs — no documents needed.",
+    path: "/eligibility-calculator",
+  });
+
   const navigate = useNavigate();
   const [form, setForm] = useState<FormData>({
     country: "", product: "", fullName: "",
@@ -91,7 +99,7 @@ const EligibilityCalculatorPage = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-25">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-25">
 
       {/* ── Top nav bar ─────────────────────────────────────────────── */}
       <div
@@ -196,7 +204,7 @@ const EligibilityCalculatorPage = () => {
 
             {/* Info note */}
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-800">
-              <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" />
               </svg>
               <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
@@ -321,7 +329,7 @@ const EligibilityCalculatorPage = () => {
 
               {/* ── Authorise checkbox ── */}
               <label className="flex items-start gap-3 cursor-pointer mb-7 group">
-                <div className="relative mt-0.5 flex-shrink-0">
+                <div className="relative mt-0.5 shrink-0">
                   <input type="checkbox" checked={form.authorized} onChange={e => set("authorized", e.target.checked)}
                     className="sr-only peer" />
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all peer-checked:bg-teal-600 peer-checked:border-teal-600 ${errors.authorized ? "border-red-400 bg-red-50/30" : "border-gray-300 group-hover:border-teal-400"}`}>

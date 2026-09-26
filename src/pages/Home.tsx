@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import bannerVideo from "../assets/2.mp4";
+import bannerPoster from "../assets/bg.jpg";
+import useSEO from "../hooks/useSEO";
 import LoanProducts from "../components/sections/LoanProducts";
 import CreditScore from "../components/sections/CreditScore";
 import ProductDetails from "../components/sections/ProductDetails";
@@ -7,11 +9,14 @@ import Partners from "../components/sections/Partners";
 import Testimonials from "../components/sections/Testimonials";
 import FAQ from "../components/sections/FAQ";
 
-interface HomeProps {
-  onApplicationSubmit?: never;
-}
+const Home = () => {
+  useSEO({
+    title: "Personal, Business & Home Loans Online",
+    description:
+      "Apply online for personal, business, home and 15+ other loan products with Indexia Finance. Quick eligibility check, transparent pricing and approvals within 48 hours.",
+    path: "/",
+  });
 
-const Home = (_props: HomeProps = {}) => {
   const videoRef  = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -41,7 +46,7 @@ const Home = (_props: HomeProps = {}) => {
     <>
     {/* ── HERO BANNER ── */}
     <div
-      className="relative w-full overflow-hidden bg-slate-950 min-h-[260px] sm:min-h-[350px] md:min-h-[477px]"
+      className="relative w-full overflow-hidden bg-slate-950 min-h-65 sm:min-h-87.5 md:min-h-119.25"
       style={{  marginTop: "100px" }}
     >
       {/* ── Video background — fills full banner including navbar offset area ── */}
@@ -51,6 +56,8 @@ const Home = (_props: HomeProps = {}) => {
         loop
         muted
         playsInline
+        preload="metadata"
+        poster={bannerPoster}
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover object-center sm:object-fill sm:object-top"
         style={{ zIndex: 0 }}
@@ -60,7 +67,7 @@ const Home = (_props: HomeProps = {}) => {
 
       {/* Top accent line */}
       <div
-        className="absolute top-0 left-0 w-full h-[3px]"
+        className="absolute top-0 left-0 w-full h-0.75"
         style={{ background: "linear-gradient(90deg, #066a9c, #26ae90, #f2f231)", zIndex: 2 }}
       />
 

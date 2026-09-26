@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
+import useSEO from "../../hooks/useSEO";
 import defaultBannerBg from "../../assets/bg.jpg";
 import type { DocSection } from "./types";
 export type { DocSection };
@@ -13,7 +14,6 @@ import processBg from "../../assets/personal-loan/step-image.png"
 interface Props {
   loanName: string;
   breadcrumb: string;
-  bannerDesc?: string;
   bannerBg?: string;  // each doc page passes its own image
   sections: DocSection[];
   applySlug: string;
@@ -57,10 +57,16 @@ const steps = [
   },
 ];
 
-const DocPageLayout = ({ loanName, breadcrumb, bannerDesc: _bannerDesc, bannerBg, sections, applySlug: _applySlug }: Props) => {
+const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const bg = bannerBg ?? defaultBannerBg;
+
+  useSEO({
+    title: `Required Documents for ${loanName}`,
+    description: `Complete document checklist for a ${loanName.toLowerCase()} application with Indexia Finance — KYC, address proof, income documents and more.`,
+    path: applySlug ? `/requireddocument/${applySlug}` : "/requireddocument",
+  });
 
   return (
     <>

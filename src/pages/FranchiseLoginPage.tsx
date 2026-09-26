@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import useSEO from "../hooks/useSEO";
 
 /**
  * Franchise Login page — currently a franchise-enquiry form.
@@ -8,7 +9,15 @@ import LeadForm from "../components/forms/LeadForm";
  * When the franchise portal API is ready, swap LeadForm for the real login.
  */
 
-const FranchiseLoginPage = () => (
+const FranchiseLoginPage = () => {
+  useSEO({
+    title: "Franchise Partner With Us",
+    description:
+      "Join India's fastest-growing loan distribution network. Offer 18 loan products from a single franchise desk with zero investment.",
+    path: "/franchise-login",
+  });
+
+  return (
   <>
     <PageBanner
       breadcrumb="Franchise Login"
@@ -124,6 +133,7 @@ const FranchiseLoginPage = () => (
       </div>
     </div>
   </>
-);
+  );
+};
 
 export default FranchiseLoginPage;

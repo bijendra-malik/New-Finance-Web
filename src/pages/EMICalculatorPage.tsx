@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/common/Container";
 import bgImage from "../assets/customer-img.png";
+import useSEO from "../hooks/useSEO";
 
 // ── Design tokens (Bisleri green / lime / deep blue / grey brief) ─────────────
 const T = {
@@ -201,16 +202,24 @@ function Slider({
       onChange={e => onChange(Number(e.target.value))}
       className="emi-slider w-full cursor-pointer"
       style={{
-        // @ts-ignore custom property
+        // CSS custom properties must be cast — React's CSSProperties type
+        // only knows fixed property names.
         "--fill": `${pct}%`,
         "--track-color": color,
-      }}
+      } as React.CSSProperties}
     />
   );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 const EMICalculatorPage = () => {
+  useSEO({
+    title: "EMI Calculator — Monthly Instalment & Interest",
+    description:
+      "Calculate your loan EMI, total interest and full repayment schedule for personal, home, car and other loans. Free, instant and no sign-up needed.",
+    path: "/emi-calculator",
+  });
+
   const navigate = useNavigate();
 
   const [selectedLoanId, setSelectedLoanId] = useState("personal");
@@ -372,7 +381,7 @@ const EMICalculatorPage = () => {
                     <button
                       key={l.id}
                       onClick={() => handleLoanTypeChange(l.id)}
-                      className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer"
+                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer"
                       style={{
                         background: active ? T.navy : T.paper,
                         color: active ? "#fff" : T.ink,
@@ -536,11 +545,11 @@ const EMICalculatorPage = () => {
                     </div>
                     <div className="flex items-center gap-5 text-xs font-semibold">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: T.emerald }} />
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: T.emerald }} />
                         Principal
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: T.rustSoft }} />
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: T.rustSoft }} />
                         Interest
                       </div>
                     </div>
@@ -575,7 +584,7 @@ const EMICalculatorPage = () => {
               </div>
 
               <div className="overflow-x-auto rounded-2xl" style={{ border: `1px solid ${T.line}` }}>
-                <table className="w-full text-sm min-w-[560px]">
+                <table className="w-full text-sm min-w-140">
                   <thead>
                     <tr style={{ background: T.navy }}>
                       {["Year", "Principal (\u20B9)", "Interest (\u20B9)", "Total Payment (\u20B9)", "Balance (\u20B9)"].map(h => (
@@ -596,7 +605,7 @@ const EMICalculatorPage = () => {
                         <td className="px-5 py-3.5 font-bold" style={{ color: T.navy }}>{fmt(Math.round(row.yTotal))}</td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 rounded-full h-1.5 max-w-[80px] hidden md:block" style={{ background: T.line }}>
+                            <div className="flex-1 rounded-full h-1.5 max-w-20 hidden md:block" style={{ background: T.line }}>
                               <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, (row.balance / loanAmount) * 100)}%`, background: T.gold }} />
                             </div>
                             <span className="font-semibold" style={{ color: T.ink }}>{fmt(Math.round(row.balance))}</span>
@@ -635,7 +644,7 @@ const EMICalculatorPage = () => {
                   <details key={faq.q} className="rounded-2xl group" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
                     <summary className="flex items-center justify-between px-5 py-4 font-semibold text-sm list-none cursor-pointer select-none" style={{ color: T.ink }}>
                       {faq.q}
-                      <svg className="w-4 h-4 group-open:rotate-180 transition-transform flex-shrink-0" fill="none" stroke={T.gold} strokeWidth="2" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 group-open:rotate-180 transition-transform shrink-0" fill="none" stroke={T.gold} strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </summary>

@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
+import useSEO from "../../hooks/useSEO";
 
 // ─────────────────────────────────────────────────────────────────────────────
 export interface DetailSection {
@@ -45,7 +46,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   <div className="flex items-stretch gap-3 mb-3">
     {/* left accent bar — full height of heading */}
     <div
-      className="w-[3px] rounded-full flex-shrink-0 self-stretch"
+      className="w-0.75 rounded-full shrink-0 self-stretch"
       style={{ background: "linear-gradient(180deg,#27ae90,#066a9c)", minHeight: "1.25rem" }}
     />
     <div className="inline-block">
@@ -54,7 +55,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
       </h2>
       {/* gradient underline — only as wide as heading text */}
       <div
-        className="mt-0.5 h-[2px] w-full rounded-full"
+        className="mt-0.5 h-0.5 w-full rounded-full"
         style={{ background: "linear-gradient(90deg,#27ae90 0%,#066a9c 60%,transparent 100%)" }}
       />
     </div>
@@ -69,7 +70,8 @@ const ShowDetailLayout = ({
   bannerTagline = "Now, Right Bank will come to your doorstep",
   bannerBg,
   docsHref,
-  applySlug: _applySlug,
+  /** Form slug; doubles as the canonical-url slug for SEO. */
+  applySlug,
   sections,
   previewCount = 3,
 }: ShowDetailLayoutProps) => {
@@ -77,13 +79,19 @@ const ShowDetailLayout = ({
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
+  useSEO({
+    title: `${loanName} — Rates, Eligibility & Documents`,
+    description: `Apply for a ${loanName.toLowerCase()} with Indexia Finance. Check eligibility, interest rates, required documents and apply online in minutes.`,
+    path: `/showdetails/${applySlug}`,
+  });
+
   const visible = expanded ? sections : sections.slice(0, previewCount);
 
   return (
     <>
       {/* ── BANNER ────────────────────────────────────────────────────── */}
       <section
-        className="relative w-full min-h-[320px] md:min-h-[380px] flex items-center overflow-hidden mt-10"
+        className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden mt-10"
         style={{
           backgroundImage: `url(${bannerBg})`,
           backgroundSize: "cover",
@@ -122,9 +130,9 @@ const ShowDetailLayout = ({
               </h1>
               {/* Gradient underline — two-bar accent */}
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="h-[4px] w-10 rounded-full" style={{ background: "#27ae90" }} />
-                <div className="h-[4px] w-6 rounded-full" style={{ background: "#f2f231" }} />
-                <div className="h-[4px] w-3 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
+                <div className="h-1 w-10 rounded-full" style={{ background: "#27ae90" }} />
+                <div className="h-1 w-6 rounded-full" style={{ background: "#f2f231" }} />
+                <div className="h-1 w-3 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
               </div>
 
               <p className="text-base md:text-lg font-semibold italic mb-8" style={{ color: "#f2f231" }}>
@@ -150,7 +158,7 @@ const ShowDetailLayout = ({
             </div>
 
             {/* RIGHT — Apply Now */}
-            <div className="flex flex-col items-start lg:items-end gap-4 flex-shrink-0 lg:pt-2">
+            <div className="flex flex-col items-start lg:items-end gap-4 shrink-0 lg:pt-2">
               <div className="sdl-apply-wrap">
                 <button onClick={() => setIsModalOpen(true)} className="sdl-apply-inner">
                   Apply Now
