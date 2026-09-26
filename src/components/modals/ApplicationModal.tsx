@@ -52,12 +52,14 @@ const ApplicationModal = ({
   const navigate  = useNavigate();
 
   // Already logged in — skip signup/OTP entirely, jump straight to the loan detail page.
+  // `navigate` and `onClose` are stable in practice; they're listed so the
+  // linter can verify, and re-running this effect is harmless (same redirect).
   useEffect(() => {
     if (isOpen && isLoggedIn) {
       navigate(dashboardRoutes[productName] ?? "/dashboard/personalloan");
       onClose();
     }
-  }, [isOpen, isLoggedIn, productName]);
+  }, [isOpen, isLoggedIn, productName, navigate, onClose]);
 
   // ── Mode & Step ───────────────────────────────────────────────────────────
   const [mode, setMode] = useState<AuthMode>("signup");
