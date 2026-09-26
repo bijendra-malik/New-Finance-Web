@@ -1,4 +1,4 @@
-import { buildSuccessSections } from "../../../../../components/form/successSections";
+import { buildSuccessSections, fmtDate } from "../../../../../components/form/successSections";
 import type { EducationLoanApplication } from "./ApplicationForm";
 
 export const buildProductSections = (app: EducationLoanApplication) =>
@@ -23,7 +23,7 @@ export const buildProductSections = (app: EducationLoanApplication) =>
         { label: "Full Name", value: app.parentFullName },
         { label: "Mobile", value: app.parentMobile ? `+91 ${app.parentMobile}` : undefined },
         { label: "Email", value: app.parentEmail },
-        { label: "Date of Birth", value: app.parentDob },
+        { label: "Date of Birth", value: fmtDate(app.parentDob) },
         { label: "PAN Number", value: app.parentPanNumber },
         { label: "Residence", value: [app.parentCity, app.parentState].filter(Boolean).join(", ") || undefined },
         { label: "Residence Status", value: app.parentResidenceStatus },

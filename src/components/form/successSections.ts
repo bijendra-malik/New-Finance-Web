@@ -51,11 +51,14 @@ export const isBlank = (v?: string | number | null) =>
 /** Generic text fallback: blank → —. */
 export const fmtText = (v?: string | number | null) => (isBlank(v) ? dash : String(v).trim());
 
-/** Date-only string (yyyy-mm-dd) → "12 Mar 1998". */
 export const fmtDate = (v?: string | null) => {
   if (!v) return dash;
-  const d = new Date(v + "T00:00:00");
-  return isNaN(d.getTime()) ? dash : d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const opts = { day: "numeric", month: "short", year: "numeric" } as const;
+  const asLocal = (d: Date) => (isNaN(d.getTime()) ? dash : d.toLocaleDateString("en-IN", opts));
+  if (v.includes("T")) return asLocal(new Date(v));
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+  if (m) return asLocal(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return asLocal(new Date(v));
 };
 
 /** Full ISO timestamp → "12 Mar 2026, 4:30 pm". */
