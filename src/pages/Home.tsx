@@ -1,13 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import bannerVideo from "../assets/2.mp4";
 import bannerPoster from "../assets/bg.jpg";
 import useSEO from "../hooks/useSEO";
 import LoanProducts from "../components/sections/LoanProducts";
 import CreditScore from "../components/sections/CreditScore";
 import ProductDetails from "../components/sections/ProductDetails";
-import Partners from "../components/sections/Partners";
-import Testimonials from "../components/sections/Testimonials";
-import FAQ from "../components/sections/FAQ";
+
+const Partners = lazy(() => import("../components/sections/Partners"));
+const Testimonials = lazy(() => import("../components/sections/Testimonials"));
+const FAQ = lazy(() => import("../components/sections/FAQ"));
+
+const SectionFallback = () => <div className="min-h-105 bg-white" />;
 
 const Home = () => {
   useSEO({
@@ -104,9 +107,11 @@ const Home = () => {
     <LoanProducts />
     <CreditScore />
     <ProductDetails />
-    <Partners />
-    <Testimonials />
-    <FAQ />
+    <Suspense fallback={<SectionFallback />}>
+      <Partners />
+      <Testimonials />
+      <FAQ />
+    </Suspense>
     </>
   );
 };
