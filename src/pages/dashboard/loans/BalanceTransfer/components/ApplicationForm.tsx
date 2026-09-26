@@ -748,7 +748,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       )}
 
-      <button type="submit" disabled={isSubmitting}
+      <button type="submit" disabled={isSubmitting || submitted}
         className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-lg hover:opacity-90"
         style={{background:`linear-gradient(135deg,${C.teal},${C.navy})`}}>
         {isSubmitting?(
@@ -756,7 +756,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25"/>
             <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
           </svg>Submitting...</>
-        ):"✓ Submit Application"}
+        ):submitted ? "✓ Application Already Submitted" : "✓ Submit Application"}
       </button>
     </form>
   );
