@@ -105,7 +105,6 @@ const FloatingShapes = () => {
 const TrustBadge = ({
   icon,
   text,
-  color: _color,
 }: {
   icon: string;
   text: string;
