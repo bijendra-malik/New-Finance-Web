@@ -1,27 +1,11 @@
-import React, { createContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { ApiUser } from "../api/auth";
 import { fetchProfile } from "../api/auth";
-
-// ── Types ────────────────────────────────────────────────────────────────────
-
-interface AuthContextType {
-  user: ApiUser | null;
-  token: string | null;
-  isLoggedIn: boolean;
-  login: (token: string, user: ApiUser) => void;
-  logout: () => void;
-  refreshProfile: () => Promise<void>;
-}
-
-// ── Context ──────────────────────────────────────────────────────────────────
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from "./authContext";
 
 // ── Provider ─────────────────────────────────────────────────────────────────
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<ApiUser | null>(() => {
     try {
       const stored = localStorage.getItem("user");
@@ -51,6 +35,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           localStorage.removeItem("user");
         });
     }
+    // Runs once on mount; login/logout below always use the latest state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = (newToken: string, newUser: ApiUser) => {
@@ -80,14 +66,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </AuthContext.Provider>
   );
-};
-
-// ── Hook ─────────────────────────────────────────────────────────────────────
-
-export const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return context;
 };

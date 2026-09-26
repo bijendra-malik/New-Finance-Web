@@ -1,12 +1,14 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import WebsiteLayout from "./components/layout/WebsiteLayout";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthProvider";
+import { useAuth } from "./context/authContext";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
 
 // Static pages (small, always needed)
 import ContactPage from "./pages/ContactPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import FranchiseLoginPage from "./pages/FranchiseLoginPage";
 import BeAnAssociatePage from "./pages/BeAnAssociatePage";
 import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
@@ -207,8 +209,8 @@ function App() {
                 />
               ))}
 
-              {/* Fallback to home */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* 404 — any unmatched URL */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </WebsiteLayout>
