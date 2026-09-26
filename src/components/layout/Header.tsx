@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import Container from "../common/Container";
 import LanguageSwitcher from "../LanguageSwitcher";
 import WebmLogo from "../../assets/main-logo.webm";
@@ -20,7 +21,6 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
 
-  // Map slugs that have a showdetails page → their detail route
   const showDetailsMap: Record<string, string> = {
     personalloan:       "/showdetails/personal-loan",
     businessloan:       "/showdetails/business-loan",
@@ -65,13 +65,13 @@ const Header = () => {
 
   const navLinks = [
     { key: "nav.home", href: "/" },
-    { key: "nav.loanProduct", dropdown: true },  // trigger only — no href, opens dropdown on hover/tap
+    { key: "nav.loanProduct", dropdown: true, href: "" },
     { key: "nav.emiCalculator", href: "/emi-calculator" },
     { key: "nav.eligibilityCalculator", href: "/eligibility-calculator" },
     { key: "nav.franchiseLogin", href: "/franchise-login" },
     { key: "nav.beAnAssociate", href: "/be-an-associate" },
     { key: "nav.contactUs", href: "/contact" },
-  ];
+  ] satisfies { key: string; href: string; dropdown?: boolean }[];
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -174,16 +174,16 @@ const Header = () => {
                           </p>
                           <div className="grid grid-cols-3 gap-x-6 gap-y-1">
                             {loanProducts.map((item) => (
-                              <a
+                              <Link
                                 key={item.slug}
-                                href={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                                to={showDetailsMap[item.slug] ?? `/${item.slug}`}
                                 className="loan-item text-[13px] text-slate-600 py-2"
                               >
                                 <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                                 </svg>
                                 {t(item.key)}
-                              </a>
+                              </Link>
                             ))}
                           </div>
                         </div>
@@ -191,9 +191,9 @@ const Header = () => {
                     </li>
                   ) : (
                     <li key={link.key}>
-                      <a href={link.href} className="nav-link">
+                      <Link to={link.href} className="nav-link">
                         {t(link.key)}
-                      </a>
+                      </Link>
                     </li>
                   )
                 )}
@@ -246,28 +246,27 @@ const Header = () => {
                     {mobileSubmenuOpen && (
                       <div className="bg-slate-50 border-l-4 border-emerald-500 pl-0">
                         {loanProducts.map((item) => (
-                          <a
+                          <Link
                             key={item.slug}
-                            href={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                            to={showDetailsMap[item.slug] ?? `/${item.slug}`}
                             className="block px-8 py-2.5 text-xs text-slate-600 hover:text-[#26ae90] hover:bg-[#26ae90] border-b border-slate-100 last:border-b-0"
                             onClick={closeMobileMenu}
                           >
                             → {t(item.key)}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     )}
                   </li>
                 ) : (
                   <li key={link.key}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="block px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
                       onClick={closeMobileMenu}
                     >
                       {t(link.key)}
-                    </a>
-                 
+                    </Link>
                   </li>
                 )
               )}
