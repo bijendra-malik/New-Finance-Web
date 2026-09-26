@@ -5,6 +5,7 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
+import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
@@ -463,14 +464,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   if(submitted && submittedApp && !showFormAfterSubmit) return (
     <div className="max-w-3xl mx-auto space-y-5">
-      <div className="rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
-        <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted successfully</p>
-        <button type="button" onClick={()=>setShowFormAfterSubmit(true)}
-          className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
-          style={{background:C.navy}}>
-          ← Back to Application Form
-        </button>
-      </div>
+      <SubmittedReceiptBanner onBack={() => setShowFormAfterSubmit(true)} />
       <SubmissionSuccess
       refNo={submittedApp._id.slice(-10).toUpperCase()}
       fullId={submittedApp._id}
@@ -486,18 +480,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   return (
     <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
-      {submitted&&submittedApp&&(
-        <div className="mb-6 rounded-2xl px-5 py-4 flex items-center justify-between gap-3 flex-wrap" style={{background:C.tealBg,border:`1px solid ${C.teal}33`}}>
-          <div>
-            <p className="text-sm font-bold" style={{color:C.dark}}>✓ Application submitted — Ref No. {submittedApp._id.slice(-10).toUpperCase()}</p>
-            <p className="text-xs mt-0.5" style={{color:C.gray}}>Your details are saved and shown below.</p>
-          </div>
-          <button type="button" onClick={()=>setShowFormAfterSubmit(false)}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:opacity-90"
-            style={{background:C.navy}}>
-            View Receipt
-          </button>
-        </div>
+      {submitted && submittedApp && (
+        <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
       )}
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{color:C.dark}}>
@@ -930,16 +914,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       )}
 
-      <button type="submit" disabled={isSubmitting || submitted}
-        className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-lg hover:opacity-90"
-        style={{background:`linear-gradient(135deg,${C.teal},${C.navy})`}}>
-        {isSubmitting?(
-          <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25"/>
-            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-          </svg>Submitting...</>
-        ):submitted ? "✓ Application Already Submitted" : "✓ Submit Application"}
-      </button>
+      <SubmitApplicationButton isSubmitting={isSubmitting} submitted={submitted} />
     </form>
   );
 };
