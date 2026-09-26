@@ -303,7 +303,10 @@ const Footer = () => {
               Subscribe for the latest loan updates and offers.
             </p>
             <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.16)", marginBottom: "20px" }}>
-              <input type="email" placeholder="Your email address" className="ftr-input" />
+              <label htmlFor="newsletter-email" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
+                Email address for newsletter
+              </label>
+              <input id="newsletter-email" type="email" placeholder="Your email address" className="ftr-input" />
               <button className="ftr-sub-btn">Subscribe</button>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
