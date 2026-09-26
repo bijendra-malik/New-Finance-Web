@@ -294,7 +294,6 @@ const FAQ = () => {
                 key={title}
                 className="flex items-start gap-2 flex-1 px-4 py-3 rounded-xl"
                 style={{
-                  // background: "rgba(255,255,255,0.10)",
                   border: "1.5px solid rgba(255,255,255,0.28)",
                   backdropFilter: "blur(4px)",
                 }}
@@ -322,12 +321,6 @@ const FAQ = () => {
           </button>
         </div>
       </div>
-
-       {/* <div className="m-0 p-0 block  py-2"
-       style={{
-          background: "linear-gradient(110deg, #7b7b7b 0%, #066a9c 100%)",
-       }}
-       ></div> */}
     </>
   );
 };

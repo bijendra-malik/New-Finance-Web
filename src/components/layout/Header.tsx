@@ -198,15 +198,6 @@ const Header = () => {
                   )
                 )}
 
-                {/* <li className="ml-3">
-                  <a href="/apply-now" className="btn-apply">
-                    <svg viewBox="0 0 150 44" preserveAspectRatio="none">
-                      <rect x="2" y="2" width="146" height="40" rx="2" />
-                    </svg>
-                    <span>{t("nav.applyNow")}</span>
-                  </a>
-                </li> */}
-
                 <li className="ml-6">
                   <LanguageSwitcher />
                 </li>
@@ -283,18 +274,7 @@ const Header = () => {
                 <li className="ml-2">
                   <LanguageSwitcher />
                 </li>
-
-              {/* <li className="px-5 py-4 border-t border-slate-200 flex items-center justify-between gap-3 text-[white]">
-                <a
-                  href="/apply-now"
-                  className="btn-apply flex-1 text-center px-4 py-2.5 rounded-lg "
-                  onClick={closeMobileMenu}
-                >
-                  {t("nav.applyNow")}
-                </a>
-               
-              </li> */}
-            </ul>
+              </ul>
           </nav>
         </div>
       )}
@@ -374,47 +354,6 @@ const Header = () => {
         .loan-item:hover .arrow-icon {
           opacity: 1;
           transform: translateX(4px);
-        }
-
-        .btn-apply {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 26px;
-          height: 42px;
-          font-size: 12.5px;
-          font-weight: 600;
-          letter-spacing: .5px;
-          text-transform: uppercase;
-          text-decoration: none;
-          color: white;
-          background: rgba(16,185,129,0.06);
-          overflow: hidden;
-          transition: color .35s ease, background .35s ease, font-weight .35s ease;
-        }
-        .btn-apply svg {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-        }
-        .btn-apply rect {
-          fill: none;
-          stroke: #26ae90;
-          stroke-width: 2;
-          stroke-dasharray: 422, 0;
-          transition: all .35s linear;
-        }
-        .btn-apply:hover {
-          color: #286090;
-          font-weight: 700;
-        }
-        .btn-apply:hover rect {
-          stroke-width: 5;
-          stroke-dasharray: 15, 310;
-          stroke-dashoffset: 48;
-          transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
         }
       `}</style>
     </>

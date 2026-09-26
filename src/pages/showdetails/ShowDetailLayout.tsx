@@ -116,17 +116,6 @@ const ShowDetailLayout = ({
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
             {/* LEFT — title + tagline + docs button */}
             <div className="flex-1 max-w-xl">
-              {/* Eyebrow */}
-              {/* <div className="flex items-center gap-2 mb-3">
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: "#27ae90", boxShadow: "0 0 6px rgba(39,174,144,0.8)" }}
-                />
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/60">
-                  Indexia Finance
-                </span>
-              </div> */}
-
               {/* Title */}
               <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight mb-2">
                 {bannerTitle}

@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-//import bannerVideo from "../assets/bg-01 (1).mp4";
-//import bannerVideo from "../assets/1.mp4";
 import bannerVideo from "../assets/2.mp4";
 import LoanProducts from "../components/sections/LoanProducts";
 import CreditScore from "../components/sections/CreditScore";
