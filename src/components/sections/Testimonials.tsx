@@ -322,6 +322,9 @@ const TestimonialCard = ({ t, index }: { t: Testimonial; index: number }) => {
                   <img
                     src={t.avatar}
                     alt={t.name}
+                    width={56}
+                    height={56}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 ) : (
