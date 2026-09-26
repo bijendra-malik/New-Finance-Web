@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
 
 // ── Types (aligned with the backend's PersonalLoan document) ──────────────────
 
@@ -56,7 +56,7 @@ export interface PersonalLoanApplication {
   city: string;
   pincode: string;
   residenceStatus: string;
-  status: "Submitted" | "Pending" | "Under Review" | "Approved" | "Rejected" | "Disbursed";
+  status: LoanApplicationStatus;
   createdAt: string;
   updatedAt: string;
 }

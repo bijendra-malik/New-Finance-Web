@@ -10,28 +10,6 @@ interface LoanStatusProps {
 const C = { teal:"#26ae90", navy:"#066a9c", dark:"#286090", gray:"#7b7b7b",
   tealBg:"rgba(38,174,144,0.08)", navyBg:"rgba(6,106,156,0.08)" };
 
-const STATUS_STEPS = [
-  { key:"Submitted",    icon:"✅", desc:"Application received"          },
-  { key:"Under Review", icon:"🔍", desc:"Team is verifying your details"  },
-  { key:"Verification", icon:"📄", desc:"Documents being verified"        },
-  { key:"Approved",     icon:"👍", desc:"Settlement plan approved"        },
-  { key:"Disbursed",    icon:"💰", desc:"Funds transferred to account"    },
-];
-
-// Determine how far the status has progressed
-const getStepIndex = (status: string) => {
-  const map: Record<string,number> = {
-    "Pending":     1,
-    "Submitted":   1,
-    "Under Review":2,
-    "Verification":3,
-    "Approved":    4,
-    "Disbursed":   5,
-    "Rejected":    -1,
-  };
-  return map[status] ?? 1;
-};
-
 const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProps) => {
 
   if (!isSubmitted) {
@@ -45,8 +23,6 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
     );
   }
 
-  const currentStep = getStepIndex(submittedApp?.status ?? "Pending");
-  const isRejected  = false;
   const existingBanks = [...(submittedApp?.existingBanksNpa??[]), ...(submittedApp?.existingBanksNonNpa??[])];
 
   return (
@@ -72,59 +48,14 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
             </div>
           </div>
           <span className="self-start sm:self-center px-4 py-1.5 rounded-full text-sm font-bold"
-            style={isRejected
-              ?{background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}
-              :{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-            {submittedApp?.status ?? "Pending"}
+            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
+            Submitted
           </span>
         </div>
       </div>
 
-      {/* ── Two-column layout: Status timeline + Application details ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* LEFT — Timeline */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm" style={{border:`1px solid ${C.teal}18`}}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-5" style={{color:C.navy}}>Application Progress</p>
-          <div className="space-y-0">
-            {STATUS_STEPS.map((s, i) => {
-              const done    = i + 1 <= currentStep;
-              const active  = i + 1 === currentStep;
-              const last    = i === STATUS_STEPS.length - 1;
-              return (
-                <div key={s.key} className="flex gap-4">
-                  {/* Icon + line */}
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-base transition-all"
-                      style={done
-                        ?{background:C.teal,boxShadow:active?`0 0 0 4px ${C.teal}22`:"none"}
-                        :{background:"#f1f5f9",color:C.gray}}>
-                      {done
-                        ? <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        : <span className="text-base">{s.icon}</span>
-                      }
-                    </div>
-                    {!last && <div className="w-0.5 h-8 my-1" style={{background:done?C.teal+"44":"#e2e8f0"}}/>}
-                  </div>
-                  {/* Text */}
-                  <div className="pb-6 min-w-0 pt-1.5">
-                    <p className={`text-sm font-bold leading-tight`}
-                      style={{color:done?C.dark:C.gray}}>{s.key}</p>
-                    <p className="text-xs mt-0.5" style={{color:C.gray}}>{s.desc}</p>
-                    {active&&(
-                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-                        In Progress
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* ── Application details ── */}
+      <div className="grid grid-cols-1 gap-6">
 
         {/* RIGHT — Details */}
         <div className="space-y-4">

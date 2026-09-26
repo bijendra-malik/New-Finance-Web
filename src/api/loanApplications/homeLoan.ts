@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
 
 // ── Home Loan ─────────────────────────────────────────────────────────────────
 // Aligned with the backend's HomeLoan document (POST /home-loan/apply,
@@ -69,7 +69,7 @@ export interface HomeLoanApplication extends HomeLoanPayload {
   _id: string;
   user?: string;
   loanType?: string;
-  status: "Submitted" | "Pending" | "Under Review" | "Approved" | "Rejected" | "Disbursed";
+  status: LoanApplicationStatus;
   createdAt: string;
   updatedAt?: string;
 }

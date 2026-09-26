@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
 
 // ── Business Loan ─────────────────────────────────────────────────────────────
 
@@ -97,7 +97,7 @@ export interface BusinessLoanApplication {
   city: string;
   pincode: string;
   residenceStatus: string;
-  status: "Submitted" | "Pending" | "Under Review" | "Approved" | "Rejected" | "Disbursed";
+  status: LoanApplicationStatus;
   createdAt: string;
   updatedAt: string;
 }

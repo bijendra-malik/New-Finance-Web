@@ -33,7 +33,7 @@ export interface BalanceTransferApplication {
   loanAmount: number; loanTenure: number;
   existingEMI: number; existingLoanAmount: number;
   existingLoanTypes: string[]; existingLoanTypesOther?: string[];
-  status: "Pending";
+  status: "Submitted";
   createdAt: string;
 }
 
@@ -374,7 +374,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
       existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
-      status:"Pending", createdAt:new Date().toISOString(),
+      status:"Submitted", createdAt:new Date().toISOString(),
     };
     setSubmittedApp(app); setSubmitted(true);
     setIsSubmitting(false);

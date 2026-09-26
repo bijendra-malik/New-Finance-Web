@@ -36,7 +36,7 @@ export interface LeaseRentalApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; existingBanksOther?: string[];
   existingLoanTypes: string[]; existingLoanTypesOther?: string[];
-  status: "Pending";
+  status: "Submitted";
   createdAt: string;
 }
 
@@ -405,7 +405,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
       existingBanks:form.existingBanks, existingBanksOther:form.existingBanksOther,
       existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
-      status:"Pending", createdAt:new Date().toISOString(),
+      status:"Submitted", createdAt:new Date().toISOString(),
     };
     setSubmittedApp(app); setSubmitted(true);
     setIsSubmitting(false);

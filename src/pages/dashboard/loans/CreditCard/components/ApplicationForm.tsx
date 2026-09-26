@@ -29,7 +29,7 @@ export interface CreditCardApplication {
   currentYearTurnover?: number; priorYearTurnover?: number;
   currentYearNetIncome?: number; previousYearNetIncome?: number;
   businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  status: "Pending";
+  status: "Submitted";
   createdAt: string;
 }
 
@@ -346,7 +346,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
       businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
         ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
         :undefined,
-      status:"Pending", createdAt:new Date().toISOString(),
+      status:"Submitted", createdAt:new Date().toISOString(),
     };
     setSubmittedApp(app); setSubmitted(true);
     setIsSubmitting(false);

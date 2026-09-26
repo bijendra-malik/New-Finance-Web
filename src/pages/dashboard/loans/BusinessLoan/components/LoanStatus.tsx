@@ -82,9 +82,8 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
               <p className="text-[10px] mt-0.5" style={{color:C.gray}}>Ref ID: {applicationId}</p>
             </div>
           </div>
-          <span className="self-start sm:self-center px-4 py-1.5 rounded-full text-sm font-bold"
-            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
-            {app.status}
+          <span className="self-start sm:self-center px-4 py-1.5 rounded-full text-sm font-bold"            style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.teal}44`}}>
+            Submitted
           </span>
         </div>
       </div>

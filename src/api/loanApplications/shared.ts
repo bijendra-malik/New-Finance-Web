@@ -3,13 +3,7 @@
 // endpoints of each product.
 
 /** Status lifecycle stored on every backend application document. */
-export type LoanApplicationStatus =
-  | "Submitted"
-  | "Pending"
-  | "Under Review"
-  | "Approved"
-  | "Rejected"
-  | "Disbursed";
+export type LoanApplicationStatus = "Submitted";
 
 /** POST /{product}/apply → single saved application. */
 export interface ApplyResponse<T> {

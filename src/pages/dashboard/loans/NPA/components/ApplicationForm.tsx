@@ -41,7 +41,7 @@ export interface NPAApplication {
   existingBanksNonNpa: string[]; existingBanksNonNpaOther?: string[];
   existingLoanTypesNpa: string[]; existingLoanTypesNpaOther?: string[];
   existingLoanTypesNonNpa: string[]; existingLoanTypesNonNpaOther?: string[];
-  status: "Pending";
+  status: "Submitted";
   createdAt: string;
 }
 
@@ -436,7 +436,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       existingBanksNonNpa:form.existingBanksNonNpa, existingBanksNonNpaOther:form.existingBanksNonNpaOther,
       existingLoanTypesNpa:form.existingLoanTypesNpa, existingLoanTypesNpaOther:form.existingLoanTypesNpaOther,
       existingLoanTypesNonNpa:form.existingLoanTypesNonNpa, existingLoanTypesNonNpaOther:form.existingLoanTypesNonNpaOther,
-      status:"Pending", createdAt:new Date().toISOString(),
+      status:"Submitted", createdAt:new Date().toISOString(),
     };
     setSubmittedApp(app); setSubmitted(true);
     setIsSubmitting(false);
