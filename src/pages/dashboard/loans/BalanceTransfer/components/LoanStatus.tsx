@@ -1,7 +1,7 @@
+import LoanStatusShell from "../../shared/LoanStatusShell";
+import ApplicationDetails from "../../shared/ApplicationDetails";
+import { buildProductSections } from "./receiptSections";
 import type { BalanceTransferApplication } from "./ApplicationForm";
-import LoanStatusShell, { ContactNote } from "../../shared/LoanStatusShell";
-import { LoanSummaryCard, ApplicantDetailsCard, ExistingObligationsCard } from "../../shared/LoanStatusSections";
-
 interface LoanStatusProps {
   applicationId: string;
   isSubmitted: boolean;
@@ -18,17 +18,7 @@ const LoanStatus = ({ applicationId, isSubmitted, submittedApp }: LoanStatusProp
       submittedApp={app}
       emptyMessage="Submit your balance transfer application to track its status here."
     >
-      {app && (
-        <>
-          <LoanSummaryCard
-            title="Transfer Details"
-            app={app}
-          />
-          <ApplicantDetailsCard app={app} />
-          <ExistingObligationsCard app={app} pillSource="loanTypes" />
-          <ContactNote mobile={app.mobile} email={app.email} />
-        </>
-      )}
+      {app && <ApplicationDetails sections={buildProductSections(app)} contact={{ mobile: app.mobile, email: app.email }} />}
     </LoanStatusShell>
   );
 };
