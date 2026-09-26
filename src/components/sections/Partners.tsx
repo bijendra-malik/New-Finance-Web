@@ -93,7 +93,10 @@ const LogoCard = ({ logo }: { logo: { src: string; name: string } }) => (
     <img
       src={logo.src}
       alt={logo.name}
-      className="max-w-[110px] max-h-[52px] object-contain"
+      width={110}
+      height={52}
+      loading="lazy"
+      className="max-w-27.5 max-h-13 object-contain"
       draggable={false}
     />
   </div>
@@ -184,7 +187,7 @@ const Partners = () => {
       <div className="text-center mb-8 px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 leading-snug">
           Trusted by India's Leading Institutions —{" "}
-          <span className="bg-gradient-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">
             Our Business Partners
           </span>
         </h2>
