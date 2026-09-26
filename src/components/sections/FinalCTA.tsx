@@ -120,12 +120,12 @@ const FinalCTA = () => {
   const [buttonHovered, setButtonHovered] = useState<"primary" | "secondary" | null>(null);
 
   return (
-    <section className="relative w-full min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 py-20 md:py-32 px-4 md:px-6 overflow-hidden flex items-center justify-center">
+    <section className="relative w-full min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-cyan-900 py-20 md:py-32 px-4 md:px-6 overflow-hidden flex items-center justify-center">
       {/* Animated background canvas */}
       <FloatingShapes />
 
       {/* Additional gradient overlays for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/40 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-transparent to-slate-900/40 pointer-events-none" />
 
       {/* Radial glow effects */}
       <div className="absolute top-20 right-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl opacity-40 animate-pulse" />
@@ -137,7 +137,7 @@ const FinalCTA = () => {
         <div className="mb-8 animate-fadeInDown">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
             Ready to{" "}
-            <span className="bg-gradient-to-r from-cyan-300 via-emerald-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
+            <span className="bg-linear-to-r from-cyan-300 via-emerald-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
               Achieve
             </span>{" "}
             Your Dreams?
@@ -240,7 +240,7 @@ const FinalCTA = () => {
 
         {/* Happy family illustration placeholder */}
         <div className="mt-16 mb-8">
-          <div className="w-full max-w-md mx-auto h-32 rounded-2xl bg-gradient-to-r from-cyan-400/10 to-emerald-400/10 border border-cyan-400/20 flex items-center justify-center overflow-hidden group cursor-pointer">
+          <div className="w-full max-w-md mx-auto h-32 rounded-2xl bg-linear-to-r from-cyan-400/10 to-emerald-400/10 border border-cyan-400/20 flex items-center justify-center overflow-hidden group cursor-pointer">
             <div className="text-6xl opacity-60 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110">
               👨‍👩‍👧‍👦
             </div>
