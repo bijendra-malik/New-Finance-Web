@@ -65,7 +65,7 @@ const LoanAgainstPropertyDocs = () => (
     breadcrumb="Loan Against Property · Required Documents"
    bannerBg={bannerImg}
     sections={sections}
-    applySlug="loanagainstproperty"
+    applySlug="loan-against-property"
   />
 );
 

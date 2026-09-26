@@ -9,7 +9,7 @@ const NumberedList = ({ items }: { items: [string, string][] }) => (
   <ol className="space-y-3 mt-1">
     {items.map(([title, desc], i) => (
       <li key={i} className="flex items-start gap-3">
-        <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
+        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
         <span className="text-sm text-gray-600 leading-relaxed">
           <span className="font-semibold text-gray-800">{title}: </span>{desc}
         </span>
@@ -34,7 +34,7 @@ const sections: DetailSection[] = [
             your trusted partner.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={LeaseRentalImg} alt="Lease Rental Discounting"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -95,7 +95,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best LRD Provider Company", desc: "Whether you're an individual or a corporation, these providers offer comprehensive financial support for your real estate ventures." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

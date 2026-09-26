@@ -50,7 +50,7 @@ const ProjectLoanDocs = () => (
     breadcrumb="Project Loan · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="projectloan"
+    applySlug="project-loan"
   />
 );
 

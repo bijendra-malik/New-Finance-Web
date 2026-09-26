@@ -10,7 +10,7 @@ const BL = ({ items }: { items: (string | [string, string])[] }) => (
       const [t, d] = Array.isArray(item) ? item : [item, undefined];
       return (
         <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
           <span className="text-sm text-gray-600 leading-relaxed">
             {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
           </span>
@@ -116,7 +116,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best Non-Performing Assets Solutions", desc: "Tailored to your specific requirements — asset recovery services, portfolio management assistance, or investment opportunities in distressed assets, with a collaborative approach to optimise returns." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

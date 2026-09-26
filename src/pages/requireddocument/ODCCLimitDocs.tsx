@@ -40,7 +40,7 @@ const ODCCLimitDocs = () => (
     breadcrumb="OD CC Limit · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="odcclimit"
+    applySlug="od-cc-limit"
   />
 );
 

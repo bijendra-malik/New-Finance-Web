@@ -36,7 +36,7 @@ const FAQ = () => {
       <section className="relative w-full py-16 px-10 md:px-6 bg-white overflow-hidden">
         {/* Top accent bar */}
         <div
-          className="absolute top-0 left-0 w-full h-[3px]"
+          className="absolute top-0 left-0 w-full h-0.75"
           style={{ background: `linear-gradient(90deg, ${C.navy}, ${C.teal}, ${C.lime})` }}
         />
 
@@ -49,7 +49,7 @@ const FAQ = () => {
             >
               How We Work?
               <span
-                className="absolute left-0 -bottom-1.5 w-full h-[3px] rounded-full block"
+                className="absolute left-0 -bottom-1.5 w-full h-0.75 rounded-full block"
                 style={{ background: `linear-gradient(90deg, ${C.navy}, ${C.teal}, ${C.lime})` }}
               />
             </h2>
@@ -83,7 +83,7 @@ const FAQ = () => {
                       {/* Timeline column */}
                       <div className="flex flex-col items-center mr-4 pt-1">
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold flex-shrink-0 shadow-sm transition-all duration-300 z-10"
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0 shadow-sm transition-all duration-300 z-10"
                           style={{
                             background: active ? `linear-gradient(135deg, ${step.color}, ${step.color}cc)` : "#f4f5f7",
                             color: active ? "#fff" : step.color,
@@ -130,7 +130,7 @@ const FAQ = () => {
                             </div>
                           </div>
                           <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                            className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
                             style={{ background: active || hovered ? step.color : "#f0f1f3" }}
                           >
                             {active
@@ -203,7 +203,7 @@ const FAQ = () => {
                   >
                     <div className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
                       <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0 transition-all duration-300"
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 transition-all duration-300"
                         style={{ background: active ? C.teal : "#f0f1f3", color: active ? "#fff" : C.teal }}
                       >
                         {i + 1}
@@ -215,7 +215,7 @@ const FAQ = () => {
                         </h4>
                       </div>
                       <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                        className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
                         style={{ background: active || hovered ? C.teal : "#f0f1f3" }}
                       >
                         {active
@@ -298,7 +298,7 @@ const FAQ = () => {
                   backdropFilter: "blur(4px)",
                 }}
               >
-                <span className="font-bold text-base flex-shrink-0 mt-0.5" style={{ color: C.lime }}>✓</span>
+                <span className="font-bold text-base shrink-0 mt-0.5" style={{ color: C.lime }}>✓</span>
                 <div>
                   <span className="font-bold text-sm text-white block">{title}</span>
                   <span className="text-xs text-white/65">{desc}</span>

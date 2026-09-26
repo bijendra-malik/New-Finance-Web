@@ -11,7 +11,7 @@ const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
       const [title, desc] = Array.isArray(item) ? item : [item, undefined];
       return (
         <li key={i} className="flex items-start gap-3">
-          <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+          <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
           <span className="text-sm text-gray-600 leading-relaxed">
             {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
           </span>
@@ -39,7 +39,7 @@ const sections: DetailSection[] = [
             business loan, a balance transfer could significantly reduce your monthly outgo.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={balanceTransferConcept} alt="Balance Transfer"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -130,7 +130,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best Balance Transfer Provider Company", desc: "Whether transferring home loan balances or personal loan debt, partner with providers known for expertise and dedication to client satisfaction." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

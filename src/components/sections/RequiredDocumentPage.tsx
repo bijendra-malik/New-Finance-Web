@@ -102,7 +102,7 @@ const RequiredDocumentPage = () => {
             </div>
 
             {/* RIGHT */}
-            <div className="flex flex-col items-start lg:items-end gap-8 flex-shrink-0">
+            <div className="flex flex-col items-start lg:items-end gap-8 shrink-0">
               <p
                 className="text-lg md:text-xl font-semibold italic"
                 style={{ color: "#ffffffff" }}
@@ -144,7 +144,7 @@ const RequiredDocumentPage = () => {
                 <ul className="space-y-2.5 mt-2">
                   {section.docs.map((doc, idx) => (
                     <li key={idx} className="flex items-start gap-2.5">
-                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
                       <div>
                         <span className="font-medium text-gray-800 text-sm">{doc.name}</span>
                         {doc.note && (

@@ -9,7 +9,7 @@ const NumberedList = ({ items }: { items: string[] }) => (
   <ol className="space-y-2.5 mt-1">
     {items.map((item, i) => (
       <li key={i} className="flex items-start gap-3">
-        <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
+        <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
         <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
       </li>
     ))}
@@ -34,14 +34,14 @@ const sections: DetailSection[] = [
               <div className="grid grid-cols-2 gap-2">
                 {["Competitive interest rates", "Transparent terms", "Hassle-free application", "Expert guidance", "Doorstep bank service", "Pan-India coverage"].map((point) => (
                   <div key={point} className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#26ae90" }} />{point}
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#26ae90" }} />{point}
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={carloanDetails} alt="Car Loan"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -123,7 +123,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Apply with Indexia Finance", desc: "As one of India's best car loan companies, the application process is simple and fully online." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

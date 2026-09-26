@@ -84,7 +84,7 @@ const BalanceTransferDocs = () => (
     breadcrumb="Balance Transfer · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="balancetransfer"
+    applySlug="balance-transfer"
   />
 );
 

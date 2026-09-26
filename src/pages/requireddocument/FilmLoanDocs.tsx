@@ -51,7 +51,7 @@ const FilmLoanDocs = () => (
     breadcrumb="Film Funding · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="filmfunding"
+    applySlug="film-funding"
   />
 );
 

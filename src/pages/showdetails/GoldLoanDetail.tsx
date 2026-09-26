@@ -10,7 +10,7 @@ const BL = ({ items }: { items: (string | [string, string])[] }) => (
       const [t, d] = Array.isArray(item) ? item : [item, undefined];
       return (
         <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
           <span className="text-sm text-gray-600 leading-relaxed">
             {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
           </span>
@@ -85,7 +85,7 @@ const sections: DetailSection[] = [
               "Other eligible applicants",
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
                 <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
               </div>
             ))}
@@ -106,7 +106,7 @@ const sections: DetailSection[] = [
               "Lender's internal policies",
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
                 <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
               </div>
             ))}
@@ -198,7 +198,7 @@ const sections: DetailSection[] = [
             "Portfolio and risk monitoring",
           ].map((item) => (
             <div key={item} className="flex items-start gap-2">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
               <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
             </div>
           ))}

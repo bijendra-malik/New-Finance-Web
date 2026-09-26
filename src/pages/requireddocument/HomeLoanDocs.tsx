@@ -52,7 +52,7 @@ const HomeLoanDocs = () => (
     breadcrumb="Home Loan · Required Documents"
    bannerBg={bannerImg}
     sections={sections}
-    applySlug="homeloan"
+    applySlug="home-loan"
   />
 );
 

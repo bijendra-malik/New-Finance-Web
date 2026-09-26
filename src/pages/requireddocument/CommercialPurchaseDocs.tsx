@@ -39,7 +39,7 @@ const CommercialPurchaseDocs = () => (
     breadcrumb="Commercial Purchase · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="commercialpurchase"
+    applySlug="commercial-purchase"
   />
 );
 

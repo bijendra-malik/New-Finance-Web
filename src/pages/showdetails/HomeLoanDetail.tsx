@@ -9,7 +9,7 @@ const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
     {items.map(([title, desc]) => (
       <li key={title} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
         <span className="text-sm md:text-base text-gray-600 leading-relaxed">
           <span className="font-semibold text-gray-800">{title}: </span>{desc}
         </span>
@@ -33,7 +33,7 @@ const sections: DetailSection[] = [
             digital convenience.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={homelonaDetail} alt="Home Loan"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -57,7 +57,7 @@ const sections: DetailSection[] = [
             ["Land Purchase Loan", "For purchasing a plot of land for construction or investment."],
           ].map(([title, desc]) => (
             <div key={title} className="flex items-start gap-3">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
               <span className="text-sm text-gray-600 leading-relaxed">
                 <span className="font-semibold text-gray-800">{title}: </span>{desc}
               </span>
@@ -124,7 +124,7 @@ const sections: DetailSection[] = [
           { num: "6", title: "Home Loan at Lowest Rate of Interest", desc: "We negotiate with lenders to secure the most favorable interest rates, helping you minimize the total cost of financing your dream home." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

@@ -49,7 +49,7 @@ const EducationLoanDocs = () => (
     breadcrumb="Education Loan · Required Documents"
    bannerBg={bannerImg}
     sections={sections}
-    applySlug="educationloan"
+    applySlug="education-loan"
   />
 );
 

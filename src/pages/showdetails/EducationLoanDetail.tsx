@@ -11,7 +11,7 @@ const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
       const [title, desc] = Array.isArray(item) ? item : [item, undefined];
       return (
         <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
           <span className="text-sm text-gray-600 leading-relaxed">
             {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
           </span>
@@ -25,7 +25,7 @@ const NumberedList = ({ items }: { items: [string, string][] }) => (
   <ol className="space-y-3 mt-1">
     {items.map(([title, desc], i) => (
       <li key={i} className="flex items-start gap-3">
-        <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
+        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
         <span className="text-sm text-gray-600 leading-relaxed">
           <span className="font-semibold text-gray-800">{title}: </span>{desc}
         </span>
@@ -68,7 +68,7 @@ const sections: DetailSection[] = [
             ]} />
           </div>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={EducationLoanImg} alt="Education Loan"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -117,7 +117,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best Education Loan Provider Company", desc: "Whether studying locally or abroad, committed to empowering students with the financial support they need to succeed." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

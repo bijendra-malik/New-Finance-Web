@@ -9,7 +9,7 @@ const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
     {items.map(([title, desc], i) => (
       <li key={i} className="flex items-start gap-3">
-        <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+        <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
         <span className="text-sm text-gray-600 leading-relaxed">
           <span className="font-semibold text-gray-800">{title}: </span>{desc}
         </span>
@@ -32,7 +32,7 @@ const sections: DetailSection[] = [
             and a commitment to ensuring your financial worries don't hinder your growth.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={commercialImg} alt="Commercial Purchase"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -107,7 +107,7 @@ const sections: DetailSection[] = [
           { num: "3", title: "Best Commercial Purchase Provider Company", desc: "Delivering tailored solutions that cater to the unique needs of your business — a smooth, transparent process from application to disbursement." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

@@ -9,7 +9,7 @@ const BulletList = ({ items }: { items: [string, string?][] }) => (
   <ul className="space-y-2.5 mt-1">
     {items.map(([title, desc], i) => (
       <li key={i} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
         <span className="text-sm text-gray-600 leading-relaxed">
           {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
         </span>
@@ -51,7 +51,7 @@ const sections: DetailSection[] = [
             </div>
           </div>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={againstloanDetails} alt="Loan Against Property"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -79,7 +79,7 @@ const sections: DetailSection[] = [
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {["Expanding your business","Funding your child's wedding","Sending your child to higher studies abroad","Funding your dream holiday","Covering medical treatments","Debt consolidation","Any personal or business requirement"].map((use) => (
             <div key={use} className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />{use}
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />{use}
             </div>
           ))}
         </div>
@@ -123,7 +123,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best LAP Company", desc: "Companies renowned for reliability, integrity, and dedication to helping individuals and businesses leverage their property." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>

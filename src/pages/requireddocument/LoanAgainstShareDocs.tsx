@@ -45,7 +45,7 @@ const LoanAgainstShareDocs = () => (
     breadcrumb="Loan Against Share · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="loanagainstshare"
+    applySlug="loan-against-share"
   />
 );
 

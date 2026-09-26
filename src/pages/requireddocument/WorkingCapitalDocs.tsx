@@ -42,7 +42,7 @@ const WorkingCapitalDocs = () => (
     breadcrumb="Working Capital · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="workingcapital"
+    applySlug="working-capital"
   />
 );
 

@@ -45,7 +45,7 @@ const PersonalLoanDocs = () => (
     breadcrumb="Personal Loan · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="personalloan"
+    applySlug="personal-loan"
   />
 );
 

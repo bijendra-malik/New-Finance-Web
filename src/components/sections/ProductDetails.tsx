@@ -594,7 +594,7 @@ const ProductDetails = () => {
                     }}
                   >
                     {/* Product icon */}
-                    {/* <span className="text-base leading-none flex-shrink-0">{PRODUCT_ICON[p.id]}</span> */}
+                    {/* <span className="text-base leading-none shrink-0">{PRODUCT_ICON[p.id]}</span> */}
                     <span className="truncate">{p.label}</span>
                   </button>
                 );

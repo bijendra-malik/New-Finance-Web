@@ -9,7 +9,7 @@ const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
     {items.map(([title, desc]) => (
       <li key={title} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
         <span className="text-sm md:text-base text-gray-600 leading-relaxed">
           <span className="font-semibold text-gray-800">{title}: </span>{desc}
         </span>
@@ -33,7 +33,7 @@ const sections: DetailSection[] = [
             <strong className="text-gray-800">1 to 5 years</strong>, all through a fast, paperless process.
           </p>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img
             src={personaldetails}
             alt="Personal Loan"
@@ -108,7 +108,7 @@ const sections: DetailSection[] = [
           ["High Loan Amounts", "Access up to ₹30 lakh to meet large financial requirements."],
         ].map(([title, desc], i) => (
           <li key={title} className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>
+            <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>
               {i + 1}
             </span>
             <span className="text-sm md:text-base text-gray-600 leading-relaxed">

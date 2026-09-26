@@ -60,7 +60,7 @@ const LeaseRentalDocs = () => (
     breadcrumb="Lease Rental Discounting · Required Documents"
    bannerBg={bannerImg}
     sections={sections}
-    applySlug="leaserental"
+    applySlug="lease-rental"
   />
 );
 

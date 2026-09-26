@@ -11,7 +11,7 @@ const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
       const [title, desc] = Array.isArray(item) ? item : [item, undefined];
       return (
         <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ACCENT }} />
+          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
           <span className="text-sm text-gray-600 leading-relaxed">
             {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
           </span>
@@ -47,7 +47,7 @@ const sections: DetailSection[] = [
             </div>
           </div>
         </div>
-        <div className="flex-shrink-0 w-full lg:w-80">
+        <div className="shrink-0 w-full lg:w-80">
           <img src={creaditcarddetails} alt="Credit Card"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
@@ -68,7 +68,7 @@ const sections: DetailSection[] = [
             <ul className="space-y-1.5">
               {card.points.map((p) => (
                 <li key={p} className="flex items-start gap-2 text-xs text-gray-600">
-                  <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0 bg-gray-400" />{p}
+                  <span className="mt-1.5 w-1 h-1 rounded-full shrink-0 bg-gray-400" />{p}
                 </li>
               ))}
             </ul>
@@ -138,7 +138,7 @@ const sections: DetailSection[] = [
           { num: "4", title: "Best Credit Card Provider Company", desc: "Whether you're a frequent traveller or everyday spender, committed to innovation and enhancing your financial experience." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
+            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
             <div>
               <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
               <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
@@ -168,7 +168,7 @@ const CreditCardDetail = () => (
     bannerTitle="Credit Cards — Convenience & Rewards in One"
     bannerBg={bannerFallback}
     docsHref="/requireddocument/credit-card"
-    applySlug=""
+    applySlug="credit-card"
     sections={sections}
   />
 );

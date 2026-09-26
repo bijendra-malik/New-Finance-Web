@@ -66,7 +66,7 @@ const CreditCardDocs = () => (
     breadcrumb="Credit Card · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="creditcard"
+    applySlug="credit-card"
   />
 );
 

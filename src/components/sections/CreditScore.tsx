@@ -166,7 +166,7 @@ const LabelItem = ({
       )}
 
       <div
-        className="flex-shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center transition-all duration-300 cursor-pointer"
+        className="shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center transition-all duration-300 cursor-pointer"
         style={{
           boxShadow: show
             ? "0 0 0 3px rgba(74,144,217,0.35), 0 2px 8px rgba(0,0,0,0.12)"
@@ -194,8 +194,8 @@ const LabelItem = ({
           <div
             className={`absolute top-1/2 -translate-y-1/2 border-4 border-transparent ${
               align === "left"
-                ? "right-[-8px] border-l-slate-800"
-                : "left-[-8px] border-r-slate-800"
+                ? "-right-2 border-l-slate-800"
+                : "-left-2 border-r-slate-800"
             }`}
           />
         </div>
@@ -285,14 +285,14 @@ const CreditScore = () => {
         <div className="relative w-full flex items-center justify-center">
 
           {/* LEFT labels */}
-          <div className="hidden sm:flex flex-col gap-5 items-end mr-4 w-44 flex-shrink-0">
+          <div className="hidden sm:flex flex-col gap-5 items-end mr-4 w-44 shrink-0">
             {leftLabels.map((l) => (
               <LabelItem key={l.textKey} textKey={l.textKey} tipKey={l.tipKey} iconKey={l.iconKey} align="left" />
             ))}
           </div>
 
           {/* SVG Gauge */}
-          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} width={SVG_W} height={SVG_H} className="flex-shrink-0 overflow-visible">
+          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} width={SVG_W} height={SVG_H} className="shrink-0 overflow-visible">
             {/* Outer glow ring when done */}
             {done && (
               <circle
@@ -369,7 +369,7 @@ const CreditScore = () => {
           </svg>
 
           {/* RIGHT labels */}
-          <div className="hidden sm:flex flex-col gap-5 items-start ml-4 w-44 flex-shrink-0">
+          <div className="hidden sm:flex flex-col gap-5 items-start ml-4 w-44 shrink-0">
             {rightLabels.map((l) => (
               <LabelItem key={l.textKey} textKey={l.textKey} tipKey={l.tipKey} iconKey={l.iconKey} align="right" />
             ))}
@@ -380,7 +380,7 @@ const CreditScore = () => {
         <div className="sm:hidden grid grid-cols-2 gap-3 w-full mt-6 px-10">
           {labelKeys.map((l) => (
             <div key={l.textKey} className="flex items-center gap-2">
-              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-white shadow flex items-center justify-center">
+              <div className="shrink-0 w-7 h-7 rounded-full bg-white shadow flex items-center justify-center">
                 {labelIcons[l.iconKey]}
               </div>
               <span className="text-xs text-slate-600 font-medium leading-tight">{t(l.textKey)}</span>

@@ -43,7 +43,7 @@ const GoldLoanDocs = () => (
     breadcrumb="Gold Loan · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="goldloan"
+    applySlug="gold-loan"
   />
 );
 
