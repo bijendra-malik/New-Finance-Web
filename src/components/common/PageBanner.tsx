@@ -13,7 +13,7 @@ interface PageBannerProps {
 
 const PageBanner = ({ breadcrumb, title, highlight, tagline }: PageBannerProps) => (
   <section
-    className="relative mt-10 flex w-full min-h-70 items-center overflow-hidden md:min-h-80"
+    className="relative mt-25 flex w-full min-h-70 items-center overflow-hidden md:min-h-80"
     style={{
       background: "linear-gradient(120deg, #0e1e3c 0%, #1b6ca8 55%, #1e90ff 100%)",
     }}
