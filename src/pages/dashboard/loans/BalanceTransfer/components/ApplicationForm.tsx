@@ -5,13 +5,13 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 export interface BalanceTransferApplication {
@@ -399,13 +399,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        extraLoanRows: [
-          { label: "Transfer Type", value: submittedApp.balanceTransferType },
-          { label: "Current Property Value", value: submittedApp.currentPropertyValue ? `₹${submittedApp.currentPropertyValue.toLocaleString("en-IN")}` : undefined },
-          { label: "Top-up Amount", value: submittedApp.topUpAmount ? `₹${submittedApp.topUpAmount.toLocaleString("en-IN")}` : undefined },
-        ],
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

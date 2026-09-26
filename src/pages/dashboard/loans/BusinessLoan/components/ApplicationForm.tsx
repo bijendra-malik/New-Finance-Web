@@ -9,13 +9,13 @@ import type { BusinessLoanApplication } from "../../../../../api/loanApplication
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // Type lives in the API layer now (aligned with the backend's BusinessLoan document);
 // re-exported so the dashboard and LoanStatus imports keep working unchanged.
@@ -354,7 +354,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp)}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

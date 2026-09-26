@@ -10,8 +10,9 @@ import {
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
+
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 // Field set mirrors LoanAgainstProperty's ApplicationForm.
@@ -139,7 +140,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     [form.state, loadCities]
   );
 
-
   const goldCaratsOptions = useMemo(
     () => form.typeOfLoan==="Jewellery" ? masters.goldCaratsJewelry : masters.goldCaratsNonJewelry,
     [form.typeOfLoan, masters.goldCaratsJewelry, masters.goldCaratsNonJewelry]
@@ -149,7 +149,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     () => loadCities(form.businessState),
     [form.businessState, loadCities]
   );
-
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
@@ -455,25 +454,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        productSection: {
-          title: "Gold Details",
-          rows: [
-            { label: "Type of Loan", value: submittedApp.typeOfLoan },
-            { label: "Gold Purity (Karat)", value: submittedApp.goldCarats },
-            { label: "Gold Weight", value: submittedApp.goldWeight ? `${submittedApp.goldWeight.toLocaleString("en-IN")} g` : undefined },
-            { label: "Stone Weight", value: submittedApp.typeOfLoan === "Jewellery" && submittedApp.jewelryStoneWeight ? `${submittedApp.jewelryStoneWeight.toLocaleString("en-IN")} g` : undefined },
-            { label: "Other Materials", value: submittedApp.typeOfLoan === "Jewellery" && submittedApp.jewelryOtherMaterials?.length
-              ? submittedApp.jewelryOtherMaterials.map(m => `${m.name}: ${m.weight.toLocaleString("en-IN")} g`).join(", ")
-              : undefined },
-            { label: "Market Value", value: submittedApp.collateralPropertyMarketValue ? `₹${submittedApp.collateralPropertyMarketValue.toLocaleString("en-IN")}` : undefined },
-          ],
-        },
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );
-
 
   return (
     <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>

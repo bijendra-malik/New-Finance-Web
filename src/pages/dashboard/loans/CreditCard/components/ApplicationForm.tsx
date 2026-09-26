@@ -5,12 +5,12 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 export interface CreditCardApplication {
@@ -111,12 +111,10 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
     [form.state, loadCities]
   );
 
-
   const businessCityOptions = useMemo(
     () => loadCities(form.businessState),
     [form.businessState, loadCities]
   );
-
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
@@ -371,12 +369,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        extraLoanRows: [
-          { label: "Preferred Bank", value: submittedApp.applyForBank },
-          { label: "Existing Active Card", value: submittedApp.hasActiveCard },
-        ],
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

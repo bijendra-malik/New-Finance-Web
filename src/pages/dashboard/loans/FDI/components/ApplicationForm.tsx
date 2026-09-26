@@ -5,13 +5,13 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 // Field set mirrors LoanAgainstProperty's ApplicationForm.
@@ -132,19 +132,16 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     [form.state, loadCities]
   );
 
-
   const collateralRequired=form.interestedInEquityPartner!=="Yes";
   const collateralPropertyCityOptions = useMemo(
     () => loadCities(form.collateralPropertyState),
     [form.collateralPropertyState, loadCities]
   );
 
-
   const businessCityOptions = useMemo(
     () => loadCities(form.businessState),
     [form.businessState, loadCities]
   );
-
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
@@ -409,20 +406,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        amountLabel: "Fund Amount",
-        productSection: {
-          title: "Security Details",
-          rows: [
-            { label: "Fund Against", value: submittedApp.collateralPropertyType },
-            { label: "Company Valuation", value: submittedApp.companyEvaluationValue ? `₹${submittedApp.companyEvaluationValue.toLocaleString("en-IN")}` : undefined },
-            { label: "Interested in Equity Partner", value: submittedApp.interestedInEquityPartner },
-            { label: "Equity Share Offered", value: submittedApp.equityShareOffered ? `${submittedApp.equityShareOffered.toLocaleString("en-IN")} %` : undefined },
-            { label: "Location", value: [submittedApp.collateralPropertyCity, submittedApp.collateralPropertyState].filter(Boolean).join(", ") || undefined },
-            { label: "Pincode", value: submittedApp.collateralPropertyPincode },
-          ],
-        },
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

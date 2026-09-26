@@ -5,13 +5,13 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 export interface EducationLoanApplication {
@@ -479,34 +479,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        productSection: {
-          title: "Education Details",
-          rows: [
-            { label: "Country of Study", value: submittedApp.educationCountry },
-            { label: "Field of Study", value: submittedApp.fieldOfStudy },
-            { label: "Course", value: submittedApp.courseName },
-            { label: "University", value: submittedApp.university },
-            { label: "Institute", value: submittedApp.instituteName },
-            { label: "Enrollment Status", value: submittedApp.enrollmentStatus },
-            { label: "Course Duration", value: submittedApp.courseDuration ? `${submittedApp.courseDuration.toLocaleString("en-IN")} years` : undefined },
-            { label: "Course Cost", value: submittedApp.educationCost ? `₹${submittedApp.educationCost.toLocaleString("en-IN")}` : undefined },
-          ],
-        },
-        extraSections: [{
-          title: "Co-applicant (Parent) Details",
-          rows: [
-            { label: "Relationship", value: submittedApp.parentRelationship },
-            { label: "Full Name", value: submittedApp.parentFullName },
-            { label: "Mobile", value: submittedApp.parentMobile ? `+91 ${submittedApp.parentMobile}` : undefined },
-            { label: "Email", value: submittedApp.parentEmail },
-            { label: "Date of Birth", value: submittedApp.parentDob },
-            { label: "PAN Number", value: submittedApp.parentPanNumber },
-            { label: "Residence", value: [submittedApp.parentCity, submittedApp.parentState].filter(Boolean).join(", ") || undefined },
-            { label: "Residence Status", value: submittedApp.parentResidenceStatus },
-          ],
-        }],
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

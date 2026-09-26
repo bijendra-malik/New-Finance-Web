@@ -10,12 +10,12 @@ import { useMasters } from "../../../../../hooks/useMasters";
 import { formatPAN } from "../../../../../utils/formatters";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import {
   DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 interface ApplicationFormProps {
   userName?: string;
@@ -75,7 +75,6 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     () => loadCities(form.state),
     [form.state, loadCities]
   );
-
 
   const addOtherBank = (value:string) =>
     setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
@@ -219,7 +218,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, { amountLabel: "Loan Amount" })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );

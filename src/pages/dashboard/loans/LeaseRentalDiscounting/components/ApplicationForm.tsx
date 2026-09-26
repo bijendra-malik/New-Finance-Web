@@ -5,13 +5,13 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { buildSuccessSections } from "../../../../../components/form/successSections";
 import { formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
+import { buildProductSections } from "./receiptSections";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 export interface LeaseRentalApplication {
@@ -132,18 +132,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     [form.state, loadCities]
   );
 
-
   const leasePropertyCityOptions = useMemo(
     () => loadCities(form.leasePropertyState),
     [form.leasePropertyState, loadCities]
   );
 
-
   const businessCityOptions = useMemo(
     () => loadCities(form.businessState),
     [form.businessState, loadCities]
   );
-
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
@@ -430,20 +427,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       applicantName={submittedApp.fullName}
       mobile={submittedApp.mobile}
       email={submittedApp.email}
-      sections={buildSuccessSections(submittedApp, {
-        productSection: {
-          title: "Leased Property Details",
-          rows: [
-            { label: "Monthly Lease Rental", value: submittedApp.monthlyLeaseIncome ? `₹${submittedApp.monthlyLeaseIncome.toLocaleString("en-IN")}` : undefined },
-            { label: "Total Lease Amount", value: submittedApp.totalLeaseAmount ? `₹${submittedApp.totalLeaseAmount.toLocaleString("en-IN")}` : undefined },
-            { label: "Lease Duration", value: submittedApp.leasePropertyDuration ? `${submittedApp.leasePropertyDuration.toLocaleString("en-IN")} years` : undefined },
-            { label: "Market Value", value: submittedApp.leasePropertyMarketValue ? `₹${submittedApp.leasePropertyMarketValue.toLocaleString("en-IN")}` : undefined },
-            { label: "Property Age", value: submittedApp.leasePropertyAge ? `${submittedApp.leasePropertyAge.toLocaleString("en-IN")} years` : undefined },
-            { label: "Location", value: [submittedApp.leasePropertyCity, submittedApp.leasePropertyState].filter(Boolean).join(", ") || undefined },
-            { label: "Pincode", value: submittedApp.leasePropertyPincode },
-          ],
-        },
-      })}
+      sections={buildProductSections(submittedApp)}
     />
     </div>
   );
