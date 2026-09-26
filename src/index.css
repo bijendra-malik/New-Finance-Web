@@ -10,3 +10,17 @@
 
  /* Grey=#7b7b7b */
  /* #008738 */
+
+/* Respect users who prefer reduced motion: collapse every animation and
+   transition to near-instant so nothing distracts or causes vestibular
+   discomfort. The UI stays fully usable — nothing depends on motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
