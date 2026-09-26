@@ -35,6 +35,8 @@
   /* Navy alpha tints */
   --brand-navy-14: rgba(6, 106, 156, 0.08);
   --brand-navy-1a: rgba(6, 106, 156, 0.102);
+  --brand-navy-22: rgba(6, 106, 156, 0.133);
+  --brand-navy-44: rgba(6, 106, 156, 0.267);
   --brand-navy-55: rgba(6, 106, 156, 0.333);
 
   /* Sidebar deep navy (gradient start) */
