@@ -45,10 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         })
         .catch(() => {
           // Token is invalid or expired — clear everything
-          logout();
+          setToken(null);
+          setUser(null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
         });
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = (newToken: string, newUser: ApiUser) => {
     setToken(newToken);
