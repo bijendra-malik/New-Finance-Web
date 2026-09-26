@@ -84,17 +84,20 @@ export const fmtTenure = (months?: number | null) => {
 /** Joins a string list → "a, b, c", tolerating empty. */
 export const fmtList = (arr?: string[] | null) => (arr && arr.length > 0 ? arr.join(", ") : dash);
 
-export const fmtTxnBank = (
+// Transaction bank display value for Self Employed - Business
+const resolveTxnBank = (
   name?: string | { displayName?: string; banks?: string[] },
-  banks?: string[]
-) => {
+  other?: string
+): string | undefined => {
+  if (other && other.trim()) return other.trim();
   if (name && typeof name === "object") {
     const list = name.banks ?? [];
-    return name.displayName === "Multiple Transaction Banks" && list.length > 0
-      ? fmtList(list)
-      : fmtText(name.displayName);
+    if (name.displayName === "Multiple Transaction Banks")
+      return list.length > 0 ? fmtList(list) : undefined;
+    return name.displayName?.trim() || undefined;
   }
-  return name === "Multiple Transaction Banks" && banks && banks.length > 0 ? fmtList(banks) : fmtText(name);
+  if (!name || !name.trim() || name === "Multiple Transaction Banks") return undefined;
+  return name.trim();
 };
 
 export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !== "Other");
@@ -121,6 +124,8 @@ interface CommonApp {
   businessEstablishedDate?: string;
   transactionBankName?: string | { displayName?: string; banks?: string[] };
   transactionBanks?: string[];
+  /** Set when the user picked "Other" and typed a custom bank (Home Loan shape). */
+  transactionBankOther?: string;
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
   profession?: string;
@@ -202,8 +207,10 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Company PAN", value: app.companyPanNumber },
       { label: "Nature of Business", value: app.natureOfBusiness },
       { label: "Industry Type", value: [app.industryType, app.subIndustry].filter(Boolean).join(" — ") || undefined },
-      { label: "Established On", value: fmtDate(app.businessEstablishedDate) },
-      { label: "Transaction Bank", value: fmtTxnBank(app.transactionBankName, app.transactionBanks) },
+      ...(app.businessEstablishedDate ? [{ label: "Established On", value: fmtDate(app.businessEstablishedDate) }] : []),
+      ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
+        ? [{ label: "Transaction Bank", value: resolveTxnBank(app.transactionBankName, app.transactionBankOther) as string }]
+        : []),
       { label: "Last Year Turnover", value: app.lastYearTurnover !== undefined ? fmtINR(app.lastYearTurnover) : undefined, force: true },
       { label: "Last 2 Years Turnover", value: app.last2YearsTurnover !== undefined ? fmtINR(app.last2YearsTurnover) : undefined, force: true },
       { label: "Last Year Net Income", value: app.lastYearNetIncome !== undefined ? fmtINR(app.lastYearNetIncome) : undefined, force: true },
@@ -217,7 +224,9 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Profession", value: app.profession },
       { label: "GST Number", value: app.gstNumber },
       { label: "Company PAN", value: app.companyPanNumber },
-      { label: "Transaction Bank", value: fmtTxnBank(app.transactionBankName, app.transactionBanks) },
+      ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
+        ? [{ label: "Transaction Bank", value: resolveTxnBank(app.transactionBankName, app.transactionBankOther) as string }]
+        : []),
       { label: "Current Year Turnover", value: app.currentYearTurnover !== undefined ? fmtINR(app.currentYearTurnover) : undefined, force: true },
       { label: "Current Year Net Income", value: app.currentYearNetIncome !== undefined ? fmtINR(app.currentYearNetIncome) : undefined, force: true },
       { label: "Previous Year Turnover", value: app.priorYearTurnover !== undefined ? fmtINR(app.priorYearTurnover) : undefined, force: true },
@@ -235,13 +244,14 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
 
   // Always shown: the forms instruct "Fill 0 if you have no existing loans",
   // so 0 is the user's entry, not an omission. force keeps ₹0 rows visible.
+  // Bank/type lists are optional — only shown when the user added entries.
   sections.push({
     title: "Existing Loan Obligations",
     rows: [
       { label: "Existing Total EMI", value: fmtINR(app.existingEMI), force: true },
       { label: "Existing Loan Amount", value: fmtINR(app.existingLoanAmount), force: true },
-      { label: "Existing Banks", value: fmtList(banks) },
-      { label: "Existing Loan Types", value: fmtList(loanTypes) },
+      ...(banks.length ? [{ label: "Existing Banks", value: fmtList(banks) }] : []),
+      ...(loanTypes.length ? [{ label: "Existing Loan Types", value: fmtList(loanTypes) }] : []),
     ],
   });
 
