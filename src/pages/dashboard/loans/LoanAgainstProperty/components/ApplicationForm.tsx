@@ -198,7 +198,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure (minimum 3 years)";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>20)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 20 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=20)) e.loanTenureYearsCustom="Maximum tenure for this loan is 20 years";
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select what you wish to take the loan against";
     else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention collateral property type";

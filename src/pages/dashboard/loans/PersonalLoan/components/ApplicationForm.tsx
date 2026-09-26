@@ -103,7 +103,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>5000000) e.loanAmount="Maximum loan amount is ₹50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>7)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 7 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7)) e.loanTenureYearsCustom="Maximum tenure for this loan is 7 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";

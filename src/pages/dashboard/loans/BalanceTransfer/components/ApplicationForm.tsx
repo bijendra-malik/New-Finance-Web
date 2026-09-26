@@ -192,7 +192,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select balance transfer tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>30)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 30 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=30)) e.loanTenureYearsCustom="Maximum tenure for this loan is 30 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";

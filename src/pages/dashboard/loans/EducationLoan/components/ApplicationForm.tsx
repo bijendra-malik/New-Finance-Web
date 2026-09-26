@@ -227,7 +227,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>15000000) e.loanAmount="Maximum loan amount is ₹1,50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<11||form.loanTenureYearsCustom>15)) e.loanTenureYearsCustom="Custom tenure must be between 11 and 15 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=15)) e.loanTenureYearsCustom="Maximum tenure for this loan is 15 years";
 
     if(!draft.educationCountry) e.educationCountry="Country for education is required";
     else if(draft.educationCountry===OTHER_OPTION&&!draft.educationCountryOther.trim()) e.educationCountryOther="Please mention country";

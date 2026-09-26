@@ -191,6 +191,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹10,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Enter loan tenure";
     else if(draft.loanTenureYears<3) e.loanTenureYears="Minimum loan tenure is 3 years";
+    else if(draft.loanTenureYears>30) e.loanTenureYears="Maximum loan tenure is 30 years";
 
     if(!draft.buyingPropertyType) e.buyingPropertyType="Buying property type is required";
     else if(draft.buyingPropertyType===OTHER_OPTION&&!draft.buyingPropertyTypeOther.trim()) e.buyingPropertyTypeOther="Please mention buying property type";
@@ -460,8 +461,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               onChange={v=>set("loanAmount",Math.max(0,parseInt(v)||0))} placeholder="e.g. 3000000" err={errors.loanAmount}/>
           </div>
           <div id="loanTenureYears"><FieldLabel label="Required Loan Tenure (in years)" required/>
-            <TextField type="number" min={3} value={form.loanTenureYears===0?"":String(form.loanTenureYears)}
-              onChange={v=>set("loanTenureYears",Math.max(0,parseInt(v)||0))} placeholder="Min 3 years" err={errors.loanTenureYears}/>
+            <TextField type="number" min={3} max={30} value={form.loanTenureYears===0?"":String(form.loanTenureYears)}
+              onChange={v=>set("loanTenureYears",Math.max(0,parseInt(v)||0))} placeholder="Between 3 and 30 years" err={errors.loanTenureYears}/>
           </div>
           <SelectWithOther
             id="buyingPropertyType" label="Buying Property Type" required
