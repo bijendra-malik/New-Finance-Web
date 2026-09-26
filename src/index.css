@@ -1,19 +1,48 @@
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
 
-/* Dark Blue = #111184 */
+/* ── Brand colour tokens ─────────────────────────────────────────────────────
+   Dark Blue = #111184 · bisleri green = #26ae90 · lime green = #f2f231
+   dark shade of blue = #066a9c · grey = #7b7b7b · green = #008738
+*/
+:root {
+  /* Core palette */
+  --brand-teal: #26ae90;
+  --brand-navy: #066a9c;
+  --brand-dark: #286090;
+  --brand-yellow: #f2f231;
+  --brand-gray: #7b7b7b;
 
-/* bisleri green color code = #26ae90 [RBG-(0, 179, 161)]  ya #00b7fb */
+  /* ApplicationModal blues */
+  --brand-blue: #2563eb;
+  --brand-blue-dark: #1d4ed8;
+  --brand-blue-200: #bfdbfe;
+  --brand-blue-tint: #dbeafe;
+  --brand-blue-bg: #eff6ff;
 
-/* lime green= #f2f231  */
- /* dark shade of blue = #066a9c */
+  /* Teal alpha tints (suffix = old hex alpha) */
+  --brand-teal-14: rgba(38, 174, 144, 0.08);
+  --brand-teal-1a: rgba(38, 174, 144, 0.102);
+  --brand-teal-1f: rgba(38, 174, 144, 0.122);
+  --brand-teal-20: rgba(38, 174, 144, 0.125);
+  --brand-teal-22: rgba(38, 174, 144, 0.133);
+  --brand-teal-26: rgba(38, 174, 144, 0.149);
+  --brand-teal-33: rgba(38, 174, 144, 0.2);
+  --brand-teal-44: rgba(38, 174, 144, 0.267);
+  --brand-teal-40: rgba(38, 174, 144, 0.25);
+  --brand-teal-60: rgba(38, 174, 144, 0.376);
 
- /* Grey=#7b7b7b */
- /* #008738 */
+  /* Navy alpha tints */
+  --brand-navy-14: rgba(6, 106, 156, 0.08);
+  --brand-navy-1a: rgba(6, 106, 156, 0.102);
+  --brand-navy-55: rgba(6, 106, 156, 0.333);
 
-/* Respect users who prefer reduced motion: collapse every animation and
-   transition to near-instant so nothing distracts or causes vestibular
-   discomfort. The UI stays fully usable — nothing depends on motion. */
+  /* Sidebar deep navy (gradient start) */
+  --brand-navy-deep: #044e74;
+  /* Footer gradient light end */
+  --brand-navy-light: #0a7fba;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
