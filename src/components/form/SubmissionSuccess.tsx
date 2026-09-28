@@ -20,7 +20,7 @@ const Section = ({ section }: { section: SuccessSection }) => {
         {rows.map(r => (
           <div key={r.label} className="flex items-start justify-between gap-6 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-wide shrink-0 pt-0.5" style={{ color: C.gray }}>{r.label}</span>
-            <span className="text-sm font-bold text-right wrap-break-words" style={{ color: C.dark }}>{fmtText(r.value)}</span>
+            <span className="text-sm font-bold text-right min-w-0 wrap-anywhere" style={{ color: C.dark }}>{fmtText(r.value)}</span>
           </div>
         ))}
       </div>
