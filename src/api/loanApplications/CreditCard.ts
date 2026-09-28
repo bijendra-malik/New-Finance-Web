@@ -20,6 +20,9 @@ export interface CreditCardApplication {
   currentYearTurnover?: number; priorYearTurnover?: number;
   currentYearNetIncome?: number; previousYearNetIncome?: number;
   businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
+  existingEMI: number; existingLoanAmount: number;
+  existingBanks: string[]; otherBankList?: string[];
+  existingLoanTypes: string[]; otherLoanList?: string[];
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
