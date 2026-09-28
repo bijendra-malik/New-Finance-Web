@@ -58,16 +58,16 @@ const DashboardShell = <T,>({
   const handleApplicationSubmit = (id: string, app: T) => {
     setApplicationId(id); setSubmittedApp(app);
     setIsSubmitted(true); setActiveTab("status");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("loan-dashboard-main")?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ── 3-column layout ────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex" style={{ background: "#f0f4f8", marginTop: "100px" }}>
+    <div className="flex overflow-hidden" style={{ background: "#f0f4f8", marginTop: "100px", height: "calc(100vh - 100px)" }}>
 
       {/* ══ COL 1: LEFT SIDEBAR ══════════════════════════════════════════════ */}
       <aside
-        className="hidden md:flex flex-col w-60 shrink-0 sticky top-0 h-screen border-r"
+        className="hidden md:flex flex-col w-60 shrink-0 border-r"
         style={{ background: "linear-gradient(180deg, var(--brand-navy-deep) 0%, var(--brand-navy) 100%)", borderColor:"rgba(255,255,255,0.08)" }}
       >
         {/* Logo */}
@@ -123,7 +123,7 @@ const DashboardShell = <T,>({
       </aside>
 
       {/* ══ COL 2: MAIN CONTENT (CENTER) ════════════════════════════════════ */}
-      <main className="flex-1 overflow-y-auto">
+      <main id="loan-dashboard-main" className="flex-1 overflow-y-auto h-full">
         {/* Mobile tab bar */}
         <div className="md:hidden sticky top-0 z-20 flex border-b"
           style={{ background:"linear-gradient(90deg,var(--brand-navy-deep),var(--brand-navy))", borderColor:"rgba(255,255,255,0.1)" }}>
@@ -164,7 +164,7 @@ const DashboardShell = <T,>({
 
       {/* ══ COL 3: RIGHT PANEL — only bell + profile ══════════════════════ */}
       <aside
-        className="hidden lg:flex flex-col w-72 shrink-0 sticky top-0 h-screen border-l"
+        className="hidden lg:flex flex-col w-72 shrink-0 border-l"
         style={{ background: "#f8fafc", borderColor: "#e2e8f0" }}
       >
         {/* Bell + Profile row */}
