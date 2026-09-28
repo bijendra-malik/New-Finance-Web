@@ -1,4 +1,4 @@
-import { buildSuccessSections } from "../../../../../components/form/successSections";
+import { buildSuccessSections, fmtList } from "../../../../../components/form/successSections";
 import type { NPAApplication } from "./ApplicationForm";
 
 export const buildProductSections = (app: NPAApplication) =>
@@ -22,8 +22,10 @@ export const buildProductSections = (app: NPAApplication) =>
       rows: [
         { label: "Principal Loan Amount", value: app.npaPrincipalLoanAmount ? `₹${app.npaPrincipalLoanAmount.toLocaleString("en-IN")}` : undefined },
         { label: "Current Outstanding", value: app.npaCurrentOutstandingAmount ? `₹${app.npaCurrentOutstandingAmount.toLocaleString("en-IN")}` : undefined },
-        { label: "NPA Banks", value: app.existingBanksNpa?.length ? [...app.existingBanksNpa, ...(app.existingBanksNpaOther ?? [])].join(", ") : undefined },
-        { label: "Non-NPA Banks", value: app.existingBanksNonNpa?.length ? [...app.existingBanksNonNpa, ...(app.existingBanksNonNpaOther ?? [])].join(", ") : undefined },
+        { label: "NPA Banks", value: fmtList([...(app.existingBanksNpa ?? []), ...(app.existingBanksNpaOther ?? [])]), force: true },
+        { label: "Non-NPA Banks", value: fmtList([...(app.existingBanksNonNpa ?? []), ...(app.existingBanksNonNpaOther ?? [])]), force: true },
+        { label: "Existing Loan Types (NPA)", value: fmtList([...(app.existingLoanTypesNpa ?? []), ...(app.existingLoanTypesNpaOther ?? [])]), force: true },
+        { label: "Existing Loan Types (Non NPA)", value: fmtList([...(app.existingLoanTypesNonNpa ?? []), ...(app.existingLoanTypesNonNpaOther ?? [])]), force: true },
       ],
     }],
 
