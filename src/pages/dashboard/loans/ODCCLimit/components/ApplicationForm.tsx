@@ -211,6 +211,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(draft.monthlyNetSalary>5000000) e.monthlyNetSalary="Monthly income cannot exceed ₹50,00,000";
       else if(parseInt(draft.existingEMI)>draft.monthlyNetSalary*0.6) e.existingEMI="Existing Total EMI should be at most 60% of monthly net salary (FOIR check)"; // FOIR check
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
@@ -238,7 +239,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       if(draft.transactionBankName===OTHER_OPTION&&!draft.transactionBankNameOther.trim()) e.transactionBankNameOther="Please mention bank name";
       else if(draft.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&draft.transactionBanks.length===0) e.transactionBanks="Please add at least one bank";
       if(!draft.lastYearTurnover) e.lastYearTurnover="Last year turnover is required";
+      else if(draft.lastYearTurnover>10000000000) e.lastYearTurnover="Last year turnover cannot exceed ₹1,00,00,00,000";
       if(draft.lastYearTurnover&&draft.lastYearNetIncome>draft.lastYearTurnover) e.lastYearNetIncome="Last year net income cannot be greater than last year turnover";
+      if(draft.last2YearsTurnover>10000000000) e.last2YearsTurnover="Turnover cannot exceed ₹1,00,00,00,000";
       if(!draft.lastYearNetIncome) e.lastYearNetIncome="Annual income cannot be zero";
     }
 
@@ -246,8 +249,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       if(!draft.profession) e.profession="Profession is required";
       else if(draft.profession===OTHER_OPTION&&!draft.professionOther.trim()) e.professionOther="Please mention profession";
       if(!draft.currentYearTurnover) e.currentYearTurnover="Current year turnover is required";
+      else if(draft.currentYearTurnover>10000000000) e.currentYearTurnover="Current year turnover cannot exceed ₹1,00,00,00,000";
       if(draft.currentYearTurnover&&draft.currentYearNetIncome>draft.currentYearTurnover) e.currentYearNetIncome="Current year net income cannot be greater than current year turnover";
       if(!draft.priorYearTurnover) e.priorYearTurnover="Last (2 years old) turnover is required";
+      else if(draft.priorYearTurnover>10000000000) e.priorYearTurnover="Last (2 years old) turnover cannot exceed ₹1,00,00,00,000";
       if(draft.priorYearTurnover&&draft.previousYearNetIncome>draft.priorYearTurnover) e.previousYearNetIncome="Previous year net income cannot be greater than prior year turnover";
       if(!draft.currentYearNetIncome) e.currentYearNetIncome="Current year net income is required";
       if(!draft.previousYearNetIncome) e.previousYearNetIncome="Previous year net income is required";

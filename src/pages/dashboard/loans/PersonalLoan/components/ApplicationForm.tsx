@@ -108,6 +108,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(draft.monthlyNetSalary>5000000) e.monthlyNetSalary="Monthly income cannot exceed ₹50,00,000";
       else if(parseInt(draft.existingEMI)>draft.monthlyNetSalary*0.6) e.existingEMI="Existing Total EMI should be at most 60% of monthly net salary (FOIR check)"; // FOIR check
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){

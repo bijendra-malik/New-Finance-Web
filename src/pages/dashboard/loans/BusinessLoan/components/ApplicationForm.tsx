@@ -189,7 +189,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(draft.transactionBankName===OTHER_OPTION&&!draft.transactionBankNameOther.trim()) e.transactionBankNameOther="Please mention bank name";
       else if(draft.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&draft.transactionBanks.length===0) e.transactionBanks="Please add at least one bank";
       if(!draft.lastYearTurnover) e.lastYearTurnover="Last year turnover is required";
+      else if(draft.lastYearTurnover>10000000000) e.lastYearTurnover="Last year turnover cannot exceed ₹1,00,00,00,000";
       if(draft.lastYearTurnover&&draft.lastYearNetIncome>draft.lastYearTurnover) e.lastYearNetIncome="Last year net income cannot be greater than last year turnover";
+      if(draft.last2YearsTurnover>10000000000) e.last2YearsTurnover="Turnover cannot exceed ₹1,00,00,00,000";
       if(!draft.lastYearNetIncome) e.lastYearNetIncome="Annual income cannot be zero";
     }
 
@@ -197,8 +199,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.profession) e.profession="Profession is required";
       else if(draft.profession===OTHER_OPTION&&!draft.professionOther.trim()) e.professionOther="Please mention profession";
       if(!draft.currentYearTurnover) e.currentYearTurnover="Current year turnover is required";
+      else if(draft.currentYearTurnover>10000000000) e.currentYearTurnover="Current year turnover cannot exceed ₹1,00,00,00,000";
       if(draft.currentYearTurnover&&draft.currentYearNetIncome>draft.currentYearTurnover) e.currentYearNetIncome="Current year net income cannot be greater than current year turnover";
       if(!draft.priorYearTurnover) e.priorYearTurnover="Last (2 years old) turnover is required";
+      else if(draft.priorYearTurnover>10000000000) e.priorYearTurnover="Last (2 years old) turnover cannot exceed ₹1,00,00,00,000";
       if(draft.priorYearTurnover&&draft.previousYearNetIncome>draft.priorYearTurnover) e.previousYearNetIncome="Previous year net income cannot be greater than prior year turnover";
       if(!draft.currentYearNetIncome) e.currentYearNetIncome="Current year net income is required";
       if(!draft.previousYearNetIncome) e.previousYearNetIncome="Previous year net income is required";
