@@ -92,10 +92,11 @@ interface TenureYearsFieldProps {
   id: string; label: string; required?: boolean;
   value: number; onChange: (v: number) => void;
   customValue: number; onCustomChange: (v: number) => void;
+  customErr?: string;
   options: readonly number[]; placeholder?: string; err?: string;
 }
 export const TenureYearsField = memo(({
-  id, label, required = true, value, onChange, customValue, onCustomChange,
+  id, label, required = true, value, onChange, customValue, onCustomChange, customErr,
   options, placeholder = "Select", err,
 }: TenureYearsFieldProps) => {
   const maxYear = options[options.length - 1];
@@ -114,7 +115,7 @@ export const TenureYearsField = memo(({
           <FieldLabel label="Enter Tenure (in years)" required />
           <TextField type="number" value={customValue === 0 ? "" : String(customValue)}
             onChange={v => onCustomChange(Math.max(0, parseInt(v) || 0))}
-            placeholder="" />
+            placeholder="" err={customErr} />
         </div>
       )}
     </>
