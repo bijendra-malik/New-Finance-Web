@@ -249,8 +249,8 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
     title: "Existing Loan Obligations",
     rows: [
       { label: "Existing Total EMI", value: fmtINR(app.existingEMI), force: true },
-      { label: "Existing Loan Amount", value: fmtINR(app.existingLoanAmount), force: true },
       ...(banks.length ? [{ label: "Existing Banks", value: fmtList(banks) }] : []),
+      { label: "Existing Loan Amount", value: fmtINR(app.existingLoanAmount), force: true },
       ...(loanTypes.length ? [{ label: "Existing Loan Types", value: fmtList(loanTypes) }] : []),
     ],
   });
