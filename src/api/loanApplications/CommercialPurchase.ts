@@ -14,7 +14,7 @@ export interface CommercialPurchaseApplication {
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;
   gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
+  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
   profession?: string;
@@ -25,6 +25,8 @@ export interface CommercialPurchaseApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
+  /** Server-set product label, e.g. "Commercial Purchase". */
+  loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;

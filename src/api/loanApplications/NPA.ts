@@ -16,7 +16,7 @@ export interface NPAApplication {
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;
   gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
+  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
   profession?: string;
@@ -29,6 +29,8 @@ export interface NPAApplication {
   existingBanksNonNpa: string[]; existingBanksNonNpaOther?: string[];
   existingLoanTypesNpa: string[]; existingLoanTypesNpaOther?: string[];
   existingLoanTypesNonNpa: string[]; existingLoanTypesNonNpaOther?: string[];
+  /** Server-set product label, e.g. "NPA". */
+  loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
