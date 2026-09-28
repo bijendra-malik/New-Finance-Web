@@ -24,7 +24,7 @@ const bankNamesToBanks = (names: string[]): Masters["banks"] =>
   names.length > 0 ? [...names, OTHER_OPTION] : [...BANK_NAMES];
 
 const withBankMaster = (data: Masters): Masters => {
-  const names = normalizeBankNames((data as Masters & { bankNames?: unknown }).bankNames);
+  const names = normalizeBankNames((data as Masters & { bankLoan?: unknown }).bankLoan);
   return names.length > 0 ? { ...data, banks: bankNamesToBanks(names) } : data;
 };
 
@@ -130,7 +130,7 @@ export interface CustomBankNameResponse {
 
 export const addCustomBankName = async (value: string): Promise<CustomBankNameResponse> => {
   const res = await axiosInstance.post<CustomBankNameResponse>(
-    "/masters/bankNames/custom",
+    "/masters/bankLoan/custom",
     { value }
   );
   return res.data;
