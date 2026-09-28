@@ -8,6 +8,7 @@ import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/l
 import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { formatPAN } from "../../../../../utils/formatters";
+import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
@@ -84,7 +85,6 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   };
 
 // ── Shared validation constants (used by computeErrors below) ──
-  const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
@@ -116,32 +116,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       }
     }
 
-    if(!draft.fullName.trim()) e.fullName="Name is required";
-    else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
-    if(!draft.mobile.trim()) e.mobile="Mobile is required";
-    else if(!/^[6-9]\d{9}$/.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number (starting with 6-9)";
-    if(!draft.email.trim()) e.email="Email is required";
-    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) e.email="Enter valid email";
-    if(!draft.dob) e.dob="Date of birth is required";
-    else {
-      const dobDate = new Date(draft.dob+"T00:00:00");
-      const today = new Date(); today.setHours(0,0,0,0);
-      if(dobDate>today) e.dob="Date of birth cannot be in the future";
-      else {
-        const eighteenYearsAgo = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
-        const ageCeiling = new Date(today.getFullYear()-60, today.getMonth(), today.getDate());
-        if(dobDate<ageCeiling) e.dob="Maximum application age is 60 years for this loan";
-        if(dobDate>eighteenYearsAgo) e.dob="You must be at least 18 years old";
-      }
-    }
-    if(!draft.panNumber.trim()) e.panNumber="PAN is required";
-    else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.panNumber.toUpperCase())) e.panNumber="Invalid PAN format";
-    if(!draft.state) e.state="State is required";
-    if(!draft.city) e.city="City is required";
-    if(!draft.pincode) e.pincode="Pincode is required";
-    else if(!/^[1-9]\d{5}$/.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
-    if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
-    else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
+    validatePersonalDetails(draft, e, { maxAge: 60 });
 
     return e;
   };
