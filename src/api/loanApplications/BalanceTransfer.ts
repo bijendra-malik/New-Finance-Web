@@ -22,6 +22,7 @@ export interface BalanceTransferApplication {
   businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
   loanAmount: number; loanTenure: number;
   existingEMI: number; existingLoanAmount: number;
+  existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
   status: "Submitted";
   createdAt: string;
