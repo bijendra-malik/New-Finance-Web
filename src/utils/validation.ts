@@ -1,6 +1,6 @@
 import { OTHER_OPTION } from "../constants/masters";
 
-export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
+export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export const PINCODE_REGEX = /^[1-9]\d{5}$/;
 export const MOBILE_REGEX = /^[6-9]\d{9}$/;
