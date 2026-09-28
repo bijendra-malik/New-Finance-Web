@@ -10,7 +10,7 @@ import { addCustomBankName } from "../../../../../api/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
-import { formatPAN } from "../../../../../utils/formatters";
+import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
@@ -564,7 +564,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             </div>
 
             <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
-                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",v.toUpperCase())} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
+                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
               </div>
               <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
                 <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="AAAAA9999A" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>

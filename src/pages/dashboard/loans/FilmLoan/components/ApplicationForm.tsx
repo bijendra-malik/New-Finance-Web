@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
@@ -6,38 +6,21 @@ import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
-import { formatPAN } from "../../../../../utils/formatters";
+import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
+import { applyFilmLoan } from "../../../../../api/loanApplications";
+import type { FilmLoanApplication } from "../../../../../api/loanApplications";
+import { getApiErrorMessage } from "../../../../../utils/apiError";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-export interface FilmLoanApplication {
-  _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
-  employmentType: string; businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string;
-  businessEstablishedDate?: string; transactionBankName?: string; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  filmComesUnder: string;
-  filmLanguages: string[]; starCastNames: string[];
-  totalProjectCost: number; ownInvestmentAmount: number;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; existingBanksOther?: string[];
-  existingLoanTypes: string[]; existingLoanTypesOther?: string[];
-  status: "Submitted";
-  createdAt: string;
-}
+// Type lives in the API layer (aligned with the backend's FilmLoan document);
+// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+export type { FilmLoanApplication } from "../../../../../api/loanApplications";
 
 const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
 const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
@@ -72,8 +55,7 @@ interface FormData {
 }
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
-  const {user} = useAuth();
-  const {masters, loadCities, getEmploymentTypesFor} = useMasters();
+  const {user} = useAuth();const { masters, loadCities } = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -101,20 +83,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  // Employment types come from the backend per loan type, with the local
-  // constants list as fallback while/if the loan type is not registered.
-  const [employmentTypesState, setEmploymentTypesState] = useState<string[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    getEmploymentTypesFor("film-loan", "businessEmploymentTypes")
-      .then(types => { if (!cancelled) setEmploymentTypesState(types); })
-      .catch(() => { /* fallback already returned by the helper */ });
-    return () => { cancelled = true; };
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
-
+  // The /employment-types API is only available for Home Loan, so employment
+  // types stay static for this product.
   const employmentTypeOptions = useMemo(
-    () => (employmentTypesState.length > 0 ? employmentTypesState : [...masters.businessEmploymentTypes]),
-    [employmentTypesState, masters.businessEmploymentTypes]
+    () => [...masters.businessEmploymentTypes],
+    [masters.businessEmploymentTypes]
   );
 
 const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
@@ -214,7 +187,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<10000000) e.loanAmount="Minimum ₹1,00,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select funding tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10)) e.loanTenureYearsCustom="Maximum tenure for this loan is 10 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>100)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>100?"Tenure cannot exceed 100 years":"Enter a tenure greater than 10 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -309,9 +282,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       return;
     }
     setIsSubmitting(true); setApiError("");
-    await new Promise(res=>setTimeout(res,600));
-    const app: FilmLoanApplication = {
-      _id: `FL${Date.now()}`,
+    try {
+    const app = {
+
       fullName:form.fullName, mobile:form.mobile, email:form.email,
       dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
       state:form.state, city:form.city, pincode:form.pincode,
@@ -360,13 +333,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       loanAmount:form.loanAmount,
       loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-      existingBanks:form.existingBanks, existingBanksOther:form.existingBanksOther,
-      existingLoanTypes:form.existingLoanTypes, existingLoanTypesOther:form.existingLoanTypesOther,
-      status:"Submitted", createdAt:new Date().toISOString(),
+      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+      existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
     };
-    setSubmittedApp(app); setSubmitted(true);
-    setIsSubmitting(false);
-    if(onSubmit) onSubmit(app._id, app);
+    const res = await applyFilmLoan(app);
+    setSubmittedApp(res.data); setSubmitted(true);
+    if(onSubmit) onSubmit(res.data._id, res.data);
+    } catch(err) {
+      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
+    } finally { setIsSubmitting(false); }
   };
 
   if(submitted && submittedApp && !showFormAfterSubmit) return (
@@ -508,7 +483,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             </div>
 
             <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
-                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",v.toUpperCase())} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
+                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
               </div>
               <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
                 <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="AAAAA9999A" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>

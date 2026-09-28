@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
@@ -32,8 +32,7 @@ interface FormData {
 }
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
-  const {user} = useAuth();
-  const {masters, loadCities, getEmploymentTypesFor} = useMasters();
+  const {user} = useAuth();const { masters, loadCities } = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -51,20 +50,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  // Employment types come from the backend per loan type, with the local
-  // constants list as fallback while/if the loan type is not registered.
-  const [employmentTypesState, setEmploymentTypesState] = useState<string[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    getEmploymentTypesFor("personal", "personalEmploymentTypes")
-      .then(types => { if (!cancelled) setEmploymentTypesState(types); })
-      .catch(() => { /* fallback already returned by the helper */ });
-    return () => { cancelled = true; };
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
-
+  // The /employment-types API is only available for Home Loan, so employment
+  // types stay static for this product.
   const employmentTypeOptions = useMemo(
-    () => (employmentTypesState.length > 0 ? employmentTypesState : [...masters.personalEmploymentTypes]),
-    [employmentTypesState, masters.personalEmploymentTypes]
+    () => [...masters.personalEmploymentTypes],
+    [masters.personalEmploymentTypes]
   );
 
   const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
@@ -103,7 +93,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>5000000) e.loanAmount="Maximum loan amount is ₹50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7)) e.loanTenureYearsCustom="Maximum tenure for this loan is 7 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>100)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>100?"Tenure cannot exceed 100 years":"Enter a tenure greater than 7 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
