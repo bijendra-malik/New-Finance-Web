@@ -376,7 +376,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       companyType:form.employmentType===SALARIED
         ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
         :undefined,
-      monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
+      monthlySalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
       salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
       salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
         ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
