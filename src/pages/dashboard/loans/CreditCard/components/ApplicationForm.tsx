@@ -9,7 +9,7 @@ import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } 
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import {
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
-  OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TextField,
+  OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
 } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyCreditCard } from "../../../../../api/loanApplications";
@@ -48,12 +48,15 @@ interface FormData {
   currentYearNetIncome:number; previousYearNetIncome:number;
   businessState:string; businessCity:string;
   businessPincode:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
+  existingEMI:string; existingLoanAmount:string;
+  existingBanks:string[]; existingBanksOther:string[]; existingLoanTypes:string[]; existingLoanTypesOther:string[];
 }
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<CreditCardApplication|null>(null);
   // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
@@ -74,6 +77,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     businessState:"", businessCity:"",
     businessPincode:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
+    existingEMI:"", existingLoanAmount:"",
+    existingBanks:[], existingBanksOther:[], existingLoanTypes:[], existingLoanTypesOther:[],
   });
   // The /employment-types API is only available for Home Loan, so employment
   // types stay static for this product.
@@ -98,6 +103,17 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
+
+  const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+
+  const addOtherBank = (value:string) =>
+    setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
+  const removeOtherBank = (idx:number) =>
+    setForm(p=>({...p, existingBanksOther:p.existingBanksOther.filter((_,i)=>i!==idx)}));
+  const addOtherLoanType = (value:string) =>
+    setForm(p=>({...p, existingLoanTypesOther:[...p.existingLoanTypesOther, value]}));
+  const removeOtherLoanType = (idx:number) =>
+    setForm(p=>({...p, existingLoanTypesOther:p.existingLoanTypesOther.filter((_,i)=>i!==idx)}));
 
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
@@ -153,6 +169,9 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
     // pincode format itself below.
 
     if(draft.applyForBank===OTHER_OPTION&&!draft.applyForBankOther.trim()) e.applyForBankOther="Please mention bank name";
+    if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
+    if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
+    else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
 
@@ -258,9 +277,11 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
         (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
         return next;
       });
+      setSubmitAttempted(true); setApiError("");
       document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
       return;
     }
+    setSubmitAttempted(false);
     setIsSubmitting(true); setApiError("");
     try {
     const app = {
@@ -269,6 +290,9 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
       dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
       state:form.state, city:form.city, pincode:form.pincode,
       residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+      existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
+      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+      existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
       hasActiveCard:form.hasActiveCard||undefined,
       applyForBank:form.applyForBank?(form.applyForBank===OTHER_OPTION?form.applyForBankOther:form.applyForBank):undefined,
       employmentType:form.employmentType,
@@ -579,6 +603,44 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
         </div>
       </FormCard>
 
+      {/* ── EXISTING LOAN EXPOSURE ──────────────────────────────────── */}
+      <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+          <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
+            <TextField type="number" value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+          </div>
+          <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
+            <TextField type="number" value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+          </div>
+        </div>
+
+        <div className="mb-5">
+          <FieldLabel label="Existing Loan Bank's Name"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
+          <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
+            onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
+            color={C.teal}/>
+
+          {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
+              items={form.existingBanksOther} onAdd={addOtherBank} onRemove={removeOtherBank} color={C.teal} existingOptions={masters.banks}/>
+          )}
+        </div>
+
+        <div>
+          <FieldLabel label="Existing Loan Types"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
+          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
+            onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
+            color={C.navy}/>
+
+          {hasExposure&&form.existingLoanTypes.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Types" placeholder="Enter other loan type"
+              items={form.existingLoanTypesOther} onAdd={addOtherLoanType} onRemove={removeOtherLoanType} color={C.navy} existingOptions={masters.existingLoanTypes}/>
+          )}
+        </div>
+      </FormCard>
+
       {/* ── PERSONAL DETAILS ─────────────────────────────────────────── */}
       <FormCard title="Personal Details" subtitle="Basic details as per your official documents">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -638,9 +700,10 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
         </span>
       </label>
 
-      {apiError&&(
+      {(apiError||(submitAttempted&&Object.keys(allErrors).length>0))&&(
         <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
-          <span className="shrink-0 mt-0.5">⚠️</span>{apiError}
+          <span className="shrink-0 mt-0.5">⚠️</span>
+          {apiError||`${Object.keys(allErrors).length} field${Object.keys(allErrors).length===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
         </div>
       )}
 

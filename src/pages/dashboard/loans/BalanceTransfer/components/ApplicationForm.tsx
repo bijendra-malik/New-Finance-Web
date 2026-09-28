@@ -51,13 +51,14 @@ interface FormData {
   businessState:string; businessCity:string;
   businessPincode:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
   existingEMI:string; existingLoanAmount:string;
-  existingLoanTypes:string[]; existingLoanTypesOther:string[];
+  existingBanks:string[]; existingBanksOther:string[]; existingLoanTypes:string[]; existingLoanTypesOther:string[];
 }
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<BalanceTransferApplication|null>(null);
   const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
@@ -79,7 +80,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     businessState:"", businessCity:"",
     businessPincode:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
     existingEMI:"", existingLoanAmount:"",
-    existingLoanTypes:[], existingLoanTypesOther:[],
+    existingBanks:[], existingBanksOther:[], existingLoanTypes:[], existingLoanTypesOther:[],
   });
   const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
@@ -92,6 +93,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   );
 
 const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
+  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
   const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
 
   const cityOptions = useMemo(
@@ -109,6 +111,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
 
+  const addOtherBank = (value:string) =>
+    setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
+  const removeOtherBank = (idx:number) =>
+    setForm(p=>({...p, existingBanksOther:p.existingBanksOther.filter((_,i)=>i!==idx)}));
   const addOtherLoanType = (value:string) =>
     setForm(p=>({...p, existingLoanTypesOther:[...p.existingLoanTypesOther, value]}));
   const removeOtherLoanType = (idx:number) =>
@@ -168,10 +174,20 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select balance transfer tenure";
     else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=30||form.loanTenureYearsCustom>100)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>100?"Tenure cannot exceed 100 years":"Enter a tenure greater than 30 years";
+    if(draft.currentPropertyValue.trim()){
+      const pv=parseInt(draft.currentPropertyValue);
+      if(pv<100000) e.currentPropertyValue="Minimum property value is ₹1,00,000";
+      else if(pv>1000000000) e.currentPropertyValue="Property value cannot exceed ₹1,00,00,00,000";
+    }
+    if(draft.topUpAmount.trim()){
+      const tu=parseInt(draft.topUpAmount);
+      if(tu<1000) e.topUpAmount="Minimum top-up amount is ₹1,000";
+      else if(tu>1000000000) e.topUpAmount="Top-up amount cannot exceed ₹1,00,00,00,000";
+    }
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
-    if(pillLoanTypesSelected&&!hasExposure) e.existingEMI="Since existing loan banks/types are selected, existing EMI or existing loan amount must be greater than 0 (unselect both if you have no existing loans)";
+    if((pillBanksSelected||pillLoanTypesSelected)&&!hasExposure) e.existingEMI="Since existing loan banks/types are selected, existing EMI or existing loan amount must be greater than 0 (unselect both if you have no existing loans)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
 
@@ -278,9 +294,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
         return next;
       });
+      setSubmitAttempted(true); setApiError("");
       document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
       return;
     }
+    setSubmitAttempted(false);
     setIsSubmitting(true); setApiError("");
     try {
     const app = {
@@ -348,6 +366,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       loanAmount:form.loanAmount,
       loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
       existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
+      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
       existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
     };
     const res = await applyBalanceTransfer(app);
@@ -400,7 +419,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             otherPlaceholder="Enter loan type" otherErr={errors.balanceTransferTypeOther}
           />
           <div id="currentPropertyValue"><FieldLabel label="Current Value of Property (approx) - if secured"/>
-            <TextField type="number" value={form.currentPropertyValue} onChange={v=>set("currentPropertyValue",v.replace(/\D/g,""))} placeholder="e.g. 5000000"/>
+            <TextField type="number" value={form.currentPropertyValue} onChange={v=>set("currentPropertyValue",v.replace(/\D/g,""))} placeholder="e.g. 5000000" err={errors.currentPropertyValue}/>
           </div>
           <div id="loanAmount"><FieldLabel label="Balance Transfer Amount" required/>
             <TextField type="number" value={form.loanAmount===0?"":String(form.loanAmount)}
@@ -410,10 +429,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Balance Transfer Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.homeLoanTenureYears} err={errors.loanTenureYears}
+            options={masters.homeLoanTenureYears} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <div id="topUpAmount"><FieldLabel label="Top-up Amount (if any)"/>
-            <TextField type="number" value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="e.g. 200000"/>
+            <TextField type="number" value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="e.g. 200000" err={errors.topUpAmount}/>
           </div>
         </div>
       </FormCard>
@@ -630,8 +649,22 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           </div>
         </div>
 
+        <div className="mb-5">
+          <FieldLabel label="Existing Loan Bank's Name"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
+          <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
+            onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
+            color={C.teal}/>
+
+          {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
+            <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
+              items={form.existingBanksOther} onAdd={addOtherBank} onRemove={removeOtherBank} color={C.teal} existingOptions={masters.banks}/>
+          )}
+        </div>
+
         <div>
           <FieldLabel label="Existing Loan Types"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
           <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
             onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
             color={C.navy}/>
@@ -702,9 +735,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </span>
       </label>
 
-      {apiError&&(
+      {(apiError||(submitAttempted&&Object.keys(allErrors).length>0))&&(
         <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
-          <span className="shrink-0 mt-0.5">⚠️</span>{apiError}
+          <span className="shrink-0 mt-0.5">⚠️</span>
+          {apiError||`${Object.keys(allErrors).length} field${Object.keys(allErrors).length===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
         </div>
       )}
 

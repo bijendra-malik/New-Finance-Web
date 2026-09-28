@@ -61,6 +61,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const {user} = useAuth();const { masters, loadCities } = useMasters();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submittedApp, setSubmittedApp] = useState<CarLoanApplication|null>(null);
   // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
@@ -299,9 +300,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
         return next;
       });
+      setSubmitAttempted(true); setApiError("");
       document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
       return;
     }
+    setSubmitAttempted(false);
     setIsSubmitting(true); setApiError("");
     try {
     const app = {
@@ -419,7 +422,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.carLoanTenureYears} err={errors.loanTenureYears}
+            options={masters.carLoanTenureYears} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="vehicleType" label="Buying Vehicle Type"
@@ -674,6 +677,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
         <div className="mb-5">
           <FieldLabel label="Existing Loan Bank's Name"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
           <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
             onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
             color={C.teal}/>
@@ -686,6 +690,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
         <div>
           <FieldLabel label="Existing Loan Types"/>
+          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
           <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
             onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
             color={C.navy}/>
@@ -756,9 +761,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </span>
       </label>
 
-      {apiError&&(
+      {(apiError||(submitAttempted&&Object.keys(allErrors).length>0))&&(
         <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
-          <span className="shrink-0 mt-0.5">⚠️</span>{apiError}
+          <span className="shrink-0 mt-0.5">⚠️</span>
+          {apiError||`${Object.keys(allErrors).length} field${Object.keys(allErrors).length===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
         </div>
       )}
 
