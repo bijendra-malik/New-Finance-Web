@@ -223,6 +223,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
   const [input, setInput] = useState("");
   const [dupErr, setDupErr] = useState("");
   const limitReached = max !== undefined && items.length >= max;
+  const MAX_ENTRY_LENGTH = 100;
 
   const isDuplicate = (v: string) => {
     const norm = v.trim().toLowerCase();
@@ -234,6 +235,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
   const commit = () => {
     const v = input.trim();
     if (!v || limitReached) return;
+    if (v.length > MAX_ENTRY_LENGTH) { setDupErr(`Maximum ${MAX_ENTRY_LENGTH} characters`); return; }
     const dup = isDuplicate(v);
     if (dup) { setDupErr(dup); return; }
     onAdd(v);
@@ -248,7 +250,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
       ) : (
         <div className="flex gap-2 items-start">
           <div className="flex-1">
-            <input type="text" value={input} placeholder={placeholder}
+            <input type="text" value={input} placeholder={placeholder} maxLength={MAX_ENTRY_LENGTH}
               onChange={e => { setInput(e.target.value); if (dupErr) setDupErr(""); }}
               onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
               className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none"
@@ -310,7 +312,7 @@ export const SelectWithOther = memo(({
       {select}
       <div id={otherId}>
         <FieldLabel label={otherLabel} required />
-        <TextField value={otherValue} onChange={onOtherChange} placeholder={otherPlaceholder} err={otherErr} />
+        <TextField value={otherValue} onChange={v => onOtherChange(v.slice(0, 100))} placeholder={otherPlaceholder} err={otherErr} maxLength={100} />
       </div>
     </>
   );
