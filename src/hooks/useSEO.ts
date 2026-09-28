@@ -24,6 +24,18 @@ const upsertMeta = (attr: "name" | "property", key: string, content: string) => 
   return el;
 };
 
+const resetToDefaults = () => {
+  document.title = "Indexia Finance | An Entire Loan Destination";
+  const description =
+    "Apply online for personal, business, home and 15+ other loan products with Indexia Finance. Quick eligibility check, transparent pricing and approvals within 48 hours.";
+  upsertMeta("name", "description", description);
+  upsertMeta("property", "og:title", "Indexia Finance | An Entire Loan Destination");
+  upsertMeta("property", "og:description", description);
+  upsertMeta("property", "og:url", `${SITE_URL}/`);
+  const link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (link) link.setAttribute("href", `${SITE_URL}/`);
+};
+
 const useSEO = ({ title, description, path, image }: SeoOptions) => {
   useEffect(() => {
     const fullTitle = `${title} | Indexia Finance`;
@@ -56,7 +68,7 @@ const useSEO = ({ title, description, path, image }: SeoOptions) => {
 
     return () => {
       nodes.forEach(n => n.remove());
-      link?.remove();
+      resetToDefaults();
     };
   }, [title, description, path, image]);
 };
