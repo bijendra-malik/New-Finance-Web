@@ -249,7 +249,7 @@ const Header = () => {
                           <Link
                             key={item.slug}
                             to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-(--brand-teal) hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
+                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
                             onClick={closeMobileMenu}
                           >
                             → {t(item.key)}
