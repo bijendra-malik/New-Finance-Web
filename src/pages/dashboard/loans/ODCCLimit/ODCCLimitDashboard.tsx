@@ -7,7 +7,7 @@ const ODCCLimitDashboard = () => (
   <DashboardShell<ODCCLimitApplication>
     productName="OD / CC Limit"
     icon="🏦"
-    stats={[["Max Limit", "₹5 Crores"], ["Rate", "From 10.5%"], ["Renewal", "Up to 5 yrs"]]}
+    stats={[["Max Limit", "₹5 Crores"], ["Rate", "From 10.5%"], ["Renewal", "Up to 25 yrs"]]}
     applicationDesc="Fill your limit details"
     renderForm={({ userName, userEmail, onSubmit }) => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
