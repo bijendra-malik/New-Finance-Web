@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { THEME as C } from "../../constants/theme";
 import { OTHER_OPTION } from "../../constants/masters";
-import { toISODate } from "../../utils/formatters";
+import { toISODate, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 
 export const FormCard = ({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) => (
   <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal22}` }}>
@@ -44,6 +44,18 @@ export const TextField = memo(({ type = "text", value, onChange, placeholder, er
   </>
 ));
 TextField.displayName = "TextField";
+
+export const AmountField = memo(({ value, onChange, placeholder, err }: { value: string | number; onChange: (v: string) => void; placeholder: string; err?: string }) => (
+  <TextField
+    type="text"
+    inputMode="numeric"
+    value={formatIndianNumber(String(value))}
+    onChange={v => onChange(digitsOnly(v))}
+    placeholder={placeholder}
+    err={err}
+  />
+));
+AmountField.displayName = "AmountField";
 
 interface SelectFieldProps {
   value: string; onChange: (v: string) => void; options: readonly string[]; placeholder: string; err?: string; disabled?: boolean;
@@ -94,31 +106,33 @@ interface TenureYearsFieldProps {
   customValue: number; onCustomChange: (v: number) => void;
   customErr?: string;
   options: readonly number[]; placeholder?: string; err?: string;
+  maxYears?: number;
 }
 export const TenureYearsField = memo(({
   id, label, required = true, value, onChange, customValue, onCustomChange, customErr,
-  options, placeholder = "Select", err,
+  options, placeholder = "Select", err, maxYears,
 }: TenureYearsFieldProps) => {
-  const maxYear = options[options.length - 1];
+  const cappedOptions = maxYears ? options.filter(y => y <= maxYears) : options;
+  const maxYear = cappedOptions[cappedOptions.length - 1];
+  const showMoreOption = !maxYears || maxYears > maxYear;
+  const tenureOptions = (showMoreOption ? [...cappedOptions, MORE_THAN_TENURE_OPTION] : [...cappedOptions]) as readonly number[];
   return (
-    <>
-      <div id={id}>
-        <FieldLabel label={label} required={required} />
-        <NumberSelectField value={value} onChange={v => {
-          onChange(v);
-          if (v !== MORE_THAN_TENURE_OPTION) onCustomChange(0);
-        }} options={[...options, MORE_THAN_TENURE_OPTION]} placeholder={placeholder} err={err}
-          formatOption={y => y === MORE_THAN_TENURE_OPTION ? `More than ${maxYear} years` : `${y} ${y === 1 ? "year" : "years"}`} />
-      </div>
+    <div id={id}>
+      <FieldLabel label={label} required={required} />
+      <NumberSelectField value={value} onChange={v => {
+        onChange(v);
+        if (v !== MORE_THAN_TENURE_OPTION) onCustomChange(0);
+      }} options={tenureOptions} placeholder={placeholder} err={err}
+        formatOption={y => y === MORE_THAN_TENURE_OPTION ? `More than ${maxYear} years` : `${y} ${y === 1 ? "year" : "years"}`} />
       {value === MORE_THAN_TENURE_OPTION && (
-        <div id={`${id}Custom`}>
+        <div id={`${id}Custom`} className="mt-3">
           <FieldLabel label="Enter Tenure (in years)" required />
           <TextField type="number" value={customValue === 0 ? "" : String(customValue)}
             onChange={v => onCustomChange(Math.max(0, parseInt(v) || 0))}
-            placeholder="" err={customErr} />
+            placeholder="" err={customErr} max={maxYears} />
         </div>
       )}
-    </>
+    </div>
   );
 });
 TenureYearsField.displayName = "TenureYearsField";
@@ -162,7 +176,7 @@ DateField.displayName = "DateField";
 
 export const DateOfBirthPicker = memo(({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string }) => {
   const today = new Date();
-  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  const maxDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
   const minDate = new Date(today.getFullYear() - 100, 0, 1);
   return <DateField value={value} onChange={onChange} err={err} minDate={minDate} maxDate={maxDate} portalId="dob-datepicker-portal" />;
 });
@@ -298,23 +312,17 @@ export const SelectWithOther = memo(({
   id, label, required, value, onChange, options, placeholder = "Select", disabled = false, err,
   otherId, otherLabel, otherValue, onOtherChange, otherPlaceholder, otherErr,
 }: SelectWithOtherProps) => {
-  const select = (
+  return (
     <div id={id}>
       <FieldLabel label={label} required={required} />
       <SelectField value={value} onChange={onChange} options={options} placeholder={placeholder} err={err} disabled={disabled} />
+      {value === OTHER_OPTION && (
+        <div id={otherId} className="mt-3">
+          <FieldLabel label={otherLabel} required />
+          <TextField value={otherValue} onChange={v => onOtherChange(v.slice(0, 100))} placeholder={otherPlaceholder} err={otherErr} maxLength={100} />
+        </div>
+      )}
     </div>
-  );
-
-  if (value !== OTHER_OPTION) return select;
-
-  return (
-    <>
-      {select}
-      <div id={otherId}>
-        <FieldLabel label={otherLabel} required />
-        <TextField value={otherValue} onChange={v => onOtherChange(v.slice(0, 100))} placeholder={otherPlaceholder} err={otherErr} maxLength={100} />
-      </div>
-    </>
   );
 });
 SelectWithOther.displayName = "SelectWithOther";
