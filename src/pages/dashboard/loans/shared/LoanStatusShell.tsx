@@ -1,21 +1,85 @@
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { THEME as C } from "../../../../constants/theme";
+import { sanitizeApplicationList } from "../../../../api/loanApplications/validate";
 
-const LoanStatusShell = ({
-  applicationId,
+interface AppLike {
+  _id: string;
+  createdAt: string;
+  mobile: string;
+  email: string;
+}
+
+const LoanStatusShell = <T extends AppLike>({
   isSubmitted,
   submittedApp,
   emptyMessage = "Submit your loan application to track its status here.",
-  children,
+  fetcher,
+  renderApp,
 }: {
-  applicationId: string;
+  applicationId?: string;
   isSubmitted: boolean;
-  /** `createdAt` is the only field the shell itself needs. */
-  submittedApp?: { createdAt?: string } | null;
+  submittedApp?: T | null;
   emptyMessage?: string;
-  children?: ReactNode;
+  /** Product fetcher, e.g. fetchWorkingCapitalApplications (module-level import — stable reference). */
+  fetcher?: () => Promise<{ success: boolean; data: T[] }>;
+  /** Renders the detail cards for the application being shown. */
+  renderApp?: (app: T) => ReactNode;
 }) => {
-  if (!isSubmitted) {
+  const [persisted, setPersisted] = useState<T | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const showInSession = isSubmitted && !!submittedApp;
+  const needFetch = !showInSession && !!fetcher && !!renderApp;
+  const isFetching = needFetch && !fetched;
+
+  useEffect(() => {
+    if (!needFetch || fetched) return;
+    let alive = true;
+    fetcher!()
+      .then(res => {
+        if (!alive) return;
+        // Runtime-validate against the API format; drop malformed records.
+        const { valid } = sanitizeApplicationList<T>(res?.data);
+        const newest = valid.length
+          ? [...valid].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+          : null;
+        setPersisted(newest);
+        setFetched(true);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setLoadError(true);
+        setFetched(true);
+      });
+    return () => { alive = false; };
+    // fetcher is a stable module-level import; `fetched` guards a single attempt.
+  }, [needFetch, fetched, fetcher]);
+
+  const displayed = showInSession ? submittedApp! : persisted;
+
+  if (!displayed) {
+    if (isFetching) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
+            style={{ background: C.navy14 }}>⏳</div>
+          <h3 className="text-lg font-bold mb-2" style={{ color: C.dark }}>Loading…</h3>
+          <p className="text-sm" style={{ color: C.gray }}>Fetching your submitted applications</p>
+        </div>
+      );
+    }
+    if (loadError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
+            style={{ background: "#fef2f2" }}>⚠️</div>
+          <h3 className="text-lg font-bold mb-2" style={{ color: C.dark }}>Couldn't load your applications</h3>
+          <p className="text-sm" style={{ color: C.gray }}>Please refresh the page to try again.</p>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
@@ -39,11 +103,11 @@ const LoanStatusShell = ({
             <div>
               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: C.gray }}>Application Submitted</p>
               <p className="text-base font-extrabold" style={{ color: C.dark }}>
-                ID: <span style={{ color: C.teal }}>{applicationId.slice(-10).toUpperCase()}</span>
+                ID: <span style={{ color: C.teal }}>{displayed._id.slice(-10).toUpperCase()}</span>
               </p>
               <p className="text-xs mt-0.5" style={{ color: C.gray }}>
-                {submittedApp?.createdAt
-                  ? new Date(submittedApp.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                {displayed.createdAt
+                  ? new Date(displayed.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
                   : "—"}
               </p>
             </div>
@@ -56,7 +120,7 @@ const LoanStatusShell = ({
       </div>
 
       {/* ── Product detail cards ── */}
-      {children}
+      {renderApp?.(displayed)}
     </div>
   );
 };
