@@ -9,6 +9,7 @@ import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } 
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import {
+  AmountField,
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
@@ -188,7 +189,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<10000000) e.loanAmount="Minimum ₹1,00,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select funding tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>100)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>100?"Tenure cannot exceed 100 years":"Enter a tenure greater than 10 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>10)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>10?"Tenure cannot exceed 10 years":"Enter a tenure greater than 10 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -353,6 +354,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           Unlock the best Film Funding offers suitable for your needs from 43+ lenders
         </h1>
         <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory</p>
+        <p className="text-xs mt-0.5" style={{color:C.gray}}>Kindly enter all amounts in INR (₹).</p>
       </div>
 
       {/* ── FUNDs REQUIREMENTS ─────────────────────────────────────── */}
@@ -389,22 +391,19 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           </div>
 
           <div id="totalProjectCost"><FieldLabel label="Total Film Project Cost" required/>
-            <TextField type="number" value={form.totalProjectCost===0?"":String(form.totalProjectCost)}
-              onChange={v=>set("totalProjectCost",Math.max(0,parseInt(v)||0))} placeholder="Total Amount" err={errors.totalProjectCost}/>
+            <AmountField value={form.totalProjectCost===0?"":String(form.totalProjectCost)} onChange={v=>set("totalProjectCost",parseInt(v)||0)} placeholder="Total Amount" err={errors.totalProjectCost}/>
           </div>
           <div id="ownInvestmentAmount"><FieldLabel label="Own Investment Amount" required/>
-            <TextField type="number" value={form.ownInvestmentAmount===0?"":String(form.ownInvestmentAmount)}
-              onChange={v=>set("ownInvestmentAmount",Math.max(0,parseInt(v)||0))} placeholder="Should be min 20% of the Project cost" err={errors.ownInvestmentAmount}/>
+            <AmountField value={form.ownInvestmentAmount===0?"":String(form.ownInvestmentAmount)} onChange={v=>set("ownInvestmentAmount",parseInt(v)||0)} placeholder="Should be min 20% of the Project cost" err={errors.ownInvestmentAmount}/>
           </div>
           <div id="loanAmount"><FieldLabel label="Required Funds/Investment Amount" required/>
-            <TextField type="number" value={form.loanAmount===0?"":String(form.loanAmount)}
-              onChange={v=>set("loanAmount",Math.max(0,parseInt(v)||0))} placeholder="Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Amount in INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.businessLoanTenureYears} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.businessLoanTenureYears} maxYears={10} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
         </div>
       </FormCard>
@@ -433,20 +432,16 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               otherPlaceholder="Enter profession" otherErr={errors.professionOther}
             />
             <div id="currentYearTurnover"><FieldLabel label="Current Year Turn Over" required/>
-              <TextField type="number" value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)}
-                onChange={v=>set("currentYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Current turn over" err={errors.currentYearTurnover}/>
+              <AmountField value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)} onChange={v=>set("currentYearTurnover",parseInt(v)||0)} placeholder="Current turn over" err={errors.currentYearTurnover}/>
             </div>
             <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
-              <TextField type="number" value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)}
-                onChange={v=>set("priorYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.priorYearTurnover}/>
+              <AmountField value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)} onChange={v=>set("priorYearTurnover",parseInt(v)||0)} placeholder="0" err={errors.priorYearTurnover}/>
             </div>
             <div id="currentYearNetIncome"><FieldLabel label="Current Year Net Income" required/>
-              <TextField type="number" value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)}
-                onChange={v=>set("currentYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Current year net profit" err={errors.currentYearNetIncome}/>
+              <AmountField value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)} onChange={v=>set("currentYearNetIncome",parseInt(v)||0)} placeholder="Current year net profit" err={errors.currentYearNetIncome}/>
             </div>
             <div id="previousYearNetIncome"><FieldLabel label="Previous Year Net Income" required/>
-              <TextField type="number" value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)}
-                onChange={v=>set("previousYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.previousYearNetIncome}/>
+              <AmountField value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)} onChange={v=>set("previousYearNetIncome",parseInt(v)||0)} placeholder="0" err={errors.previousYearNetIncome}/>
             </div>
           </>)}
 
@@ -498,20 +493,16 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               )}
 
               <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
-                <TextField type="number" value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)}
-                  onChange={v=>set("lastYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company last year turnover" err={errors.lastYearTurnover}/>
+                <AmountField value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)} onChange={v=>set("lastYearTurnover",parseInt(v)||0)} placeholder="Company last year turnover" err={errors.lastYearTurnover}/>
               </div>
               <div id="last2YearsTurnover"><FieldLabel label="Last (2 Years old) Turnover"/>
-                <TextField type="number" value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)}
-                  onChange={v=>set("last2YearsTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company turnover 2 years ago"/>
+                <AmountField value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)} onChange={v=>set("last2YearsTurnover",parseInt(v)||0)} placeholder="Company turnover 2 years ago"/>
               </div>
               <div id="lastYearNetIncome"><FieldLabel label="Last Year Net Income" required/>
-                <TextField type="number" value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)}
-                  onChange={v=>set("lastYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company last year net profit" err={errors.lastYearNetIncome}/>
+                <AmountField value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)} onChange={v=>set("lastYearNetIncome",parseInt(v)||0)} placeholder="Company last year net profit" err={errors.lastYearNetIncome}/>
               </div>
               <div id="last2YearsNetIncome"><FieldLabel label="Last (2 Years old) Net Income"/>
-                <TextField type="number" value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)}
-                  onChange={v=>set("last2YearsNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company net income 2 years ago"/>
+                <AmountField value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)} onChange={v=>set("last2YearsNetIncome",parseInt(v)||0)} placeholder="Company net income 2 years ago"/>
               </div>
           </>)}
 
@@ -547,10 +538,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div id="existingEMI"><FieldLabel label="Existing Loan EMI (Total)" required/>
-            <TextField type="number" value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
           </div>
           <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <TextField type="number" value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
           </div>
         </div>
 

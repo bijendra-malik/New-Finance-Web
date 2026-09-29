@@ -13,6 +13,7 @@ import { getApiErrorMessage } from "../../../../../utils/apiError";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
 import {
+  AmountField,
   DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther,
   TenureYearsField, TextField,
@@ -94,7 +95,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>5000000) e.loanAmount="Maximum loan amount is ₹50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>100)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>100?"Tenure cannot exceed 100 years":"Enter a tenure greater than 7 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>7)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>7?"Tenure cannot exceed 7 years":"Enter a tenure greater than 7 years";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -108,8 +109,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
-      else if(draft.monthlyNetSalary>5000000) e.monthlyNetSalary="Monthly income cannot exceed ₹50,00,000";
-      else if(parseInt(draft.existingEMI)>draft.monthlyNetSalary*0.6) e.existingEMI="Existing Total EMI should be at most 60% of monthly net salary (FOIR check)"; // FOIR check
+      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI="Not eligible: 30% of your monthly salary is reserved for daily expenses, so existing EMIs cannot reach 70% of your salary"; // 70% FOIR rule
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -196,20 +196,20 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           Unlock the best Personal Loan offers suitable for your needs from 43+ lenders
         </h1>
         <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory</p>
+        <p className="text-xs mt-0.5" style={{color:C.gray}}>Kindly enter all amounts in INR (₹).</p>
       </div>
 
       {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <TextField type="number" value={form.loanAmount===0?"":String(form.loanAmount)}
-              onChange={v=>set("loanAmount",Math.max(0,parseInt(v)||0))} placeholder="e.g. 500000" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="e.g. 500000" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.personalLoanTenureYears} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.personalLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
         </div>
       </FormCard>
@@ -235,8 +235,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
             />
             <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
-              <TextField type="number" value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)}
-                onChange={v=>set("monthlyNetSalary",Math.max(0,parseInt(v)||0))} placeholder="Take home salary"
+              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Take home salary"
                 err={errors.monthlyNetSalary}/>
             </div>
             <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
@@ -265,10 +264,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
-            <TextField type="number" value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
           </div>
           <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <TextField type="number" value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
           </div>
         </div>
 

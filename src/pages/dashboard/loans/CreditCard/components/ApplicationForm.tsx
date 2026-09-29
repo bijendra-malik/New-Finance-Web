@@ -9,6 +9,7 @@ import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } 
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import {
+  AmountField,
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
 } from "../../../../../components/form/FormControls";
@@ -182,7 +183,6 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
-      else if(draft.monthlyNetSalary>5000000) e.monthlyNetSalary="Monthly income cannot exceed ₹50,00,000";
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -362,6 +362,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
           Unlock the best Credit Card offers suitable for your needs from 43+ lenders
         </h1>
         <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory</p>
+        <p className="text-xs mt-0.5" style={{color:C.gray}}>Kindly enter all amounts in INR (₹).</p>
       </div>
 
       {/* ── CREDIT CARD DETAILS ──────────────────────────────────────── */}
@@ -410,8 +411,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
               otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
             />
             <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
-              <TextField type="number" value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)}
-                onChange={v=>set("monthlyNetSalary",Math.max(0,parseInt(v)||0))} placeholder="Take home salary"
+              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Take home salary"
                 err={errors.monthlyNetSalary}/>
             </div>
             <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
@@ -446,20 +446,16 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
               otherPlaceholder="Enter profession" otherErr={errors.professionOther}
             />
             <div id="currentYearTurnover"><FieldLabel label="Current Year Turn Over" required/>
-              <TextField type="number" value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)}
-                onChange={v=>set("currentYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Current turn over" err={errors.currentYearTurnover}/>
+              <AmountField value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)} onChange={v=>set("currentYearTurnover",parseInt(v)||0)} placeholder="Current turn over" err={errors.currentYearTurnover}/>
             </div>
             <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
-              <TextField type="number" value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)}
-                onChange={v=>set("priorYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.priorYearTurnover}/>
+              <AmountField value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)} onChange={v=>set("priorYearTurnover",parseInt(v)||0)} placeholder="0" err={errors.priorYearTurnover}/>
             </div>
             <div id="currentYearNetIncome"><FieldLabel label="Current Year Net Income" required/>
-              <TextField type="number" value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)}
-                onChange={v=>set("currentYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Current year net profit" err={errors.currentYearNetIncome}/>
+              <AmountField value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)} onChange={v=>set("currentYearNetIncome",parseInt(v)||0)} placeholder="Current year net profit" err={errors.currentYearNetIncome}/>
             </div>
             <div id="previousYearNetIncome"><FieldLabel label="Previous Year Net Income" required/>
-              <TextField type="number" value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)}
-                onChange={v=>set("previousYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="0" err={errors.previousYearNetIncome}/>
+              <AmountField value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)} onChange={v=>set("previousYearNetIncome",parseInt(v)||0)} placeholder="0" err={errors.previousYearNetIncome}/>
             </div>
           </>)}
 
@@ -539,20 +535,16 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
               )}
 
               <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
-                <TextField type="number" value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)}
-                  onChange={v=>set("lastYearTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company last year turnover" err={errors.lastYearTurnover}/>
+                <AmountField value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)} onChange={v=>set("lastYearTurnover",parseInt(v)||0)} placeholder="Company last year turnover" err={errors.lastYearTurnover}/>
               </div>
               <div id="last2YearsTurnover"><FieldLabel label="Last (2 Years old) Turnover"/>
-                <TextField type="number" value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)}
-                  onChange={v=>set("last2YearsTurnover",Math.max(0,parseInt(v)||0))} placeholder="Company turnover 2 years ago"/>
+                <AmountField value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)} onChange={v=>set("last2YearsTurnover",parseInt(v)||0)} placeholder="Company turnover 2 years ago"/>
               </div>
               <div id="lastYearNetIncome"><FieldLabel label="Last Year Net Income" required/>
-                <TextField type="number" value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)}
-                  onChange={v=>set("lastYearNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company last year net profit" err={errors.lastYearNetIncome}/>
+                <AmountField value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)} onChange={v=>set("lastYearNetIncome",parseInt(v)||0)} placeholder="Company last year net profit" err={errors.lastYearNetIncome}/>
               </div>
               <div id="last2YearsNetIncome"><FieldLabel label="Last (2 Years old) Net Income"/>
-                <TextField type="number" value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)}
-                  onChange={v=>set("last2YearsNetIncome",Math.max(0,parseInt(v)||0))} placeholder="Company net income 2 years ago"/>
+                <AmountField value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)} onChange={v=>set("last2YearsNetIncome",parseInt(v)||0)} placeholder="Company net income 2 years ago"/>
               </div>
           </>)}
 
@@ -588,10 +580,10 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
       <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
-            <TextField type="number" value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
           </div>
           <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <TextField type="number" value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
           </div>
         </div>
 
