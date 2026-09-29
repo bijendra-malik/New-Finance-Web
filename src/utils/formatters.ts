@@ -15,6 +15,23 @@ export const formatPAN = (raw: string): string => {
   return out;
 };
 
+// ── Indian amount entry helpers ──────────────────────────────────────────────
+export const digitsOnly = (raw: string): string =>
+  raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+
+/** Parses a possibly comma-grouped amount string into a non-negative integer ("" → 0). */
+export const parseIndianAmount = (raw: string): number =>
+  parseInt(raw.replace(/\D/g, ""), 10) || 0;
+
+/** Formats digits with Indian separators for display. */
+export const formatIndianNumber = (raw: string): string => {
+  const digits = digitsOnly(raw);
+  if (!digits) return "";
+  const last3 = digits.slice(-3);
+  const rest = digits.slice(0, -3);
+  return rest ? `${rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${last3}` : last3;
+};
+
 // 15-character GSTIN: 2-digit state code, 5-letter + 4-digit PAN, 1 letter,
 // entity digit, literal Z, checksum — only lets characters through where the
 // GSTIN structure expects them.
