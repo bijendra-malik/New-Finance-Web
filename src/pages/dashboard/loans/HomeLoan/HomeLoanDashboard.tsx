@@ -7,7 +7,7 @@ const HomeLoanDashboard = () => (
   <DashboardShell<HomeLoanApplication>
     productName="Home Loan"
     icon="🏠"
-    stats={[["Max Amount", "₹10 Crores"], ["Rate", "From 8.5%"], ["Tenure", "Up to 30 yrs"]]}
+    stats={[["Max Amount", "₹10 Crores"], ["Rate", "From 8.5%"], ["Tenure", "Up to 35 yrs"]]}
     renderForm={({ userName, userEmail, onSubmit }) => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
     )}
