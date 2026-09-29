@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import ApplicationModal from "../modals/ApplicationModal";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
@@ -8,30 +7,30 @@ import "swiper/css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface LoanItem {
-  tKey: string;       // "tKey" instead of "key" — "key" is reserved by React and never passed as a prop
+  label: string;
   ringColors: string[];
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const loans: LoanItem[] = [
-  { tKey: "loanProducts.personalLoan",           ringColors: ["#e74c3c","#f1c40f","#2ecc71","#3498db"] },
-  { tKey: "loanProducts.businessLoan",           ringColors: ["#f39c12","#f1c40f","#e74c3c","#27ae60"] },
-  { tKey: "loanProducts.homeLoan",               ringColors: ["#27ae60","#f1c40f","#e74c3c","#2980b9"] },
-  { tKey: "loanProducts.loanAgainstProperty",    ringColors: ["#8e44ad","#e74c3c","#f1c40f","#27ae60"] },
-  { tKey: "loanProducts.balanceTransfer",        ringColors: ["#16a085","#3498db","#e74c3c","#f39c12"] },
-  { tKey: "loanProducts.projectLoan",            ringColors: ["#f1c40f","#e74c3c","#27ae60","#2980b9"] },
-  { tKey: "loanProducts.carLoan",                ringColors: ["#e74c3c","#8e44ad","#f1c40f","#27ae60"] },
-  { tKey: "loanProducts.educationLoan",          ringColors: ["#9b59b6","#3498db","#f1c40f","#27ae60"] },
-  { tKey: "loanProducts.creditCard",             ringColors: ["#2ecc71","#e74c3c","#3498db","#f39c12"] },
-  { tKey: "loanProducts.commercialPurchase",     ringColors: ["#3498db","#f1c40f","#27ae60","#e74c3c"] },
-  { tKey: "loanProducts.workingCapital",         ringColors: ["#f39c12","#27ae60","#e74c3c","#3498db"] },
-  { tKey: "loanProducts.leaseRentalDiscounting", ringColors: ["#8e44ad","#f1c40f","#2ecc71","#e74c3c"] },
-  { tKey: "loanProducts.odCcLimit",              ringColors: ["#16a085","#e74c3c","#f39c12","#3498db"] },
-  { tKey: "loanProducts.loanAgainstShare",       ringColors: ["#e74c3c","#3498db","#f1c40f","#27ae60"] },
-  { tKey: "loanProducts.filmLoanFunding",        ringColors: ["#e67e22","#9b59b6","#2ecc71","#3498db"] },
-  { tKey: "loanProducts.npalLoan",               ringColors: ["#c0392b","#f1c40f","#16a085","#8e44ad"] },
-  { tKey: "loanProducts.goldLoan",               ringColors: ["#f39c12","#e74c3c","#27ae60","#2980b9"] },
-  { tKey: "loanProducts.fdi",                    ringColors: ["#2980b9","#2ecc71","#f1c40f","#e74c3c"] },
+  { label: "Personal Loan",            ringColors: ["#e74c3c","#f1c40f","#2ecc71","#3498db"] },
+  { label: "Business Loan",            ringColors: ["#f39c12","#f1c40f","#e74c3c","#27ae60"] },
+  { label: "Home Loan",                ringColors: ["#27ae60","#f1c40f","#e74c3c","#2980b9"] },
+  { label: "Loan Against Property",    ringColors: ["#8e44ad","#e74c3c","#f1c40f","#27ae60"] },
+  { label: "Balance Transfer",         ringColors: ["#16a085","#3498db","#e74c3c","#f39c12"] },
+  { label: "Project Loan",             ringColors: ["#f1c40f","#e74c3c","#27ae60","#2980b9"] },
+  { label: "Vehicle Loan",             ringColors: ["#e74c3c","#8e44ad","#f1c40f","#27ae60"] },
+  { label: "Education Loan",           ringColors: ["#9b59b6","#3498db","#f1c40f","#27ae60"] },
+  { label: "Credit Card",              ringColors: ["#2ecc71","#e74c3c","#3498db","#f39c12"] },
+  { label: "Commercial Purchase",      ringColors: ["#3498db","#f1c40f","#27ae60","#e74c3c"] },
+  { label: "Working Capital",          ringColors: ["#f39c12","#27ae60","#e74c3c","#3498db"] },
+  { label: "Lease Rental Discounting", ringColors: ["#8e44ad","#f1c40f","#2ecc71","#e74c3c"] },
+  { label: "OD CC Limit",              ringColors: ["#16a085","#e74c3c","#f39c12","#3498db"] },
+  { label: "Loan Against Share",       ringColors: ["#e74c3c","#3498db","#f1c40f","#27ae60"] },
+  { label: "Film Funding",             ringColors: ["#e67e22","#9b59b6","#2ecc71","#3498db"] },
+  { label: "NPA",                      ringColors: ["#c0392b","#f1c40f","#16a085","#8e44ad"] },
+  { label: "Gold Loan",                ringColors: ["#f39c12","#e74c3c","#27ae60","#2980b9"] },
+  { label: "FDI",                      ringColors: ["#2980b9","#2ecc71","#f1c40f","#e74c3c"] },
 ];
 
 // ── Globe Wireframe (without hover) ───────────────────────────────────────────
@@ -181,9 +180,7 @@ const ColoredRing = ({ colors, size = 128 }: { colors: string[]; size?: number }
 
 // ── LoanCard ──────────────────────────────────────────────────────────────────
 const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => void }) => {
-  const { t } = useTranslation();
-  const { tKey, ringColors, onApplyClick } = props;
-  const label = t(tKey);
+  const { label, ringColors, onApplyClick } = props;
   const [hovered, setHovered] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -298,10 +295,26 @@ const LoanProducts = () => {
 
   return (
     <>
-      <section
-        className="w-full overflow-hidden  sm:my-0 py-0 sm:py-0"
-        style={{ background: "rgb(240, 249, 255)" }}
-      >
+      <section className="relative w-full my-0 py-0">
+        <div
+          aria-hidden
+          className="absolute top-0 bottom-0 pointer-events-none"
+          style={{
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "min(100% - 20px, 1200px)",
+            borderRadius: 9999,
+            background: "rgba(240,249,255,0.2)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            zIndex: 0,
+          }}
+        />
+        {/* Clip container: same width as the slab. */}
+        <div
+          className="relative mx-auto overflow-hidden"
+          style={{ width: "min(100% - 20px, 1200px)", borderRadius: 9999 }}
+        >
         <style>{`
           div::-webkit-scrollbar {
             display: none;
@@ -309,7 +322,7 @@ const LoanProducts = () => {
         `}</style>
 
         {/* ═══ ONE shared Swiper instance for all breakpoints ═══ */}
-        <div className="flex items-center gap-2 px-4 md:px-20 lg:px-40">
+          <div className="relative flex items-center gap-2 px-3 md:px-4" style={{ zIndex: 1 }}>
           {/* Desktop/tablet arrow — hidden on mobile */}
           <button
             onClick={goPrev}
@@ -337,7 +350,7 @@ const LoanProducts = () => {
             </svg>
           </button>
 
-          <div className="flex-1 min-w-0 overflow-visible py-4">
+          <div className="flex-1 min-w-0 overflow-visible py-1.5">
             <Swiper
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
@@ -345,23 +358,21 @@ const LoanProducts = () => {
               }}
               onSlideChange={updateNavState}
               onResize={updateNavState}
-              spaceBetween={0}
               slidesPerView={3}
+              spaceBetween={4}
               slidesPerGroup={1}
               breakpoints={{
                 768: {
-                  slidesPerView: 4,
-                  slidesPerGroup: 1,
+                  slidesPerView: 5,
                 },
                 1024: {
-                  slidesPerView: 9,
-                  slidesPerGroup: 1,
+                  slidesPerView: 8,
                 },
               }}
               className="loan-products-swiper"
             >
               {loans.map((loan) => (
-                <SwiperSlide key={loan.tKey} className="py-2">
+                <SwiperSlide key={loan.label} className="py-1">
                   <LoanCard {...loan} onApplyClick={handleApplyClick} />
                 </SwiperSlide>
               ))}
@@ -394,6 +405,7 @@ const LoanProducts = () => {
               <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          </div>
         </div>
 
         {/* ═══ MOBILE: buttons + "Swipe to see more" below the same swiper ═══ */}
