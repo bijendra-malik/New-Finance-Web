@@ -47,12 +47,18 @@ const Home = () => {
 
   return (
     <>
+    <div aria-hidden style={{ height: "80px" }} />
     {/* ── HERO BANNER ── */}
     <div
-      className="relative w-full overflow-hidden bg-slate-950 min-h-65 sm:min-h-87.5 md:min-h-119.25"
-      style={{  marginTop: "100px" }}
+      className="hero-viewport relative w-full overflow-hidden bg-slate-950"
     >
-      {/* ── Video background — fills full banner including navbar offset area ── */}
+      <style>{`
+        .hero-viewport { height: calc(100vh - 80px); }
+        @supports (height: 100dvh) {
+          .hero-viewport { height: calc(100dvh - 80px); }
+        }
+      `}</style>
+      {/* ── Video background ── */}
       <video
         ref={videoRef}
         autoPlay
@@ -82,7 +88,7 @@ const Home = () => {
         style={{
           background: "rgba(0,0,0,0.45)",
           border: "1.5px solid rgba(255,255,255,0.35)",
-          zIndex: 4,
+          zIndex: 50,
           backdropFilter: "blur(4px)",
         }}
       >
@@ -102,9 +108,12 @@ const Home = () => {
           </svg>
         )}
       </button>
+
+      <div className="absolute" style={{ left: 10, right: 10, bottom: 10, zIndex: 10 }}>
+        <LoanProducts />
+      </div>
     </div>
 
-    <LoanProducts />
     <CreditScore />
     <ProductDetails />
     <Suspense fallback={<SectionFallback />}>
