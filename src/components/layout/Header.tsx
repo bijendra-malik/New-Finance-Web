@@ -1,22 +1,15 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import Container from "../common/Container";
-import LanguageSwitcher from "../LanguageSwitcher";
+import CountrySelector from "../CountrySelector";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 
-// Safari (macOS + iOS) decodes VP9 WebM fine but ignores its alpha channel,
-// so the video's opaque black backing layer shows through as a black box.
-// canPlayType('video/webm') can't detect this — Safari happily reports "probably"
-// even though it will render opaque — so real Safari must be UA-sniffed instead.
-// (Excludes Chrome/Edge/Opera/Firefox-on-iOS, which all include "Safari" in their UA too.)
 const isRealSafari = /^((?!chrome|android|crios|fxios|edg|opr).)*safari/i.test(
   navigator.userAgent
 );
 
 const Header = () => {
-  const { t } = useTranslation();
   const [loanOpen, setLoanOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
@@ -43,35 +36,35 @@ const Header = () => {
   };
 
   const loanProducts = [
-    { key: "loanProducts.personalLoan", slug: "personalloan" },
-    { key: "loanProducts.businessLoan", slug: "businessloan" },
-    { key: "loanProducts.homeLoan", slug: "homeloan" },
-    { key: "loanProducts.loanAgainstProperty", slug: "loanagainstproperty" },
-    { key: "loanProducts.balanceTransfer", slug: "balancetransfer" },
-    { key: "loanProducts.projectLoan", slug: "projectloan" },
-    { key: "loanProducts.carLoan", slug: "carloan" },
-    { key: "loanProducts.educationLoan", slug: "educationloan" },
-    { key: "loanProducts.creditCard", slug: "creditcard" },
-    { key: "loanProducts.commercialPurchase", slug: "commercialpurchase" },
-    { key: "loanProducts.workingCapital", slug: "workingcapital" },
-    { key: "loanProducts.leaseRentalDiscounting", slug: "leaserental" },
-    { key: "loanProducts.odCcLimit", slug: "odcclimit" },
-    { key: "loanProducts.loanAgainstShare", slug: "loanagainstshare" },
-    { key: "loanProducts.filmLoanFunding", slug: "filmloanfunding" },
-    { key: "loanProducts.npalLoan", slug: "npalloan" },
-    { key: "loanProducts.goldLoan", slug: "goldloan" },
-    { key: "loanProducts.fdi", slug: "fdi" },
+    { label: "Personal Loan",            slug: "personalloan" },
+    { label: "Business Loan",            slug: "businessloan" },
+    { label: "Home Loan",                slug: "homeloan" },
+    { label: "Loan Against Property",    slug: "loanagainstproperty" },
+    { label: "Balance Transfer",         slug: "balancetransfer" },
+    { label: "Project Loan",             slug: "projectloan" },
+    { label: "Vehicle Loan",             slug: "carloan" },
+    { label: "Education Loan",           slug: "educationloan" },
+    { label: "Credit Card",              slug: "creditcard" },
+    { label: "Commercial Purchase",      slug: "commercialpurchase" },
+    { label: "Working Capital",          slug: "workingcapital" },
+    { label: "Lease Rental Discounting", slug: "leaserental" },
+    { label: "OD CC Limit",              slug: "odcclimit" },
+    { label: "Loan Against Share",       slug: "loanagainstshare" },
+    { label: "Film Funding",             slug: "filmloanfunding" },
+    { label: "NPA",                      slug: "npalloan" },
+    { label: "Gold Loan",                slug: "goldloan" },
+    { label: "FDI",                      slug: "fdi" },
   ];
 
   const navLinks = [
-    { key: "nav.home", href: "/" },
-    { key: "nav.loanProduct", dropdown: true, href: "" },
-    { key: "nav.emiCalculator", href: "/emi-calculator" },
-    { key: "nav.eligibilityCalculator", href: "/eligibility-calculator" },
-    { key: "nav.franchiseLogin", href: "/franchise-login" },
-    { key: "nav.beAnAssociate", href: "/be-an-associate" },
-    { key: "nav.contactUs", href: "/contact" },
-  ] satisfies { key: string; href: string; dropdown?: boolean }[];
+    { label: "Home",               href: "/" },
+    { label: "Loan Product",       dropdown: true, href: "" },
+    { label: "EMI Calculator",     href: "/emi-calculator" },
+    { label: "Loan Eligibility",   href: "/eligibility-calculator" },
+    { label: "Franchise Login",    href: "/franchise-login" },
+    { label: "Be An Associate",    href: "/be-an-associate" },
+    { label: "Contact Us",         href: "/contact" },
+  ] satisfies { label: string; href: string; dropdown?: boolean }[];
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -80,9 +73,18 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-[#867d7d]/40 backdrop-blur-md fixed w-full top-0 z-50 border-b border-white/20">
+      <header
+        className="fixed w-full top-0 z-50 border-b"
+        style={{
+          background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.55) 100%)",
+          backdropFilter: "blur(14px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(14px) saturate(1.4)",
+          borderColor: "rgba(255,255,255,0.45)",
+          boxShadow: "0 4px 24px rgba(15,23,42,0.08)",
+        }}
+      >
         <Container>
-          <div className="flex justify-between items-center h-25 px-5 sm:px-10 md:px-20 lg:px-10">
+          <div className="flex justify-between items-center h-20 px-5">
             {/* Logo Section */}
             <div className="flex items-center gap-3 cursor-pointer">
               {isRealSafari ? (
@@ -99,12 +101,14 @@ const Header = () => {
               )}
             </div>
 
-            {/* Hamburger Menu Button - Mobile Only */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden flex items-center justify-center w-10 h-10 cursor-pointer z-40"
-              aria-label="Toggle Menu"
-            >
+            {/* Language Switcher + Hamburger — small screens */}
+            <div className="flex items-center gap-3 lg:hidden">
+              <CountrySelector />
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="flex items-center justify-center w-10 h-10 cursor-pointer z-40"
+                aria-label="Toggle Menu"
+              >
               <div className="relative w-6 h-6">
                 <span
                   className={`absolute w-6 h-0.5 bg-slate-600 transition-all duration-300 ${
@@ -122,7 +126,8 @@ const Header = () => {
                   }`}
                 ></span>
               </div>
-            </button>
+              </button>
+            </div>
 
             {/* Navigation Section - Desktop Only */}
             <nav className="hidden lg:block text-slate-600 font-medium">
@@ -130,7 +135,7 @@ const Header = () => {
                 {navLinks.map((link) =>
                   link.dropdown ? (
                     <li
-                      key={link.key}
+                      key={link.label}
                       className="relative"
                       onMouseEnter={() => setLoanOpen(true)}
                       onMouseLeave={() => setLoanOpen(false)}
@@ -144,7 +149,7 @@ const Header = () => {
                         onClick={(e) => e.preventDefault()}
                         className="nav-link flex items-center gap-1 select-none"
                       >
-                        {t(link.key)}
+                        {link.label}
                         <svg
                           className={`h-3 w-3 transition-transform duration-300 ${
                             loanOpen ? "rotate-180" : ""
@@ -170,7 +175,7 @@ const Header = () => {
                       >
                         <div className="w-160 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
                           <p className="mb-4 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-                            {t("loanProducts.title")}
+                            Loan Products
                           </p>
                           <div className="grid grid-cols-3 gap-x-6 gap-y-1">
                             {loanProducts.map((item) => (
@@ -182,7 +187,7 @@ const Header = () => {
                                 <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
                                 </svg>
-                                {t(item.key)}
+                                {item.label}
                               </Link>
                             ))}
                           </div>
@@ -190,16 +195,16 @@ const Header = () => {
                       </div>
                     </li>
                   ) : (
-                    <li key={link.key}>
+                    <li key={link.label}>
                       <Link to={link.href} className="nav-link">
-                        {t(link.key)}
+                        {link.label}
                       </Link>
                     </li>
                   )
                 )}
 
                 <li className="ml-6">
-                  <LanguageSwitcher />
+                  <CountrySelector />
                 </li>
               </ul>
             </nav>
@@ -222,12 +227,12 @@ const Header = () => {
             <ul className="flex flex-col divide-y divide-slate-200">
               {navLinks.map((link) =>
                 link.dropdown ? (
-                  <li key={link.key}>
+                  <li key={link.label}>
                     <button
                       onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
                       className="w-full text-left flex items-center justify-between px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
                     >
-                      <span className="pointer-events-none">{t(link.key)}</span>
+                      <span className="pointer-events-none">{link.label}</span>
                       <svg
                         className={`h-4 w-4 transition-transform duration-300 ${
                           mobileSubmenuOpen ? "rotate-180" : ""
@@ -252,27 +257,24 @@ const Header = () => {
                             className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
                             onClick={closeMobileMenu}
                           >
-                            → {t(item.key)}
+                            → {item.label}
                           </Link>
                         ))}
                       </div>
                     )}
                   </li>
                 ) : (
-                  <li key={link.key}>
+                  <li key={link.label}>
                     <Link
                       to={link.href}
                       className="block px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
                       onClick={closeMobileMenu}
                     >
-                      {t(link.key)}
+                      {link.label}
                     </Link>
                   </li>
                 )
               )}
-                <li className="ml-2">
-                  <LanguageSwitcher />
-                </li>
               </ul>
           </nav>
         </div>
