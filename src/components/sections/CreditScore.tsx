@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 // ── Gauge geometry ────────────────────────────────────────────────────────────
 const CX = 160;
@@ -74,13 +73,13 @@ const buildGradientArc = (fill: number) => {
   });
 };
 
-// ── Rating helper — uses translation keys ─────────────────────────────────────
-const getRatingKey = (p: number): { key: string; color: string; comparison: number } => {
-  if (p < 40) return { key: "creditScore.ratings.poor",      color: "#e74c3c", comparison: 12 };
-  if (p < 55) return { key: "creditScore.ratings.fair",      color: "#e67e22", comparison: 31 };
-  if (p < 70) return { key: "creditScore.ratings.good",      color: "#f1c40f", comparison: 52 };
-  if (p < 85) return { key: "creditScore.ratings.veryGood",  color: "var(--brand-teal)", comparison: 68 };
-  return             { key: "creditScore.ratings.excellent",  color: "#1abc9c", comparison: 73 };
+// ── Rating helper ─────────────────────────────────────────────────────────────
+const getRating = (p: number): { label: string; color: string; comparison: number } => {
+  if (p < 40) return { label: "Poor",      color: "#e74c3c", comparison: 12 };
+  if (p < 55) return { label: "Fair",      color: "#e67e22", comparison: 31 };
+  if (p < 70) return { label: "Good",      color: "#f1c40f", comparison: 52 };
+  if (p < 85) return { label: "Very Good", color: "var(--brand-teal)", comparison: 68 };
+  return             { label: "Excellent",  color: "#1abc9c", comparison: 73 };
 };
 
 // ── Label icon definitions (static, icons don't need translation) ─────────────
@@ -128,29 +127,28 @@ const labelIcons = {
   ),
 };
 
-// ── Label keys config ─────────────────────────────────────────────────────────
-const labelKeys: { textKey: string; tipKey: string; side: "left" | "right"; iconKey: keyof typeof labelIcons }[] = [
-  { textKey: "creditScore.labels.paymentHistory",  tipKey: "creditScore.labels.paymentHistoryTip",  side: "left",  iconKey: "paymentHistory"  },
-  { textKey: "creditScore.labels.ageType",         tipKey: "creditScore.labels.ageTypeTip",         side: "left",  iconKey: "ageType"         },
-  { textKey: "creditScore.labels.utilization",     tipKey: "creditScore.labels.utilizationTip",     side: "left",  iconKey: "utilization"     },
-  { textKey: "creditScore.labels.totalBalances",   tipKey: "creditScore.labels.totalBalancesTip",   side: "right", iconKey: "totalBalances"   },
-  { textKey: "creditScore.labels.recentBehavior",  tipKey: "creditScore.labels.recentBehaviorTip",  side: "right", iconKey: "recentBehavior"  },
-  { textKey: "creditScore.labels.availableCredit", tipKey: "creditScore.labels.availableCreditTip", side: "right", iconKey: "availableCredit" },
+// ── Label config (plain English text + tooltip) ────────────────────────
+const labelDefs: { text: string; tip: string; side: "left" | "right"; iconKey: keyof typeof labelIcons }[] = [
+  { text: "Payment History",         tip: "Your track record of on-time bill & EMI payments",                          side: "left",  iconKey: "paymentHistory"  },
+  { text: "Age & Type of Credit",    tip: "Length of your credit history and variety of credit types",                side: "left",  iconKey: "ageType"         },
+  { text: "% of Credit Utilization", tip: "How much of your available credit limit you are currently using",          side: "left",  iconKey: "utilization"     },
+  { text: "Total Balances/Debt",     tip: "Total outstanding amount across all your loans and credit cards",          side: "right", iconKey: "totalBalances"   },
+  { text: "Recent Credit Behavior",  tip: "New credit applications and recent account openings",                      side: "right", iconKey: "recentBehavior"  },
+  { text: "Available Credit",        tip: "Total credit limit minus current outstanding balance",                     side: "right", iconKey: "availableCredit" },
 ];
 
 // ── LabelItem with tooltip ────────────────────────────────────────────────────
 const LabelItem = ({
-  textKey,
-  tipKey,
+  text,
+  tip,
   iconKey,
   align,
 }: {
-  textKey: string;
-  tipKey: string;
+  text: string;
+  tip: string;
   iconKey: keyof typeof labelIcons;
   align: "left" | "right";
 }) => {
-  const { t } = useTranslation();
   const [show, setShow] = useState(false);
 
   return (
@@ -161,7 +159,7 @@ const LabelItem = ({
     >
       {align === "left" && (
         <span className="text-xs text-slate-600 font-medium text-right leading-tight transition-colors duration-200 group-hover:text-[#006699]">
-          {t(textKey)}
+          {text}
         </span>
       )}
 
@@ -179,7 +177,7 @@ const LabelItem = ({
 
       {align === "right" && (
         <span className="text-xs text-slate-600 font-medium leading-tight transition-colors duration-200 group-hover:text-[#006699]">
-          {t(textKey)}
+          {text}
         </span>
       )}
 
@@ -190,7 +188,7 @@ const LabelItem = ({
             align === "left" ? "right-full mr-3 top-1/2 -translate-y-1/2" : "left-full ml-3 top-1/2 -translate-y-1/2"
           }`}
         >
-          {t(tipKey)}
+          {tip}
           <div
             className={`absolute top-1/2 -translate-y-1/2 border-4 border-transparent ${
               align === "left"
@@ -206,8 +204,6 @@ const LabelItem = ({
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const CreditScore = () => {
-  const { t } = useTranslation();
-
   const [animPct, setAnimPct]     = useState(0);
   const [started, setStarted]     = useState(false);
   const [done, setDone]           = useState(false);
@@ -254,28 +250,28 @@ const CreditScore = () => {
   // Map animPct (0–100%) back to CIBIL 300–900 range
   const actualScore  = Math.round(CIBIL_MIN + (animPct / 100) * (CIBIL_MAX - CIBIL_MIN));
 
-  const { key: ratingKey, color: ratingColor, comparison } = getRatingKey(animPct);
-  const ratingText = t(ratingKey);
+  const { label: ratingLabel, color: ratingColor, comparison } = getRating(animPct);
+  const ratingText = ratingLabel;
 
   const needleAngle = GAUGE_START + arcFill * GAUGE_SWEEP;
   const nTip   = polar(CX, CY, R_OUTER - 8, needleAngle);
   const nBase1 = { x: CX - 5, y: CY + 6 };
   const nBase2 = { x: CX + 5, y: CY + 6 };
 
-  const leftLabels  = labelKeys.filter((l) => l.side === "left");
-  const rightLabels = labelKeys.filter((l) => l.side === "right");
+  const leftLabels  = labelDefs.filter((l) => l.side === "left");
+  const rightLabels = labelDefs.filter((l) => l.side === "right");
 
   return (
     <section ref={sectionRef} className="w-full bg-[#e8f4fb]/0 py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
 
       {/* ── Heading ── */}
       <h2 className="text-center md:text-3xl sm:text-2xl font-bold text-slate-700 uppercase tracking-wide mb-2">
-        {t("creditScore.heading")}{" "}
-        <span style={{ color: "#006699" }}>{t("creditScore.headingHighlight")}</span>{" "}
-        {t("creditScore.headingEnd")}
+        Get Your{" "}
+        <span style={{ color: "#006699" }}>Free Credit Score</span>{" "}
+        and Report
       </h2>
       <p className="text-center text-sm text-slate-400 mb-2">
-        {t("creditScore.powered")}
+        Powered by Equifax · Updated instantly · No impact on score
       </p>
 
       {/* ── Main card ── */}
@@ -287,7 +283,7 @@ const CreditScore = () => {
           {/* LEFT labels */}
           <div className="hidden sm:flex flex-col gap-5 items-end mr-4 w-44 shrink-0">
             {leftLabels.map((l) => (
-              <LabelItem key={l.textKey} textKey={l.textKey} tipKey={l.tipKey} iconKey={l.iconKey} align="left" />
+              <LabelItem key={l.text} text={l.text} tip={l.tip} iconKey={l.iconKey} align="left" />
             ))}
           </div>
 
@@ -348,7 +344,7 @@ const CreditScore = () => {
 
             {/* Sub label */}
             <text x={CX} y={CY + 16} textAnchor="middle" fontSize="11" fill="#777">
-              {t("creditScore.yourScoreIs")}
+              Your credit score is
             </text>
 
             {/* Rating pill */}
@@ -362,7 +358,7 @@ const CreditScore = () => {
               <>
                 <rect x={CX - 68} y={CY + 50} width="136" height="20" rx="10" fill="#006699" opacity="0.1" />
                 <text x={CX} y={CY + 64} textAnchor="middle" fontSize="10" fill="#006699" fontWeight="600">
-                  {t("creditScore.betterThan", { percent: comparison })}
+                  {`Better than ${comparison}% of users`}
                 </text>
               </>
             )}
@@ -371,19 +367,19 @@ const CreditScore = () => {
           {/* RIGHT labels */}
           <div className="hidden sm:flex flex-col gap-5 items-start ml-4 w-44 shrink-0">
             {rightLabels.map((l) => (
-              <LabelItem key={l.textKey} textKey={l.textKey} tipKey={l.tipKey} iconKey={l.iconKey} align="right" />
+              <LabelItem key={l.text} text={l.text} tip={l.tip} iconKey={l.iconKey} align="right" />
             ))}
           </div>
         </div>
 
         {/* Mobile labels */}
         <div className="sm:hidden grid grid-cols-2 gap-3 w-full mt-6 px-10">
-          {labelKeys.map((l) => (
-            <div key={l.textKey} className="flex items-center gap-2">
+          {labelDefs.map((l) => (
+            <div key={l.text} className="flex items-center gap-2">
               <div className="shrink-0 w-7 h-7 rounded-full bg-white shadow flex items-center justify-center">
                 {labelIcons[l.iconKey]}
               </div>
-              <span className="text-xs text-slate-600 font-medium leading-tight">{t(l.textKey)}</span>
+              <span className="text-xs text-slate-600 font-medium leading-tight">{l.text}</span>
             </div>
           ))}
         </div>
@@ -410,12 +406,12 @@ const CreditScore = () => {
             el.style.boxShadow = "0 2px 8px rgba(0,102,153,0.25)";
           }}
         >
-          {t("creditScore.knowYourScore")}
+          Know Your Score
         </a>
 
         {/* Disclaimer */}
         <p className="mt-1 text-[11px] text-slate-400 text-center max-w-xs mb-4">
-          {t("creditScore.disclaimer")}
+          Checking your own credit score doesn't affect it.
         </p>
       </div>
     </section>
