@@ -105,7 +105,7 @@ const BeAnAssociatePage = () => {
                   label: "Products You'd Like to Refer",
                   type: "select",
                   placeholder: "Select a product to start with",
-                  options: ["Personal Loan", "Business Loan", "Home Loan", "Loan Against Property", "Gold Loan", "Car Loan", "Any / All Products"],
+                  options: ["Personal Loan", "Business Loan", "Home Loan", "Loan Against Property", "Gold Loan", "Vehicle Loan", "Any / All Products"],
                 },
                 {
                   name: "message",

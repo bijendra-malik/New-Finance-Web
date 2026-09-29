@@ -10,7 +10,7 @@ const dashboardRoutes: Record<string, string> = {
   "Personal Loan":            "/dashboard/personalloan",
   "Business Loan":            "/dashboard/businessloan",
   "Home Loan":                "/dashboard/homeloan",
-  "Car Loan":                 "/dashboard/carloan",
+  "Vehicle Loan":                 "/dashboard/carloan",
   "Education Loan":           "/dashboard/educationloan",
   "Loan Against Property":    "/dashboard/loanagainstproperty",
   "Balance Transfer":         "/dashboard/balancetransfer",

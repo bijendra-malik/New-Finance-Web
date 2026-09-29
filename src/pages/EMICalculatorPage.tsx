@@ -30,7 +30,7 @@ const serif = { fontFamily: "'Fraunces', Georgia, serif" };
 const loanTypes = [
   { id: "personal",  label: "Personal",   full: "Personal Loan",        rate: 11.0, minAmt: 50000,   maxAmt: 5000000,  minTenure: 1, maxTenure: 5  },
   { id: "home",      label: "Home",       full: "Home Loan",            rate: 8.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 30 },
-  { id: "car",       label: "Car",        full: "Car Loan",             rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 7  },
+  { id: "car", label: "Vehicle", full: "Vehicle Loan",             rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 7  },
   { id: "business",  label: "Business",   full: "Business Loan",        rate: 12.0, minAmt: 100000,  maxAmt: 10000000, minTenure: 1, maxTenure: 5  },
   { id: "education", label: "Education",  full: "Education Loan",       rate: 8.0,  minAmt: 100000,  maxAmt: 2000000,  minTenure: 1, maxTenure: 7  },
   { id: "lap",       label: "Property",   full: "Loan Against Property",rate: 9.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 20 },
@@ -216,7 +216,7 @@ const EMICalculatorPage = () => {
   useSEO({
     title: "EMI Calculator — Monthly Instalment & Interest",
     description:
-      "Calculate your loan EMI, total interest and full repayment schedule for personal, home, car and other loans. Free, instant and no sign-up needed.",
+      "Calculate your loan EMI, total interest and full repayment schedule for personal, home, vehicle and other loans. Free, instant and no sign-up needed.",
     path: "/emi-calculator",
   });
 

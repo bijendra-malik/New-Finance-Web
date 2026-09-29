@@ -5,7 +5,7 @@ import useSEO from "../hooks/useSEO";
 // ── Static data ───────────────────────────────────────────────────────────────
 const loanProducts = [
   "Personal Loan", "Business Loan", "Home Loan", "Loan Against Property",
-  "Balance Transfer", "Car Loan", "Education Loan", "Project Loan",
+  "Balance Transfer", "Vehicle Loan", "Education Loan", "Project Loan",
   "Commercial Purchase", "Working Capital", "Lease Rental Discounting", "Credit Card",
 ];
 const occupations  = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
@@ -282,7 +282,7 @@ const EligibilityCalculatorPage = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mobile Number *</label>
-                  <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={form.mobile} onChange={e => set("mobile", e.target.value)} className={fc("mobile")} />
+                  <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={form.mobile} onChange={e => set("mobile", e.target.value.replace(/\D/g, ""))} className={fc("mobile")} />
                   {errors.mobile && <p className="text-xs text-red-500 mt-1">{errors.mobile}</p>}
                 </div>
                 <div>

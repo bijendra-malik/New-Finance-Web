@@ -130,7 +130,7 @@ const ContactPage = () => {
                     placeholder: "Select a topic",
                     options: [
                       "Personal Loan", "Business Loan", "Home Loan", "Loan Against Property",
-                      "Balance Transfer", "Car Loan", "Education Loan", "Credit Card",
+                      "Balance Transfer", "Vehicle Loan", "Education Loan", "Credit Card",
                       "Project Loan", "Commercial Purchase", "Working Capital", "Lease Rental Discounting",
                       "OD CC Limit", "Loan Against Share", "Film Funding", "NPA", "Gold Loan", "FDI",
                       "Franchise / Associate", "Other",

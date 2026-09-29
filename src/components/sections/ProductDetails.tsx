@@ -78,8 +78,8 @@ const products: Product[] = [
   },
   {
     id: "car-loan",
-    label: "Car Loan",
-    heading: "Car Loan",
+    label: "Vehicle Loan",
+    heading: "Vehicle Loan",
     subtitle: "Drive your dream car today with fast approvals and flexible EMI options",
     features: [
       { icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" strokeLinecap="round" strokeLinejoin="round"/></svg>, title: "Same-Day Approval", desc: "Get loan approved within hours — drive out of the showroom the same day" },

@@ -50,8 +50,8 @@ const sections: DocSection[] = [
 
 const CarLoanDocs = () => (
   <DocPageLayout
-    loanName="Car Loan"
-    breadcrumb="Car Loan · Required Documents"
+    loanName="Vehicle Loan"
+    breadcrumb="Vehicle Loan · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
     applySlug="car-loan"

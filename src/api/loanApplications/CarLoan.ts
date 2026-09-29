@@ -24,7 +24,7 @@ export interface CarLoanApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
-  /** Server-set product label, e.g. "Car Loan". */
+  /** Server-set product label, e.g. "Vehicle Loan". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;

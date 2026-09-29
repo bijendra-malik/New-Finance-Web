@@ -2,7 +2,7 @@
 import { OTHER_OPTION } from "./common";
 
 export const EXISTING_LOAN_TYPES = [
-  "Personal loan", "Business loan", "Home loan", "Car loan", "Working Capital",
+  "Personal loan", "Business loan", "Home loan", "Vehicle loan", "Working Capital",
   "Project Loan", "OD/CC", "Loan against share", "Gold loan", OTHER_OPTION,
 ] as const;
 
