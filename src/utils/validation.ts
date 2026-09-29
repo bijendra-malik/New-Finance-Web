@@ -3,7 +3,7 @@ import { OTHER_OPTION } from "../constants/masters";
 export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export const PINCODE_REGEX = /^[1-9]\d{5}$/;
-export const MOBILE_REGEX = /^[6-9]\d{9}$/;
+export const MOBILE_REGEX = /^\d{10}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
@@ -14,6 +14,7 @@ export interface PersonalDetailsDraft {
 }
 
 interface PersonalDetailsOptions {
+  minAge?: number;
   maxAge?: number;
   panExample?: boolean;
 }
@@ -21,12 +22,12 @@ interface PersonalDetailsOptions {
 export const validatePersonalDetails = (
   draft: PersonalDetailsDraft,
   e: Partial<Record<string, string>>,
-  { maxAge = 70, panExample = false }: PersonalDetailsOptions = {},
+  { minAge = 21, maxAge = 70, panExample = false }: PersonalDetailsOptions = {},
 ): void => {
   if(!draft.fullName.trim()) e.fullName="Name is required";
   else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
   if(!draft.mobile.trim()) e.mobile="Mobile is required";
-  else if(!MOBILE_REGEX.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number (starting with 6-9)";
+  else if(!MOBILE_REGEX.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number";
   if(!draft.email.trim()) e.email="Email is required";
   else if(!EMAIL_REGEX.test(draft.email)) e.email="Enter valid email";
   if(!draft.dob) e.dob="Date of birth is required";
@@ -35,10 +36,10 @@ export const validatePersonalDetails = (
     const today = new Date(); today.setHours(0,0,0,0);
     if(dobDate>today) e.dob="Date of birth cannot be in the future";
     else {
-      const minAgeDate = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
+      const minAgeDate = new Date(today.getFullYear()-minAge, today.getMonth(), today.getDate());
       const maxAgeDate = new Date(today.getFullYear()-maxAge, today.getMonth(), today.getDate());
       if(dobDate<maxAgeDate) e.dob=`Maximum application age is ${maxAge} years for this loan`;
-      if(dobDate>minAgeDate) e.dob="You must be at least 18 years old";
+      if(dobDate>minAgeDate) e.dob=`You must be at least ${minAge} years old`;
     }
   }
   if(!draft.panNumber.trim()) e.panNumber="PAN is required";
