@@ -3,6 +3,18 @@ import { OTHER_OPTION } from "../constants/masters";
 export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 export const PINCODE_REGEX = /^[1-9]\d{5}$/;
+export const PINCODE_CITY_MISMATCH = "Selected city does not match the verified pincode";
+
+export interface VerifiedPincode {
+  pincode: string;
+  city: string;
+}
+
+export const pincodeCityMismatch = (
+  city: string,
+  verified: VerifiedPincode | null,
+): boolean =>
+  !!verified && !!city && city !== verified.city;
 export const MOBILE_REGEX = /^\d{10}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
