@@ -2,7 +2,7 @@
 import { OTHER_OPTION } from "./common";
 
 export const VEHICLE_TYPES = [
-  "Hatchback", "Sedan", "SUV", "MUV / MPV", "Luxury Car", "Two Wheeler", "Commercial Vehicle",
+  "Four Wheeler", "Two Wheeler", "Commercial Vehicle",
   OTHER_OPTION,
 ] as const;
 
