@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { THEME as C } from "../../constants/theme";
-import { OTHER_OPTION } from "../../constants/masters";
+import { OTHER_OPTION, MORE_THAN_TENURE_OPTION } from "../../constants/masters";
+
+export { MORE_THAN_TENURE_OPTION };
 import { toISODate, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 
 export const FormCard = ({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) => (
@@ -95,10 +97,6 @@ export const NumberSelectField = memo(({ value, onChange, options, placeholder, 
   </>
 ));
 NumberSelectField.displayName = "NumberSelectField";
-
-// Sentinel appended to a tenure-years options list to offer "More than <max> years" —
-// selecting it reveals a free-entry year input (no placeholder, no validation).
-export const MORE_THAN_TENURE_OPTION = -1;
 
 interface TenureYearsFieldProps {
   id: string; label: string; required?: boolean;
