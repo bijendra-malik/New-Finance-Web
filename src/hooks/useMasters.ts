@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchMasters, fetchStates, fetchCitiesByState, getEmploymentTypes } from "../api/masters";
+import { fetchMasters, fetchStatesByCountry, fetchCitiesByState, getEmploymentTypes } from "../api/masters";
 import { MASTERS } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
@@ -26,7 +26,7 @@ export const useMasters = (): UseMastersResult => {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.allSettled([fetchMasters(), fetchStates()])
+    Promise.allSettled([fetchMasters(), fetchStatesByCountry()])
       .then(([mastersRes, statesRes]) => {
         if (cancelled) return;
         const failed = mastersRes.status === "rejected" || statesRes.status === "rejected";

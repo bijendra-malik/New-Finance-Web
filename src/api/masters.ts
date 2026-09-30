@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "./axiosInstance";
 import { OTHER_OPTION, BANK_NAMES } from "../constants/masters";
 import type { MasterKey, Masters } from "../constants/masters";
@@ -49,18 +50,100 @@ export const fetchMasterByType = async (type: MasterKey): Promise<Masters[Master
   return bankNamesToBanks(normalizeBankNames(res.data.data)) as Masters[typeof type];
 };
 
-export interface StringListResponse {
+export interface LocationMasterResponse {
   success: boolean;
-  data: string[];
+  data: { _id: string; name: string }[];
 }
 
-// GET /masters/states → all states.
-let statesPromise: Promise<string[]> | null = null;
-export const fetchStates = (): Promise<string[]> => {
-  if (!statesPromise) {
-    statesPromise = axiosInstance
-      .get<StringListResponse>("/masters/states")
+export interface PincodeInfoResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    pincode: string;
+    city: string;
+    cityId: string;
+    state: string;
+    stateId: string;
+    country: string;
+    countryId: string;
+    continent: string;
+    continentId: string;
+  };
+}
+
+export interface PincodeVerification {
+  exists: boolean;
+  message?: string;
+  info?: PincodeInfoResponse["data"];
+}
+
+// Only India is seeded today; resolve its id lazily and cache it.
+export const INDIA = "India";
+
+const nameToId = (list: { _id: string; name: string }[], name: string): string | null =>
+  list.find(item => item.name.toLowerCase() === name.trim().toLowerCase())?._id ?? null;
+
+let countryIdPromise: Promise<string> | null = null;
+const getCountryId = (country = INDIA): Promise<string> => {
+  if (!countryIdPromise) {
+    countryIdPromise = axiosInstance
+      .get<LocationMasterResponse>("/masters/location/countries")
+      .then((res) => {
+        const id = nameToId(res.data.data, country);
+        if (!id) throw new Error(`Country "${country}" not found in location masters`);
+        return id;
+      })
+      .catch((err) => {
+        countryIdPromise = null;
+        throw err;
+      });
+  }
+  return countryIdPromise;
+};
+
+const statesByCountryPromises = new Map<string, Promise<LocationMasterResponse["data"]>>();
+const fetchStateRecords = (countryId: string): Promise<LocationMasterResponse["data"]> => {
+  let promise = statesByCountryPromises.get(countryId);
+  if (!promise) {
+    promise = axiosInstance
+      .get<LocationMasterResponse>("/masters/location/states", { params: { countryId } })
       .then((res) => res.data.data)
+      .catch((err) => {
+        statesByCountryPromises.delete(countryId);
+        throw err;
+      });
+    statesByCountryPromises.set(countryId, promise);
+  }
+  return promise;
+};
+
+const stateIdPromises = new Map<string, Promise<string>>();
+const getStateId = (state: string): Promise<string> => {
+  const key = state.trim().toLowerCase();
+  let promise = stateIdPromises.get(key);
+  if (!promise) {
+    promise = getCountryId()
+      .then((countryId) =>
+        fetchStateRecords(countryId).then((records) => {
+          const id = nameToId(records, state);
+          if (!id) throw new Error(`State "${state}" not found`);
+          return id;
+        })
+      )
+      .catch((err) => {
+        stateIdPromises.delete(key);
+        throw err;
+      });
+    stateIdPromises.set(key, promise);
+  }
+  return promise;
+};
+
+let statesPromise: Promise<string[]> | null = null;
+export const fetchStatesByCountry = (): Promise<string[]> => {
+  if (!statesPromise) {
+    statesPromise = getCountryId()
+      .then((countryId) => fetchStateRecords(countryId).then(records => records.map(s => s.name)))
       .catch((err) => {
         statesPromise = null;
         throw err;
@@ -69,15 +152,17 @@ export const fetchStates = (): Promise<string[]> => {
   return statesPromise;
 };
 
-// GET /masters/cities?state={state} → cities for the given state.
 const citiesPromises = new Map<string, Promise<string[]>>();
 export const fetchCitiesByState = (state: string): Promise<string[]> => {
-  const key = state.trim();
+  const key = state.trim().toLowerCase();
   let promise = citiesPromises.get(key);
   if (!promise) {
-    promise = axiosInstance
-      .get<StringListResponse>("/masters/cities", { params: { state: key } })
-      .then((res) => res.data.data)
+    promise = getStateId(state)
+      .then((stateId) =>
+        axiosInstance
+          .get<LocationMasterResponse>("/masters/location/cities", { params: { stateId } })
+          .then((res) => res.data.data.map(c => c.name))
+      )
       .catch((err) => {
         citiesPromises.delete(key);
         throw err;
@@ -85,6 +170,39 @@ export const fetchCitiesByState = (state: string): Promise<string[]> => {
     citiesPromises.set(key, promise);
   }
   return promise;
+};
+
+// GET /masters/location/pincode/{pincode} → resolve or report unknown pincodes.
+const pincodePromises = new Map<string, Promise<PincodeVerification>>();
+export const verifyPincode = (pincode: string): Promise<PincodeVerification> => {
+  const key = pincode.trim();
+  let promise = pincodePromises.get(key);
+  if (!promise) {
+    promise = axiosInstance
+      .get<PincodeInfoResponse>(`/masters/location/pincode/${encodeURIComponent(key)}`)
+      .then((res) => ({ exists: true, info: res.data.data }))
+      .catch((err) => {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          // Known-negative: cache so re-checks don't re-hit the server.
+          const verification: PincodeVerification = {
+            exists: false,
+            message: (err.response.data as { message?: string } | undefined)?.message,
+          };
+          pincodePromises.set(key, Promise.resolve(verification));
+          return verification;
+        }
+        pincodePromises.delete(key);
+        throw err;
+      });
+    pincodePromises.set(key, promise);
+  }
+  return promise;
+};
+
+/** Reset pincode lookups — exposed so outside data (e.g. backend seeding) can force a re-check. */
+export const clearPincodeCache = (pincode?: string): void => {
+  if (pincode) pincodePromises.delete(pincode.trim());
+  else pincodePromises.clear();
 };
 
 // GET /employment-types/{loanType} → employment types registered for that loan.

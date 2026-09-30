@@ -1,4 +1,4 @@
-import { forwardRef, memo, useState } from "react";
+import { forwardRef, memo, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -7,6 +7,8 @@ import { OTHER_OPTION, MORE_THAN_TENURE_OPTION } from "../../constants/masters";
 
 export { MORE_THAN_TENURE_OPTION };
 import { toISODate, digitsOnly, formatIndianNumber } from "../../utils/formatters";
+import { verifyPincode } from "../../api/masters";
+import type { PincodeVerification } from "../../api/masters";
 
 export const FormCard = ({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) => (
   <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal22}` }}>
@@ -333,20 +335,65 @@ interface PincodeInputFieldProps {
 const sanitizePincode = (raw: string) =>
   raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
 
-// Simple 6-digit pincode entry — digits only, no dropdowns.
+const PINCODE_REGEX = /^[1-9]\d{5}$/;
+const DEBOUNCE_MS = 600;
+
+interface PincodeFeedback {
+  status: "verifying" | "invalid" | "notFound" | "error";
+  message?: string;
+}
+
 export const PincodeInputField = memo(({
   id, label, required = true, value, onChange, err,
-}: PincodeInputFieldProps) => (
-  <div id={id}>
-    <FieldLabel label={label} required={required} />
-    <TextField
-      value={value}
-      onChange={v => onChange(sanitizePincode(v))}
-      placeholder="Enter 6-digit pincode"
-      err={err}
-      maxLength={6}
-      inputMode="numeric"
-    />
-  </div>
-));
+}: PincodeInputFieldProps) => {
+  const [feedback, setFeedback] = useState<PincodeFeedback | null>(null);
+  const latestRequest = useRef(0);
+
+  useEffect(() => {
+    const requestSeq = ++latestRequest.current;
+    if (!PINCODE_REGEX.test(value)) {
+      setFeedback(null);
+      return;
+    }
+    setFeedback({ status: "verifying" });
+    const timer = setTimeout(() => {
+      verifyPincode(value)
+        .then((result: PincodeVerification) => {
+          if (latestRequest.current !== requestSeq) return;
+          setFeedback(result.exists
+            ? null
+            : { status: "notFound", message: result.message });
+        })
+        .catch(() => {
+          if (latestRequest.current !== requestSeq) return;
+          setFeedback({
+            status: "error",
+            message: "Could not verify pincode right now — it will be re-checked on submit",
+          });
+        });
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  const showError = err ?? (feedback?.status === "notFound"
+    ? (feedback.message || "This pincode does not exist")
+    : feedback?.status === "error" ? feedback.message : undefined);
+
+  return (
+    <div id={id}>
+      <FieldLabel label={label} required={required} />
+      <TextField
+        value={value}
+        onChange={v => onChange(sanitizePincode(v))}
+        placeholder="Enter 6-digit pincode"
+        err={showError}
+        maxLength={6}
+        inputMode="numeric"
+      />
+      {feedback?.status === "verifying" && (
+        <p className="text-xs mt-1" style={{ color: C.gray }}>Verifying pincode…</p>
+      )}
+    </div>
+  );
+});
 PincodeInputField.displayName = "PincodeInputField";
