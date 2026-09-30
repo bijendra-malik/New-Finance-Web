@@ -196,7 +196,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))", boxShadow: "0 0 7px rgba(39,174,144,0.65)" }}
               />
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
                 Document Checklist
               </span>
               <span
@@ -285,7 +285,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-gray-800 text-sm group-hover:text-[var(--brand-navy)] transition-colors duration-150">
+                        <span className="font-semibold text-gray-800 text-sm group-hover:text-(--brand-navy) transition-colors duration-150">
                           {doc.name}
                         </span>
                         {doc.note && (
