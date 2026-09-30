@@ -84,15 +84,15 @@ const Header = () => {
         }}
       >
         <Container>
-          <div className="flex justify-between items-center h-20 px-5">
-            {/* Logo Section */}
-            <div className="flex items-center gap-3 cursor-pointer">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 px-5">
+            {/* Logo Section — pinned left */}
+            <div className="col-start-1 row-start-1 flex items-center gap-3 cursor-pointer">
               {isRealSafari ? (
-                <img src={LogoAlphaWebp} alt="Indexia Finance" className="h-25 w-auto" />
+                <img src={LogoAlphaWebp} alt="Indexia Finance" className="h-20 w-auto" />
               ) : (
                 <video
                   src={WebmLogo}
-                  className="h-25"
+                  className="h-20"
                   autoPlay
                   muted
                   loop
@@ -101,12 +101,12 @@ const Header = () => {
               )}
             </div>
 
-            {/* Language Switcher + Hamburger — small screens */}
-            <div className="flex items-center gap-3 lg:hidden">
+            {/* Country selector (all sizes) + Hamburger (small screens) — pinned right */}
+            <div className="col-start-3 row-start-1 flex items-center gap-3 justify-self-end">
               <CountrySelector />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 cursor-pointer z-40"
+                className="flex items-center justify-center w-10 h-10 cursor-pointer z-40 lg:hidden"
                 aria-label="Toggle Menu"
               >
               <div className="relative w-6 h-6">
@@ -129,8 +129,8 @@ const Header = () => {
               </button>
             </div>
 
-            {/* Navigation Section - Desktop Only */}
-            <nav className="hidden lg:block text-slate-600 font-medium">
+            {/* Navigation Section - Desktop Only, centered */}
+            <nav className="col-start-2 row-start-1 hidden lg:block justify-self-center text-slate-600 font-medium">
               <ul className="flex items-center text-sm gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (
@@ -203,9 +203,6 @@ const Header = () => {
                   )
                 )}
 
-                <li className="ml-6">
-                  <CountrySelector />
-                </li>
               </ul>
             </nav>
           </div>
@@ -215,14 +212,14 @@ const Header = () => {
       {/* Mobile Menu Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 top-16 bg-black/30 z-30 lg:hidden"
+          className="fixed inset-0 top-(--header-h) bg-black/30 z-30 lg:hidden"
           onClick={closeMobileMenu}
         ></div>
       )}
 
       {/* Mobile Menu - Slides from right */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed top-25 right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-40 overflow-y-auto shadow-2xl">
+        <div className="lg:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-40 overflow-y-auto shadow-2xl">
           <nav className="text-slate-600 font-medium">
             <ul className="flex flex-col divide-y divide-slate-200">
               {navLinks.map((link) =>
@@ -327,6 +324,15 @@ const Header = () => {
         .nav-link:hover::after {
           transform: scaleY(1);
           opacity: 1;
+        }
+
+        /* Tighter nav links at lg band so logo + centered nav + country chip fit without overflow */
+        @media (min-width: 1024px) and (max-width: 1289px) {
+          .nav-link {
+            padding-left: 10px;
+            padding-right: 10px;
+            font-size: 11.5px;
+          }
         }
 
         .loan-item {
