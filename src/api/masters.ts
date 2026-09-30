@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./axiosInstance";
 import { OTHER_OPTION, BANK_NAMES } from "../constants/masters";
-import type { MasterKey, Masters } from "../constants/masters";
+import type { Masters } from "../constants/masters";
 
 export interface MastersApiResponse {
   success: boolean;
@@ -42,12 +42,6 @@ export const fetchMasters = (): Promise<Masters> => {
       });
   }
   return mastersPromise;
-};
-
-export const fetchMasterByType = async (type: MasterKey): Promise<Masters[MasterKey]> => {
-  const res = await axiosInstance.get<{ success: boolean; data: Masters[MasterKey] }>(`/masters/${type}`);
-  if (type !== "banks") return res.data.data;
-  return bankNamesToBanks(normalizeBankNames(res.data.data)) as Masters[typeof type];
 };
 
 export interface LocationMasterResponse {

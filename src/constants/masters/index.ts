@@ -1,5 +1,4 @@
 export * from "./common";
-export * from "./location";
 export * from "./banks";
 export * from "./employment";
 export * from "./residence";
@@ -10,7 +9,6 @@ export * from "./education";
 export * from "./gold";
 
 import { YES_NO } from "./common";
-import type { CitiesByState } from "./location";
 import { BANK_NAMES } from "./banks";
 import {
   SALARY_MODES, COMPANY_TYPES, BUSINESS_TYPES, NATURE_OF_BUSINESS, INDUSTRY_TYPES,
@@ -95,7 +93,6 @@ export type Masters = {
 } & {
   banks: readonly string[];
   states: readonly string[];
-  citiesByState: CitiesByState;
 };
 
 export type MasterKey = keyof Masters;
