@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
-import { OTHER_OPTION } from "../../../../../constants/masters";
+import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
@@ -17,16 +17,13 @@ import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
+import { GSTIN_REGEX } from "../../../../../utils/validation";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 // Type lives in the API layer (aligned with the backend's EducationLoan document);
 // re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
 
-const SALARIED = "Salaried";
-const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
-const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
-const MULTIPLE_TRANSACTION_BANKS = "Multiple Transaction Banks";
 
 interface ApplicationFormProps {
   userName?: string;
@@ -188,7 +185,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
 
 // ── Shared validation constants (used by computeErrors below) ──
-  const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
   const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
 
   const computeErrors = (draft:FormData = form) => {

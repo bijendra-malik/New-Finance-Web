@@ -5,7 +5,7 @@ import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
-import { OTHER_OPTION } from "../../../../../constants/masters";
+import { OTHER_OPTION, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
@@ -102,7 +102,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     if((pillBanksSelected||pillLoanTypesSelected)&&!hasExposure) e.existingEMI="Since existing loan banks/types are selected, existing EMI or existing loan amount must be greater than 0 (unselect both if you have no existing loans)";
 
     if(!draft.employmentType) e.employmentType="Employment type is required";
-    if(draft.employmentType==="Salaried"){
+    if(draft.employmentType===SALARIED){
       if(!draft.companyName.trim()) e.companyName="Company name is required";
       else if(!NAME_REGEX.test(draft.companyName.trim())) e.companyName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
       if(!draft.companyType) e.companyType="Company type is required";
@@ -219,7 +219,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           <div id="employmentType"><FieldLabel label="Employment Type" required/>
             <SelectField value={form.employmentType} onChange={v=>set("employmentType",v)} options={employmentTypeOptions} placeholder="Select" err={errors.employmentType}/>
           </div>
-          {form.employmentType==="Salaried"&&(<>
+          {form.employmentType===SALARIED&&(<>
             <div id="companyName"><FieldLabel label="Company Name" required/>
               <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company full name" err={errors.companyName}/>
             </div>

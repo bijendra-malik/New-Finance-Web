@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
-import { OTHER_OPTION } from "../../../../../constants/masters";
+import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import {
   AmountField,
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
@@ -24,9 +24,6 @@ import { getApiErrorMessage } from "../../../../../utils/apiError";
 // re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { FilmLoanApplication } from "../../../../../api/loanApplications";
 
-const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
-const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
-const MULTIPLE_TRANSACTION_BANKS = "Multiple Transaction Banks";
 const FILM_LANGUAGES = ["Hindi","English","Tamil","Telugu","Malayalam","Kannada","Bengali","Marathi","Punjabi","Gujarati","Bhojpuri","Odia","Assamese",OTHER_OPTION];
 const FILM_CATEGORIES = ["Hollywood","Bollywood","Tollywood",OTHER_OPTION];
 const MAX_STAR_CAST = 5;
@@ -170,7 +167,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
 
 // ── Shared validation constants (used by computeErrors below) ──
-  const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};

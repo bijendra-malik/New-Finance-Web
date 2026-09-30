@@ -5,13 +5,13 @@ import type { HomeLoanApplication } from "../../../../../api/loanApplications";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import { THEME as C } from "../../../../../constants/theme";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
-import { OTHER_OPTION } from "../../../../../constants/masters";
+import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { addCustomBankName } from "../../../../../api/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
-import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import {
   AmountField,
   DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
@@ -23,10 +23,6 @@ import { buildProductSections } from "./receiptSections";
 // re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { HomeLoanApplication };
 
-const SALARIED = "Salaried";
-const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
-const SELF_EMPLOYED_PROFESSIONAL = "Self Employed - Professional";
-const MULTIPLE_TRANSACTION_BANKS = "Multiple Transaction Banks";
 
 interface ApplicationFormProps {
   userName?: string;
@@ -183,7 +179,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
 
 // ── Shared validation constants (used by computeErrors below) ──
-  const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
