@@ -1,5 +1,6 @@
 // Loan-specific master lists: existing-loan types and per-loan tenure options.
 import { OTHER_OPTION } from "./common";
+export const MORE_THAN_TENURE_OPTION = -1;
 
 export const EXISTING_LOAN_TYPES = [
   "Personal loan", "Business loan", "Home loan", "Vehicle loan", "Working Capital",
