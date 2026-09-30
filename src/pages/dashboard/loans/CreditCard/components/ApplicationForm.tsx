@@ -361,8 +361,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
         <h1 className="text-xl font-bold" style={{color:C.dark}}>
           Unlock the best Credit Card offers suitable for your needs from 43+ lenders
         </h1>
-        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory</p>
-        <p className="text-xs mt-0.5" style={{color:C.gray}}>Kindly enter all amounts in INR (₹).</p>
+        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory. All amounts should be entered in INR (₹).</p>
       </div>
 
       {/* ── CREDIT CARD DETAILS ──────────────────────────────────────── */}
