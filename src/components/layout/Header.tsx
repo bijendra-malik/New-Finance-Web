@@ -86,7 +86,7 @@ const Header = () => {
         <Container>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 px-5">
             {/* Logo Section — pinned left */}
-            <div className="col-start-1 row-start-1 flex items-center gap-3 cursor-pointer">
+            <div className="col-start-1 row-start-1 flex items-center gap-3">
               {isRealSafari ? (
                 <img src={LogoAlphaWebp} alt="Indexia Finance" className="h-20 w-auto" />
               ) : (
@@ -307,7 +307,7 @@ const Header = () => {
         .nav-link::after {
           content: "";
           position: absolute;
-          top: 2px;
+          top: 0;
           left: 0;
           width: 100%;
           height: 100%;
