@@ -63,7 +63,14 @@ const DashboardShell = <T,>({
 
   // ── 3-column layout ────────────────────────────────────────────────────────
   return (
-    <div className="flex overflow-hidden" style={{ background: "#f0f4f8", marginTop: "100px", height: "calc(100vh - 100px)" }}>
+    <div
+      className="flex overflow-hidden"
+      style={{
+        background: "#f0f4f8",
+        marginTop: "var(--header-h)",
+        height: "calc(100vh - var(--header-h))",
+      }}
+    >
 
       {/* ══ COL 1: LEFT SIDEBAR ══════════════════════════════════════════════ */}
       <aside

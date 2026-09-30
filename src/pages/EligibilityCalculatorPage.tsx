@@ -99,7 +99,7 @@ const EligibilityCalculatorPage = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-25">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-(--header-h)">
 
       {/* ── Top nav bar ─────────────────────────────────────────────── */}
       <div

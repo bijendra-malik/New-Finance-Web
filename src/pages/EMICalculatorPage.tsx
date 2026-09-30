@@ -305,7 +305,10 @@ const EMICalculatorPage = () => {
       `}</style>
 
       {/* ════════════════════════ HERO BANNER ════════════════════════ */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: 380 }}>
+      <section
+        className="relative w-full overflow-hidden mt-(--header-h)"
+        style={{ minHeight: 380 }}
+      >
         {/* Background image */}
         <img
           src={bgImage}

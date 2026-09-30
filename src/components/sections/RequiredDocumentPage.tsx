@@ -60,7 +60,7 @@ const RequiredDocumentPage = () => {
     <>
       {/* ── BANNER ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden"
+        className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden mt-(--header-h)"
         // style={{
         //   backgroundImage: `url(${bannerBg})`,
         //   backgroundSize: "cover",
