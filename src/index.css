@@ -6,6 +6,8 @@
    dark shade of blue = #066a9c · grey = #7b7b7b · green = #008738
 */
 :root {
+  --header-h: 80px;
+
   /* Core palette */
   --brand-teal: #26ae90;
   --brand-navy: #066a9c;
