@@ -319,7 +319,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
           </div>
           <div id="panNumber"><FieldLabel label="PAN Number" required/>
-            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - AAAAA9999A" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
+            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{

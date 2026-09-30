@@ -629,7 +629,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
                 <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
               </div>
               <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
-                <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="AAAAA9999A" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>
+                <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="ABCDE1234F" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>
               </div>
               <SelectWithOther
                 id="natureOfBusiness" label="Nature Of Business" required
@@ -787,7 +787,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
           </div>
           <div id="panNumber"><FieldLabel label="PAN Number (if any)"/>
-            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - AAAAA9999A" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
+            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
@@ -847,7 +847,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <DateOfBirthPicker value={form.parentDob} onChange={v=>set("parentDob",v)} err={errors.parentDob}/>
           </div>
           <div id="parentPanNumber"><FieldLabel label="PAN Card Number" required/>
-            <TextField value={form.parentPanNumber} onChange={v=>set("parentPanNumber",formatPAN(v))} placeholder="AAAAA9999A" maxLength={10} err={errors.parentPanNumber} extraCls="uppercase tracking-widest"/>
+            <TextField value={form.parentPanNumber} onChange={v=>set("parentPanNumber",formatPAN(v))} placeholder="ABCDE1234F" maxLength={10} err={errors.parentPanNumber} extraCls="uppercase tracking-widest"/>
           </div>
           <div id="parentState"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.parentState} onChange={v=>{
