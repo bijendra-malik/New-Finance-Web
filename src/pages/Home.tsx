@@ -1,6 +1,5 @@
 import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import bannerVideo from "../assets/2.mp4";
-import bannerPoster from "../assets/bg.jpg";
 import useSEO from "../hooks/useSEO";
 import LoanProducts from "../components/sections/LoanProducts";
 import CreditScore from "../components/sections/CreditScore";
@@ -22,6 +21,7 @@ const Home = () => {
 
   const videoRef  = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
 
   // Keep banner video playing continuously — prevents restart on re-render
   useEffect(() => {
@@ -32,7 +32,16 @@ const Home = () => {
     v.play().catch(() => {});
     const resume = () => { v.play().catch(() => {}); };
     v.addEventListener("pause", resume);
-    return () => v.removeEventListener("pause", resume);
+
+    // Show loader until the first frame is ready to render
+    const onReady = () => setVideoReady(true);
+    if (v.readyState >= 2) setVideoReady(true);
+    else v.addEventListener("loadeddata", onReady, { once: true });
+
+    return () => {
+      v.removeEventListener("pause", resume);
+      v.removeEventListener("loadeddata", onReady);
+    };
   }, []);
 
   // Sync mute state to video element
@@ -47,17 +56,31 @@ const Home = () => {
 
   return (
     <>
-    <div aria-hidden style={{ height: "80px" }} />
+    <div aria-hidden style={{ height: "var(--header-h)" }} />
     {/* ── HERO BANNER ── */}
     <div
       className="hero-viewport relative w-full overflow-hidden bg-slate-950"
     >
       <style>{`
-        .hero-viewport { height: calc(100vh - 80px); }
+        .hero-viewport { height: calc(100vh - var(--header-h)); }
         @supports (height: 100dvh) {
-          .hero-viewport { height: calc(100dvh - 80px); }
+          .hero-viewport { height: calc(100dvh - var(--header-h)); }
         }
       `}</style>
+      {/* ── Video loading spinner (hidden once first frame is ready) ── */}
+      {!videoReady && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-slate-950"
+          style={{ zIndex: 1 }}
+          aria-hidden="true"
+        >
+          <div
+            className="w-12 h-12 rounded-full border-4 border-white/15 border-t-(--brand-teal) animate-spin"
+            role="status"
+          />
+        </div>
+      )}
+
       {/* ── Video background ── */}
       <video
         ref={videoRef}
@@ -66,7 +89,6 @@ const Home = () => {
         muted
         playsInline
         preload="metadata"
-        poster={bannerPoster}
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover object-center sm:object-fill sm:object-top"
         style={{ zIndex: 0 }}
