@@ -15,11 +15,11 @@ interface UseMastersResult {
 const DEFAULT_MASTERS: Masters = {
   ...MASTERS,
   states: [],
-  citiesByState: {},
 };
 
 export const useMasters = (): UseMastersResult => {
   const [masters, setMasters] = useState<Masters>(DEFAULT_MASTERS);
+  const [cityOptionsByState, setCityOptionsByState] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -37,7 +37,6 @@ export const useMasters = (): UseMastersResult => {
           ...DEFAULT_MASTERS,
           ...(data ?? {}),
           states,
-          citiesByState: {},
         });
       })
       .finally(() => {
@@ -49,21 +48,18 @@ export const useMasters = (): UseMastersResult => {
 
   const loadCities = useCallback((state: string): string[] => {
     if (!state) return [];
-    const cached = masters.citiesByState[state];
-    if (cached) return [...cached];
+    const cached = cityOptionsByState[state];
+    if (cached) return cached;
 
     fetchCitiesByState(state)
       .then((cities) => {
-        setMasters(prev => ({
-          ...prev,
-          citiesByState: { ...prev.citiesByState, [state]: cities },
-        }));
+        setCityOptionsByState(prev => ({ ...prev, [state]: cities }));
       })
       .catch(() => {
       });
 
     return [];
-  }, [masters.citiesByState]);
+  }, [cityOptionsByState]);
 
   const getEmploymentTypesFor = useCallback(
     async (loanType: string, fallbackKey: keyof typeof MASTERS): Promise<string[]> =>

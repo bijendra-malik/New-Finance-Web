@@ -330,6 +330,7 @@ SelectWithOther.displayName = "SelectWithOther";
 interface PincodeInputFieldProps {
   id: string; label: string; required?: boolean;
   value: string; onChange: (v: string) => void; err?: string;
+  onResolved?: (result: { pincode: string; state: string; city: string }) => void;
 }
 /** Digits only, max 6, no leading zero (Indian pincodes never start with 0) — matches /^[1-9]\d{5}$/ used in each form's computeErrors(). */
 const sanitizePincode = (raw: string) =>
@@ -344,14 +345,21 @@ interface PincodeFeedback {
 }
 
 export const PincodeInputField = memo(({
-  id, label, required = true, value, onChange, err,
+  id, label, required = true, value, onChange, err, onResolved,
 }: PincodeInputFieldProps) => {
   const [feedback, setFeedback] = useState<PincodeFeedback | null>(null);
   const latestRequest = useRef(0);
+  const lastResolved = useRef("");
+  const onResolvedRef = useRef(onResolved);
+  onResolvedRef.current = onResolved;
 
   useEffect(() => {
     const requestSeq = ++latestRequest.current;
     if (!PINCODE_REGEX.test(value)) {
+      if (lastResolved.current) {
+        lastResolved.current = "";
+        onResolvedRef.current?.({ pincode: value, state: "", city: "" });
+      }
       setFeedback(null);
       return;
     }
@@ -360,9 +368,15 @@ export const PincodeInputField = memo(({
       verifyPincode(value)
         .then((result: PincodeVerification) => {
           if (latestRequest.current !== requestSeq) return;
-          setFeedback(result.exists
-            ? null
-            : { status: "notFound", message: result.message });
+          if (result.exists && result.info) {
+            if (lastResolved.current !== value) {
+              lastResolved.current = value;
+              onResolvedRef.current?.({ pincode: value, state: result.info.state, city: result.info.city });
+            }
+            setFeedback(null);
+          } else {
+            setFeedback({ status: "notFound", message: result.message });
+          }
         })
         .catch(() => {
           if (latestRequest.current !== requestSeq) return;
