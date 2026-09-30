@@ -202,7 +202,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="e.g. 500000" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -234,7 +234,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
             />
             <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
-              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Take home salary"
+              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Enter Amount in INR"
                 err={errors.monthlyNetSalary}/>
             </div>
             <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
@@ -263,10 +263,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
-            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="0" err={errors.existingEMI}/>
+            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
           </div>
           <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="0" err={errors.existingLoanAmount}/>
+            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingLoanAmount}/>
           </div>
         </div>
 
