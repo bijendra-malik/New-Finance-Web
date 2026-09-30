@@ -6,7 +6,7 @@ import { OTHER_OPTION } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
-import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
+import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import {
   AmountField,
@@ -210,7 +210,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
-      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI="Not eligible: 30% of your monthly salary is reserved for daily expenses, so existing EMIs cannot reach 70% of your salary"; // 70% FOIR rule
+      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))} (70% of your net monthly salary)`; // 70% FOIR rule
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
