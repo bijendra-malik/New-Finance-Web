@@ -312,12 +312,27 @@ const LoanProducts = () => {
         />
         {/* Clip container: same width as the slab. */}
         <div
-          className="relative mx-auto overflow-hidden"
+          className="relative mx-auto overflow-hidden lp-ring"
           style={{ width: "min(100% - 20px, 1200px)", borderRadius: 9999 }}
         >
         <style>{`
           div::-webkit-scrollbar {
             display: none;
+          }
+          /* Gradient border ring — 3px, all four brand colors */
+          .lp-ring::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 2px;
+            background: conic-gradient(from 0deg, var(--brand-dark) 0deg, var(--brand-teal) 90deg, var(--brand-navy) 180deg, var(--brand-yellow) 270deg, var(--brand-dark) 360deg);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 2;
           }
         `}</style>
 
@@ -331,14 +346,14 @@ const LoanProducts = () => {
             style={{
               width: 20,
               height: 20,
-              borderRadius: "50%",
+              borderRadius: "20%",
               border: "none",
               color: canScrollLeft ? "#1e293b" : "#cbd5e1",
               backgroundColor: canScrollLeft ? "rgba(255,255,255,0.9)" : "rgba(241,245,249,0.6)",
               cursor: canScrollLeft ? "pointer" : "not-allowed",
               alignItems: "center",
               justifyContent: "center",
-              padding: 0,
+              padding: 2,
               flexShrink: 0,
               opacity: canScrollLeft ? 1 : 0.5,
               transition: "all 200ms ease",
@@ -387,14 +402,14 @@ const LoanProducts = () => {
             style={{
               width: 20,
               height: 20,
-              borderRadius: "50%",
+              borderRadius: "20%",
               border: "none",
               color: canScrollRight ? "#1e293b" : "#cbd5e1",
               backgroundColor: canScrollRight ? "rgba(255,255,255,0.9)" : "rgba(241,245,249,0.6)",
               cursor: canScrollRight ? "pointer" : "not-allowed",
               alignItems: "center",
               justifyContent: "center",
-              padding: 0,
+              padding: 2,
               flexShrink: 0,
               opacity: canScrollRight ? 1 : 0.5,
               transition: "all 200ms ease",
