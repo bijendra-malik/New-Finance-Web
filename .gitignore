@@ -31,5 +31,3 @@ dist-ssr
 
 .freebuff/
 .agents/
-
-validation.test.ts
