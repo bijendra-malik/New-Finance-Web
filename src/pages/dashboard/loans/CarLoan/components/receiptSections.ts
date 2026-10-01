@@ -10,6 +10,7 @@ export const buildProductSections = (app: CarLoanApplication) =>
         { label: "Transmission", value: app.transmissionType },
         { label: "Manufacturer", value: app.manufacturer },
         { label: "Model", value: app.model },
+        { label: "Fuel Type", value: app.fuelType },
         { label: "Purchase Type", value: app.vehiclePurchaseType },
       ],
     },

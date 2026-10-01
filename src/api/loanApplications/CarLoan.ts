@@ -8,7 +8,7 @@ export interface CarLoanApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  vehicleType?: string; transmissionType?: string; manufacturer?: string; model?: string; vehiclePurchaseType?: string;
+  vehicleType?: string; transmissionType?: string; manufacturer?: string; model?: string; fuelType?: string; vehiclePurchaseType?: string;
   employmentType: string;
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;
