@@ -7,6 +7,7 @@ import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
 import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
+import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
@@ -96,10 +97,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     [form.collateralPropertyState, loadCities]
   );
 
-  const businessCityOptions = useMemo(
-    () => loadCities(form.businessState),
-    [form.businessState, loadCities]
-  );
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
@@ -578,32 +575,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               </div>
           </>)}
 
-          {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(<>
-            <div id="businessState"><FieldLabel label="Current Business State" required/>
-              <SelectField value={form.businessState} onChange={v=>{
-                set("businessState",v); set("businessCity",""); loadCities(v);
-              }} options={masters.states} placeholder="Select" err={errors.businessState}/>
-            </div>
-            <div id="businessCity"><FieldLabel label="Current Business City" required/>
-              <SelectField value={form.businessCity} onChange={v=>set("businessCity",v)}
-                options={businessCityOptions} placeholder={form.businessState?"Select city":"Select state first"} disabled={!form.businessState} err={errors.businessCity}/>
-            </div>
-            <PincodeInputField
-              id="businessPincode" label="Current Business Pincode"
-              value={form.businessPincode} onChange={v=>set("businessPincode",v)}
- onResolved={r=>onPincodeResolved("business",r)} err={errors.businessPincode}
-            />
-            <SelectWithOther
-              id="businessPlaceStatus" label="Status Of Business Place" required
-              value={form.businessPlaceStatus} onChange={v=>{
-                set("businessPlaceStatus",v);
-                if(v!==OTHER_OPTION) set("businessPlaceStatusOther","");
-              }} options={masters.businessPlaceStatuses} err={errors.businessPlaceStatus}
-              otherId="businessPlaceStatusOther" otherLabel="Mention Status Of Business Place"
-              otherValue={form.businessPlaceStatusOther} onOtherChange={v=>set("businessPlaceStatusOther",v)}
-              otherPlaceholder="Enter status of business place" otherErr={errors.businessPlaceStatusOther}
-            />
-          </>)}
+          {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(
+            <BusinessPlaceSection form={form} set={(key, value) => set(key, value)} errors={errors}
+              onPincodeResolved={r=>onPincodeResolved("business",r)}
+              states={masters.states} businessPlaceStatuses={masters.businessPlaceStatuses} loadCities={loadCities} />
+          )}
         </div>
       </FormCard>
 
