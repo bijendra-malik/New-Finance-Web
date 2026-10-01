@@ -4,14 +4,14 @@ import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { THEME as C } from "../../../../../constants/theme";
-import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../../../../constants/legalLinks";
 import { OTHER_OPTION, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
+import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
 import { getApiErrorMessage } from "../../../../../utils/apiError";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { SubmittedReceiptBanner, SubmittedFormBanner, SubmitApplicationButton } from "../../../../../components/form/SubmitSection";
+import { ConsentAndSubmit, SubmittedReceiptBanner, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import {
   AmountField,
   DateOfBirthPicker, FieldError, FieldLabel, FormCard,
@@ -42,7 +42,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const [submittedApp, setSubmittedApp] = useState<PersonalLoanApplication|null>(null);
   // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
   const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
-  const [agreed, setAgreed] = useState(true);
+  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
     dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
@@ -64,6 +64,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
   const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
   const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
+
+  const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence"] });
 
   const cityOptions = useMemo(
     () => loadCities(form.state),
@@ -119,7 +121,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
     validatePersonalDetails(draft, e, { maxAge: 60 });
 
-    return e;
+  Object.assign(e, mismatchErrors(draft));
+  return e;
   };
 
   const allErrors = computeErrors();
@@ -332,7 +335,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           </div>
           <PincodeInputField
             id="pincode" label="Current Residence Pincode"
-            value={form.pincode} onChange={v=>set("pincode",v)} err={errors.pincode}
+            value={form.pincode} onChange={v=>set("pincode",v)}
+ onResolved={r=>onPincodeResolved("residence",r)} err={errors.pincode}
           />
           <SelectWithOther
             id="residenceStatus" label="Status of Current Residence" required
@@ -347,23 +351,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         </div>
       </FormCard>
 
-      {/* ── Consent + Submit ─────────────────────────────────────────── */}
-      <label className="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
-        <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}
-          className="mt-0.5 w-4 h-4 rounded shrink-0" style={{accentColor:C.teal}}/>
-        <span className="text-xs" style={{color:C.gray}}>
-          By continuing, you agree to Indexia Finance <a href={TERMS_OF_USE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Terms of Use</a> and <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Privacy Policy</a>.
-        </span>
-      </label>
-
-      {(apiError||(submitAttempted&&Object.keys(allErrors).length>0))&&(
-        <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
-          <span className="shrink-0 mt-0.5">⚠️</span>
-          {apiError||`${Object.keys(allErrors).length} field${Object.keys(allErrors).length===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
-        </div>
-      )}
-
-      <SubmitApplicationButton isSubmitting={isSubmitting} submitted={submitted} />
+      <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
+        invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
     </form>
   );
 };
