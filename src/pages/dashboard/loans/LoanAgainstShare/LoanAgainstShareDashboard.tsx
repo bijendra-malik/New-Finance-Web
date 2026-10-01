@@ -1,6 +1,6 @@
 import DashboardShell from "../shared/DashboardShell";
 import ApplicationForm from "./components/ApplicationForm";
-import LoanStatus from "./components/LoanStatus";
+import { LoanAgainstShareStatus } from "../../../../components/form/LoanStatusView";
 import type { LoanAgainstShareApplication } from "./components/ApplicationForm";
 
 const LoanAgainstShareDashboard = () => (
@@ -12,7 +12,7 @@ const LoanAgainstShareDashboard = () => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
     )}
     renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
+      <LoanAgainstShareStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
     )}
   />
 );

@@ -1,6 +1,6 @@
 import DashboardShell from "../shared/DashboardShell";
 import ApplicationForm from "./components/ApplicationForm";
-import LoanStatus from "./components/LoanStatus";
+import { BalanceTransferStatus } from "../../../../components/form/LoanStatusView";
 import type { BalanceTransferApplication } from "./components/ApplicationForm";
 
 const BalanceTransferDashboard = () => (
@@ -12,7 +12,7 @@ const BalanceTransferDashboard = () => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
     )}
     renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
+      <BalanceTransferStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
     )}
   />
 );

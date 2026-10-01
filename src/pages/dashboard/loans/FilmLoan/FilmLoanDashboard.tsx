@@ -1,6 +1,6 @@
 import DashboardShell from "../shared/DashboardShell";
 import ApplicationForm from "./components/ApplicationForm";
-import LoanStatus from "./components/LoanStatus";
+import { FilmLoanStatus } from "../../../../components/form/LoanStatusView";
 import type { FilmLoanApplication } from "./components/ApplicationForm";
 
 const FilmLoanDashboard = () => (
@@ -13,7 +13,7 @@ const FilmLoanDashboard = () => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
     )}
     renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
+      <FilmLoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
     )}
   />
 );

@@ -1,6 +1,6 @@
 import DashboardShell from "../shared/DashboardShell";
 import ApplicationForm from "./components/ApplicationForm";
-import LoanStatus from "./components/LoanStatus";
+import { LeaseRentalStatus } from "../../../../components/form/LoanStatusView";
 import type { LeaseRentalApplication } from "./components/ApplicationForm";
 
 const LeaseRentalDiscountingDashboard = () => (
@@ -12,7 +12,7 @@ const LeaseRentalDiscountingDashboard = () => (
       <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
     )}
     renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <LoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
+      <LeaseRentalStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
     )}
   />
 );
