@@ -13,3 +13,7 @@ export const TRANSMISSION_TYPES = [
 export const VEHICLE_PURCHASE_TYPES = [
   "New Vehicle", "Used Vehicle", OTHER_OPTION,
 ] as const;
+
+export const FUEL_TYPES = [
+  "Petrol", "Diesel", "CNG", "EV",
+] as const;
