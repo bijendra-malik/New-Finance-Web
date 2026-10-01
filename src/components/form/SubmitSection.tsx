@@ -1,3 +1,4 @@
+import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";
 
 /** Green bar at the top of the receipt view with a "back to form" action. */
@@ -39,4 +40,37 @@ export const SubmitApplicationButton = ({ isSubmitting, submitted }: { isSubmitt
       </svg>Submitting...</>
     ) : submitted ? "✓ Application Already Submitted" : "✓ Submit Application"}
   </button>
+);
+
+interface ConsentAndSubmitProps {
+  agreed: boolean;
+  onAgreedChange: (next: boolean) => void;
+  apiError?: string;
+  submitAttempted?: boolean;
+  invalidCount?: number;
+  isSubmitting?: boolean;
+  submitted?: boolean;
+}
+
+export const ConsentAndSubmit = ({
+  agreed, onAgreedChange, apiError = "", submitAttempted = false, invalidCount = 0, isSubmitting = false, submitted = false,
+}: ConsentAndSubmitProps) => (
+  <>
+    <label className="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
+      <input type="checkbox" checked={agreed} onChange={e=>onAgreedChange(e.target.checked)}
+        className="mt-0.5 w-4 h-4 rounded shrink-0" style={{accentColor:C.teal}}/>
+      <span className="text-xs" style={{color:C.gray}}>
+        By continuing, you agree to Indexia Finance <a href={TERMS_OF_USE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Terms of Use</a> and <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Privacy Policy</a>.
+      </span>
+    </label>
+
+    {(apiError||(submitAttempted&&invalidCount>0))&&(
+      <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
+        <span className="shrink-0 mt-0.5">⚠️</span>
+        {apiError||`${invalidCount} field${invalidCount===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
+      </div>
+    )}
+
+    <SubmitApplicationButton isSubmitting={isSubmitting} submitted={submitted} />
+  </>
 );
