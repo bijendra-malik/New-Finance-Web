@@ -4,16 +4,17 @@ import { THEME as C } from "../../../../../constants/theme";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
+import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
+import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
-import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { ConsentAndSubmit, SubmittedReceiptBanner, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
+import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
+import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
-import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
+import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyLoanAgainstShare } from "../../../../../api/loanApplications";
 import type { LoanAgainstShareApplication } from "../../../../../api/loanApplications";
-import { getApiErrorMessage } from "../../../../../utils/apiError";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 // Type lives in the API layer (aligned with the backend's LoanAgainstShare document);
@@ -49,13 +50,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState("");
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submittedApp, setSubmittedApp] = useState<LoanAgainstShareApplication|null>(null);
-  // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
-  const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
@@ -108,15 +102,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
 
-  const addOtherBank = (value:string) =>
-    setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
-  const removeOtherBank = (idx:number) =>
-    setForm(p=>({...p, existingBanksOther:p.existingBanksOther.filter((_,i)=>i!==idx)}));
 
-  const addOtherLoanType = (value:string) =>
-    setForm(p=>({...p, existingLoanTypesOther:[...p.existingLoanTypesOther, value]}));
-  const removeOtherLoanType = (idx:number) =>
-    setForm(p=>({...p, existingLoanTypesOther:p.existingLoanTypesOther.filter((_,i)=>i!==idx)}));
 
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
@@ -188,7 +174,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
-      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))} (70% of your net monthly salary)`; // 70% FOIR rule
+      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))}`; // 70% FOIR rule
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -254,115 +240,92 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   const errors:Partial<Record<keyof FormData,string>> = {};
   (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
 
-  // No backend yet — validate, then build the confirmation view purely from local state.
-  const handleSubmit = async (e:React.FormEvent) => {
-    e.preventDefault();
-    if(!agreed){ setApiError("Please accept the Terms of Use and Privacy Policy to continue."); return; }
-    const errs = computeErrors();
-    if(Object.keys(errs).length>0){
-      setTouched(p=>{
-        const next = {...p};
-        (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
-        return next;
-      });
-      setSubmitAttempted(true); setApiError("");
-      document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
-      return;
-    }
-    setSubmitAttempted(false);
-    setIsSubmitting(true); setApiError("");
-    try {
-    const app = {
 
-      fullName:form.fullName, mobile:form.mobile, email:form.email,
-      dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
-      state:form.state, city:form.city, pincode:form.pincode,
-      residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
-      shareCompanyName:form.shareCompanyName,
-      valueOfOneShare:form.valueOfOneShare,
-      quantityOfShare:form.quantityOfShare,
-      totalShareValue:totalShareValue,
-      employmentType:form.employmentType,
-      companyName:form.employmentType===SALARIED?form.companyName:undefined,
-      companyType:form.employmentType===SALARIED
-        ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
-        :undefined,
-      monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
-      salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
-      salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
-        ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
-        :undefined,
-      businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
-      businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
-        :undefined,
-      gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
-      companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
-      natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
-        :undefined,
-      industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
-        :undefined,
-      subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
-      businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
-        ?new Date(form.businessEstablishedDate).toISOString()
-        :undefined,
-      transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-        ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
-        :undefined,
-      transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
-        ?form.transactionBanks
-        :undefined,
-      lastYearTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearTurnover:undefined,
-      last2YearsTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsTurnover:undefined,
-      lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
-      last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
-      profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
-        ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
-        :undefined,
-      currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
-      priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
-      currentYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearNetIncome:undefined,
-      previousYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.previousYearNetIncome:undefined,
-      businessState:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)?form.businessState:undefined,
-      businessCity:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-        ?form.businessCity
-        :undefined,
-      businessPincode:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-        ?(form.businessPincode)
-        :undefined,
-      businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-        ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
-        :undefined,
-      loanAmount:form.loanAmount,
-      loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
-      existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-      existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-      existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
-    };
-    const res = await applyLoanAgainstShare(app);
-    setSubmittedApp(res.data); setSubmitted(true);
-    if(onSubmit) onSubmit(res.data._id, res.data);
-    } catch(err) {
-      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
-    } finally { setIsSubmitting(false); }
-  };
+  const markAllTouched = (keys: string[]) =>
+    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+
+  const {
+    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
+    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+  } = useApplicationSubmit<LoanAgainstShareApplication>({
+    computeErrors, markAllTouched, agreed,
+    submit: async () => {
+          const app = {
+            fullName:form.fullName, mobile:form.mobile, email:form.email,
+            dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
+            state:form.state, city:form.city, pincode:form.pincode,
+            residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+            shareCompanyName:form.shareCompanyName,
+            valueOfOneShare:form.valueOfOneShare,
+            quantityOfShare:form.quantityOfShare,
+            totalShareValue:totalShareValue,
+            employmentType:form.employmentType,
+            companyName:form.employmentType===SALARIED?form.companyName:undefined,
+            companyType:form.employmentType===SALARIED
+              ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
+              :undefined,
+            monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
+            salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
+            salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
+              ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+              :undefined,
+            businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
+            businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
+              :undefined,
+            gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
+            companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
+            natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
+              :undefined,
+            industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
+              :undefined,
+            subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
+            businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
+              ?new Date(form.businessEstablishedDate).toISOString()
+              :undefined,
+            transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              :undefined,
+            transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
+              ?form.transactionBanks
+              :undefined,
+            lastYearTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearTurnover:undefined,
+            last2YearsTurnover:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsTurnover:undefined,
+            lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
+            last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
+            profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
+              ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
+              :undefined,
+            currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
+            priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
+            currentYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearNetIncome:undefined,
+            previousYearNetIncome:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.previousYearNetIncome:undefined,
+            businessState:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)?form.businessState:undefined,
+            businessCity:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+              ?form.businessCity
+              :undefined,
+            businessPincode:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+              ?(form.businessPincode)
+              :undefined,
+            businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+              ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
+              :undefined,
+            loanAmount:form.loanAmount,
+            loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
+            existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
+            existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+            existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+          };
+          const res = await applyLoanAgainstShare(app);
+      return res.data;
+    },
+    onSubmitSuccess: onSubmit,
+  });
 
   if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <SubmittedReceiptBanner onBack={() => setShowFormAfterSubmit(true)} />
-      <SubmissionSuccess
-      refNo={submittedApp._id.slice(-10).toUpperCase()}
-      fullId={submittedApp._id}
-      createdAt={submittedApp.createdAt}
-      productName="Loan Against Share"
-      applicantName={submittedApp.fullName}
-      mobile={submittedApp.mobile}
-      email={submittedApp.email}
-      sections={buildProductSections(submittedApp)}
-    />
-    </div>
+    <SubmittedReceiptView app={submittedApp} productName="Loan Against Share" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
   );
 
   return (
@@ -598,43 +561,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      {/* ── EXISTING LOAN EXPOSURE ───────────────────────────────────── */}
-      <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-          <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
-            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
-          </div>
-          <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingLoanAmount}/>
-          </div>
-        </div>
-
-        <div className="mb-5">
-          <FieldLabel label="Existing Loan Bank's Name"/>
-          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
-          <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
-            onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
-            color={C.teal}/>
-
-          {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
-              items={form.existingBanksOther} onAdd={addOtherBank} onRemove={removeOtherBank} color={C.teal} existingOptions={masters.banks}/>
-          )}
-        </div>
-
-        <div>
-          <FieldLabel label="Existing Loan Types"/>
-          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
-          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
-            onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
-            color={C.navy}/>
-
-          {hasExposure&&form.existingLoanTypes.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Types" placeholder="Enter other loan type"
-              items={form.existingLoanTypesOther} onAdd={addOtherLoanType} onRemove={removeOtherLoanType} color={C.navy} existingOptions={masters.existingLoanTypes}/>
-          )}
-        </div>
-      </FormCard>
+      <ExistingLoanExposureSection form={form} set={(key, value) => set(key, value)} errors={errors}
+        mergeForm={patch => setForm(p => ({ ...p, ...patch }))}
+        banks={masters.banks} existingLoanTypes={masters.existingLoanTypes} />
 
       <PersonalDetailsSection form={form} set={(key, value) => set(key, value)} errors={errors}
         onPincodeResolved={r=>onPincodeResolved("residence",r)}

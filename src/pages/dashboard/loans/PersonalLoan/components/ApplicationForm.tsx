@@ -7,13 +7,14 @@ import { THEME as C } from "../../../../../constants/theme";
 import { OTHER_OPTION, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
+import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
+import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
+import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
 import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
-import { getApiErrorMessage } from "../../../../../utils/apiError";
-import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
-import { ConsentAndSubmit, SubmittedReceiptBanner, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
-import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
+import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
+import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
 interface ApplicationFormProps {
@@ -31,13 +32,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState("");
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submittedApp, setSubmittedApp] = useState<PersonalLoanApplication|null>(null);
-  // After submission: "receipt" view first; "Back to Application Form" returns to the filled form.
-  const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
@@ -64,15 +58,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence"] });
 
 
-  const addOtherBank = (value:string) =>
-    setForm(p=>({...p, existingBanksOther:[...p.existingBanksOther, value]}));
-  const removeOtherBank = (idx:number) =>
-    setForm(p=>({...p, existingBanksOther:p.existingBanksOther.filter((_,i)=>i!==idx)}));
 
-  const addOtherLoanType = (value:string) =>
-    setForm(p=>({...p, existingLoanTypesOther:[...p.existingLoanTypesOther, value]}));
-  const removeOtherLoanType = (idx:number) =>
-    setForm(p=>({...p, existingLoanTypesOther:p.existingLoanTypesOther.filter((_,i)=>i!==idx)}));
 
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
@@ -103,7 +89,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
       else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
-      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))} (70% of your net monthly salary)`; // 70% FOIR rule
+      else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))}`; // 70% FOIR rule
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -121,64 +107,43 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const errors:Partial<Record<keyof FormData,string>> = {};
   (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
 
-  const handleSubmit = async (e:React.FormEvent) => {
-    e.preventDefault();
-    if(!agreed){ setApiError("Please accept the Terms of Use and Privacy Policy to continue."); return; }
-    const errs = computeErrors();
-    if(Object.keys(errs).length>0){
-      setTouched(p=>{
-        const next = {...p};
-        (Object.keys(errs) as (keyof FormData)[]).forEach(k=>{ next[k]=true; });
-        return next;
-      });
-      setSubmitAttempted(true); setApiError("");
-      document.getElementById(Object.keys(errs)[0])?.scrollIntoView({behavior:"smooth",block:"center"});
-      return;
-    }
-    setSubmitAttempted(false);
-    setIsSubmitting(true); setApiError("");
-    try {
-      if(form.existingBanksOther.length>0){
-        await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
-      }
-      const res = await applyPersonalLoan({
-        fullName:form.fullName, mobile:form.mobile, email:form.email,
-        dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
-        state:form.state, city:form.city, pincode:form.pincode,
-        residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
-        employmentType:form.employmentType, companyName:form.companyName,
-        companyType:form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType,
-        monthlySalary:form.monthlyNetSalary, salaryReceivedAs:form.salaryReceivedAs,
-        salaryBankName:form.salaryReceivedAs!=="Cash"
-          ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
-          :undefined,
-        loanAmount:form.loanAmount,
-        loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
-        existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-        existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-        existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
-      });
-      setSubmittedApp(res.data); setSubmitted(true);
-      if(onSubmit) onSubmit(res.data._id, res.data);
-    } catch(err) {
-      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
-    } finally { setIsSubmitting(false); }
-  };
+
+  const markAllTouched = (keys: string[]) =>
+    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+
+  const {
+    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
+    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+  } = useApplicationSubmit<PersonalLoanApplication>({
+    computeErrors, markAllTouched, agreed,
+    submit: async () => {
+            if(form.existingBanksOther.length>0){
+              await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
+            }
+            const res = await applyPersonalLoan({
+              fullName:form.fullName, mobile:form.mobile, email:form.email,
+              dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
+              state:form.state, city:form.city, pincode:form.pincode,
+              residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+              employmentType:form.employmentType, companyName:form.companyName,
+              companyType:form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType,
+              monthlySalary:form.monthlyNetSalary, salaryReceivedAs:form.salaryReceivedAs,
+              salaryBankName:form.salaryReceivedAs!=="Cash"
+                ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+                :undefined,
+              loanAmount:form.loanAmount,
+              loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
+              existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
+              existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
+              existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+            });
+      return res.data;
+    },
+    onSubmitSuccess: onSubmit,
+  });
 
   if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <SubmittedReceiptBanner onBack={() => setShowFormAfterSubmit(true)} />
-      <SubmissionSuccess
-      refNo={submittedApp._id.slice(-10).toUpperCase()}
-      fullId={submittedApp._id}
-      createdAt={submittedApp.createdAt}
-      productName="Personal Loan"
-      applicantName={submittedApp.fullName}
-      mobile={submittedApp.mobile}
-      email={submittedApp.email}
-      sections={buildProductSections(submittedApp)}
-    />
-    </div>
+    <SubmittedReceiptView app={submittedApp} productName="Personal Loan" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
   );
 
   return (
@@ -254,43 +219,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         </div>
       </FormCard>
 
-      {/* ── EXISTING LOAN EXPOSURE ───────────────────────────────────── */}
-      <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-          <div id="existingEMI"><FieldLabel label="Existing Total EMI" required/>
-            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
-          </div>
-          <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingLoanAmount}/>
-          </div>
-        </div>
-
-        <div className="mb-5">
-          <FieldLabel label="Existing Loan Bank's Name"/>
-          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
-          <PillMultiSelect options={masters.banks} selected={form.existingBanks} disabled={!hasExposure}
-            onChange={vals=>setForm(p=>({...p,existingBanks:vals, existingBanksOther:vals.includes(OTHER_OPTION)?p.existingBanksOther:[]}))}
-            color={C.teal}/>
-
-          {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
-              items={form.existingBanksOther} onAdd={addOtherBank} onRemove={removeOtherBank} color={C.teal} existingOptions={masters.banks}/>
-          )}
-        </div>
-
-        <div>
-          <FieldLabel label="Existing Loan Types"/>
-          {!hasExposure&&<p className="text-xs mb-2" style={{color:C.gray}}>Enter Existing Total EMI or Existing Loan Amount above to enable selection</p>}
-          <PillMultiSelect options={masters.existingLoanTypes} selected={form.existingLoanTypes} disabled={!hasExposure}
-            onChange={vals=>setForm(p=>({...p,existingLoanTypes:vals, existingLoanTypesOther:vals.includes(OTHER_OPTION)?p.existingLoanTypesOther:[]}))}
-            color={C.navy}/>
-
-          {hasExposure&&form.existingLoanTypes.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Types" placeholder="Enter other loan type"
-              items={form.existingLoanTypesOther} onAdd={addOtherLoanType} onRemove={removeOtherLoanType} color={C.navy} existingOptions={masters.existingLoanTypes}/>
-          )}
-        </div>
-      </FormCard>
+      <ExistingLoanExposureSection form={form} set={(key, value) => set(key, value)} errors={errors}
+        mergeForm={patch => setForm(p => ({ ...p, ...patch }))}
+        banks={masters.banks} existingLoanTypes={masters.existingLoanTypes} />
 
       <PersonalDetailsSection form={form} set={(key, value) => set(key, value)} errors={errors}
         onPincodeResolved={r=>onPincodeResolved("residence",r)}
