@@ -4,15 +4,12 @@ import { THEME as C } from "../../../../../constants/theme";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
+import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import SubmissionSuccess from "../../../../../components/form/SubmissionSuccess";
 import { ConsentAndSubmit, SubmittedReceiptBanner, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
-import {
-  AmountField,
-  DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard,
-  OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField,
-} from "../../../../../components/form/FormControls";
+import { AmountField, DateField, FieldError, FieldLabel, FormCard, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyODCCLimit } from "../../../../../api/loanApplications";
 import type { ODCCLimitApplication } from "../../../../../api/loanApplications";
@@ -100,10 +97,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business", "collateralProperty"] });
 
-  const cityOptions = useMemo(
-    () => loadCities(form.state),
-    [form.state, loadCities]
-  );
   const collateralPropertyCityOptions = useMemo(
     () => loadCities(form.collateralPropertyState),
     [form.collateralPropertyState, loadCities]
@@ -689,56 +682,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      {/* ── PERSONAL DETAILS ─────────────────────────────────────────── */}
-      <FormCard title="Personal Details" subtitle="Basic details as per your official documents">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div id="fullName"><FieldLabel label="Full Name" required/>
-            <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder="As per Aadhaar / PAN" err={errors.fullName}/>
-          </div>
-          <div id="mobile"><FieldLabel label="Mobile Number" required/>
-            <div className="flex items-center rounded-xl overflow-hidden"
-              style={{border:`1.5px solid ${errors.mobile?"#ef4444":"#e2e8f0"}`,background:"#fafafa"}}>
-              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:"#e2e8f0"}}>🇮🇳 +91</span>
-              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number"
-                onChange={e=>set("mobile",e.target.value.replace(/\D/g,""))}
-                className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>
-            </div><FieldError msg={errors.mobile}/>
-          </div>
-          <div id="email"><FieldLabel label="Email Address" required/>
-            <TextField type="email" value={form.email} onChange={v=>set("email",v)} placeholder="your@email.com" err={errors.email}/>
-          </div>
-          <div id="dob"><FieldLabel label="Date of Birth (as per PAN card)" required/>
-            <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
-          </div>
-          <div id="panNumber"><FieldLabel label="PAN Number" required/>
-            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
-          </div>
-          <div id="state"><FieldLabel label="Current Residence State" required/>
-            <SelectField value={form.state} onChange={v=>{
-              set("state",v); set("city",""); loadCities(v);
-            }} options={masters.states} placeholder="Select" err={errors.state}/>
-          </div>
-          <div id="city"><FieldLabel label="Current Residence City" required/>
-            <SelectField value={form.city} onChange={v=>set("city",v)}
-              options={cityOptions} placeholder={form.state?"Select city":"Select state first"} disabled={!form.state} err={errors.city}/>
-          </div>
-          <PincodeInputField
-            id="pincode" label="Current Residence Pincode"
-            value={form.pincode} onChange={v=>set("pincode",v)}
- onResolved={r=>onPincodeResolved("residence",r)} err={errors.pincode}
-          />
-          <SelectWithOther
-            id="residenceStatus" label="Status of Current Residence" required
-            value={form.residenceStatus} onChange={v=>{
-              set("residenceStatus",v);
-              if(v!==OTHER_OPTION) set("residenceStatusOther","");
-            }} options={masters.residenceStatuses} err={errors.residenceStatus}
-            otherId="residenceStatusOther" otherLabel="Mention Status of Residence"
-            otherValue={form.residenceStatusOther} onOtherChange={v=>set("residenceStatusOther",v)}
-            otherPlaceholder="Enter residence status type" otherErr={errors.residenceStatusOther}
-          />
-        </div>
-      </FormCard>
+      <PersonalDetailsSection form={form} set={(key, value) => set(key, value)} errors={errors}
+        onPincodeResolved={r=>onPincodeResolved("residence",r)}
+        states={masters.states} residenceStatuses={masters.residenceStatuses} loadCities={loadCities} />
 
       <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
         invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
