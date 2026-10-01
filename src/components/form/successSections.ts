@@ -1,16 +1,6 @@
-/**
- * Shared success-layer module: types, formatting helpers, the section
- * builder, and (via re-export) the SubmissionSuccess component.
- * Helpers live in this .ts file so component files stay fast-refresh clean.
- */
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 export interface SuccessRow {
   label: string;
-  /** Cell value; may be pre-formatted by the caller (₹ amounts, joined lists…). */
   value?: string | number | null;
-  /** Hide the row entirely when true (used for conditional product fields). */
   omit?: boolean;
   force?: boolean;
 }
@@ -21,34 +11,24 @@ export interface SuccessSection {
 }
 
 export interface SubmissionSuccessProps {
-  /** 10-char uppercase reference shown in the badge, e.g. "A1B2C3D4E5". */
   refNo: string;
-  /** Full Mongo id, rendered as the receipt number. */
   fullId?: string;
-  /** ISO timestamp of submission. */
   createdAt?: string;
-  /** Product line of the application, e.g. "Personal Loan". */
   productName: string;
-  /** Applicant full name for the at-a-glance strip. */
   applicantName?: string;
-  /** Contact details echoed back to the applicant. */
   mobile?: string;
   email?: string;
   sections: SuccessSection[];
 }
 
-// ── Formatting helpers ────────────────────────────────────────────────────────
-
 const dash = "—";
 
-/** ₹-formatted Indian numbering, tolerant of undefined. */
 export const fmtINR = (n: number | undefined | null, opts?: Intl.NumberFormatOptions) =>
   `₹${(n ?? 0).toLocaleString("en-IN", opts)}`;
 
 export const isBlank = (v?: string | number | null) =>
   v === undefined || v === null || String(v).trim() === "" || String(v).trim() === "0";
 
-/** Generic text fallback: blank → —. */
 export const fmtText = (v?: string | number | null) => (isBlank(v) ? dash : String(v).trim());
 
 export const fmtDate = (v?: string | null) => {
@@ -61,14 +41,12 @@ export const fmtDate = (v?: string | null) => {
   return asLocal(new Date(v));
 };
 
-/** Full ISO timestamp → "12 Mar 2026, 4:30 pm". */
 export const fmtDateTime = (v?: string | null) => {
   if (!v) return dash;
   const d = new Date(v);
-  return isNaN(d.getTime()) ? dash : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return isNaN(d.getTime()) ? dash : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 };
 
-/** Number + unit → "5 years", tolerating blank. */
 export const fmtQty = (n: number | undefined | null, unit: string) =>
   n === undefined || n === null || isNaN(n) || n === 0 ? dash : `${n.toLocaleString("en-IN")} ${unit}`;
 
@@ -81,10 +59,8 @@ export const fmtTenure = (months?: number | null) => {
   return `${months.toLocaleString("en-IN")} months`;
 };
 
-/** Joins a string list → "a, b, c", tolerating empty. */
 export const fmtList = (arr?: string[] | null) => (arr && arr.length > 0 ? arr.join(", ") : dash);
 
-// Transaction bank display value for Self Employed - Business
 const resolveTxnBank = (
   name?: string | { displayName?: string; banks?: string[] },
   other?: string
@@ -102,16 +78,6 @@ const resolveTxnBank = (
 
 export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !== "Other");
 
-// ── Section builder ───────────────────────────────────────────────────────────
-
-/**
- * Shared builder that assembles the standard acknowledgement sections
- * (Loan Requirement, Applicant, Employment & Income, Existing Obligations)
- * from any loan application object. Product-specific rows/sections are
- * injected by each form via opts.
- */
-
-// Structural subset satisfied by every *Application interface across forms.
 interface CommonApp {
   fullName: string; mobile: string; email: string; dob: string; panNumber?: string;
   state?: string; city?: string; pincode?: string; residenceStatus?: string;
@@ -124,7 +90,6 @@ interface CommonApp {
   businessEstablishedDate?: string;
   transactionBankName?: string | { displayName?: string; banks?: string[] };
   transactionBanks?: string[];
-  /** Set when the user picked "Other" and typed a custom bank (Home Loan shape). */
   transactionBankOther?: string;
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
@@ -132,25 +97,18 @@ interface CommonApp {
   currentYearTurnover?: number; priorYearTurnover?: number;
   currentYearNetIncome?: number; previousYearNetIncome?: number;
   businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  // Credit Card applications carry no amount/tenure, hence optional.
   loanAmount?: number; loanTenure?: number;
   existingEMI?: number; existingLoanAmount?: number;
   existingBanks?: string[]; existingBanksOther?: string[];
   existingLoanTypes?: string[]; existingLoanTypesOther?: string[];
-  // PersonalLoan backend naming variants.
   monthlySalary?: number; otherBankList?: string[]; otherLoanList?: string[];
 }
 
 export interface SuccessSectionOptions {
-  /** Overrides the default section title (e.g. "Card Requirement"). */
   loanSectionTitle?: string;
-  /** Overrides the default "Loan Amount" label (e.g. "Fund Amount"). */
   amountLabel?: string;
-  /** Extra rows appended at the end of the Loan Requirement section. */
   extraLoanRows?: SuccessRow[];
-  /** Rows for a dedicated product-specific section (property, vehicle, gold…). */
   productSection?: Pick<SuccessSection, "title" | "rows">;
-  /** Fully custom additional sections (parent details, NPA banking…), rendered after the standard ones. */
   extraSections?: SuccessSection[];
 }
 
@@ -163,8 +121,8 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
   sections.push({
     title: opts.loanSectionTitle ?? "Loan Requirement",
     rows: [
-      ...(app.loanAmount !== undefined ? [{ label: opts.amountLabel ?? "Loan Amount", value: fmtINR(app.loanAmount) }] : []),
-      ...(app.loanTenure !== undefined ? [{ label: "Tenure", value: fmtTenure(app.loanTenure) }] : []),
+      ...(app.loanAmount != null ? [{ label: opts.amountLabel ?? "Loan Amount", value: fmtINR(app.loanAmount) }] : []),
+      ...(app.loanTenure != null ? [{ label: "Tenure", value: fmtTenure(app.loanTenure) }] : []),
       ...(opts.extraLoanRows ?? []),
     ],
   });
@@ -211,10 +169,10 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
         ? [{ label: "Transaction Bank", value: resolveTxnBank(app.transactionBankName, app.transactionBankOther) as string }]
         : []),
-      { label: "Last Year Turnover", value: app.lastYearTurnover !== undefined ? fmtINR(app.lastYearTurnover) : undefined, force: true },
-      { label: "Last 2 Years Turnover", value: app.last2YearsTurnover !== undefined ? fmtINR(app.last2YearsTurnover) : undefined, force: true },
-      { label: "Last Year Net Income", value: app.lastYearNetIncome !== undefined ? fmtINR(app.lastYearNetIncome) : undefined, force: true },
-      { label: "Last 2 Years Net Income", value: app.last2YearsNetIncome !== undefined ? fmtINR(app.last2YearsNetIncome) : undefined, force: true },
+      { label: "Last Year Turnover", value: app.lastYearTurnover != null ? fmtINR(app.lastYearTurnover) : undefined, force: true },
+      { label: "Last 2 Years Turnover", value: app.last2YearsTurnover != null ? fmtINR(app.last2YearsTurnover) : undefined, force: true },
+      { label: "Last Year Net Income", value: app.lastYearNetIncome != null ? fmtINR(app.lastYearNetIncome) : undefined, force: true },
+      { label: "Last 2 Years Net Income", value: app.last2YearsNetIncome != null ? fmtINR(app.last2YearsNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
       { label: "Business Pincode", value: app.businessPincode },
       { label: "Business Place Status", value: app.businessPlaceStatus },
@@ -227,10 +185,10 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
         ? [{ label: "Transaction Bank", value: resolveTxnBank(app.transactionBankName, app.transactionBankOther) as string }]
         : []),
-      { label: "Current Year Turnover", value: app.currentYearTurnover !== undefined ? fmtINR(app.currentYearTurnover) : undefined, force: true },
-      { label: "Current Year Net Income", value: app.currentYearNetIncome !== undefined ? fmtINR(app.currentYearNetIncome) : undefined, force: true },
-      { label: "Previous Year Turnover", value: app.priorYearTurnover !== undefined ? fmtINR(app.priorYearTurnover) : undefined, force: true },
-      { label: "Previous Year Net Income", value: app.previousYearNetIncome !== undefined ? fmtINR(app.previousYearNetIncome) : undefined, force: true },
+      { label: "Current Year Turnover", value: app.currentYearTurnover != null ? fmtINR(app.currentYearTurnover) : undefined, force: true },
+      { label: "Current Year Net Income", value: app.currentYearNetIncome != null ? fmtINR(app.currentYearNetIncome) : undefined, force: true },
+      { label: "Previous Year Turnover", value: app.priorYearTurnover != null ? fmtINR(app.priorYearTurnover) : undefined, force: true },
+      { label: "Previous Year Net Income", value: app.previousYearNetIncome != null ? fmtINR(app.previousYearNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
       { label: "Business Pincode", value: app.businessPincode },
       { label: "Business Place Status", value: app.businessPlaceStatus },
@@ -242,8 +200,8 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
   const banks = stripOther([...(app.existingBanks ?? []), ...(app.existingBanksOther ?? app.otherBankList ?? [])]);
   const loanTypes = stripOther([...(app.existingLoanTypes ?? []), ...(app.existingLoanTypesOther ?? app.otherLoanList ?? [])]);
 
-  const collectsBanks = app.existingBanks !== undefined || app.otherBankList !== undefined;
-  const collectsLoanTypes = app.existingLoanTypes !== undefined || app.otherLoanList !== undefined;
+  const collectsBanks = app.existingBanks != null || app.otherBankList != null;
+  const collectsLoanTypes = app.existingLoanTypes != null || app.otherLoanList != null;
   sections.push({
     title: "Existing Loan Obligations",
     rows: [
