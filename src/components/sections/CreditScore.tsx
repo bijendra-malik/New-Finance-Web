@@ -25,7 +25,7 @@ const COLOR_STOPS: [string, number][] = [
   ["#e67e22", 0.20],
   ["#f1c40f", 0.40],
   ["#a8d150", 0.58],
-  ["var(--brand-teal)", 0.75],
+  ["#26ae90", 0.75],
   ["#1abc9c", 1.00],
 ];
 
@@ -262,7 +262,7 @@ const CreditScore = () => {
   const rightLabels = labelDefs.filter((l) => l.side === "right");
 
   return (
-    <section ref={sectionRef} className="w-full bg-[#e8f4fb]/0 py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
+    <section ref={sectionRef} className="w-full bg-[#f0f9ff] py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
 
       {/* ── Heading ── */}
       <h2 className="text-center md:text-3xl sm:text-2xl font-bold text-slate-700 uppercase tracking-wide mb-2">

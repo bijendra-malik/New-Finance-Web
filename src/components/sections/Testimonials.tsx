@@ -20,16 +20,15 @@ import userImg4 from "../../assets/Users/testimonial-4.jpg"
 import userImg5 from "../../assets/Users/testimonial-5.jpg"
 import userImg6 from "../../assets/Users/testimonial-6.jpg"
 
-// Brand Color Constants — naya palette
 const BRAND_COLORS = {
-  BISLERI_GREEN: "var(--brand-teal)", // teal-green — primary accent (badges, verified tick, CTA highlights)
-  LIME_GREEN: "var(--brand-yellow)",    // yellow — ratings/stars highlight color
-  DARK_BLUE: "var(--brand-navy)",     // deep blue — primary accent bar / arrows / headings
-  GREY: "var(--brand-gray)",          // neutral grey — secondary text
-  NAVY_DARK: "var(--brand-dark)",     // medium blue — main text / names / headings
+  BISLERI_GREEN: "#26ae90", // teal-green
+  LIME_GREEN: "#f2f231",    // yellow
+  DARK_BLUE: "#066a9c",     // deep blue
+  GREY: "#7b7b7b",          // neutral grey
+  NAVY_DARK: "#286090",     // medium blue
   WHITE: "#FFFFFF",
   LIGHT_BG: "#F8FAFC",
-  lime: "var(--brand-yellow)",          // same yellow, used for top accent line
+  lime: "#f2f231",          // same yellow
 };
 
 interface Testimonial {

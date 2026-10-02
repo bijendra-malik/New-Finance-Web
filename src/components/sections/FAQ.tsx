@@ -11,10 +11,14 @@ const C = {
   grey: THEME.gray,
 };
 
+const NAVY_HEX = "#066a9c";
+const TEAL_HEX = "#26ae90";
+const DARK_HEX = "#286090";
+
 const STEPS = [
-  { id: 1, title: "Apply Online",   desc: "Share basic details & loan amount. Takes under 2 minutes — no paperwork, no hassle.",        color: C.navy,    icon: "📝", tag: "Step 1" },
-  { id: 2, title: "Get Verified",   desc: "Instant eligibility & CIBIL check. Our smart system verifies documents in real-time.",       color: C.teal,    icon: "✅", tag: "Step 2" },
-  { id: 3, title: "Receive Funds",  desc: "Amount disbursed to your account in 24–48 hours. Safe, secure & direct transfer.",          color: C.navyDark, icon: "💳", tag: "Step 3" },
+  { id: 1, title: "Apply Online",   desc: "Share basic details & loan amount. Takes under 2 minutes — no paperwork, no hassle.",        color: NAVY_HEX,  icon: "📝", tag: "Step 1" },
+  { id: 2, title: "Get Verified",   desc: "Instant eligibility & CIBIL check. Our smart system verifies documents in real-time.",       color: TEAL_HEX,  icon: "✅", tag: "Step 2" },
+  { id: 3, title: "Receive Funds",  desc: "Amount disbursed to your account in 24–48 hours. Safe, secure & direct transfer.",          color: DARK_HEX,  icon: "💳", tag: "Step 3" },
 ];
 
 const FAQS = [
@@ -69,7 +73,7 @@ const FAQ = () => {
                 <h3 className="text-lg font-bold" style={{ color: C.navy }}>Our Process</h3>
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                  style={{ background: `C.yellow30`, color: C.navyDark }}
+                  style={{ background: "var(--brand-yellow-30)", color: C.navyDark }}
                 >
                   3 Steps
                 </span>
