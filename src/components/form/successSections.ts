@@ -80,23 +80,23 @@ export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !
 
 interface CommonApp {
   fullName: string; mobile: string; email: string; dob: string; panNumber?: string;
-  state?: string; city?: string; pincode?: string; residenceStatus?: string;
+  state?: string; city?: string; pincode?: string; residenceStatus?: string; residenceStatusOther?: string;
   employmentType: string;
-  companyName?: string; companyType?: string;
+  companyName?: string; companyType?: string; companyTypeOther?: string;
   monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
-  businessName?: string; businessType?: string;
+  businessName?: string; businessType?: string; businessTypeOther?: string;
   gstNumber?: string; companyPanNumber?: string;
-  natureOfBusiness?: string; industryType?: string; subIndustry?: string;
+  natureOfBusiness?: string; natureOfBusinessOther?: string; industryType?: string; industryTypeOther?: string; subIndustry?: string;
   businessEstablishedDate?: string;
   transactionBankName?: string | { displayName?: string; banks?: string[] };
   transactionBanks?: string[];
   transactionBankOther?: string;
   lastYearTurnover?: number; last2YearsTurnover?: number;
   lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
+  profession?: string; professionOther?: string;
   currentYearTurnover?: number; priorYearTurnover?: number;
   currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
+  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string; businessPlaceStatusOther?: string;
   loanAmount?: number; loanTenure?: number;
   existingEMI?: number; existingLoanAmount?: number;
   existingBanks?: string[]; existingBanksOther?: string[];
@@ -113,6 +113,12 @@ export interface SuccessSectionOptions {
 }
 
 const SALARIED = "Salaried";
+
+export const resolveOther = (main: string | undefined, other: string | undefined): string | undefined => {
+  if (main && main !== "Other") return main;
+  const t = (other ?? "").trim();
+  return t ? t : main;
+};
 
 export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions = {}): SuccessSection[] => {
   const sections: SuccessSection[] = [];
@@ -141,7 +147,7 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Email", value: app.email },
       { label: "Residence", value: [app.city, app.state].filter(Boolean).join(", ") || undefined },
       { label: "Pincode", value: app.pincode },
-      { label: "Residence Status", value: app.residenceStatus },
+      { label: "Residence Status", value: resolveOther(app.residenceStatus, app.residenceStatusOther) },
     ],
   });
 
@@ -152,7 +158,7 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
   if (isSalaried) {
     employment.push(
       { label: "Company Name", value: app.companyName },
-      { label: "Company Type", value: app.companyType },
+      { label: "Company Type", value: resolveOther(app.companyType, app.companyTypeOther) },
       { label: "Monthly Net Salary", value: (app.monthlyNetSalary ?? app.monthlySalary) ? fmtINR(app.monthlyNetSalary ?? app.monthlySalary) : undefined },
       { label: "Salary Received As", value: app.salaryReceivedAs },
       { label: "Salary Bank", value: app.salaryBankName },
@@ -160,11 +166,11 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
   } else if (app.employmentType === "Self Employed - Business") {
     employment.push(
       { label: "Business Name", value: app.businessName },
-      { label: "Business Type", value: app.businessType },
+      { label: "Business Type", value: resolveOther(app.businessType, app.businessTypeOther) },
       { label: "GST Number", value: app.gstNumber },
       { label: "Company PAN", value: app.companyPanNumber },
-      { label: "Nature of Business", value: app.natureOfBusiness },
-      { label: "Industry Type", value: [app.industryType, app.subIndustry].filter(Boolean).join(" — ") || undefined },
+      { label: "Nature of Business", value: resolveOther(app.natureOfBusiness, app.natureOfBusinessOther) },
+      { label: "Industry Type", value: [resolveOther(app.industryType, app.industryTypeOther), app.subIndustry].filter(Boolean).join(" — ") || undefined },
       ...(app.businessEstablishedDate ? [{ label: "Established On", value: fmtDate(app.businessEstablishedDate) }] : []),
       ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
         ? [{ label: "Transaction Bank", value: resolveTxnBank(app.transactionBankName, app.transactionBankOther) as string }]
@@ -175,11 +181,11 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Last 2 Years Net Income", value: app.last2YearsNetIncome != null ? fmtINR(app.last2YearsNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
       { label: "Business Pincode", value: app.businessPincode },
-      { label: "Business Place Status", value: app.businessPlaceStatus },
+      { label: "Business Place Status", value: resolveOther(app.businessPlaceStatus, app.businessPlaceStatusOther) },
     );
   } else if (app.employmentType === "Self Employed - Professional") {
     employment.push(
-      { label: "Profession", value: app.profession },
+      { label: "Profession", value: resolveOther(app.profession, app.professionOther) },
       { label: "GST Number", value: app.gstNumber },
       { label: "Company PAN", value: app.companyPanNumber },
       ...(resolveTxnBank(app.transactionBankName, app.transactionBankOther)
@@ -191,7 +197,7 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
       { label: "Previous Year Net Income", value: app.previousYearNetIncome != null ? fmtINR(app.previousYearNetIncome) : undefined, force: true },
       { label: "Business Location", value: [app.businessCity, app.businessState].filter(Boolean).join(", ") || undefined },
       { label: "Business Pincode", value: app.businessPincode },
-      { label: "Business Place Status", value: app.businessPlaceStatus },
+      { label: "Business Place Status", value: resolveOther(app.businessPlaceStatus, app.businessPlaceStatusOther) },
     );
   }
   sections.push({ title: "Employment & Income", rows: employment });

@@ -8,7 +8,8 @@ export interface GoldLoanApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  typeOfLoan: string; goldCarats: string; goldWeight: number;
+  typeOfLoan: string;
+  typeOfLoanOther?: string; goldCarats: string; goldCaratsOther?: string; goldWeight: number;
   jewelryGoldWeight?: number; jewelryStoneWeight?: number;
   jewelryOtherMaterials?: { name: string; weight: number }[];
   collateralPropertyMarketValue: number;

@@ -7,6 +7,8 @@ export const MOBILE_REGEX = /^\d{10}$/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
+export const stripOther = (items: string[]): string[] => items.filter(item => item !== OTHER_OPTION);
+
 export interface PersonalDetailsDraft {
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string;

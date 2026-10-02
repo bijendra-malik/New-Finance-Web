@@ -10,10 +10,13 @@ export interface BusinessLoanPayload {
   // Self Employed - Business branch
   businessName?: string;
   businessType?: string;
+  businessTypeOther?: string;
   gstNumber?: string;
   companyPanNumber?: string;
   natureOfBusiness?: string;
+  natureOfBusinessOther?: string;
   industryType?: string;
+  industryTypeOther?: string;
   subIndustry?: string;
   businessEstablishedDate?: string;
   transactionBankName?: string;
@@ -24,6 +27,7 @@ export interface BusinessLoanPayload {
   last2YearsNetIncome?: number;
   // Self Employed - Professional branch
   profession?: string;
+  professionOther?: string;
   currentYearTurnover?: number;
   priorYearTurnover?: number;
   currentYearNetIncome?: number;
@@ -33,6 +37,7 @@ export interface BusinessLoanPayload {
   businessCity?: string;
   businessPincode?: string;
   businessPlaceStatus?: string;
+  businessPlaceStatusOther?: string;
   existingEMI: number;
   existingLoanAmount: number;
   existingBanks: string[];
@@ -48,6 +53,8 @@ export interface BusinessLoanPayload {
   city: string;
   pincode: string;
   residenceStatus: string;
+  residenceStatusOther?: string;
+  transactionBankOther?: string;
 }
 
 export interface BusinessLoanApplication {

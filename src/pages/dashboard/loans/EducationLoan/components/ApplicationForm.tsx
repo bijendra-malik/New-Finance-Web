@@ -15,7 +15,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { GSTIN_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther } from "../../../../../utils/validation";
 
 // ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
 // Type lives in the API layer (aligned with the backend's EducationLoan document);
@@ -334,46 +334,70 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.trim()?form.panNumber.toUpperCase():undefined,
             state:form.state, city:form.city, pincode:form.pincode,
-            residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
-            parentRelationship:form.parentRelationship===OTHER_OPTION?form.parentRelationshipOther:form.parentRelationship,
+            residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,
+            residenceStatusOther:form.residenceStatus===OTHER_OPTION?(form.residenceStatusOther.trim()||undefined):undefined,
+            parentRelationship:form.parentRelationship===OTHER_OPTION?OTHER_OPTION:form.parentRelationship,
+            parentRelationshipOther:form.parentRelationship===OTHER_OPTION?(form.parentRelationshipOther.trim()||undefined):undefined,
             parentFullName:form.parentFullName, parentMobile:form.parentMobile, parentEmail:form.parentEmail,
             parentDob:new Date(form.parentDob).toISOString(), parentPanNumber:form.parentPanNumber.toUpperCase(),
             parentState:form.parentState, parentCity:form.parentCity,
             parentPincode:form.parentPincode,
-            parentResidenceStatus:form.parentResidenceStatus===OTHER_OPTION?form.parentResidenceStatusOther:form.parentResidenceStatus,
-            educationCountry:form.educationCountry===OTHER_OPTION?form.educationCountryOther:form.educationCountry,
-            fieldOfStudy:form.fieldOfStudy===OTHER_OPTION?form.fieldOfStudyOther:form.fieldOfStudy,
+            parentResidenceStatus:form.parentResidenceStatus===OTHER_OPTION?OTHER_OPTION:form.parentResidenceStatus,
+            parentResidenceStatusOther:form.parentResidenceStatus===OTHER_OPTION?(form.parentResidenceStatusOther.trim()||undefined):undefined,
+            educationCountry:form.educationCountry===OTHER_OPTION?OTHER_OPTION:form.educationCountry,
+            educationCountryOther:form.educationCountry===OTHER_OPTION?(form.educationCountryOther.trim()||undefined):undefined,
+            fieldOfStudy:form.fieldOfStudy===OTHER_OPTION?OTHER_OPTION:form.fieldOfStudy,
+            fieldOfStudyOther:form.fieldOfStudy===OTHER_OPTION?(form.fieldOfStudyOther.trim()||undefined):undefined,
             courseName:form.courseName, university:form.university, instituteName:form.instituteName,
-            enrollmentStatus:form.enrollmentStatus===OTHER_OPTION?form.enrollmentStatusOther:form.enrollmentStatus,
+            enrollmentStatus:form.enrollmentStatus===OTHER_OPTION?OTHER_OPTION:form.enrollmentStatus,
+            enrollmentStatusOther:form.enrollmentStatus===OTHER_OPTION?(form.enrollmentStatusOther.trim()||undefined):undefined,
             courseDuration:parseInt(form.courseDuration)||0, educationCost:parseFloat(form.educationCost)||0,
             employmentType:form.employmentType,
             companyName:form.employmentType===SALARIED?form.companyName:undefined,
             companyType:form.employmentType===SALARIED
-              ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
+              ?(form.companyType===OTHER_OPTION?OTHER_OPTION:form.companyType)
+              :undefined,
+            companyTypeOther:form.employmentType===SALARIED&&form.companyType===OTHER_OPTION
+              ?(form.companyTypeOther.trim()||undefined)
               :undefined,
             monthlySalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
             salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
             salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
-              ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+              ?(form.salaryBankName===OTHER_OPTION?OTHER_OPTION:form.salaryBankName)
+              :undefined,
+            salaryBankOther:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"&&form.salaryBankName===OTHER_OPTION
+              ?(form.salaryBankNameOther.trim()||undefined)
               :undefined,
             businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
             businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
+              ?(form.businessType===OTHER_OPTION?OTHER_OPTION:form.businessType)
+              :undefined,
+            businessTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessType===OTHER_OPTION
+              ?(form.businessTypeOther.trim()||undefined)
               :undefined,
             gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
             companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
             natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
+              ?(form.natureOfBusiness===OTHER_OPTION?OTHER_OPTION:form.natureOfBusiness)
+              :undefined,
+            natureOfBusinessOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.natureOfBusiness===OTHER_OPTION
+              ?(form.natureOfBusinessOther.trim()||undefined)
               :undefined,
             industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
+              ?(form.industryType===OTHER_OPTION?OTHER_OPTION:form.industryType)
+              :undefined,
+            industryTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.industryType===OTHER_OPTION
+              ?(form.industryTypeOther.trim()||undefined)
               :undefined,
             subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
             businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
               ?new Date(form.businessEstablishedDate).toISOString()
               :undefined,
             transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              ?(form.transactionBankName===OTHER_OPTION?OTHER_OPTION:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              :undefined,
+            transactionBankOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===OTHER_OPTION
+              ?(form.transactionBankNameOther.trim()||undefined)
               :undefined,
             transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
               ?form.transactionBanks
@@ -383,7 +407,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
             last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
             profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
-              ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
+              ?(form.profession===OTHER_OPTION?OTHER_OPTION:form.profession)
+              :undefined,
+            professionOther:form.employmentType===SELF_EMPLOYED_PROFESSIONAL&&form.profession===OTHER_OPTION
+              ?(form.professionOther.trim()||undefined)
               :undefined,
             currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
             priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
@@ -395,13 +422,16 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               ?(form.businessPincode)
               :undefined,
             businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-              ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
+              ?(form.businessPlaceStatus===OTHER_OPTION?OTHER_OPTION:form.businessPlaceStatus)
+              :undefined,
+            businessPlaceStatusOther:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&form.businessPlaceStatus===OTHER_OPTION
+              ?(form.businessPlaceStatusOther.trim()||undefined)
               :undefined,
             loanAmount:form.loanAmount,
             loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-            existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-            existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+            existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
+            existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
           };
           const res = await applyEducationLoan(app);
       return res.data;

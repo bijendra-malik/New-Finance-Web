@@ -18,6 +18,7 @@ export interface FilmLoanApplication {
   currentYearNetIncome?: number; previousYearNetIncome?: number;
   businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
   filmComesUnder: string;
+  filmComesUnderOther?: string;
   filmLanguages: string[]; starCastNames: string[];
   totalProjectCost: number; ownInvestmentAmount: number;
   loanAmount: number; loanTenure: number;

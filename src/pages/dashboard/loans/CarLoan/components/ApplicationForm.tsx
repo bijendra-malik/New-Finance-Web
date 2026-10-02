@@ -11,7 +11,7 @@ import { BusinessPlaceSection } from "../../../../../components/form/BusinessPla
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyCarLoan } from "../../../../../api/loanApplications";
@@ -34,7 +34,7 @@ interface FormData {
   loanAmount:number; loanTenureYears:number; loanTenureYearsCustom:number;
   vehicleType:string; vehicleTypeOther:string;
   transmissionType:string; transmissionTypeOther:string;
-  manufacturer:string; model:string;
+  manufacturer:string; model:string; fuelType:string;
   vehiclePurchaseType:string; vehiclePurchaseTypeOther:string;
   employmentType:string;
   companyName:string; companyType:string; companyTypeOther:string; monthlyNetSalary:number; salaryReceivedAs:string; salaryBankName:string; salaryBankNameOther:string;
@@ -62,7 +62,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0,
     vehicleType:"", vehicleTypeOther:"",
     transmissionType:"", transmissionTypeOther:"",
-    manufacturer:"", model:"",
+    manufacturer:"", model:"", fuelType:"",
     vehiclePurchaseType:"", vehiclePurchaseTypeOther:"",
     employmentType:"",
     companyName:"", companyType:"", companyTypeOther:"", monthlyNetSalary:0, salaryReceivedAs:"", salaryBankName:"", salaryBankNameOther:"",
@@ -159,6 +159,12 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
     else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>7)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>7?"Tenure cannot exceed 7 years":"Enter a tenure greater than 7 years";
 
+    if(!draft.vehicleType) e.vehicleType="Vehicle type is required";
+    if(!draft.transmissionType) e.transmissionType="Transmission type is required";
+    if(!draft.vehiclePurchaseType) e.vehiclePurchaseType="Purchase type is required";
+    if(!draft.fuelType) e.fuelType="Fuel type is required";
+    if(!draft.manufacturer.trim()) e.manufacturer="Manufacturer is required";
+    if(!draft.model.trim()) e.model="Model is required";
     if(draft.vehicleType===OTHER_OPTION&&!draft.vehicleTypeOther.trim()) e.vehicleTypeOther="Please mention vehicle type";
     if(draft.transmissionType===OTHER_OPTION&&!draft.transmissionTypeOther.trim()) e.transmissionTypeOther="Please mention transmission type";
     if(draft.vehiclePurchaseType===OTHER_OPTION&&!draft.vehiclePurchaseTypeOther.trim()) e.vehiclePurchaseTypeOther="Please mention purchase type";
@@ -257,40 +263,63 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
-            residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
-            vehicleType:form.vehicleType?(form.vehicleType===OTHER_OPTION?form.vehicleTypeOther:form.vehicleType):undefined,
-            transmissionType:form.transmissionType?(form.transmissionType===OTHER_OPTION?form.transmissionTypeOther:form.transmissionType):undefined,
+            residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,
+            residenceStatusOther:form.residenceStatus===OTHER_OPTION?(form.residenceStatusOther.trim()||undefined):undefined,
+            vehicleType:form.vehicleType?(form.vehicleType===OTHER_OPTION?OTHER_OPTION:form.vehicleType):undefined,
+            vehicleTypeOther:form.vehicleType===OTHER_OPTION?(form.vehicleTypeOther.trim()||undefined):undefined,
+            transmissionType:form.transmissionType?(form.transmissionType===OTHER_OPTION?OTHER_OPTION:form.transmissionType):undefined,
+            transmissionTypeOther:form.transmissionType===OTHER_OPTION?(form.transmissionTypeOther.trim()||undefined):undefined,
             manufacturer:form.manufacturer.trim()||undefined,
             model:form.model.trim()||undefined,
-            vehiclePurchaseType:form.vehiclePurchaseType?(form.vehiclePurchaseType===OTHER_OPTION?form.vehiclePurchaseTypeOther:form.vehiclePurchaseType):undefined,
+            fuelType:form.fuelType||undefined,
+            vehiclePurchaseType:form.vehiclePurchaseType?(form.vehiclePurchaseType===OTHER_OPTION?OTHER_OPTION:form.vehiclePurchaseType):undefined,
+            vehiclePurchaseTypeOther:form.vehiclePurchaseType===OTHER_OPTION?(form.vehiclePurchaseTypeOther.trim()||undefined):undefined,
             employmentType:form.employmentType,
             companyName:form.employmentType===SALARIED?form.companyName:undefined,
             companyType:form.employmentType===SALARIED
-              ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
+              ?(form.companyType===OTHER_OPTION?OTHER_OPTION:form.companyType)
+              :undefined,
+              companyTypeOther:form.employmentType===SALARIED
+              ?(form.companyType===OTHER_OPTION?(form.companyTypeOther.trim()||undefined):undefined)
               :undefined,
             monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
             salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
             salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
-              ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+              ?(form.salaryBankName===OTHER_OPTION?OTHER_OPTION:form.salaryBankName)
+              :undefined,
+              salaryBankNameOther:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
+              ?(form.salaryBankName===OTHER_OPTION?(form.salaryBankNameOther.trim()||undefined):undefined)
               :undefined,
             businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
             businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
+              ?(form.businessType===OTHER_OPTION?OTHER_OPTION:form.businessType)
+              :undefined,
+              businessTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.businessType===OTHER_OPTION?(form.businessTypeOther.trim()||undefined):undefined)
               :undefined,
             gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
             companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
             natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
+              ?(form.natureOfBusiness===OTHER_OPTION?OTHER_OPTION:form.natureOfBusiness)
+              :undefined,
+              natureOfBusinessOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.natureOfBusiness===OTHER_OPTION?(form.natureOfBusinessOther.trim()||undefined):undefined)
               :undefined,
             industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
+              ?(form.industryType===OTHER_OPTION?OTHER_OPTION:form.industryType)
+              :undefined,
+              industryTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.industryType===OTHER_OPTION?(form.industryTypeOther.trim()||undefined):undefined)
               :undefined,
             subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
             businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
               ?new Date(form.businessEstablishedDate).toISOString()
               :undefined,
             transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              ?(form.transactionBankName===OTHER_OPTION?OTHER_OPTION:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              :undefined,
+              transactionBankOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===OTHER_OPTION
+              ?(form.transactionBankNameOther.trim()||undefined)
               :undefined,
             transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
               ?form.transactionBanks
@@ -300,7 +329,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
             last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
             profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
-              ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
+              ?(form.profession===OTHER_OPTION?OTHER_OPTION:form.profession)
+              :undefined,
+              professionOther:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
+              ?(form.profession===OTHER_OPTION?(form.professionOther.trim()||undefined):undefined)
               :undefined,
             currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
             priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
@@ -312,13 +344,16 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               ?(form.businessPincode)
               :undefined,
             businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-              ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
+              ?(form.businessPlaceStatus===OTHER_OPTION?OTHER_OPTION:form.businessPlaceStatus)
+              :undefined,
+              businessPlaceStatusOther:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+              ?(form.businessPlaceStatus===OTHER_OPTION?(form.businessPlaceStatusOther.trim()||undefined):undefined)
               :undefined,
             loanAmount:form.loanAmount,
             loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-            existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-            existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+            existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
+            existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
           };
           const res = await applyCarLoan(app);
       return res.data;
@@ -349,13 +384,13 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
-            id="loanTenureYears" label="Required Loan Tenure (in years)"
+            id="loanTenureYears" label="Required Loan Tenure (in years)" required
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
             options={masters.carLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
-            id="vehicleType" label="Buying Vehicle Type"
+            id="vehicleType" label="Buying Vehicle Type" required
             value={form.vehicleType} onChange={v=>{
               set("vehicleType",v);
               if(v!==OTHER_OPTION) set("vehicleTypeOther","");
@@ -365,7 +400,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             otherPlaceholder="Enter vehicle type" otherErr={errors.vehicleTypeOther}
           />
           <SelectWithOther
-            id="transmissionType" label="Buying Transmission Type"
+            id="transmissionType" label="Buying Transmission Type" required
             value={form.transmissionType} onChange={v=>{
               set("transmissionType",v);
               if(v!==OTHER_OPTION) set("transmissionTypeOther","");
@@ -374,14 +409,17 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             otherValue={form.transmissionTypeOther} onOtherChange={v=>set("transmissionTypeOther",v)}
             otherPlaceholder="Enter transmission type" otherErr={errors.transmissionTypeOther}
           />
-          <div id="manufacturer"><FieldLabel label="Manufacturer"/>
-            <TextField value={form.manufacturer} onChange={v=>set("manufacturer",v)} placeholder="ex: TATA, Volkswagen, Hyundai"/>
+          <div id="manufacturer"><FieldLabel label="Manufacturer" required/>
+            <TextField value={form.manufacturer} onChange={v=>set("manufacturer",v)} placeholder="ex: TATA, Volkswagen, Hyundai" err={errors.manufacturer}/>
           </div>
-          <div id="model"><FieldLabel label="Model"/>
-            <TextField value={form.model} onChange={v=>set("model",v)} placeholder="ex: Camry, Civic, Corolla"/>
+          <div id="model"><FieldLabel label="Model" required/>
+            <TextField value={form.model} onChange={v=>set("model",v)} placeholder="ex: Camry, Civic, Corolla" err={errors.model}/>
+          </div>
+          <div id="fuelType"><FieldLabel label="Fuel Type" required/>
+            <SelectField value={form.fuelType} onChange={v=>set("fuelType",v)} options={masters.fuelTypes} placeholder="Select" err={errors.fuelType}/>
           </div>
           <SelectWithOther
-            id="vehiclePurchaseType" label="Wants to Buy a ?"
+            id="vehiclePurchaseType" label="Wants to Buy a ?" required
             value={form.vehiclePurchaseType} onChange={v=>{
               set("vehiclePurchaseType",v);
               if(v!==OTHER_OPTION) set("vehiclePurchaseTypeOther","");

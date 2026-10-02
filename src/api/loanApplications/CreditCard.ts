@@ -8,7 +8,7 @@ export interface CreditCardApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  hasActiveCard?: string; applyForBank?: string;
+  hasActiveCard?: string; applyForBank?: string; applyForBankOther?: string;
   employmentType: string;
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;

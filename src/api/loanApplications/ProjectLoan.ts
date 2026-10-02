@@ -8,7 +8,8 @@ export interface ProjectLoanApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  projectType: string; totalProjectCost: number;
+  projectType: string;
+  projectTypeOther?: string; totalProjectCost: number;
   projectStartDate: string; projectCompletionDate: string; ownInvestment: number;
   employmentType: string;
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;

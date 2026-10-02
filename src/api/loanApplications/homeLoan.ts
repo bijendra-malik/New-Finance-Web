@@ -15,6 +15,7 @@ export interface HomeLoanPayload {
   loanAmount: number;
   loanTenure: number;
   buyingPropertyType?: string;
+  buyingPropertyTypeOther?: string;
   buyingPropertyAge?: number;
   buyingPropertyState?: string;
   buyingPropertyCity?: string;
@@ -22,15 +23,21 @@ export interface HomeLoanPayload {
   employmentType: string;
   companyName?: string;
   companyType?: string;
+  companyTypeOther?: string;
   monthlyNetSalary?: number;
   salaryReceivedAs?: string;
+  salaryReceivedAsOther?: string;
   salaryBankName?: string;
+  salaryBankNameOther?: string;
   businessName?: string;
   businessType?: string;
+  businessTypeOther?: string;
   gstNumber?: string;
   companyPanNumber?: string;
   natureOfBusiness?: string;
+  natureOfBusinessOther?: string;
   industryType?: string;
+  industryTypeOther?: string;
   subIndustry?: string;
   businessEstablishedDate?: string;
   transactionBankName?: string | HomeLoanTransactionBank;
@@ -40,6 +47,7 @@ export interface HomeLoanPayload {
   lastYearNetIncome?: number;
   last2YearsNetIncome?: number;
   profession?: string;
+  professionOther?: string;
   currentYearTurnover?: number;
   priorYearTurnover?: number;
   currentYearNetIncome?: number;
@@ -48,6 +56,7 @@ export interface HomeLoanPayload {
   businessCity?: string;
   businessPincode?: string;
   businessPlaceStatus?: string;
+  businessPlaceStatusOther?: string;
   existingEMI: number;
   existingLoanAmount: number;
   existingBanks: string[];
@@ -63,6 +72,7 @@ export interface HomeLoanPayload {
   city: string;
   pincode: string;
   residenceStatus: string;
+  residenceStatusOther?: string;
 }
 
 export interface HomeLoanApplication extends HomeLoanPayload {

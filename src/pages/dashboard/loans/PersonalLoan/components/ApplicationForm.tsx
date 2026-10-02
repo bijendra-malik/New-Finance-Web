@@ -12,7 +12,7 @@ import SubmittedReceiptView from "../../../../../components/form/SubmittedReceip
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
+import { NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
@@ -124,18 +124,23 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               fullName:form.fullName, mobile:form.mobile, email:form.email,
               dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
               state:form.state, city:form.city, pincode:form.pincode,
-              residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+              residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,
+            residenceStatusOther:form.residenceStatus===OTHER_OPTION?(form.residenceStatusOther.trim()||undefined):undefined,
               employmentType:form.employmentType, companyName:form.companyName,
-              companyType:form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType,
+              companyType:form.companyType===OTHER_OPTION?OTHER_OPTION:form.companyType,
+            companyTypeOther:form.companyType===OTHER_OPTION?(form.companyTypeOther.trim()||undefined):undefined,
               monthlySalary:form.monthlyNetSalary, salaryReceivedAs:form.salaryReceivedAs,
               salaryBankName:form.salaryReceivedAs!=="Cash"
-                ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+                ?(form.salaryBankName===OTHER_OPTION?OTHER_OPTION:form.salaryBankName)
+                :undefined,
+                salaryBankNameOther:form.salaryReceivedAs!=="Cash"
+                ?(form.salaryBankName===OTHER_OPTION?(form.salaryBankNameOther.trim()||undefined):undefined)
                 :undefined,
               loanAmount:form.loanAmount,
               loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
               existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-              existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-              existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+              existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
+              existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
             });
       return res.data;
     },

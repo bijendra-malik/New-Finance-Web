@@ -8,11 +8,14 @@ export interface EducationLoanApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber?: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  parentRelationship: string; parentFullName: string; parentMobile: string; parentEmail: string;
+  parentRelationship: string;
+  parentRelationshipOther?: string; parentFullName: string; parentMobile: string; parentEmail: string;
   parentDob: string; parentPanNumber: string;
-  parentState: string; parentCity: string; parentPincode: string; parentResidenceStatus: string;
-  educationCountry: string; fieldOfStudy: string; courseName: string; university: string; instituteName: string;
-  enrollmentStatus: string; courseDuration: number; educationCost: number;
+  parentState: string; parentCity: string; parentPincode: string; parentResidenceStatus: string; parentResidenceStatusOther?: string;
+  educationCountry: string;
+  educationCountryOther?: string; fieldOfStudy: string; fieldOfStudyOther?: string; courseName: string; university: string; instituteName: string;
+  enrollmentStatus: string;
+  enrollmentStatusOther?: string; courseDuration: number; educationCost: number;
   employmentType: string;
   companyName?: string; companyType?: string; monthlySalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;

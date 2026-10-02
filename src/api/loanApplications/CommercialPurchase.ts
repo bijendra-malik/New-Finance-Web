@@ -8,7 +8,8 @@ export interface CommercialPurchaseApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  buyingPropertyType: string; buyingPropertyMarketValue: number; buyingPropertyAge: number;
+  buyingPropertyType: string;
+  buyingPropertyTypeOther?: string; buyingPropertyMarketValue: number; buyingPropertyAge: number;
   buyingPropertyState: string; buyingPropertyCity: string; buyingPropertyPincode: string;
   employmentType: string;
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;

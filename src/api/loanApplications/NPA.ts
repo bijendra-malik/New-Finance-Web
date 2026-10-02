@@ -8,7 +8,8 @@ export interface NPAApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  collateralPropertyType: string; collateralPropertyMarketValue: number; collateralPropertyAge: number;
+  collateralPropertyType: string;
+  collateralPropertyTypeOther?: string; collateralPropertyMarketValue: number; collateralPropertyAge: number;
   collateralPropertyState: string; collateralPropertyCity: string; collateralPropertyPincode: string;
   npaStatus: string; npaStatusOther?: string; otsOfferAmount?: number;
   npaPrincipalLoanAmount: number; npaCurrentOutstandingAmount: number;

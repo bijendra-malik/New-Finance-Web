@@ -9,9 +9,12 @@ export interface PersonalLoanPayload {
   employmentType: string;
   companyName?: string;
   companyType?: string;
+  companyTypeOther?: string;
   monthlySalary?: number;
   salaryReceivedAs?: string;
+  salaryReceivedAsOther?: string;
   salaryBankName?: string;
+  salaryBankNameOther?: string;
   existingEMI: number;
   existingLoanAmount: number;
   existingBanks: string[];
@@ -27,6 +30,7 @@ export interface PersonalLoanPayload {
   city: string;
   pincode: string;
   residenceStatus: string;
+  residenceStatusOther?: string;
 }
 
 export interface PersonalLoanApplication {

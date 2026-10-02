@@ -8,7 +8,8 @@ export interface BalanceTransferApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
-  balanceTransferType: string; currentPropertyValue?: number; topUpAmount?: number;
+  balanceTransferType: string;
+  balanceTransferTypeOther?: string; currentPropertyValue?: number; topUpAmount?: number;
   employmentType: string;
   companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
   businessName?: string; businessType?: string;

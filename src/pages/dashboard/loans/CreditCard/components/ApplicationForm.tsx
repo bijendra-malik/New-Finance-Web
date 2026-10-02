@@ -11,7 +11,7 @@ import { BusinessPlaceSection } from "../../../../../components/form/BusinessPla
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, NAME_REGEX, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, OtherOptionList, SelectField, SelectWithOther, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyCreditCard } from "../../../../../api/loanApplications";
@@ -234,40 +234,60 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
-            residenceStatus:form.residenceStatus===OTHER_OPTION?form.residenceStatusOther:form.residenceStatus,
+            residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,
+            residenceStatusOther:form.residenceStatus===OTHER_OPTION?(form.residenceStatusOther.trim()||undefined):undefined,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
-            existingBanks:form.existingBanks, otherBankList:form.existingBanksOther,
-            existingLoanTypes:form.existingLoanTypes, otherLoanList:form.existingLoanTypesOther,
+            existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
+            existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
             hasActiveCard:form.hasActiveCard||undefined,
-            applyForBank:form.applyForBank?(form.applyForBank===OTHER_OPTION?form.applyForBankOther:form.applyForBank):undefined,
+            applyForBank:form.applyForBank?(form.applyForBank===OTHER_OPTION?OTHER_OPTION:form.applyForBank):undefined,
+            applyForBankOther:form.applyForBank===OTHER_OPTION?(form.applyForBankOther.trim()||undefined):undefined,
             employmentType:form.employmentType,
             companyName:form.employmentType===SALARIED?form.companyName:undefined,
             companyType:form.employmentType===SALARIED
-              ?(form.companyType===OTHER_OPTION?form.companyTypeOther:form.companyType)
+              ?(form.companyType===OTHER_OPTION?OTHER_OPTION:form.companyType)
+              :undefined,
+              companyTypeOther:form.employmentType===SALARIED
+              ?(form.companyType===OTHER_OPTION?(form.companyTypeOther.trim()||undefined):undefined)
               :undefined,
             monthlyNetSalary:form.employmentType===SALARIED?form.monthlyNetSalary:undefined,
             salaryReceivedAs:form.employmentType===SALARIED?form.salaryReceivedAs:undefined,
             salaryBankName:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
-              ?(form.salaryBankName===OTHER_OPTION?form.salaryBankNameOther:form.salaryBankName)
+              ?(form.salaryBankName===OTHER_OPTION?OTHER_OPTION:form.salaryBankName)
+              :undefined,
+              salaryBankNameOther:form.employmentType===SALARIED&&form.salaryReceivedAs!=="Cash"
+              ?(form.salaryBankName===OTHER_OPTION?(form.salaryBankNameOther.trim()||undefined):undefined)
               :undefined,
             businessName:form.employmentType===SELF_EMPLOYED_BUSINESS?form.businessName:undefined,
             businessType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.businessType===OTHER_OPTION?form.businessTypeOther:form.businessType)
+              ?(form.businessType===OTHER_OPTION?OTHER_OPTION:form.businessType)
+              :undefined,
+              businessTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.businessType===OTHER_OPTION?(form.businessTypeOther.trim()||undefined):undefined)
               :undefined,
             gstNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.gstNumber.trim()?form.gstNumber.toUpperCase():undefined):undefined,
             companyPanNumber:form.employmentType===SELF_EMPLOYED_BUSINESS?form.companyPanNumber.toUpperCase():undefined,
             natureOfBusiness:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.natureOfBusiness===OTHER_OPTION?form.natureOfBusinessOther:form.natureOfBusiness)
+              ?(form.natureOfBusiness===OTHER_OPTION?OTHER_OPTION:form.natureOfBusiness)
+              :undefined,
+              natureOfBusinessOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.natureOfBusiness===OTHER_OPTION?(form.natureOfBusinessOther.trim()||undefined):undefined)
               :undefined,
             industryType:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.industryType===OTHER_OPTION?form.industryTypeOther:form.industryType)
+              ?(form.industryType===OTHER_OPTION?OTHER_OPTION:form.industryType)
+              :undefined,
+              industryTypeOther:form.employmentType===SELF_EMPLOYED_BUSINESS
+              ?(form.industryType===OTHER_OPTION?(form.industryTypeOther.trim()||undefined):undefined)
               :undefined,
             subIndustry:form.employmentType===SELF_EMPLOYED_BUSINESS?(form.subIndustry.trim()||undefined):undefined,
             businessEstablishedDate:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.businessEstablishedDate
               ?new Date(form.businessEstablishedDate).toISOString()
               :undefined,
             transactionBankName:form.employmentType===SELF_EMPLOYED_BUSINESS
-              ?(form.transactionBankName===OTHER_OPTION?form.transactionBankNameOther:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              ?(form.transactionBankName===OTHER_OPTION?OTHER_OPTION:form.transactionBankName===MULTIPLE_TRANSACTION_BANKS?(form.transactionBanks.length>0?form.transactionBanks.join(", "):MULTIPLE_TRANSACTION_BANKS):form.transactionBankName||undefined)
+              :undefined,
+              transactionBankOther:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===OTHER_OPTION
+              ?(form.transactionBankNameOther.trim()||undefined)
               :undefined,
             transactionBanks:form.employmentType===SELF_EMPLOYED_BUSINESS&&form.transactionBankName===MULTIPLE_TRANSACTION_BANKS
               ?form.transactionBanks
@@ -277,7 +297,10 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
             lastYearNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.lastYearNetIncome:undefined,
             last2YearsNetIncome:form.employmentType===SELF_EMPLOYED_BUSINESS?form.last2YearsNetIncome:undefined,
             profession:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
-              ?(form.profession===OTHER_OPTION?form.professionOther:form.profession)
+              ?(form.profession===OTHER_OPTION?OTHER_OPTION:form.profession)
+              :undefined,
+              professionOther:form.employmentType===SELF_EMPLOYED_PROFESSIONAL
+              ?(form.profession===OTHER_OPTION?(form.professionOther.trim()||undefined):undefined)
               :undefined,
             currentYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.currentYearTurnover:undefined,
             priorYearTurnover:form.employmentType===SELF_EMPLOYED_PROFESSIONAL?form.priorYearTurnover:undefined,
@@ -289,7 +312,10 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
               ?(form.businessPincode)
               :undefined,
             businessPlaceStatus:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
-              ?(form.businessPlaceStatus===OTHER_OPTION?form.businessPlaceStatusOther:form.businessPlaceStatus)
+              ?(form.businessPlaceStatus===OTHER_OPTION?OTHER_OPTION:form.businessPlaceStatus)
+              :undefined,
+              businessPlaceStatusOther:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
+              ?(form.businessPlaceStatus===OTHER_OPTION?(form.businessPlaceStatusOther.trim()||undefined):undefined)
               :undefined,
           };
           const res = await applyCreditCard(app);

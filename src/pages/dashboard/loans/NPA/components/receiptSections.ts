@@ -1,16 +1,16 @@
-import { buildSuccessSections, fmtList } from "../../../../../components/form/successSections";
+import { buildSuccessSections, fmtList, resolveOther } from "../../../../../components/form/successSections";
 import type { NPAApplication } from "./ApplicationForm";
 
 export const buildProductSections = (app: NPAApplication) =>
   buildSuccessSections(app, {
     extraLoanRows: [
-      { label: "NPA Status", value: app.npaStatus === "Other" ? app.npaStatusOther : app.npaStatus },
+      { label: "NPA Status", value: resolveOther(app.npaStatus, app.npaStatusOther) },
       { label: "OTS Offer Amount", value: app.otsOfferAmount ? `₹${app.otsOfferAmount.toLocaleString("en-IN")}` : undefined },
     ],
     productSection: {
       title: "Collateral Property Details",
       rows: [
-        { label: "Property Type", value: app.collateralPropertyType },
+        { label: "Property Type", value: resolveOther(app.collateralPropertyType, app.collateralPropertyTypeOther) },
         { label: "Market Value", value: app.collateralPropertyMarketValue ? `₹${app.collateralPropertyMarketValue.toLocaleString("en-IN")}` : undefined },
         { label: "Property Age", value: app.collateralPropertyAge ? `${app.collateralPropertyAge.toLocaleString("en-IN")} years` : undefined },
         { label: "Location", value: [app.collateralPropertyCity, app.collateralPropertyState].filter(Boolean).join(", ") || undefined },
