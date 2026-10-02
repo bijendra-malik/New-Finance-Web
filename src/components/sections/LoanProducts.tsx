@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import React from "react";
 import ApplicationModal from "../modals/ApplicationModal";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Mousewheel } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 
@@ -367,6 +368,11 @@ const LoanProducts = () => {
 
           <div className="flex-1 min-w-0 overflow-visible py-1.5">
             <Swiper
+              modules={[Mousewheel]}
+              mousewheel={{
+                releaseOnEdges: true,
+                sensitivity: 1,
+              }}
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
                 updateNavState(swiper);
