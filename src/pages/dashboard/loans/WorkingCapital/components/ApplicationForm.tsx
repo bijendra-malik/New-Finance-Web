@@ -156,7 +156,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹10,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>10)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>10?"Tenure cannot exceed 10 years":"Enter a tenure greater than 10 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select what you wish to take the loan against";
     else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention collateral property type";
@@ -387,7 +387,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.workingCapitalTenureYears} maxYears={10} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.workingCapitalTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="collateralPropertyType" label="Wish To Take Loan Against (Collateral property)" required

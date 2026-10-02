@@ -145,7 +145,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<1000000000) e.loanAmount="Minimum ₹100 Cr";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select fund tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>10)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>10?"Tenure cannot exceed 10 years":"Enter a tenure greater than 10 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select what you wish to take the fund against";
     else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention fund against type";
@@ -359,7 +359,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Fund Tenure"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.fdiTenureYears} maxYears={10} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.fdiTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="collateralPropertyType" label="Wish To Take Fund Against" required

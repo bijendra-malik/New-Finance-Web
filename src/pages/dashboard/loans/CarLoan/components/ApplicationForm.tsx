@@ -158,7 +158,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹1,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>7)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>7?"Tenure cannot exceed 7 years":"Enter a tenure greater than 7 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=7||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 7 years";
 
     if(!draft.vehicleType) e.vehicleType="Vehicle type is required";
     if(!draft.transmissionType) e.transmissionType="Transmission type is required";
@@ -388,7 +388,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)" required
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.carLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.carLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="vehicleType" label="Buying Vehicle Type" required

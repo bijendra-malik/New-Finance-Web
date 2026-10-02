@@ -148,7 +148,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select balance transfer tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=30||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 30 years";
+    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=25||form.loanTenureYearsCustom>30)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>30?"Tenure cannot exceed 30 years":"Enter a tenure greater than 25 years";
     if(draft.currentPropertyValue.trim()){
       const pv=parseInt(draft.currentPropertyValue);
       if(pv<100000) e.currentPropertyValue="Minimum property value is ₹1,00,000";
@@ -387,7 +387,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Balance Transfer Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.homeLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.balanceTransferTenureYears} maxYears={30} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <div id="topUpAmount"><FieldLabel label="Top-up Amount (if any)"/>
             <AmountField value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.topUpAmount}/>
