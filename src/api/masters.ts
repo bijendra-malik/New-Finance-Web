@@ -49,6 +49,54 @@ export interface LocationMasterResponse {
   data: { _id: string; name: string }[];
 }
 
+// GET /masters/location/continents → continents seeded in location masters.
+export interface Continent {
+  _id: string;
+  name: string;
+  slug?: string;
+  status?: string;
+}
+
+// GET /masters/location/countries → countries (optionally filtered by continentId).
+export interface Country {
+  _id: string;
+  name: string;
+  isoCode?: string;
+  continentId?: string;
+  slug?: string;
+  status?: string;
+}
+
+let continentsPromise: Promise<Continent[]> | null = null;
+export const fetchContinents = (): Promise<Continent[]> => {
+  if (!continentsPromise) {
+    continentsPromise = axiosInstance
+      .get<LocationMasterResponse>("/masters/location/continents")
+      .then((res) => res.data.data)
+      .catch((err) => {
+        continentsPromise = null;
+        throw err;
+      });
+  }
+  return continentsPromise;
+};
+
+const countriesByContinentPromises = new Map<string, Promise<Country[]>>();
+export const fetchCountriesByContinent = (continentId: string): Promise<Country[]> => {
+  let promise = countriesByContinentPromises.get(continentId);
+  if (!promise) {
+    promise = axiosInstance
+      .get<LocationMasterResponse>("/masters/location/countries", { params: { continentId } })
+      .then((res) => res.data.data)
+      .catch((err) => {
+        countriesByContinentPromises.delete(continentId);
+        throw err;
+      });
+    countriesByContinentPromises.set(continentId, promise);
+  }
+  return promise;
+};
+
 export interface PincodeInfoResponse {
   success: boolean;
   message?: string;
