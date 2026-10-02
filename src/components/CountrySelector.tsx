@@ -68,14 +68,6 @@ const CountrySelector = () => {
     };
   }, []);
 
-  // Default the trigger to the first live country the API returns.
-  useEffect(() => {
-    if (selected === null) {
-      const first = live[0]?.countries[0];
-      if (first) setSelected({ name: first.name, isoCode: flagCodeFor(first) });
-    }
-  }, [live, selected]);
-
   // Close on outside click.
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
@@ -120,7 +112,7 @@ const CountrySelector = () => {
               <path strokeLinecap="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
               <path strokeLinecap="round" d="M3 12h18M12 3c2.49 2.49 3.5 5.5 3.5 9s-1.01 6.51-3.5 9c-2.49-2.49-3.5-5.5-3.5-9s1.01-6.51 3.5-9z" />
             </svg>
-            <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">Location</span>
+            <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">Select Location</span>
           </>
         )}
         <svg
