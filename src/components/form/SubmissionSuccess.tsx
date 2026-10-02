@@ -1,6 +1,7 @@
 import type { SuccessSection, SubmissionSuccessProps } from "./successSections";
 import { fmtDateTime, fmtText } from "./successSections";
 import { THEME as C } from "../../constants/theme";
+import { FORM } from "../../constants/formStyles";
 
 /**
  * SubmissionSuccess — acknowledgement receipt shown after a loan application
@@ -12,11 +13,11 @@ const Section = ({ section }: { section: SuccessSection }) => {
   const rows = section.rows.filter(r => !r.omit && (r.force || !(r.value === undefined || r.value === null || String(r.value).trim() === "" || String(r.value).trim() === "0")));
   if (rows.length === 0) return null;
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: `1px solid ${C.teal1f}` }}>
+    <div className="bg-(--form-card-bg) rounded-(--form-card-radius) shadow-sm overflow-hidden" style={{ border: `1px solid ${C.teal1f}` }}>
       <div className="px-6 py-3.5 border-b" style={{ background: C.teal14, borderColor: `${C.teal1f}` }}>
         <p className="text-xs font-bold uppercase tracking-wider" style={{ color: C.navy }}>{section.title}</p>
       </div>
-      <div className="px-6 divide-y" style={{ borderColor: "#f1f5f9" }}>
+      <div className="px-6 divide-y" style={{ borderColor: FORM.divider }}>
         {rows.map(r => (
           <div key={r.label} className="flex items-start justify-between gap-6 py-2.5">
             <span className="text-xs font-semibold uppercase tracking-wide shrink-0 pt-0.5" style={{ color: C.gray }}>{r.label}</span>
@@ -31,7 +32,7 @@ const Section = ({ section }: { section: SuccessSection }) => {
 const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantName, mobile, email, sections }: SubmissionSuccessProps) => (
   <div className="max-w-3xl mx-auto space-y-5">
     {/* ── Receipt header — letterhead style ── */}
-    <div className="rounded-2xl overflow-hidden shadow-xl bg-white" style={{ border: `1px solid ${C.teal33}` }}>
+    <div className="rounded-(--form-card-radius) overflow-hidden shadow-xl bg-(--form-card-bg)" style={{ border: `1px solid ${C.teal33}` }}>
       <div className="h-1.5" style={{ background: `linear-gradient(90deg,${C.teal},${C.navy})` }} />
 
       <div className="px-7 pt-8 pb-6 text-center">
@@ -62,7 +63,7 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
       </div>
 
       {/* ── At-a-glance strip: applicant + product + status ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: `${C.teal1f}`, background: "#fbfdfc" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: `${C.teal1f}`, background: FORM.subtleBg }}>
         {[
           ["Product", productName],
           ["Applicant", fmtText(applicantName)],

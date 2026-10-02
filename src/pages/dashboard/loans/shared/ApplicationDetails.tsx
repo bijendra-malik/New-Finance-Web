@@ -2,6 +2,7 @@ import type { SuccessSection } from "../../../../components/form/successSections
 import { fmtText } from "../../../../components/form/successSections";
 import { StatusCard } from "./LoanStatusShell";
 import { THEME as C } from "../../../../constants/theme";
+import { FORM } from "../../../../constants/formStyles";
 
 const ApplicationDetails = ({ sections, contact }: {
   sections: SuccessSection[];
@@ -39,7 +40,7 @@ const ApplicationDetails = ({ sections, contact }: {
 );
 
 const StatusCardRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-start justify-between gap-6 py-1.5 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
+  <div className="flex items-start justify-between gap-6 py-1.5 border-b last:border-0" style={{ borderColor: FORM.divider }}>
     <span className="text-xs font-semibold uppercase tracking-wide shrink-0 pt-0.5" style={{ color: C.gray }}>{label}</span>
     <span className="text-sm font-bold text-right min-w-0 wrap-anywhere" style={{ color: C.dark }}>{value}</span>
   </div>

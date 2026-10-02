@@ -1,5 +1,6 @@
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";
+import { FORM } from "../../constants/formStyles";
 
 /** Green bar at the top of the receipt view with a "back to form" action. */
 export const SubmittedReceiptBanner = ({ onBack }: { onBack: () => void }) => (
@@ -65,7 +66,7 @@ export const ConsentAndSubmit = ({
     </label>
 
     {(apiError||(submitAttempted&&invalidCount>0))&&(
-      <div className="rounded-xl px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:"#fef2f2",border:"1px solid #fecaca",color:"#dc2626"}}>
+      <div className="rounded-(--form-field-radius) px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:FORM.errorBg,border:`1px solid ${FORM.errorBorder}`,color:FORM.errorText}}>
         <span className="shrink-0 mt-0.5">⚠️</span>
         {apiError||`${invalidCount} field${invalidCount===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
       </div>

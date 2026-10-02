@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { THEME as C } from "../../../../constants/theme";
+import { FORM } from "../../../../constants/formStyles";
 import { sanitizeApplicationList } from "../../../../api/loanApplications/validate";
 
 interface AppLike {
@@ -74,7 +75,7 @@ const LoanStatusShell = <T extends AppLike>({
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mb-4"
-            style={{ background: "#fef2f2" }}>⚠️</div>
+            style={{ background: FORM.errorBg }}>⚠️</div>
           <h3 className="text-lg font-bold mb-2" style={{ color: C.dark }}>Couldn't load your applications</h3>
           <p className="text-sm" style={{ color: C.gray }}>Please refresh the page to try again.</p>
         </div>

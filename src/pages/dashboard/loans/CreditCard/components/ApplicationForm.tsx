@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
+import { FORM } from "../../../../../constants/formStyles";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -329,7 +330,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
   );
 
   return (
-    <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
       {submitted && submittedApp && (
         <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
       )}
@@ -342,7 +343,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
 
       {/* ── CREDIT CARD DETAILS ──────────────────────────────────────── */}
       <FormCard title="Credit Card Details" subtitle="Tell us about your credit card preferences">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="hasActiveCard"><FieldLabel label="Do You Have Any Active Credit Card at Present?"/>
             <SelectField value={form.hasActiveCard} onChange={v=>set("hasActiveCard",v)} options={masters.yesNo} placeholder="Select"/>
           </div>
@@ -361,7 +362,7 @@ const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>(
 
       {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
       <FormCard title="Income Details" subtitle="Tell us about your employment and income">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
             <div>
               <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
+import { FORM } from "../../../../../constants/formStyles";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -337,7 +338,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   );
 
   return (
-    <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
       {submitted && submittedApp && (
         <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
       )}
@@ -350,7 +351,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
       {/* ── FUNDS REQUIREMENTS ───────────────────────────────────────── */}
       <FormCard title="Funds Requirements" subtitle="How much do you need and for how long?">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Fund Amount" required/>
             <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
@@ -415,7 +416,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
       {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
       <FormCard title="Income Details" subtitle="Tell us about your employment and income">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
             <div>
               <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>

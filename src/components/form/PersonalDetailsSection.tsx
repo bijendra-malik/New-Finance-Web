@@ -5,6 +5,7 @@ import {
 } from "./FormControls";
 import { OTHER_OPTION } from "../../constants/masters";
 import { THEME as C } from "../../constants/theme";
+import { FORM } from "../../constants/formStyles";
 import { formatPAN } from "../../utils/formatters";
 
 export type PersonalDetailsField =
@@ -54,14 +55,14 @@ export const PersonalDetailsSection = ({
 
   return (
     <FormCard title={title} subtitle={subtitle}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="fullName"><FieldLabel label="Full Name" required/>
             <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder={fullNamePlaceholder} err={errors.fullName}/>
           </div>
           <div id="mobile"><FieldLabel label="Mobile Number" required/>
-            <div className="flex items-center rounded-xl overflow-hidden"
-              style={{border:`1.5px solid ${errors.mobile?"#ef4444":"#e2e8f0"}`,background:"#fafafa"}}>
-              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:"#e2e8f0"}}>🇮🇳 +91</span>
+            <div className="flex items-center rounded-(--form-field-radius) overflow-hidden"
+              style={{border:`1.5px solid ${errors.mobile?FORM.error:FORM.fieldBorder}`,background:FORM.fieldBg}}>
+              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:FORM.fieldBorder}}>🇮🇳 +91</span>
               <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number"
                 onChange={e=>set("mobile",e.target.value.replace(/\D/g,""))}
                 className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>

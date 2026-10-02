@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { THEME as C } from "../../constants/theme";
+import { FORM } from "../../constants/formStyles";
 import { OTHER_OPTION, MORE_THAN_TENURE_OPTION } from "../../constants/masters";
 
 export { MORE_THAN_TENURE_OPTION };
@@ -11,12 +12,12 @@ import { verifyPincode } from "../../api/masters";
 import type { PincodeVerification } from "../../api/masters";
 
 export const FormCard = ({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) => (
-  <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal22}` }}>
+  <div className="bg-(--form-card-bg) rounded-(--form-card-radius) shadow-sm overflow-hidden mb-5" style={{ border: `1px solid ${C.teal22}` }}>
     <div className="px-6 py-4 border-b" style={{ background: `linear-gradient(90deg,${C.teal14},${C.navy14})`, borderColor: `${C.teal20}` }}>
       <h2 className="text-base font-bold uppercase tracking-wide" style={{ color: C.dark }}>{title}</h2>
       <p className="text-xs mt-0.5" style={{ color: C.gray }}>{subtitle}</p>
     </div>
-    <div className="p-6">{children}</div>
+    <div className="p-(--form-card-pad)">{children}</div>
   </div>
 );
 
@@ -39,10 +40,10 @@ export const TextField = memo(({ type = "text", value, onChange, placeholder, er
     <input type={type} value={value} placeholder={placeholder}
       maxLength={maxLength} disabled={disabled} min={min} max={max} inputMode={inputMode}
       onChange={e => onChange(e.target.value)}
-      className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 ${extraCls}`}
-      style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: disabled ? "#f8fafc" : "#fafafa" }}
+      className={`${FORM.field} disabled:bg-slate-100 ${extraCls}`}
+      style={{ border: `1.5px solid ${err ? FORM.error : FORM.fieldBorder}`, background: disabled ? FORM.fieldBgDisabled : FORM.fieldBg }}
       onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; } }}
-      onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}
+      onBlur={e => { e.target.style.borderColor = err ? FORM.error : FORM.fieldBorder; e.target.style.boxShadow = "none"; }}
     />
     <FieldError msg={err} />
   </>
@@ -69,10 +70,10 @@ interface SelectFieldProps {
 export const SelectField = memo(({ value, onChange, options, placeholder, err, disabled = false, formatOption }: SelectFieldProps) => (
   <>
     <select value={value} onChange={e => onChange(e.target.value)} disabled={disabled}
-      className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
-      style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: disabled ? "#f8fafc" : "#fafafa", color: value ? C.dark : C.gray }}
+      className={`${FORM.field} disabled:bg-slate-100 disabled:cursor-not-allowed`}
+      style={{ border: `1.5px solid ${err ? FORM.error : FORM.fieldBorder}`, background: disabled ? FORM.fieldBgDisabled : FORM.fieldBg, color: value ? C.dark : C.gray }}
       onFocus={e => { if (!disabled) { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; } }}
-      onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}>
+      onBlur={e => { e.target.style.borderColor = err ? FORM.error : FORM.fieldBorder; e.target.style.boxShadow = "none"; }}>
       <option value="">{placeholder}</option>
       {options.map(o => <option key={o} value={o}>{formatOption ? formatOption(o) : o}</option>)}
     </select>
@@ -88,10 +89,10 @@ interface NumberSelectFieldProps {
 export const NumberSelectField = memo(({ value, onChange, options, placeholder, err, formatOption }: NumberSelectFieldProps) => (
   <>
     <select value={value || ""} onChange={e => onChange(parseInt(e.target.value))}
-      className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none"
-      style={{ border: `1.5px solid ${err ? "#ef4444" : "#e2e8f0"}`, background: "#fafafa" }}
+      className={FORM.field}
+      style={{ border: `1.5px solid ${err ? FORM.error : FORM.fieldBorder}`, background: FORM.fieldBg }}
       onFocus={e => { e.target.style.borderColor = C.teal; e.target.style.boxShadow = `0 0 0 3px ${C.teal22}`; }}
-      onBlur={e => { e.target.style.borderColor = err ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}>
+      onBlur={e => { e.target.style.borderColor = err ? FORM.error : FORM.fieldBorder; e.target.style.boxShadow = "none"; }}>
       <option value="">{placeholder}</option>
       {options.map(n => <option key={n} value={n}>{formatOption ? formatOption(n) : n}</option>)}
     </select>
@@ -141,8 +142,8 @@ interface DateInputProps { value?: string; onClick?: () => void; placeholder?: s
 const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
   ({ value, onClick, placeholder, err }, ref) => (
     <input ref={ref} value={value || ""} onClick={onClick} placeholder={placeholder} readOnly
-      className={`w-full px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer focus:outline-none focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-20) border ${err ? "border-red-500" : "border-slate-200"}`}
-      style={{ background: "#fafafa", color: C.dark }} />
+      className={`${FORM.field} cursor-pointer focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-20) border ${err ? "border-(--form-error)" : "border-(--form-field-border)"}`}
+      style={{ background: FORM.fieldBg, color: C.dark }} />
   )
 );
 DateInput.displayName = "DateInput";
@@ -203,11 +204,11 @@ export const PillMultiSelect = memo(({ options, selected, onChange, color = C.te
             className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
             style={active
               ? { background: color, color: "#fff", borderColor: color, boxShadow: `0 2px 8px ${shade("44")}` }
-              : { background: "#fff", color: C.gray, borderColor: "#e2e8f0" }}
+              : { background: FORM.cardBg, color: C.gray, borderColor: FORM.fieldBorder }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.borderColor = color; }}
-            onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = "#e2e8f0"; }}>
+            onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = FORM.fieldBorder; }}>
             <span className="w-3.5 h-3.5 rounded flex items-center justify-center shrink-0"
-              style={active ? { background: "rgba(255,255,255,0.25)" } : { border: "1.5px solid #d1d5db" }}>
+              style={active ? { background: "rgba(255,255,255,0.25)" } : { border: `1.5px solid ${FORM.fieldBorderStrong}` }}>
               {active && (
                 <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -267,10 +268,10 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
             <input type="text" value={input} placeholder={placeholder} maxLength={MAX_ENTRY_LENGTH}
               onChange={e => { setInput(e.target.value); if (dupErr) setDupErr(""); }}
               onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm transition-all focus:outline-none"
-              style={{ border: `1.5px solid ${dupErr ? "#ef4444" : "#e2e8f0"}`, background: "#fafafa" }}
+              className={FORM.field}
+              style={{ border: `1.5px solid ${dupErr ? FORM.error : FORM.fieldBorder}`, background: FORM.fieldBg }}
               onFocus={e => { if (!dupErr) { e.target.style.borderColor = color; e.target.style.boxShadow = `0 0 0 3px ${shade("22")}`; } }}
-              onBlur={e => { e.target.style.borderColor = dupErr ? "#ef4444" : "#e2e8f0"; e.target.style.boxShadow = "none"; }}
+              onBlur={e => { e.target.style.borderColor = dupErr ? FORM.error : FORM.fieldBorder; e.target.style.boxShadow = "none"; }}
             />
             <FieldError msg={dupErr} />
           </div>
@@ -289,7 +290,7 @@ export const OtherOptionList = memo(({ label, placeholder, items, onAdd, onRemov
               style={{ background: shade("14"), border: `1px solid ${shade("22")}` }}>
               <span style={{ color: C.dark }}>{i + 1}. {item}</span>
               <button type="button" onClick={() => onRemove(i)}
-                className="text-xs font-semibold ml-3 shrink-0 hover:underline" style={{ color: "#ef4444" }}>
+                className="text-xs font-semibold ml-3 shrink-0 hover:underline" style={{ color: FORM.error }}>
                 Remove
               </button>
             </li>

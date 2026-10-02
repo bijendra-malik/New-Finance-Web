@@ -3,6 +3,7 @@ import {
 } from "./FormControls";
 import { OTHER_OPTION } from "../../constants/masters";
 import { THEME as C } from "../../constants/theme";
+import { FORM } from "../../constants/formStyles";
 
 export interface ExistingLoanExposureSlice {
   existingEMI: string;
@@ -33,7 +34,7 @@ export const ExistingLoanExposureSection = ({
 
   return (
     <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <div className={`${FORM.grid} mb-6`}>
         <div id="existingEMI"><FieldLabel label={emiLabel} required/>
           <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
         </div>

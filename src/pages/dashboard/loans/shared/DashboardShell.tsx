@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { THEME as C } from "../../../../constants/theme";
+import { FORM } from "../../../../constants/formStyles";
 import { useAuth } from "../../../../context/authContext";
 
 type Tab = "application" | "status";
@@ -66,7 +67,7 @@ const DashboardShell = <T,>({
     <div
       className="flex overflow-hidden"
       style={{
-        background: "#f0f4f8",
+        background: FORM.pageBg,
         marginTop: "var(--header-h)",
         height: "calc(100vh - var(--header-h))",
       }}

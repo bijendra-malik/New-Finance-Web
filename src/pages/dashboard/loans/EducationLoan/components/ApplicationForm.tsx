@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
+import { FORM } from "../../../../../constants/formStyles";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -444,7 +445,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   );
 
   return (
-    <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
       {submitted && submittedApp && (
         <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
       )}
@@ -457,7 +458,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
       {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
       <FormCard title="Loan Requirements" subtitle="Tell us about the course you're financing">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
             <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
@@ -518,7 +519,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
       {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
       <FormCard title="Income Details (Self/Father/Mother)" subtitle="Tell us about the co-applicant's employment">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
             <div>
               <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>
@@ -698,7 +699,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
       {/* ── PERSONAL DETAILS (PARENT) ────────────────────────────────── */}
       <FormCard title="Personal Details (Parent)" subtitle="Co-applicant details as per official documents">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <SelectWithOther
             id="parentRelationship" label="Relationship with the Applicant" required
             value={form.parentRelationship} onChange={v=>{
@@ -714,8 +715,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           </div>
           <div id="parentMobile"><FieldLabel label="Mobile Number" required/>
             <div className="flex items-center rounded-xl overflow-hidden"
-              style={{border:`1.5px solid ${errors.parentMobile?"#ef4444":"#e2e8f0"}`,background:"#fafafa"}}>
-              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:"#e2e8f0"}}>🇮🇳 +91</span>
+              style={{border:`1.5px solid ${errors.parentMobile?FORM.error:FORM.fieldBorder}`,background:FORM.fieldBg}}>
+              <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:FORM.fieldBorder}}>🇮🇳 +91</span>
               <input type="tel" value={form.parentMobile} maxLength={10} placeholder="10-digit number"
                 onChange={e=>set("parentMobile",e.target.value.replace(/\D/g,""))}
                 className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>

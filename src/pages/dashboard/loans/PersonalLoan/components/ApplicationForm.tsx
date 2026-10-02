@@ -4,6 +4,7 @@ import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { THEME as C } from "../../../../../constants/theme";
+import { FORM } from "../../../../../constants/formStyles";
 import { OTHER_OPTION, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -152,7 +153,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   );
 
   return (
-    <form className="max-w-4xl mx-auto" onSubmit={handleSubmit} noValidate>
+    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
       {submitted && submittedApp && (
         <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
       )}
@@ -165,7 +166,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
       {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
             <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
@@ -180,7 +181,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
       {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
       <FormCard title="Income Details" subtitle="Tell us about your employment and income">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className={FORM.grid}>
           <div id="employmentType"><FieldLabel label="Employment Type" required/>
             <SelectField value={form.employmentType} onChange={v=>set("employmentType",v)} options={employmentTypeOptions} placeholder="Select" err={errors.employmentType}/>
           </div>
