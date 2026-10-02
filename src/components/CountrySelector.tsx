@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react";
 const LOCATIONS = {
   Asia: {
     India: {
-      languages: ["English", "Hindi"],
+      languages: ["English"],
     },
   },
   Africa: "coming soon",
