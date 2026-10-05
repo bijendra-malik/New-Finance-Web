@@ -14,6 +14,9 @@ export interface AccountProfile {
   pincode: string;
   phone: string;
   email: string;
+  /** Optional: collected later at the loan sign-up / OTP step. */
+  dob?: string;
+  pan?: string;
 }
 
 export const PROFILE_KEY = "indexia_account";
@@ -58,6 +61,24 @@ export const clearStoredProfile = (): void => {
   endSession();
 };
 
+/**
+ * Adds details captured after the account was created (the loan sign-up step
+ * collects DOB and PAN) without disturbing the role, location or contact data.
+ */
+export const mergeAccountDetails = (details: Partial<AccountProfile>): void => {
+  const record = readAccountRecord();
+  if (!record) return;
+  const merged = { ...record };
+  (Object.keys(details) as (keyof AccountProfile)[]).forEach((key) => {
+    const value = details[key];
+    if (typeof value === "string" && value.trim()) {
+      (merged as Record<string, string>)[key] = value.trim();
+    }
+  });
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(merged));
+  startSession();
+};
+
 export const readStoredLanguage = (): string => {
   try {
     return localStorage.getItem(LANGUAGE_KEY) || "en";
@@ -71,7 +92,9 @@ export const writeStoredLanguage = (code: string): void => {
 };
 
 /** Personal-details fields a signed-in applicant has already supplied. */
-export type LockableField = "fullName" | "mobile" | "email" | "state" | "city" | "pincode";
+export type LockableField =
+  | "fullName" | "mobile" | "email" | "dob" | "panNumber"
+  | "state" | "city" | "pincode";
 
 /**
  * Maps a stored profile onto the loan application's personal-details fields.
@@ -86,6 +109,8 @@ export const accountFieldDefaults = (
     ["fullName", profile.name?.trim() ?? ""],
     ["mobile", (profile.phone ?? "").replace(/\D/g, "").slice(-10)],
     ["email", profile.email?.trim() ?? ""],
+    ["dob", profile.dob?.trim() ?? ""],
+    ["panNumber", (profile.pan ?? "").replace(/\s/g, "").toUpperCase()],
     ["state", profile.state?.trim() ?? ""],
     ["city", profile.city?.trim() ?? ""],
     ["pincode", (profile.pincode ?? "").replace(/\D/g, "")],
