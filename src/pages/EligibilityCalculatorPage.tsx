@@ -69,7 +69,7 @@ const EligibilityCalculatorPage = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
