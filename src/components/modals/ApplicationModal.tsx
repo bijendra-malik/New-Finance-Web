@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser, verifyOTP } from "../../api/auth";
 import { useAuth } from "../../context/authContext";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { mergeAccountDetails, readStoredProfile } from "../../utils/accountProfile";
+import { PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
 
@@ -10,7 +12,7 @@ const dashboardRoutes: Record<string, string> = {
   "Personal Loan":            "/dashboard/personalloan",
   "Business Loan":            "/dashboard/businessloan",
   "Home Loan":                "/dashboard/homeloan",
-  "Vehicle Loan":                 "/dashboard/carloan",
+  "Vehicle Loan":             "/dashboard/carloan",
   "Education Loan":           "/dashboard/educationloan",
   "Loan Against Property":    "/dashboard/loanagainstproperty",
   "Balance Transfer":         "/dashboard/balancetransfer",
@@ -50,6 +52,17 @@ const ApplicationModal = ({
 }: ApplicationModalProps) => {
   const { login, isLoggedIn } = useAuth();
   const navigate  = useNavigate();
+  const account = useMemo(() => readStoredProfile(), []);
+  const lockedFromAccount = useMemo(
+    () => ({
+      name: account?.name?.trim() ?? "",
+      mobile: (account?.phone ?? "").replace(/\D/g, "").slice(-10),
+      email: account?.email?.trim() ?? "",
+    }),
+    [account]
+  );
+  const hasLockedContact =
+    !!lockedFromAccount.name || !!lockedFromAccount.mobile || !!lockedFromAccount.email;
 
   // Already logged in — skip signup/OTP entirely, jump straight to the loan detail page.
   useEffect(() => {
@@ -64,7 +77,16 @@ const ApplicationModal = ({
   const [step, setStep] = useState<Step>("details");
 
   // ── Sign Up fields ────────────────────────────────────────────────────────
-  const [signup, setSignup] = useState({ name: "", phone: "", email: "" });
+  const [signup, setSignup] = useState(() => {
+    const stored = readStoredProfile();
+    return {
+      name: stored?.name ?? "",
+      phone: (stored?.phone ?? "").replace(/\D/g, "").slice(-10),
+      email: stored?.email ?? "",
+      dob: stored?.dob ?? "",
+      pan: (stored?.pan ?? "").toUpperCase(),
+    };
+  });
   const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
 
   // ── Sign In fields ────────────────────────────────────────────────────────
@@ -92,7 +114,13 @@ const ApplicationModal = ({
   const resetAll = () => {
     setMode("signup");
     setStep("details");
-    setSignup({ name: "", phone: "", email: "" });
+    setSignup({
+      name: account?.name ?? "",
+      phone: (account?.phone ?? "").replace(/\D/g, "").slice(-10),
+      email: account?.email ?? "",
+      dob: account?.dob ?? "",
+      pan: (account?.pan ?? "").toUpperCase(),
+    });
     setSignupErrors({});
     setSigninPhone("");
     setSigninPhoneError("");
@@ -121,11 +149,21 @@ const ApplicationModal = ({
 
   const validateSignup = () => {
     const e: Record<string, string> = {};
-    if (!signup.name.trim())  e.name  = "Name is required";
-    if (!signup.phone.trim()) e.phone = "Phone is required";
-    else if (!/^\d{10}$/.test(signup.phone)) e.phone = "Enter valid 10-digit number";
-    if (!signup.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signup.email)) e.email = "Enter valid email";
+    if (!lockedFromAccount.name) {
+      if (!signup.name.trim()) e.name = "Name is required";
+    }
+    if (!lockedFromAccount.mobile) {
+      if (!signup.phone.trim()) e.phone = "Phone is required";
+      else if (!/^\d{10}$/.test(signup.phone)) e.phone = "Enter valid 10-digit number";
+    }
+    if (!lockedFromAccount.email) {
+      if (!signup.email.trim()) e.email = "Email is required";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signup.email)) e.email = "Enter valid email";
+    }
+    if (!signup.dob) e.dob = "Date of birth is required";
+    else if (!isAtLeastAge(signup.dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
+    if (!signup.pan.trim()) e.pan = "PAN is required";
+    else if (!PAN_REGEX.test(signup.pan)) e.pan = "Enter a valid PAN, e.g. ABCDE1234F";
     setSignupErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -139,7 +177,7 @@ const ApplicationModal = ({
 
   // ── Step 1 — Send OTP ─────────────────────────────────────────────────────
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (mode === "signup" && !validateSignup()) return;
     if (mode === "signin" && !validateSignin()) return;
@@ -149,6 +187,7 @@ const ApplicationModal = ({
     try {
       if (mode === "signup") {
         await registerUser({ name: signup.name, mobile: signup.phone, email: signup.email });
+        mergeAccountDetails({ dob: signup.dob, pan: signup.pan });
       } else {
         await loginUser({ mobile: signinPhone });
       }
@@ -162,7 +201,7 @@ const ApplicationModal = ({
 
   // ── Step 2 — Verify OTP → login → navigate ────────────────────────────────
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!otp.trim())              { setOtpError("Please enter the OTP"); return; }
     if (!/^\d{4,8}$/.test(otp))  { setOtpError("Enter a valid OTP"); return; }
@@ -207,15 +246,15 @@ const ApplicationModal = ({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — above the fixed header (z-50) so the header dims and blurs too */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/50 z-60 backdrop-blur-sm"
         onClick={handleClose}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="fixed inset-0 z-70 flex items-center justify-center px-4 pt-(--header-h)">
+        <div className="w-full max-w-md max-h-[calc(100vh-var(--header-h)-2rem)] overflow-y-auto bg-white rounded-2xl shadow-2xl">
 
           {/* ── Header ── */}
           <div
@@ -304,28 +343,58 @@ const ApplicationModal = ({
 
             {/* ── SIGN UP — details step ── */}
             {step === "details" && mode === "signup" && (
-              <form onSubmit={handleSendOtp} className="space-y-4">
+              <form onSubmit={handleSendOtp} className="space-y-4" noValidate>
                 <Field
                   label="Full Name" type="text" name="name"
                   value={signup.name}
                   onChange={(v) => { setSignup((p) => ({ ...p, name: v })); setSignupErrors((p) => ({ ...p, name: "" })); }}
                   placeholder="As per your ID card"
-                  error={signupErrors.name} disabled={isSending}
+                  error={signupErrors.name} disabled={isSending || !!lockedFromAccount.name}
                 />
                 <Field
                   label="Mobile Number" type="tel" name="phone"
                   value={signup.phone}
                   onChange={(v) => { setSignup((p) => ({ ...p, phone: v.replace(/\D/g, "") })); setSignupErrors((p) => ({ ...p, phone: "" })); }}
                   placeholder="10-digit mobile number"
-                  maxLength={10} error={signupErrors.phone} disabled={isSending}
+                  maxLength={10} error={signupErrors.phone} disabled={isSending || !!lockedFromAccount.mobile}
                 />
                 <Field
                   label="Email Address" type="email" name="email"
                   value={signup.email}
                   onChange={(v) => { setSignup((p) => ({ ...p, email: v })); setSignupErrors((p) => ({ ...p, email: "" })); }}
                   placeholder="your@email.com"
-                  error={signupErrors.email} disabled={isSending}
+                  error={signupErrors.email} disabled={isSending || !!lockedFromAccount.email}
                 />
+
+                {hasLockedContact && (
+                  <p className="-mt-2 text-xs text-slate-400">
+                    🔒 Name, mobile and email were filled when you created your account.
+                  </p>
+                )}
+
+                {/* DOB and PAN carry into the loan application */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field
+                    label="Date of Birth" type="date" name="dob"
+                    value={signup.dob}
+                    max={latestDobForAge(21)}
+                    onChange={(v) => { setSignup((p) => ({ ...p, dob: v })); setSignupErrors((p) => ({ ...p, dob: "" })); }}
+                    error={signupErrors.dob} disabled={isSending}
+                  />
+                  <Field
+                    label="PAN Number" type="text" name="pan"
+                    value={signup.pan}
+                    maxLength={10}
+                    onChange={(v) => { setSignup((p) => ({ ...p, pan: v.toUpperCase().replace(/[^A-Z0-9]/g, "") })); setSignupErrors((p) => ({ ...p, pan: "" })); }}
+                    placeholder="ABCDE1234F"
+                    error={signupErrors.pan} disabled={isSending}
+                    extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"
+                  />
+                </div>
+
+                <p className="text-xs text-slate-400 -mt-1">
+                  Details must be exactly as per your PAN card.
+                </p>
 
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={handleClose} disabled={isSending}
@@ -460,11 +529,11 @@ const ApplicationModal = ({
 // ── Field ─────────────────────────────────────────────────────────────────────
 
 const Field = ({
-  label, type, name, value, onChange, placeholder, error, disabled, maxLength,
+  label, type, name, value, onChange, placeholder, error, disabled, maxLength, max, extraCls = "",
 }: {
   label: string; type: string; name: string; value: string;
-  onChange: (v: string) => void; placeholder: string;
-  error?: string; disabled?: boolean; maxLength?: number;
+  onChange: (v: string) => void; placeholder?: string;
+  error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string;
 }) => (
   <div>
     <label className="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -473,8 +542,8 @@ const Field = ({
     <input
       type={type} name={name} value={value}
       onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder} disabled={disabled} maxLength={maxLength}
-      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-(--brand-blue) transition disabled:bg-slate-100 disabled:cursor-not-allowed ${error ? "border-red-400" : "border-slate-300"}`}
+      placeholder={placeholder} disabled={disabled} maxLength={maxLength} max={max}
+      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-(--brand-blue) transition disabled:bg-slate-100 disabled:cursor-not-allowed ${extraCls} ${error ? "border-red-400" : "border-slate-300"}`}
     />
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
