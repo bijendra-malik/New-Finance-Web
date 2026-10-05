@@ -76,7 +76,7 @@ export const PersonalDetailsSection = ({
         {Object.keys(locked).length > 0 && (
           <p className="mb-4 rounded-lg px-3 py-2 text-xs"
             style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
-            🔒 Name, mobile, email and address were filled from your account and are locked.
+            🔒 Name, mobile, email{locked.dob ? ", date of birth" : ""}{locked.panNumber ? ", PAN" : ""} and address were filled from your account and are locked.
             They must match your PAN card — contact support to correct them.
           </p>
         )}
@@ -97,10 +97,10 @@ export const PersonalDetailsSection = ({
             <TextField type="email" value={form.email} onChange={v=>set("email",v)} placeholder="your@email.com" err={errors.email} disabled={isLocked("email")}/>
           </div>
           <div id="dob"><FieldLabel label={dobLabel} required/>
-            <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
+            <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob} disabled={isLocked("dob")}/>
           </div>
           <div id="panNumber"><FieldLabel label={panLabel} required={panRequired}/>
-            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
+            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} disabled={isLocked("panNumber")} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
