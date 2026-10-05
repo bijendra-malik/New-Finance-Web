@@ -477,9 +477,9 @@ const AccountMenu = () => {
               className="fixed inset-0 z-65 bg-slate-900/50 backdrop-blur-[2px]"
               onClick={() => setPanelOpen(false)}
             />
-            <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-70 flex items-center justify-center p-4 pt-(--header-h)">
               <div
-                className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
+                className="max-h-[calc(100vh-var(--header-h)-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
                 role="dialog"
                 aria-modal="true"
                 aria-label={mode === "signup" ? "Sign up" : "Sign in"}
@@ -727,7 +727,7 @@ const AccountMenu = () => {
       {confirmRole &&
         createPortal(
         <div
-          className="fixed inset-0 z-80 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-80 flex items-center justify-center bg-slate-900/45 p-4 pt-(--header-h) backdrop-blur-[2px]"
           role="dialog"
           aria-modal="true"
           aria-label="Confirm role"
