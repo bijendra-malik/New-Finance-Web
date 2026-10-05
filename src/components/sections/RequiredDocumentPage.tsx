@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import ApplicationModal from "../modals/ApplicationModal";
+import { useApplyGate } from "../../hooks/useApplyGate";
 
 // ── Document data ─────────────────────────────────────────────────────────────
 const documentSections = [
@@ -50,9 +49,9 @@ const steps = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 const RequiredDocumentPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { requestApply, gate } = useApplyGate();
 
   const loanName = searchParams.get("loan") || "Personal Loan";
 
@@ -61,11 +60,6 @@ const RequiredDocumentPage = () => {
       {/* ── BANNER ─────────────────────────────────────────────────────────── */}
       <section
         className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden mt-(--header-h)"
-        // style={{
-        //   backgroundImage: `url(${bannerBg})`,
-        //   backgroundSize: "cover",
-        //   backgroundPosition: "center top",
-        // }}
       >
         {/* Dark overlay */}
         <div
@@ -111,7 +105,7 @@ const RequiredDocumentPage = () => {
               </p>
 
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => requestApply(loanName)}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 style={{
                   background: "linear-gradient(135deg, var(--brand-teal) 0%,  var(--brand-navy) 100%)",
@@ -199,11 +193,7 @@ const RequiredDocumentPage = () => {
       </div>
 
       {/* ── Modal ─────────────────────────────────────────────────────────── */}
-      <ApplicationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        productName={loanName}
-      />
+      {gate}
     </>
   );
 };
