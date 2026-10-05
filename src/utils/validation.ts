@@ -9,6 +9,29 @@ export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
 export const stripOther = (items: string[]): string[] => items.filter(item => item !== OTHER_OPTION);
 
+/** Whole years between an ISO date (yyyy-mm-dd) and today. -1 when unparseable. */
+export const ageOn = (dob: string, today = new Date()): number => {
+  if (!dob) return -1;
+  const born = new Date(`${dob}T00:00:00`);
+  if (Number.isNaN(born.getTime())) return -1;
+  let age = today.getFullYear() - born.getFullYear();
+  const monthDelta = today.getMonth() - born.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < born.getDate())) age -= 1;
+  return age;
+};
+
+/** True only for a real date at or past `minAge` (loan applicants must be 21+). */
+export const isAtLeastAge = (dob: string, minAge = 21, today = new Date()): boolean => {
+  const age = ageOn(dob, today);
+  return age >= minAge;
+};
+
+/** Latest date of birth that still satisfies `minAge` — for a date input's max. */
+export const latestDobForAge = (minAge = 21, today = new Date()): string => {
+  const cutoff = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+  return `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+};
+
 export interface PersonalDetailsDraft {
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string;
