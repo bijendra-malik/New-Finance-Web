@@ -198,7 +198,6 @@ const CountrySelector = () => {
                                   </svg>
                                 )}
                               </button>
-                              <p className="text-[10px] text-slate-400 mt-1">More countries coming soon</p>
                             </div>
                           );
                         })}
