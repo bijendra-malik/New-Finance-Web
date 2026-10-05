@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   DateOfBirthPicker, FieldError, FieldLabel, FormCard,
   PincodeInputField, SelectField, SelectWithOther, TextField,
@@ -7,6 +7,7 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { THEME as C } from "../../constants/theme";
 import { FORM } from "../../constants/formStyles";
 import { formatPAN } from "../../utils/formatters";
+import { accountFieldDefaults, readStoredProfile } from "../../utils/accountProfile";
 
 export type PersonalDetailsField =
   | "fullName" | "mobile" | "email" | "dob" | "panNumber"
@@ -53,23 +54,47 @@ export const PersonalDetailsSection = ({
     [form.state, loadCities]
   );
 
+  const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(
+    () => accountFieldDefaults(readStoredProfile()),
+    []
+  );
+
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (prefilled.current) return;
+    prefilled.current = true;
+    (Object.keys(locked) as PersonalDetailsField[]).forEach(key => {
+      const value = locked[key];
+      if (value && !form[key]) set(key, value as string);
+    });
+  }, [locked, form, set]);
+
+  const isLocked = (key: PersonalDetailsField) => !!locked[key];
+
   return (
     <FormCard title={title} subtitle={subtitle}>
+        {Object.keys(locked).length > 0 && (
+          <p className="mb-4 rounded-lg px-3 py-2 text-xs"
+            style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
+            🔒 Name, mobile, email and address were filled from your account and are locked.
+            They must match your PAN card — contact support to correct them.
+          </p>
+        )}
         <div className={FORM.grid}>
           <div id="fullName"><FieldLabel label="Full Name" required/>
-            <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder={fullNamePlaceholder} err={errors.fullName}/>
+            <TextField value={form.fullName} onChange={v=>set("fullName",v.slice(0,100))} maxLength={100} placeholder={fullNamePlaceholder} err={errors.fullName} disabled={isLocked("fullName")}/>
           </div>
           <div id="mobile"><FieldLabel label="Mobile Number" required/>
             <div className="flex items-center rounded-(--form-field-radius) overflow-hidden"
-              style={{border:`1.5px solid ${errors.mobile?FORM.error:FORM.fieldBorder}`,background:FORM.fieldBg}}>
+              style={{border:`1.5px solid ${errors.mobile?FORM.error:FORM.fieldBorder}`,background:isLocked("mobile")?FORM.fieldBgDisabled:FORM.fieldBg}}>
               <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:FORM.fieldBorder}}>🇮🇳 +91</span>
-              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number"
+              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number" disabled={isLocked("mobile")}
                 onChange={e=>set("mobile",e.target.value.replace(/\D/g,""))}
-                className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>
+                className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none disabled:cursor-not-allowed"/>
             </div><FieldError msg={errors.mobile}/>
           </div>
           <div id="email"><FieldLabel label="Email Address" required/>
-            <TextField type="email" value={form.email} onChange={v=>set("email",v)} placeholder="your@email.com" err={errors.email}/>
+            <TextField type="email" value={form.email} onChange={v=>set("email",v)} placeholder="your@email.com" err={errors.email} disabled={isLocked("email")}/>
           </div>
           <div id="dob"><FieldLabel label={dobLabel} required/>
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob}/>
@@ -80,16 +105,17 @@ export const PersonalDetailsSection = ({
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
               set("state",v); set("city",""); loadCities(v);
-            }} options={states} placeholder="Select" err={errors.state}/>
+            }} options={states} placeholder="Select" err={errors.state} disabled={isLocked("state")}/>
           </div>
           <div id="city"><FieldLabel label="Current Residence City" required/>
             <SelectField value={form.city} onChange={v=>set("city",v)}
-              options={residenceCityOptions} placeholder={form.state?"Select city":"Select state first"} disabled={!form.state} err={errors.city}/>
+              options={residenceCityOptions} placeholder={form.state?"Select city":"Select state first"}
+              disabled={!form.state || isLocked("city")} err={errors.city}/>
           </div>
           <PincodeInputField
             id="pincode" label="Current Residence Pincode"
             value={form.pincode} onChange={v=>set("pincode",v)}
-            onResolved={r=>onPincodeResolved(r)} err={errors.pincode}
+            onResolved={r=>onPincodeResolved(r)} err={errors.pincode} disabled={isLocked("pincode")}
           />
           <SelectWithOther
             id="residenceStatus" label="Status of Current Residence" required
