@@ -53,7 +53,7 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
     if (validate()) setSubmitted(true);
   };
