@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "../common/Container";
-import CountrySelector from "../CountrySelector";
+import AccountMenu from "../AccountMenu";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 
@@ -101,9 +101,9 @@ const Header = () => {
               )}
             </div>
 
-            {/* Country selector (all sizes) + Hamburger (small screens) — pinned right */}
+            {/* Account menu (all sizes) + Hamburger (small screens) — pinned right */}
             <div className="col-start-3 row-start-1 flex items-center gap-3 justify-self-end">
-              <CountrySelector />
+              <AccountMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="flex items-center justify-center w-10 h-10 cursor-pointer z-40 lg:hidden"
