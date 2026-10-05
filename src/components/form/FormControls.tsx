@@ -138,12 +138,12 @@ export const TenureYearsField = memo(({
 });
 TenureYearsField.displayName = "TenureYearsField";
 
-interface DateInputProps { value?: string; onClick?: () => void; placeholder?: string; err?: string; }
+interface DateInputProps { value?: string; onClick?: () => void; placeholder?: string; err?: string; disabled?: boolean; }
 const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  ({ value, onClick, placeholder, err }, ref) => (
-    <input ref={ref} value={value || ""} onClick={onClick} placeholder={placeholder} readOnly
-      className={`${FORM.field} cursor-pointer focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-20) border ${err ? "border-(--form-error)" : "border-(--form-field-border)"}`}
-      style={{ background: FORM.fieldBg, color: C.dark }} />
+  ({ value, onClick, placeholder, err, disabled }, ref) => (
+    <input ref={ref} value={value || ""} onClick={disabled ? undefined : onClick} placeholder={placeholder} readOnly disabled={disabled}
+      className={`${FORM.field} ${disabled ? "cursor-not-allowed" : "cursor-pointer"} focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-20) border ${err ? "border-(--form-error)" : "border-(--form-field-border)"}`}
+      style={{ background: disabled ? FORM.fieldBgDisabled : FORM.fieldBg, color: C.dark }} />
   )
 );
 DateInput.displayName = "DateInput";
@@ -151,8 +151,10 @@ DateInput.displayName = "DateInput";
 interface DateFieldProps {
   value: string; onChange: (v: string) => void; err?: string;
   minDate: Date; maxDate: Date; portalId: string;
+  /** Locked fields (pre-filled from the applicant's account) can't be edited. */
+  disabled?: boolean;
 }
-export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalId }: DateFieldProps) => (
+export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalId, disabled = false }: DateFieldProps) => (
   <>
     <DatePicker
       selected={value ? new Date(value + "T00:00:00") : null}
@@ -167,19 +169,20 @@ export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalI
       scrollableYearDropdown
       yearDropdownItemNumber={100}
       portalId={portalId}
+      disabled={disabled}
       wrapperClassName="w-full block"
-      customInput={<DateInput err={err} />}
+      customInput={<DateInput err={err} disabled={disabled} />}
     />
     <FieldError msg={err} />
   </>
 ));
 DateField.displayName = "DateField";
 
-export const DateOfBirthPicker = memo(({ value, onChange, err }: { value: string; onChange: (v: string) => void; err?: string }) => {
+export const DateOfBirthPicker = memo(({ value, onChange, err, disabled }: { value: string; onChange: (v: string) => void; err?: string; disabled?: boolean }) => {
   const today = new Date();
   const maxDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
   const minDate = new Date(today.getFullYear() - 100, 0, 1);
-  return <DateField value={value} onChange={onChange} err={err} minDate={minDate} maxDate={maxDate} portalId="dob-datepicker-portal" />;
+  return <DateField value={value} onChange={onChange} err={err} minDate={minDate} maxDate={maxDate} portalId="dob-datepicker-portal" disabled={disabled} />;
 });
 DateOfBirthPicker.displayName = "DateOfBirthPicker";
 
