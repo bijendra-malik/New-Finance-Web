@@ -332,6 +332,7 @@ interface PincodeInputFieldProps {
   id: string; label: string; required?: boolean;
   value: string; onChange: (v: string) => void; err?: string;
   onResolved?: (result: { pincode: string; state: string; city: string }) => void;
+  disabled?: boolean;
 }
 /** Digits only, max 6, no leading zero (Indian pincodes never start with 0) — matches /^[1-9]\d{5}$/ used in each form's computeErrors(). */
 const sanitizePincode = (raw: string) =>
@@ -346,7 +347,7 @@ interface PincodeFeedback {
 }
 
 export const PincodeInputField = memo(({
-  id, label, required = true, value, onChange, err, onResolved,
+  id, label, required = true, value, onChange, err, onResolved, disabled = false,
 }: PincodeInputFieldProps) => {
   const [feedback, setFeedback] = useState<PincodeFeedback | null>(null);
   const latestRequest = useRef(0);
@@ -404,8 +405,9 @@ export const PincodeInputField = memo(({
         err={showError}
         maxLength={6}
         inputMode="numeric"
+        disabled={disabled}
       />
-      {feedback?.status === "verifying" && (
+      {feedback?.status === "verifying" && !disabled && (
         <p className="text-xs mt-1" style={{ color: C.gray }}>Verifying pincode…</p>
       )}
     </div>
