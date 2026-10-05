@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import React from "react";
-import ApplicationModal from "../modals/ApplicationModal";
+import { useApplyGate } from "../../hooks/useApplyGate";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Mousewheel } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -276,14 +276,12 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
 // ── LoanProducts ──────────────────────────────────────────────────────────────
 const LoanProducts = () => {
   const swiperRef = useRef<SwiperType | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const { requestApply, gate } = useApplyGate();
 
   const handleApplyClick = (productName: string) => {
-    setSelectedProduct(productName);
-    setIsModalOpen(true);
+    requestApply(productName);
   };
 
   const updateNavState = (swiper: SwiperType) => {
@@ -502,11 +500,7 @@ const LoanProducts = () => {
       </section>
 
       {/* Application Modal */}
-      <ApplicationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        productName={selectedProduct}
-      />
+      {gate}
     </>
   );
 };
