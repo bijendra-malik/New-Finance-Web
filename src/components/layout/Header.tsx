@@ -74,7 +74,7 @@ const Header = () => {
   return (
     <>
       <header
-        className="fixed w-full top-0 z-50 border-b"
+        className="fixed w-full top-0 z-10 border-b"
         style={{
           background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.55) 100%)",
           backdropFilter: "blur(14px) saturate(1.4)",
