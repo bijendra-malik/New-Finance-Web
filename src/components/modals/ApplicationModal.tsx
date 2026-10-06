@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { registerUser, loginUser, verifyOTP } from "../../api/auth";
 import { useAuth } from "../../context/authContext";
@@ -164,6 +165,17 @@ const ApplicationModal = ({
   const [apiError,    setApiError]    = useState("");
   const [resendMsg,   setResendMsg]   = useState("");
 
+  // Freeze the page behind the popup, so only the popup's own areas scroll.
+  // (Renders nothing once logged in — don't hold the lock then.)
+  useEffect(() => {
+    if (!isOpen || isLoggedIn) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen, isLoggedIn]);
+
   if (!isOpen || isLoggedIn) return null;
 
   const isBusy   = isSending || isVerifying;
@@ -310,21 +322,24 @@ const ApplicationModal = ({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  return (
+  // Portalled to <body>: an ancestor with its own stacking context (e.g. the
+  // hero's `absolute z-10` wrapper) would otherwise trap the popup under the
+  // header, no matter how high its z-index is.
+  return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — above the header (z-55) */}
       <div
-        className="fixed inset-0 bg-black/50 z-60 backdrop-blur-sm pt-(--header-h)"
+        className="fixed inset-0 bg-black/50 z-90 backdrop-blur-sm"
         onClick={handleClose}
       />
 
-      {/* Modal — 2-panel: brand (left) + form (right) */}
-      <div className="fixed inset-0 z-70 flex items-start justify-center pt-(--header-h) px-4 overflow-y-auto">
-        <div className="w-full max-w-4xl min-w-0 flex flex-col md:flex-row gap-0 md:gap-0 shadow-2xl">
+      {/* Modal — 2-panel: brand (left) + form (right). Sits above the header. */}
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4">
+        <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
 
           {/* LEFT PANEL — Brand / marketing (navy gradient) */}
           <div
-            className="relative w-full md:w-105 shrink-0 flex flex-col justify-between
+            className="relative w-full md:w-80 shrink-0 flex flex-col justify-between
               bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
               shadow-xl overflow-hidden"
             style={{
@@ -336,7 +351,7 @@ const ApplicationModal = ({
             <div className="h-1 w-full bg-(--brand-teal)" />
 
             {/* Top padding + inner content */}
-            <div className="flex flex-col justify-between flex-1 p-6 md:px-8 md:py-5 text-white">
+            <div className="flex flex-col justify-between flex-1 p-4 sm:p-5 md:px-8 md:py-6 text-white overflow-y-auto overscroll-contain">
 
               {/* Top: product badge */}
                 <div>
@@ -353,21 +368,22 @@ const ApplicationModal = ({
               </div>
 
               {/* Brand panel body — visual feature cards */}
-              <div className="mt-4 mb-6 flex flex-col gap-3">
+              <div className="mt-3 mb-3 md:mt-5 md:mb-6 flex flex-col gap-2 md:gap-3">
                 {/* Big headline */}
-                <p className="text-3xl md:text-4xl font-extrabold leading-[1.1] tracking-tight
+                <p className="text-lg sm:text-xl md:text-4xl font-extrabold leading-[1.15] tracking-tight
                   text-white drop-shadow-sm">
                   Get{" "}
                   <span className="text-(--brand-yellow)">funds</span>{" "}
                   when you need them
                 </p>
-                <p className="text-sm leading-relaxed text-white/70 max-w-[50ch]">
+                <p className="hidden md:block text-sm leading-relaxed text-white/70 max-w-[50ch]">
                   Fast approval, minimal paperwork. <br />
                   Apply in minutes and get a decision quickly.
                 </p>
 
-                {/* Feature pills — icon + text, teal-tinted backgrounds */}
-                <div className="grid grid-cols-1 gap-2.5 mt-1">
+                {/* Feature pills — icon + text, teal-tinted backgrounds.
+                    Hidden on small screens so the brand panel stays short. */}
+                <div className="hidden md:grid grid-cols-1 gap-2.5 mt-1">
                   {[
                     { icon: <IconAmount />, title: "Quick disbursal",
                       desc: "Funds credited to your account once approved" },
@@ -426,14 +442,13 @@ const ApplicationModal = ({
           {/* ═══════════════════════════════════════════════════════════════════
             RIGHT PANEL — Form card
             ═══════════════════════════════════════════════════════════════════ */}
-          <div className="flex-1 w-full md:max-w-130 bg-white rounded-2xl shadow-xl
-            border border-(--form-field-border) overflow-hidden min-w-0">
+          <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
 
             {/* Thin teal top edge */}
-            <div className="h-1 w-full bg-(--brand-teal)" />
+            <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
 
-            {/* ── Body ── */}
-            <div className="px-6 py-5 md:px-7 md:py-6">
+            {/* ── Body (scrolls when taller than the card) ── */}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-7 md:py-6">
 
               {/* Title — mirrors the brand panel */}
               <div className="mb-4">
@@ -702,7 +717,8 @@ const ApplicationModal = ({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 
