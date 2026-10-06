@@ -74,7 +74,7 @@ const Header = () => {
   return (
     <>
       <header
-        className="fixed w-full top-0 z-10 border-b"
+        className="fixed w-full top-0 z-55 border-b"
         style={{
           background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.55) 100%)",
           backdropFilter: "blur(14px) saturate(1.4)",
@@ -106,7 +106,7 @@ const Header = () => {
               <AccountMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 cursor-pointer z-40 lg:hidden"
+                className="flex items-center justify-center w-10 h-10 cursor-pointer z-60 lg:hidden"
                 aria-label="Toggle Menu"
               >
               <div className="relative w-6 h-6">
@@ -219,7 +219,7 @@ const Header = () => {
 
       {/* Mobile Menu - Slides from right */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-40 overflow-y-auto shadow-2xl">
+        <div className="lg:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-60 overflow-y-auto shadow-2xl">
           <nav className="text-slate-600 font-medium">
             <ul className="flex flex-col divide-y divide-slate-200">
               {navLinks.map((link) =>
