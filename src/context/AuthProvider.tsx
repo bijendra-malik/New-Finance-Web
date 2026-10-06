@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ApiUser } from "../api/auth";
 import { fetchProfile } from "../api/auth";
+import type { ProfileResponse } from "../api/auth";
 import { AuthContext } from "./authContext";
 
 // ── Provider ─────────────────────────────────────────────────────────────────
@@ -23,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (token && !user) {
       fetchProfile()
-        .then((res) => {
+        .then((res: ProfileResponse) => {
           setUser(res.user);
           localStorage.setItem("user", JSON.stringify(res.user));
         })
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const refreshProfile = async () => {
-    const res = await fetchProfile();
+    const res: ProfileResponse = await fetchProfile();
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
   };
