@@ -226,6 +226,16 @@ const AccountMenu = () => {
     [countries]
   );
 
+  // Freeze the page behind the popup, so only the popup's own areas scroll.
+  useEffect(() => {
+    if (!panelOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [panelOpen]);
+
   // Close the panel on outside click / Escape.
   useEffect(() => {
     if (!panelOpen) return;
@@ -497,23 +507,23 @@ const AccountMenu = () => {
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-65 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-90 bg-black/50 backdrop-blur-sm"
               onClick={() => setPanelOpen(false)}
             />
 
             {/* 2-panel modal: brand (left) + form (right) */}
-            <div className="fixed inset-0 z-70 flex items-center justify-center px-4 overflow-y-auto" data-account-panel>
-              <div className="w-full max-w-4xl min-w-0 flex flex-col md:flex-row gap-0 shadow-2xl">
+            <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4" data-account-panel>
+              <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
 
                 {/* LEFT - Brand panel */}
                 <div
-                  className="relative w-full md:w-95 shrink-0 flex flex-col justify-between
+                  className="relative w-full md:w-80 shrink-0 flex flex-col justify-between
                     bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
                     shadow-xl overflow-hidden"
                   style={{ boxShadow: "0 0 0 1px rgba(38,174,144,0.25), 0 20px 60px -20px rgba(0,0,0,0.6)" }}
                 >
-                  <div className="h-1.5 w-full bg-(--brand-teal)" />
-                  <div className="flex flex-col justify-between flex-1 p-5 md:p-6 text-white">
+                  <div className="h-1.5 w-full shrink-0 bg-(--brand-teal)" />
+                  <div className="flex flex-col justify-between flex-1 p-4 sm:p-5 md:p-6 text-white overflow-y-auto overscroll-contain">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-(--brand-yellow) text-(--brand-dark) shadow-sm">
@@ -526,19 +536,20 @@ const AccountMenu = () => {
                       </div>
                     </div>
 
-                    <div className="mt-5">
-                      <p className="text-xl md:text-2xl font-extrabold leading-snug tracking-tight text-white">
+                    <div className="mt-3 md:mt-5">
+                      <p className="text-base sm:text-lg md:text-2xl font-extrabold leading-snug tracking-tight text-white">
                         {mode === "signup"
                           ? <>Join <span style={{ color: "var(--brand-yellow)" }}>thousands</span> of borrowers</>
                           : <>Access your <span style={{ color: "var(--brand-yellow)" }}>loan dashboard</span></>
                         }
                       </p>
-                      <p className="mt-2 text-sm leading-relaxed text-white/65 max-w-[50ch]">
+                      <p className="hidden md:block mt-2 text-sm leading-relaxed text-white/65 max-w-[50ch]">
                         {mode === "signup" ? "Fast, fully online, and built around your PAN card." : "Sign in with the mobile number you registered with."}
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2 my-5">
+                    {/* Marketing cards — desktop only, so the panel stays short on small screens */}
+                    <div className="hidden md:grid grid-cols-1 gap-2 my-5">
                       {mode === "signup"
                         ? [
                           { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", title: "Quick approval", desc: "Apply in minutes, decide fast" },
@@ -594,9 +605,9 @@ const AccountMenu = () => {
                 </div>
 
                 {/* RIGHT - Form card */}
-                <div className="flex-1 w-full md:max-w-120 bg-white rounded-2xl shadow-xl border border-(--form-field-border) overflow-hidden min-w-0">
-                  <div className="h-1 w-full bg-(--brand-teal)" />
-                  <div className="px-5 py-4 md:px-6 md:py-5">
+                <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
+                  <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
+                  <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-6 md:py-5">
                     <div className="mb-3">
                       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center text-(--brand-navy) bg-(--brand-navy-14) px-2 py-0.5 rounded-full">{mode === "signup" ? "Sign Up" : "Sign In"}</p>
                       <h2 className="text-base font-bold text-(--form-dark) mt-1 text-center">
@@ -726,7 +737,7 @@ const AccountMenu = () => {
       {confirmRole &&
         createPortal(
           <div
-            className="fixed inset-0 z-80 flex items-center justify-center bg-slate-900/45 p-4 pt-(--header-h) backdrop-blur-[2px]"
+            className="fixed inset-0 z-110 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]"
             role="dialog"
             aria-modal="true"
             aria-label="Confirm role"
