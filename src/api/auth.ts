@@ -6,6 +6,9 @@ export interface RegisterPayload {
   name: string;
   mobile: string;
   email: string;
+  role: string;
+  continent: string;
+  country: string;
 }
 
 export interface RegisterResponse {
@@ -51,6 +54,18 @@ export interface ProfileResponse {
   user: ApiUser;
 }
 
+export interface ApplyRegisterPayload {
+  product: string;
+  dob: string;
+  panNumber: string;
+}
+
+export interface ApplyRegisterResponse {
+  success: boolean;
+  message: string;
+}
+
+
 // ── API Calls ────────────────────────────────────────────────────────────────
 
 /**
@@ -62,6 +77,17 @@ export const registerUser = async (
 ): Promise<RegisterResponse> => {
   const response = await axiosInstance.post<RegisterResponse>(
     "/auth/register",
+    payload,
+    { withCredentials: true }
+  );
+  return response.data;
+};
+
+export const applyRegister = async (
+  payload: ApplyRegisterPayload
+): Promise<ApplyRegisterResponse> => {
+  const response = await axiosInstance.post<ApplyRegisterResponse>(
+    "/customer/apply-register",
     payload
   );
   return response.data;
@@ -90,16 +116,17 @@ export const verifyOTP = async (
 ): Promise<VerifyOTPResponse> => {
   const response = await axiosInstance.post<VerifyOTPResponse>(
     "/auth/verify-otp",
-    payload
+    payload,
+    { withCredentials: true }
   );
   return response.data;
 };
 
 /**
  * Fetch authenticated user profile (requires token in localStorage).
- * GET /auth/profile
+ * GET /auth/customer/profile
  */
 export const fetchProfile = async (): Promise<ProfileResponse> => {
-  const response = await axiosInstance.get<ProfileResponse>("/auth/profile");
+  const response = await axiosInstance.get<ProfileResponse>("/auth/customer/profile");
   return response.data;
 };
