@@ -15,6 +15,7 @@ import {
 } from "../utils/accountProfile";
 import type { AccountProfile, Role } from "../utils/accountProfile";
 import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
+import { registerUser } from "../api/auth";
 
 export type { AccountProfile, Role };
 
@@ -337,7 +338,7 @@ const AccountMenu = () => {
     return Object.keys(next).length === 0;
   };
 
-  const onSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validate()) return;
     const saved: AccountProfile = {
@@ -355,6 +356,18 @@ const AccountMenu = () => {
     setProfile(saved);
     setPanelOpen(false);
     emitAccountReady();
+    try {
+      await registerUser({
+        name: saved.name,
+        mobile: saved.phone,
+        email: saved.email,
+        role: saved.role,
+        continent: "Asia",
+        country: saved.country,
+      });
+    } catch {
+      // Registration is best-effort here; the local session is already ready.
+    }
   };
 
   const switchMode = (next: "signup" | "signin") => {
@@ -364,7 +377,7 @@ const AccountMenu = () => {
     setSigninError("");
   };
 
-  const onSignInSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  const onSignInSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     const phone = digitsOf(signin.phone);
     if (phone.length !== 10) {
