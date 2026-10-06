@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import type { RegisterPayload } from "../../api/auth";
 import { registerUser, loginUser, verifyOTP } from "../../api/auth";
 import { useAuth } from "../../context/authContext";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { mergeAccountDetails, readStoredProfile } from "../../utils/accountProfile";
 import { PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
+import { applyRegister } from "../../api/auth";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
 
@@ -148,6 +150,14 @@ const ApplicationModal = ({
       pan: (stored?.pan ?? "").toUpperCase(),
     };
   });
+  const registerPayload = useMemo<RegisterPayload>(() => ({
+    name: signup.name,
+    mobile: signup.phone,
+    email: signup.email,
+    role: "Customer",
+    continent: "Asia",
+    country: "India",
+  }), [signup.name, signup.phone, signup.email]);
   const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
 
   // ── Sign In fields ────────────────────────────────────────────────────────
@@ -258,8 +268,13 @@ const ApplicationModal = ({
     setApiError("");
     try {
       if (mode === "signup") {
-        await registerUser({ name: signup.name, mobile: signup.phone, email: signup.email });
+        await registerUser(registerPayload);
         mergeAccountDetails({ dob: signup.dob, pan: signup.pan });
+        await          applyRegister({
+          product: productName,
+          dob: signup.dob,
+          panNumber: signup.pan,
+        });
       } else {
         await loginUser({ mobile: signinPhone });
       }
@@ -301,7 +316,7 @@ const ApplicationModal = ({
     setResendMsg("");
     try {
       if (mode === "signup") {
-        await registerUser({ name: signup.name, mobile: signup.phone, email: signup.email });
+        await registerUser(registerPayload);
       } else {
         await loginUser({ mobile: signinPhone });
       }
@@ -334,7 +349,7 @@ const ApplicationModal = ({
       />
 
       {/* Modal — 2-panel: brand (left) + form (right). Sits above the header. */}
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4">
+      <div className="fixed inset-0 z-110 flex items-center justify-center p-3 sm:p-4">
         <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
 
           {/* LEFT PANEL — Brand / marketing (navy gradient) */}
