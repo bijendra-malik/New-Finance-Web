@@ -21,6 +21,7 @@ const Home = () => {
 
   const videoRef  = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
   // Keep banner video playing continuously — prevents restart on re-render
@@ -30,6 +31,8 @@ const Home = () => {
     v.muted = true;
     v.volume = 0;
     v.play().catch(() => {});
+    v.addEventListener("play", () => setIsPaused(false));
+    v.addEventListener("pause", () => setIsPaused(true));
     const resume = () => { v.play().catch(() => {}); };
     v.addEventListener("pause", resume);
 
@@ -41,6 +44,8 @@ const Home = () => {
     return () => {
       v.removeEventListener("pause", resume);
       v.removeEventListener("loadeddata", onReady);
+      v.removeEventListener("play", () => {});
+      v.removeEventListener("pause", () => {});
     };
   }, []);
 
@@ -52,6 +57,22 @@ const Home = () => {
     v.muted = next;
     v.volume = next ? 0 : 0.6;
     setIsMuted(next);
+  };
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isPaused) {
+      v.play().catch(() => {});
+      // Bring audio back when resuming playback
+      const unmuted = !isMuted;
+      v.muted = unmuted ? false : true;
+      v.volume = unmuted ? 0.6 : 0;
+      setIsMuted(unmuted ? false : true);
+      setIsPaused(false);
+    } else {
+      v.pause();
+    }
   };
 
   return (
@@ -101,6 +122,32 @@ const Home = () => {
         className="absolute top-0 left-0 w-full h-0.75"
         style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))", zIndex: 2 }}
       />
+
+      {/* Play / Pause + Mute / Unmute controls — bottom-right of banner */}
+      <button
+        onClick={togglePlay}
+        aria-label={isPaused ? "Play video" : "Pause video"}
+        className="absolute bottom-4 right-16 flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+        style={{
+          background: "rgba(0,0,0,0.45)",
+          border: "1.5px solid rgba(255,255,255,0.35)",
+          zIndex: 50,
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        {isPaused ? (
+          /* Play icon — paused */
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="none" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        ) : (
+          /* Pause icon — playing */
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff" stroke="none" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        )}
+      </button>
 
       {/* Mute / Unmute toggle button — bottom-right of banner */}
       <button
