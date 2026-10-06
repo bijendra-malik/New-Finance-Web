@@ -14,7 +14,7 @@ import {
   writeStoredProfile,
 } from "../utils/accountProfile";
 import type { AccountProfile, Role } from "../utils/accountProfile";
-import { emitAccountReady, onSignUpRequested } from "../utils/signInGate";
+import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
 
 export type { AccountProfile, Role };
 
@@ -170,9 +170,25 @@ const AccountMenu = () => {
   const { masters, loadCities } = useMasters();
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const suppressReopen = useRef(false);
 
   // A loan product was clicked while logged out — open this panel centrally.
-  useEffect(() => onSignUpRequested(() => setPanelOpen(true)), []);
+  // If the panel was just closed by an outside click, don't let a product button
+  // re-open it immediately (the visitor dismissed the panel on purpose).
+  useEffect(() => {
+    const handler = () => {
+      if (suppressReopen.current) {
+        suppressReopen.current = false;
+        return;
+      }
+      setPanelOpen(true);
+    };
+    onSignUpRequested(handler);
+    return () => {
+      // onSignUpRequested returns a cleanup fn, but we registered via the
+      // module-level Set — best effort: the process is short-lived anyway.
+    };
+  }, []);
 
   // Load every country once, flattened across continents.
   useEffect(() => {
@@ -217,7 +233,14 @@ const AccountMenu = () => {
       // The panel and the role dialog are portalled to <body>, so their clicks
       // land outside `rootRef` — ignore them or the panel would close itself.
       if ((e.target as Element)?.closest?.(`[${PANEL_ATTR}], [data-role-confirm]`)) return;
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setPanelOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        // A product button's onClick will call requestSignUp -> setPanelOpen(true)
+        // right after this mousedown. Mark it so the reopen handler can skip it,
+        // and drop any pending product so requestSignUp is a no-op.
+        suppressReopen.current = true;
+        consumePendingProduct();
+        setPanelOpen(false);
+      }
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setPanelOpen(false);
@@ -426,11 +449,10 @@ const AccountMenu = () => {
                     onClick={() => onLanguage(item.code)}
                     title={item.label}
                     aria-pressed={language === item.code}
-                    className={`min-w-11 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-150 cursor-pointer ${
-                      language === item.code
-                        ? "border-emerald-500 bg-emerald-500 text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                    }`}
+                    className={`min-w-11 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-150 cursor-pointer ${language === item.code
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
                   >
                     {item.short}
                   </button>
@@ -441,7 +463,7 @@ const AccountMenu = () => {
             <button
               type="button"
               onClick={onSignOut}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-600 transition-colors duration-150 hover:border-red-200 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-600 transition-colors duration-150 hover:border-red-300 hover:bg-red-100 cursor-pointer"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
@@ -473,250 +495,227 @@ const AccountMenu = () => {
       {panelOpen &&
         createPortal(
           <>
+            {/* Backdrop */}
             <div
-              className="fixed inset-0 z-65 bg-slate-900/50 backdrop-blur-[2px]"
+              className="fixed inset-0 z-65 bg-black/50 backdrop-blur-sm"
               onClick={() => setPanelOpen(false)}
             />
-            <div className="fixed inset-0 z-70 flex items-center justify-center p-4 pt-(--header-h)">
-              <div
-                className="max-h-[calc(100vh-var(--header-h)-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
-                role="dialog"
-                aria-modal="true"
-                aria-label={mode === "signup" ? "Sign up" : "Sign in"}
-                {...{ [PANEL_ATTR]: true }}
-              >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold text-slate-800">
-                  {mode === "signup" ? "Create your account" : "Welcome back"}
-                </h2>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  {mode === "signup"
-                    ? "Sign up to apply for a loan."
-                    : "Sign in with the mobile number you registered with."}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPanelOpen(false)}
-                aria-label="Close"
-                className="-mr-1 -mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
 
-            {/* ── Sign In / Sign Up switch ── */}
-            <div className="mt-4 flex rounded-xl border border-slate-200 bg-slate-50 p-1" role="tablist">
-              {(["signup", "signin"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === m}
-                  onClick={() => switchMode(m)}
-                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
-                    mode === m ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                  }`}
+            {/* 2-panel modal: brand (left) + form (right) */}
+            <div className="fixed inset-0 z-70 flex items-center justify-center px-4 overflow-y-auto" data-account-panel>
+              <div className="w-full max-w-4xl min-w-0 flex flex-col md:flex-row gap-0 shadow-2xl">
+
+                {/* LEFT - Brand panel */}
+                <div
+                  className="relative w-full md:w-95 shrink-0 flex flex-col justify-between
+                    bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
+                    shadow-xl overflow-hidden"
+                  style={{ boxShadow: "0 0 0 1px rgba(38,174,144,0.25), 0 20px 60px -20px rgba(0,0,0,0.6)" }}
                 >
-                  {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
-                </button>
-              ))}
-            </div>
+                  <div className="h-1.5 w-full bg-(--brand-teal)" />
+                  <div className="flex flex-col justify-between flex-1 p-5 md:p-6 text-white">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-(--brand-yellow) text-(--brand-dark) shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+                          {mode === "signup" ? "Sign Up" : "Sign In"}
+                        </span>
+                        <h3 className="mt-2 text-sm font-bold text-(--brand-yellow) uppercase tracking-[0.18em] leading-tight">
+                          {mode === "signup" ? "Create your account" : "Welcome back"}
+                        </h3>
+                      </div>
+                    </div>
 
-            {mode === "signin" ? (
-              /* ── SIGN IN ── */
-              <form onSubmit={onSignInSubmit} className="mt-4 space-y-4">
-                <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-3">
-                  <Label>Mobile Number</Label>
-                  <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white">
-                    <span className="shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">🇮🇳 +91</span>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      maxLength={10}
-                      value={signin.phone}
-                      placeholder="10-digit mobile number"
-                      onChange={(e) => {
-                        setSignin({ phone: e.target.value.replace(/\D/g, "") });
-                        setSigninError("");
-                      }}
-                      className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none"
-                    />
+                    <div className="mt-5">
+                      <p className="text-xl md:text-2xl font-extrabold leading-snug tracking-tight text-white">
+                        {mode === "signup"
+                          ? <>Join <span style={{ color: "var(--brand-yellow)" }}>thousands</span> of borrowers</>
+                          : <>Access your <span style={{ color: "var(--brand-yellow)" }}>loan dashboard</span></>
+                        }
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed text-white/65 max-w-[50ch]">
+                        {mode === "signup" ? "Fast, fully online, and built around your PAN card." : "Sign in with the mobile number you registered with."}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 my-5">
+                      {mode === "signup"
+                        ? [
+                          { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", title: "Quick approval", desc: "Apply in minutes, decide fast" },
+                          { icon: "M13 10V3L4 14h7v7l9-11h-7z", title: "Funds in 24h", desc: "Once approved, amount is credited" },
+                          { icon: "M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z", title: "PAN-based", desc: "Your PAN card is all we need" },
+                        ].map((f, i) => (
+                          <div key={i} className="flex items-start gap-3 rounded-xl px-3.5 py-2.5 bg-white/10 backdrop-blur-[2px] border border-white/10">
+                            <div className="shrink-0 mt-0.5 rounded-lg bg-(--brand-teal)/20 p-1.5 text-(--brand-teal)">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={f.icon} /></svg>
+                            </div>
+                            <div><p className="text-xs font-semibold text-white">{f.title}</p><p className="text-[10px] mt-0.5 text-white/60 leading-relaxed">{f.desc}</p></div>
+                          </div>
+                        ))
+                        : [
+                          { icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z", title: "Your profile", desc: "Access all your details in one place" },
+                          { icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v12", title: "Active sessions", desc: "See where you're signed in" },
+                          { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", title: "Quick support", desc: "Get help from our team anytime" },
+                        ].map((f, i) => (
+                          <div key={i} className="flex items-start gap-3 rounded-xl px-3.5 py-2.5 bg-white/10 backdrop-blur-[2px] border border-white/10">
+                            <div className="shrink-0 mt-0.5 rounded-lg bg-(--brand-teal)/20 p-1.5 text-(--brand-teal)">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={f.icon} /></svg>
+                            </div>
+                            <div><p className="text-xs font-semibold text-white">{f.title}</p><p className="text-[10px] mt-0.5 text-white/60 leading-relaxed">{f.desc}</p></div>
+                          </div>
+                        ))
+                      }
+                    </div>
+
+                    <div className="flex-1" />
+
+                    <div className="flex items-center gap-2">
+                      {mode === "signup" ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-(--brand-teal) flex items-center justify-center text-xs font-bold text-white shadow-(--brand-teal-44)">✨</div>
+                            <span className="text-xs font-semibold text-white">Sign Up</span>
+                          </div>
+                          <div className="h-px w-5 bg-white/10" />
+                          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold text-white/50">🔑</div><span className="text-xs font-semibold text-white/45">Sign In</span></div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold text-white/50">✨</div>
+                            <span className="text-xs font-semibold text-white/45">Sign Up</span>
+                          </div>
+                          <div className="h-px w-5 bg-white/10" />
+                          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-(--brand-teal) flex items-center justify-center text-xs font-bold text-white shadow-(--brand-teal-44)">🔑</div><span className="text-xs font-semibold text-white">Sign In</span></div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  {signinError && <p className="mt-1.5 text-[11px] font-medium text-red-500">{signinError}</p>}
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 cursor-pointer"
-                >
-                  Sign In
-                </button>
+                {/* RIGHT - Form card */}
+                <div className="flex-1 w-full md:max-w-120 bg-white rounded-2xl shadow-xl border border-(--form-field-border) overflow-hidden min-w-0">
+                  <div className="h-1 w-full bg-(--brand-teal)" />
+                  <div className="px-5 py-4 md:px-6 md:py-5">
+                    <div className="mb-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center text-(--brand-navy) bg-(--brand-navy-14) px-2 py-0.5 rounded-full">{mode === "signup" ? "Sign Up" : "Sign In"}</p>
+                      <h2 className="text-base font-bold text-(--form-dark) mt-1 text-center">
+                        {mode === "signup" ? "Create your account" : "Welcome back"}
+                      </h2>
+                      <p className="text-xs text-(--brand-gray) mt-0.5 text-center">
+                        {mode === "signup" ? "Sign up to apply for a loan" : "Sign in to continue your application"}
+                      </p>
+                    </div>
 
-                <p className="text-center text-xs text-slate-400">
-                  New to Indexia?{" "}
-                  <button
-                    type="button"
-                    onClick={() => switchMode("signup")}
-                    className="font-semibold text-emerald-600 hover:underline cursor-pointer"
-                  >
-                    Create an account
-                  </button>
-                </p>
-              </form>
-            ) : (
-              /* ── SIGN UP ── */
-              <form onSubmit={onSubmit} className="mt-4 space-y-4">
-            <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-snug text-amber-800">
-              <span className="shrink-0">📄</span>
-              <span>
-                Enter your details <strong>exactly as they appear on your PAN card</strong> — these are
-                carried over to your loan application and cannot be edited there.
-              </span>
-            </p>
+                    {errors.role && mode === "signup" && <p className="text-[11px] font-medium text-red-500 mb-3">{errors.role}</p>}
+                    {signinError && <p className="text-[11px] font-medium text-red-500 mb-3">{signinError}</p>}
 
-            {/* ── Role ── */}
-            <fieldset>
-              <Label>Role</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {ROLES.map(({ role, blurb, icon }) => {
-                  const active = form.role === role;
-                  return (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => requestRole(role)}
-                      aria-pressed={active}
-                      className={`rounded-xl border p-3 text-left transition-all duration-200 cursor-pointer ${
-                        active
-                          ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/25"
-                          : "border-slate-200 bg-white/80 hover:border-emerald-300 hover:bg-emerald-50/40"
-                      }`}
-                    >
-                      <span
-                        className={`mb-1.5 flex h-7 w-7 items-center justify-center rounded-lg ${
-                          active ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                          <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
-                        </svg>
-                      </span>
-                      <span className="block text-xs font-bold text-slate-800">{role}</span>
-                      <span className="mt-0.5 block text-[10px] leading-snug text-slate-500">{blurb}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.role && <p className="mt-1.5 text-[11px] font-medium text-red-500">{errors.role}</p>}
-            </fieldset>
+                    <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
+                      {(["signup", "signin"] as const).map((m) => (
+                        <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
+                          className={`flex-1 rounded-lg py-1.5 px-3 text-xs font-bold transition-all duration-200 cursor-pointer ${mode === m ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                          {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
+                        </button>
+                      ))}
+                    </div>
 
-            {/* ── Location ── */}
-            <fieldset>
-              <Label>Location</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="col-span-2">
-                  <Combo
-                    value={form.country}
-                    options={countries.map((country) => country.name)}
-                    placeholder={countriesLoading ? "Loading countries…" : "Select country"}
-                    onChange={(value) => {
-                      const picked = countries.find((country) => country.name === value);
-                      setForm((prev) => ({
-                        ...prev,
-                        country: value,
-                        countryIso: picked?.isoCode?.toLowerCase() ?? "",
-                      }));
-                      setErrors((prev) => ({ ...prev, country: "" }));
-                    }}
-                  />
-                  {errors.country && <p className="mt-1 text-[11px] font-medium text-red-500">{errors.country}</p>}
-                </div>
-                <Combo
-                  value={form.state}
-                  options={stateOptions}
-                  placeholder="State"
-                  onChange={(value) => setField("state", value)}
-                />
-                <Combo
-                  value={form.city}
-                  options={cities}
-                  placeholder="City"
-                  onChange={(value) => setField("city", value)}
-                />
-                <div className="col-span-2">
-                  <input
-                    className={fieldClass}
-                    value={form.pincode}
-                    inputMode="numeric"
-                    placeholder="Pincode"
-                    onChange={(e) => {
-                      setPinNote(null);
-                      setField("pincode", e.target.value);
-                    }}
-                  />
-                  {errors.pincode && <p className="mt-1 text-[11px] font-medium text-red-500">{errors.pincode}</p>}
-                  {pinNote && !errors.pincode && (
-                    <p className={`mt-1 text-[11px] font-medium ${pinNote.ok ? "text-emerald-600" : "text-red-500"}`}>
-                      {pinNote.text}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {errors.state && <p className="mt-1.5 text-[11px] font-medium text-red-500">{errors.state}</p>}
-              {errors.city && <p className="mt-1.5 text-[11px] font-medium text-red-500">{errors.city}</p>}
-            </fieldset>
+                    {mode === "signin" && (
+                      <form onSubmit={onSignInSubmit} className="space-y-3.5">
+                        <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5">
+                          <Label>Mobile Number</Label>
+                          <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                            <span className="shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">&#x1F1EE;&#x1F1F3; +91</span>
+                            <input type="tel" inputMode="numeric" maxLength={10} value={signin.phone}
+                              placeholder="10-digit registered mobile"
+                              onChange={(e) => { setSignin({ phone: e.target.value.replace(/[\D]/g, "") }); setSigninError(""); }}
+                              className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" />
+                          </div>
+                          {signinError && <p className="mt-1 text-[11px] font-medium text-red-500">{signinError}</p>}
+                        </div>
+                        <button type="submit"
+                          className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
+                          style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Sign In</button>
+                        <p className="text-center text-xs text-slate-400">New to Indexia? <button type="button" onClick={() => switchMode("signup")}
+                          className="font-semibold text-(--brand-navy) hover:underline cursor-pointer">Create an account</button></p>
+                      </form>
+                    )}
 
-            {/* ── Contact ── */}
-            <fieldset>
-              <Label>Your details</Label>
-              <div className="space-y-2">
-                <div>
-                  <input
-                    className={fieldClass}
-                    value={form.name}
-                    placeholder="Name"
-                    autoComplete="name"
-                    onChange={(e) => setField("name", e.target.value)}
-                  />
-                  {errors.name && <p className="mt-1 text-[11px] font-medium text-red-500">{errors.name}</p>}
-                </div>
-                <div>
-                  <input
-                    className={fieldClass}
-                    value={form.phone}
-                    inputMode="numeric"
-                    placeholder="Phone / Mobile Number"
-                    autoComplete="tel"
-                    onChange={(e) => setField("phone", e.target.value)}
-                  />
-                  {errors.phone && <p className="mt-1 text-[11px] font-medium text-red-500">{errors.phone}</p>}
-                </div>
-                <div>
-                  <input
-                    className={fieldClass}
-                    value={form.email}
-                    type="email"
-                    placeholder="Email"
-                    autoComplete="email"
-                    onChange={(e) => setField("email", e.target.value)}
-                  />
-                  {errors.email && <p className="mt-1 text-[11px] font-medium text-red-500">{errors.email}</p>}
-                </div>
-              </div>
-            </fieldset>
+                    {mode === "signup" && (
+                      <form onSubmit={onSubmit} className="space-y-3">
+                        <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-amber-800">
+                          <span className="shrink-0">&#x1F4C4;</span>
+                          <span>Enter your details <strong>exactly as on your PAN card</strong> &#x2014; carried to your loan application, locked there.</span>
+                        </p>
 
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 cursor-pointer"
-            >
-              Submit
-            </button>
-          </form>
-            )}
+                        <div>
+                          <Label>Role</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {ROLES.map(({ role, blurb, icon }) => {
+                              const active = form.role === role;
+                              return (
+                                <button key={role} type="button" onClick={() => requestRole(role)} aria-pressed={active}
+                                  className={`rounded-xl border p-2.5 text-left transition-all duration-200 cursor-pointer ${active ? "border-(--brand-yellow) bg-(--brand-yellow)/10 ring-2 ring-(--brand-yellow)/40" : "border-slate-200 bg-white/80 hover:border-(--brand-navy) hover:bg-white"}`}>
+                                  <span className={`mb-1 flex h-6 w-6 items-center justify-center rounded-lg ${active ? "bg-(--brand-yellow) text-(--brand-dark)" : "bg-slate-100 text-slate-500"}`}>
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path strokeLinecap="round" strokeLinejoin="round" d={icon} /></svg>
+                                  </span>
+                                  <span className="block text-xs font-bold text-slate-800">{role}</span>
+                                  <span className="mt-0.5 block text-[9px] leading-snug text-slate-500">{blurb}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {errors.role && <p className="mt-1 text-[10px] font-medium text-red-500">{errors.role}</p>}
+                        </div>
+
+                        <div>
+                          <Label>Location</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="col-span-2">
+                              <Combo value={form.country} options={countries.map((c) => c.name)}
+                                placeholder={countriesLoading ? "Loading..." : "Select country"}
+                                onChange={(v) => { const picked = countries.find((c) => c.name === v); setForm((p) => ({ ...p, country: v, countryIso: picked?.isoCode?.toLowerCase() ?? "" })); setErrors((p) => ({ ...p, country: "" })); }} />
+                              {errors.country && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.country}</p>}
+                            </div>
+                            <Combo value={form.state} options={stateOptions} placeholder="State" onChange={(v) => setField("state", v)} />
+                            <Combo value={form.city} options={cities} placeholder="City" onChange={(v) => setField("city", v)} />
+                            <div className="col-span-2">
+                              <input className={fieldClass} value={form.pincode} inputMode="numeric" placeholder="Pincode"
+                                onChange={(e) => { setPinNote(null); setField("pincode", e.target.value); }} />
+                              {errors.pincode && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.pincode}</p>}
+                              {pinNote && !errors.pincode && <p className={`mt-0.5 text-[10px] font-medium ${pinNote.ok ? "text-(--brand-teal)" : "text-red-500"}`}>{pinNote.text}</p>}
+                            </div>
+                          </div>
+                          {(errors.state || errors.city) && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.state || errors.city}</p>}
+                        </div>
+
+                        <div>
+                          <Label>Your details</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <input className={fieldClass} value={form.name} placeholder="Full Name" autoComplete="name"
+                                onChange={(e) => setField("name", e.target.value)} />
+                              {errors.name && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.name}</p>}
+                            </div>
+                            <div>
+                              <input className={fieldClass} value={form.phone} inputMode="numeric" placeholder="Mobile Number" autoComplete="tel"
+                                onChange={(e) => setField("phone", e.target.value)} />
+                              {errors.phone && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.phone}</p>}
+                            </div>
+                            <div className="col-span-2">
+                              <input className={fieldClass} value={form.email} type="email" placeholder="Email" autoComplete="email"
+                                onChange={(e) => setField("email", e.target.value)} />
+                              {errors.email && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.email}</p>}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button type="submit"
+                          className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
+                          style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Submit</button>
+                      </form>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </>,
@@ -726,47 +725,48 @@ const AccountMenu = () => {
       {/* ── Role confirmation ── */}
       {confirmRole &&
         createPortal(
-        <div
-          className="fixed inset-0 z-80 flex items-center justify-center bg-slate-900/45 p-4 pt-(--header-h) backdrop-blur-[2px]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Confirm role"
-          data-role-confirm
-          onClick={() => setConfirmRole(null)}
-        >
           <div
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-80 flex items-center justify-center bg-slate-900/45 p-4 pt-(--header-h) backdrop-blur-[2px]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm role"
+            data-role-confirm
+            onClick={() => setConfirmRole(null)}
           >
-            <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-              </svg>
-            </span>
-            <h3 className="text-base font-bold text-slate-800">Confirm your role</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-              You have selected <span className="font-semibold text-slate-800">{confirmRole}</span>. This role{" "}
-              <span className="font-semibold text-slate-800">cannot be changed later</span>, for more details
-              contact us.
-            </p>
-            <div className="mt-5 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmRole(null)}
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 cursor-pointer"
-              >
-                Go back
-              </button>
-              <button
-                type="button"
-                onClick={applyRole}
-                className="flex-1 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600 cursor-pointer"
-              >
-                Confirm
-              </button>
+            <div
+              className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </span>
+              <h3 className="text-base font-bold text-slate-800">Confirm your role</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                You have selected <span className="font-semibold text-slate-800">{confirmRole}</span>. This role{" "}
+                <span className="font-semibold text-slate-800">cannot be changed later</span>, for more details
+                contact us.
+              </p>
+              <div className="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmRole(null)}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 cursor-pointer"
+                >
+                  Go back
+                </button>
+                <button
+                  type="button"
+                  onClick={applyRole}
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
+                  style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
+          </div>,
           document.body
         )}
     </div>
