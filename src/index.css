@@ -73,6 +73,29 @@
   --form-field-pad-y: 0.625rem;     /* py-2.5 */
 }
 
+/* ── Login / account popup shell ───────────────────────────────────────────── */
+.auth-popup-card {
+  max-height: calc(100vh - 1.5rem);
+}
+
+@media (min-width: 640px) {
+  .auth-popup-card {
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+@supports (height: 100dvh) {
+  .auth-popup-card {
+    max-height: calc(100dvh - 1.5rem);
+  }
+
+  @media (min-width: 640px) {
+    .auth-popup-card {
+      max-height: calc(100dvh - 2rem);
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
