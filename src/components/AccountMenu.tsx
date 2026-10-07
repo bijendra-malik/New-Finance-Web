@@ -64,7 +64,7 @@ const PINCODE_DEBOUNCE_MS = 600;
 // ── Small presentational pieces ───────────────────────────────────────────────
 const Chevron = ({ open }: { open: boolean }) => (
   <svg
-    className={`h-3 w-3 text-slate-500 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+    className={`h-3 w-3 text-black bg-(--brand-yellow) rounded-3xl transition-transform duration-300 ${open ? "rotate-180" : ""}`}
     viewBox="0 0 20 20"
     fill="currentColor"
   >
@@ -505,13 +505,13 @@ const AccountMenu = () => {
       <button
         onClick={() => setPanelOpen((open) => !open)}
         aria-expanded={panelOpen}
-        aria-label="Sign In or Sign Up"
-        className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 transition-all duration-200 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 cursor-pointer"
+        aria-label="Login"
+        className="flex items-center gap-1.5 rounded-xl border border-(--brand-teal) bg-linear-to-r from-(--brand-navy) to-(--brand-dark) px-3 py-2 text-white shadow-md transition-all duration-200 hover:from-(--brand-dark) hover:to-(--brand-navy-deep) hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
       >
-        <svg className="h-4 w-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.5-1.632z" />
         </svg>
-        <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">Sign In / Sign Up</span>
+        <span className="text-xs font-semibold text-white whitespace-nowrap">Login</span>
         <Chevron open={panelOpen} />
       </button>
 
