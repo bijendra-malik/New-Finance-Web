@@ -24,30 +24,41 @@ const Home = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Keep banner video playing continuously — prevents restart on re-render
+  // Keep the hero video playing by default, but respect an explicit user pause.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+
     v.muted = true;
     v.volume = 0;
-    v.play().catch(() => {});
-    v.addEventListener("play", () => setIsPaused(false));
-    v.addEventListener("pause", () => setIsPaused(true));
-    const resume = () => { v.play().catch(() => {}); };
-    v.addEventListener("pause", resume);
 
-    // Show loader until the first frame is ready to render
+    const syncState = () => {
+      // Keep local state in sync with the real media element.
+      setIsPaused(v.paused);
+    };
+
+    v.addEventListener("play", syncState);
+    v.addEventListener("pause", syncState);
+
+    // Start playback only if the visitor has not paused the video.
+    if (!isPaused && v.paused) {
+      v.play().catch(() => {});
+    }
+    if (isPaused && !v.paused) {
+      v.pause();
+    }
+
+    // Show loader until the first frame is ready to render.
     const onReady = () => setVideoReady(true);
     if (v.readyState >= 2) setVideoReady(true);
     else v.addEventListener("loadeddata", onReady, { once: true });
 
     return () => {
-      v.removeEventListener("pause", resume);
       v.removeEventListener("loadeddata", onReady);
-      v.removeEventListener("play", () => {});
-      v.removeEventListener("pause", () => {});
+      v.removeEventListener("play", syncState);
+      v.removeEventListener("pause", syncState);
     };
-  }, []);
+  }, [isPaused]);
 
   // Sync mute state to video element
   const toggleMute = () => {
