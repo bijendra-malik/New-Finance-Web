@@ -4,10 +4,6 @@ import { useAuth } from "../../context/authContext";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import useSEO from "../../hooks/useSEO";
 
-/**
- * /login route — if user is already logged in redirect to dashboard,
- * otherwise show the ApplicationModal directly (Sign In tab active by default).
- */
 const Login = () => {
   useSEO({
     title: "Login",
