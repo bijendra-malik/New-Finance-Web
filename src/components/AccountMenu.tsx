@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { fetchContinents, fetchCountriesByContinent, verifyPincode } from "../api/masters";
-import type { Country } from "../api/masters";
-import { useMasters } from "../hooks/useMasters";
+import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
+import type { Continent, Country } from "../api/masters";
 import { useAuth } from "../context/authContext";
 import {
   endSession,
@@ -15,7 +14,8 @@ import {
 } from "../utils/accountProfile";
 import type { AccountProfile, Role } from "../utils/accountProfile";
 import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
-import { registerUser } from "../api/auth";
+import { getApiErrorMessage } from "../utils/apiError";
+import { loginUser, registerUser, verifyOTP } from "../api/auth";
 
 export type { AccountProfile, Role };
 
@@ -56,10 +56,6 @@ const initialsOf = (name: string): string =>
 
 const emailOk = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
 const digitsOf = (value: string) => value.replace(/\D/g, "");
-
-/** Same shape the application form's PincodeInputField accepts. */
-const PINCODE_REGEX = /^[1-9]\d{5}$/;
-const PINCODE_DEBOUNCE_MS = 600;
 
 // ── Small presentational pieces ───────────────────────────────────────────────
 const Chevron = ({ open }: { open: boolean }) => (
@@ -112,8 +108,8 @@ const PANEL_ATTR = "data-account-panel";
       />
     );
   }
-  // A pincode can resolve to a place the masters list hasn't loaded (or that
-  // isn't in it at all) — keep the resolved value selectable so it still shows.
+  // A stored value can resolve to a place the masters list hasn't loaded (or
+  // that isn't in it at all) — keep it selectable so it still shows.
   const list = value && !options.includes(value) ? [...options, value] : options;
   return (
     <div className="relative">
@@ -142,22 +138,19 @@ const AccountMenu = () => {
   const [profile, setProfile] = useState<AccountProfile | null>(readStoredProfile);
   const [language, setLanguage] = useState<string>(readStoredLanguage);
   const [panelOpen, setPanelOpen] = useState(false);
-  const { logout } = useAuth();
+  const { login, logout } = useAuth();
 
   // Sign-up form state
   const [form, setForm] = useState({
     role: "" as Role | "",
+    continent: "",
     country: "",
     countryIso: "",
-    state: "",
-    city: "",
-    pincode: "",
     name: "",
     phone: "",
     email: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [pinNote, setPinNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirmRole, setConfirmRole] = useState<Role | null>(null);
 
   // Sign In / Sign Up tabs
@@ -165,10 +158,31 @@ const AccountMenu = () => {
   const [signin, setSignin] = useState({ phone: "" });
   const [signinError, setSigninError] = useState("");
 
+  // OTP verification — this is where the JWT for the apply flow is produced
+  // (both after Sign Up, whose register call sends the OTP, and after Sign In).
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpMobile, setOtpMobile] = useState("");
+  const [otpValue, setOtpValue] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
+  /** Sign-up record held until the OTP confirms the mobile. */
+  const [pendingProfile, setPendingProfile] = useState<AccountProfile | null>(null);
+
+  const resetOtp = () => {
+    setOtpOpen(false);
+    setOtpValue("");
+    setOtpError("");
+    setResendMsg("");
+    setPendingProfile(null);
+  };
+
   // Location masters
+  const [continents, setContinents] = useState<Continent[]>([]);
+  const [continentsLoading, setContinentsLoading] = useState(true);
   const [countries, setCountries] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(true);
-  const { masters, loadCities } = useMasters();
+  const [countriesLoading, setCountriesLoading] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const suppressReopen = useRef(false);
@@ -191,41 +205,42 @@ const AccountMenu = () => {
     };
   }, []);
 
-  // Load every country once, flattened across continents.
+  // Load every continent once; the country list follows the chosen continent.
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      try {
-        const continents = await fetchContinents();
-        const nested = await Promise.all(
-          continents.map(async (continent) => fetchCountriesByContinent(continent._id))
-        );
-        if (!cancelled) setCountries(nested.flat());
-      } catch {
-        if (!cancelled) setCountries([]);
-      } finally {
-        if (!cancelled) setCountriesLoading(false);
-      }
-    };
-    load();
+    fetchContinents()
+      .then((list) => {
+        if (!cancelled) setContinents(list);
+      })
+      .catch(() => {
+        if (!cancelled) setContinents([]);
+      })
+      .finally(() => {
+        if (!cancelled) setContinentsLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  // Cities follow the chosen state (India-seeded masters). `loadCities` returns
-  // [] on the first call and re-renders once the fetch lands, which changes its
-  // identity — so deriving here stays in step with the async city list.
-  const cities = useMemo<string[]>(
-    () => (form.state ? loadCities(form.state) : []),
-    [form.state, loadCities]
-  );
-
-  // Country name (as the pincode API spells it) -> flag code for the header.
-  const isoByCountry = useMemo(
-    () => new Map(countries.map((c) => [c.name.trim().toLowerCase(), (c.isoCode ?? "").toLowerCase()])),
-    [countries]
-  );
+  useEffect(() => {
+    const picked = continents.find((item) => item.name === form.continent);
+    if (!picked) return;
+    let cancelled = false;
+    fetchCountriesByContinent(picked._id)
+      .then((list) => {
+        if (!cancelled) setCountries(list);
+      })
+      .catch(() => {
+        if (!cancelled) setCountries([]);
+      })
+      .finally(() => {
+        if (!cancelled) setCountriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [continents, form.continent]);
 
   // Freeze the page behind the popup, so only the popup's own areas scroll.
   useEffect(() => {
@@ -250,11 +265,12 @@ const AccountMenu = () => {
         // and drop any pending product so requestSignUp is a no-op.
         suppressReopen.current = true;
         consumePendingProduct();
+        resetOtp();
         setPanelOpen(false);
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPanelOpen(false);
+      if (e.key === "Escape") { resetOtp(); setPanelOpen(false); }
     };
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -285,56 +301,15 @@ const AccountMenu = () => {
     setConfirmRole(null);
   };
 
-  // A pincode pins down the location, so city, state and country all follow it
-  // as soon as the sixth digit lands — no blur needed.
-  useEffect(() => {
-    const pin = form.pincode.trim();
-    // The input clears the note on every keystroke, so an incomplete pincode
-    // just means "nothing to look up".
-    if (!PINCODE_REGEX.test(pin)) return;
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      try {
-        const result = await verifyPincode(pin);
-        if (cancelled) return;
-        if (result.exists && result.info) {
-          const { city, state, country } = result.info;
-          setPinNote({ ok: true, text: `${city}, ${state}, ${country}` });
-          setForm((prev) => ({
-            ...prev,
-            city,
-            state,
-            country,
-            countryIso: isoByCountry.get(country.trim().toLowerCase()) ?? "",
-          }));
-        } else {
-          setPinNote({ ok: false, text: result.message || "Pincode not found" });
-        }
-      } catch {
-        if (!cancelled) setPinNote({ ok: false, text: "Couldn't verify pincode" });
-      }
-    }, PINCODE_DEBOUNCE_MS);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [form.pincode, isoByCountry]);
-
   const validate = (): boolean => {
     const next: Record<string, string> = {};
     if (!form.role) next.role = "Select a role to continue";
+    if (!form.continent) next.continent = "Select a continent";
     if (!form.country) next.country = "Select a country";
-    if (!form.state.trim()) next.state = "Enter your state";
-    if (!form.city.trim()) next.city = "Enter your city";
-    if (!digitsOf(form.pincode)) next.pincode = "Enter your pincode";
     if (!form.name.trim()) next.name = "Enter your name";
     if (digitsOf(form.phone).length !== 10) next.phone = "Enter a valid 10-digit mobile number";
     if (!emailOk(form.email.trim())) next.email = "Enter a valid email address";
     setErrors(next);
-    if (next.pincode) return false;
-    if (pinNote && !pinNote.ok) {
-      return false;
-    }
     return Object.keys(next).length === 0;
   };
 
@@ -346,35 +321,53 @@ const AccountMenu = () => {
       role: form.role as Role,
       country: form.country,
       countryIso: form.countryIso,
-      state: form.state.trim(),
-      city: form.city.trim(),
-      pincode: form.pincode.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
     };
-    writeStoredProfile(saved);
-    setProfile(saved);
-    setPanelOpen(false);
-    emitAccountReady();
+    setSigninError("");
+    // Register sends the OTP; an already-registered mobile falls back to the
+    // login endpoint so the visitor can still verify it.
     try {
       await registerUser({
         name: saved.name,
         mobile: saved.phone,
         email: saved.email,
         role: saved.role,
-        continent: "Asia",
+        continent: form.continent,
         country: saved.country,
       });
     } catch {
-      // Registration is best-effort here; the local session is already ready.
+      try {
+        await loginUser({ mobile: digitsOf(saved.phone) });
+      } catch (err) {
+        setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
+        return;
+      }
     }
+    // Hold the record until verify-otp succeeds — that's what stores the
+    // session and signals the pending "Apply Now" to continue.
+    setPendingProfile(saved);
+    setOtpMobile(digitsOf(saved.phone));
+    setOtpValue("");
+    setOtpError("");
+    setResendMsg("");
+    setOtpOpen(true);
   };
 
   const switchMode = (next: "signup" | "signin") => {
     setMode(next);
     setErrors({});
-    setPinNote(null);
     setSigninError("");
+  };
+
+  // Cancel dismisses the panel the same way a backdrop click does — including
+  // dropping a pending "Apply Now" product so a later sign-up doesn't open it.
+  const onCancel = () => {
+    consumePendingProduct();
+    setErrors({});
+    setSigninError("");
+    resetOtp();
+    setPanelOpen(false);
   };
 
   const onSignInSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
@@ -389,12 +382,69 @@ const AccountMenu = () => {
       setSigninError("No account found for this mobile number. Please sign up.");
       return;
     }
+    // The record already exists — send its OTP, then verify below.
+    try {
+      await loginUser({ mobile: phone });
+    } catch (err) {
+      setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
+      return;
+    }
     setSigninError("");
-    // The record already exists from a previous sign-up — restore the session.
-    startSession();
-    setProfile(stored);
-    setPanelOpen(false);
-    emitAccountReady();
+    setPendingProfile(null);
+    setOtpMobile(phone);
+    setOtpValue("");
+    setOtpError("");
+    setResendMsg("");
+    setOtpOpen(true);
+  };
+
+  // Verify the OTP — success stores the session (JWT + record) and lets any
+  // pending "Apply Now" continue into the application modal.
+  const onOtpVerify = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+    e.preventDefault();
+    const code = otpValue.trim();
+    if (!code) { setOtpError("Please enter the OTP"); return; }
+    if (!/^\d{4,8}$/.test(code)) { setOtpError("Enter a valid OTP"); return; }
+
+    setOtpBusy(true);
+    setOtpError("");
+    try {
+      const res = await verifyOTP({ mobile: otpMobile, otp: code });
+      login(res.token, res.user);
+      if (pendingProfile) {
+        writeStoredProfile(pendingProfile);
+        setProfile(pendingProfile);
+      } else {
+        const stored = readAccountRecord();
+        startSession();
+        if (stored) setProfile(stored);
+      }
+      setOtpOpen(false);
+      setOtpValue("");
+      setPendingProfile(null);
+      setPanelOpen(false);
+      emitAccountReady();
+    } catch (err) {
+      setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const onOtpResend = async () => {
+    if (!otpMobile) return;
+    setResending(true);
+    setOtpError("");
+    setResendMsg("");
+    try {
+      await loginUser({ mobile: otpMobile });
+      setResendMsg("OTP resent successfully!");
+      setTimeout(() => setResendMsg(""), 3000);
+    } catch (err) {
+      setOtpError(getApiErrorMessage(err, "Failed to resend OTP."));
+    } finally {
+      setResending(false);
+    }
   };
 
   const onLanguage = (code: string) => {
@@ -408,8 +458,6 @@ const AccountMenu = () => {
     setProfile(null);
     setPanelOpen(false);
   };
-
-  const stateOptions = useMemo<string[]>(() => [...(masters.states ?? [])], [masters.states]);
 
   // ── Signed in: flag + country on the left, initials on the right ────────────
   if (profile) {
@@ -622,18 +670,21 @@ const AccountMenu = () => {
                   <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
                   <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-6 md:py-5">
                     <div className="mb-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center text-(--brand-navy) bg-(--brand-navy-14) px-2 py-0.5 rounded-full">{mode === "signup" ? "Sign Up" : "Sign In"}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center text-(--brand-navy) bg-(--brand-navy-14) px-2 py-0.5 rounded-full">{otpOpen ? "Verify OTP" : mode === "signup" ? "Sign Up" : "Sign In"}</p>
                       <h2 className="text-base font-bold text-(--form-dark) mt-1 text-center">
-                        {mode === "signup" ? "Create your account" : "Welcome back"}
+                        {otpOpen ? "Verify your number" : mode === "signup" ? "Create your account" : "Welcome back"}
                       </h2>
                       <p className="text-xs text-(--brand-gray) mt-0.5 text-center">
-                        {mode === "signup" ? "Sign up to apply for a loan" : "Sign in to continue your application"}
+                        {otpOpen
+                          ? `Enter the OTP sent to +91 ${otpMobile}`
+                          : mode === "signup" ? "Sign up to apply for a loan" : "Sign in to continue your application"}
                       </p>
                     </div>
 
                     {errors.role && mode === "signup" && <p className="text-[11px] font-medium text-red-500 mb-3">{errors.role}</p>}
                     {signinError && <p className="text-[11px] font-medium text-red-500 mb-3">{signinError}</p>}
 
+                    {!otpOpen && (
                     <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
                       {(["signup", "signin"] as const).map((m) => (
                         <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
@@ -642,8 +693,63 @@ const AccountMenu = () => {
                         </button>
                       ))}
                     </div>
+                    )}
 
-                    {mode === "signin" && (
+                    {otpOpen && (
+                      <form onSubmit={onOtpVerify} className="space-y-3.5">
+                        <div className="text-center pt-1">
+                          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-(--brand-navy-22) bg-(--brand-navy-14)">
+                            <svg className="h-6 w-6 text-(--brand-navy)" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18h3" />
+                            </svg>
+                          </div>
+                          <p className="text-sm text-slate-500">One-time password sent to</p>
+                          <p className="text-base font-bold text-slate-900">+91 {otpMobile}</p>
+                        </div>
+
+                        <div>
+                          <Label>Enter OTP</Label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={8}
+                            value={otpValue}
+                            onChange={(e) => { setOtpValue(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
+                            placeholder="• • • • • •"
+                            disabled={otpBusy}
+                            autoFocus
+                            className={`w-full rounded-xl border px-3 py-3 text-center text-xl font-bold tracking-[0.4em] text-slate-800 shadow-sm outline-none transition focus:ring-2 focus:ring-emerald-400/25 disabled:bg-slate-100 ${otpError ? "border-red-400 bg-red-50/30" : "border-slate-300 focus:border-emerald-400"}`}
+                          />
+                          {otpError && <p className="mt-1 text-[11px] font-medium text-red-500">{otpError}</p>}
+                          {resendMsg && <p className="mt-1 text-[11px] font-medium text-emerald-600">{resendMsg}</p>}
+                        </div>
+
+                        <div className="flex gap-3 pt-1">
+                          <button type="button"
+                            onClick={() => { setOtpOpen(false); setOtpValue(""); setOtpError(""); setPendingProfile(null); }}
+                            disabled={otpBusy}
+                            className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            ← Back
+                          </button>
+                          <button type="submit"
+                            disabled={otpBusy || otpValue.length < 4}
+                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition disabled:opacity-70 cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
+                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                            {otpBusy ? "Verifying…" : "Verify & Continue →"}
+                          </button>
+                        </div>
+
+                        <p className="text-center text-xs text-slate-400">
+                          Didn't get it?{' '}
+                          <button type="button" onClick={onOtpResend} disabled={resending || otpBusy}
+                            className="font-semibold text-(--brand-navy) hover:underline disabled:opacity-40 cursor-pointer">
+                            {resending ? "Resending…" : "Resend OTP"}
+                          </button>
+                        </p>
+                      </form>
+                    )}
+
+                    {!otpOpen && mode === "signin" && (
                       <form onSubmit={onSignInSubmit} className="space-y-3.5">
                         <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5">
                           <Label>Mobile Number</Label>
@@ -656,15 +762,23 @@ const AccountMenu = () => {
                           </div>
                           {signinError && <p className="mt-1 text-[11px] font-medium text-red-500">{signinError}</p>}
                         </div>
-                        <button type="submit"
-                          className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-                          style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Sign In</button>
+                        <div className="flex gap-3 pt-1">
+                          <button type="button" onClick={onCancel}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600
+                              border border-slate-300 hover:bg-slate-50 transition cursor-pointer
+                              focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            Cancel
+                          </button>
+                          <button type="submit"
+                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
+                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Sign In</button>
+                        </div>
                         <p className="text-center text-xs text-slate-400">New to Indexia? <button type="button" onClick={() => switchMode("signup")}
                           className="font-semibold text-(--brand-navy) hover:underline cursor-pointer">Create an account</button></p>
                       </form>
                     )}
 
-                    {mode === "signup" && (
+                    {!otpOpen && mode === "signup" && (
                       <form onSubmit={onSubmit} className="space-y-3">
                         <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-amber-800">
                           <span className="shrink-0">&#x1F4C4;</span>
@@ -694,22 +808,26 @@ const AccountMenu = () => {
                         <div>
                           <Label>Location</Label>
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="col-span-2">
-                              <Combo value={form.country} options={countries.map((c) => c.name)}
-                                placeholder={countriesLoading ? "Loading..." : "Select country"}
-                                onChange={(v) => { const picked = countries.find((c) => c.name === v); setForm((p) => ({ ...p, country: v, countryIso: picked?.isoCode?.toLowerCase() ?? "" })); setErrors((p) => ({ ...p, country: "" })); }} />
-                              {errors.country && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.country}</p>}
-                            </div>
-                            <Combo value={form.state} options={stateOptions} placeholder="State" onChange={(v) => setField("state", v)} />
-                            <Combo value={form.city} options={cities} placeholder="City" onChange={(v) => setField("city", v)} />
-                            <div className="col-span-2">
-                              <input className={fieldClass} value={form.pincode} inputMode="numeric" placeholder="Pincode"
-                                onChange={(e) => { setPinNote(null); setField("pincode", e.target.value); }} />
-                              {errors.pincode && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.pincode}</p>}
-                              {pinNote && !errors.pincode && <p className={`mt-0.5 text-[10px] font-medium ${pinNote.ok ? "text-(--brand-teal)" : "text-red-500"}`}>{pinNote.text}</p>}
-                            </div>
+                            <Combo value={form.continent} options={continents.map((c) => c.name)}
+                              placeholder={continentsLoading ? "Loading..." : "Select continent"}
+                              onChange={(v) => {
+                                const picked = continents.find((item) => item.name === v);
+                                setForm((p) => ({ ...p, continent: v, country: "", countryIso: "" }));
+                                setCountries([]);
+                                setCountriesLoading(!!picked);
+                                setErrors((p) => {
+                                  const next = { ...p };
+                                  delete next.continent;
+                                  delete next.country;
+                                  return next;
+                                });
+                              }} />
+                            <Combo value={form.country} options={countries.map((c) => c.name)}
+                              placeholder={!form.continent ? "Pick a continent" : countriesLoading ? "Loading..." : "Select country"}
+                              disabled={!form.continent || countriesLoading}
+                              onChange={(v) => { const picked = countries.find((c) => c.name === v); setForm((p) => ({ ...p, country: v, countryIso: picked?.isoCode?.toLowerCase() ?? "" })); setErrors((p) => ({ ...p, country: "" })); }} />
                           </div>
-                          {(errors.state || errors.city) && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.state || errors.city}</p>}
+                          {(errors.continent || errors.country) && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.continent || errors.country}</p>}
                         </div>
 
                         <div>
@@ -733,9 +851,17 @@ const AccountMenu = () => {
                           </div>
                         </div>
 
-                        <button type="submit"
-                          className="w-full rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-                          style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Submit</button>
+                        <div className="flex gap-3 pt-1">
+                          <button type="button" onClick={onCancel}
+                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600
+                              border border-slate-300 hover:bg-slate-50 transition cursor-pointer
+                              focus:outline-none focus:ring-2 focus:ring-slate-200">
+                            Cancel
+                          </button>
+                          <button type="submit"
+                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
+                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Submit</button>
+                        </div>
                       </form>
                     )}
                   </div>
