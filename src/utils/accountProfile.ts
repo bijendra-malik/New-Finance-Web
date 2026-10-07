@@ -9,9 +9,6 @@ export interface AccountProfile {
   role: Role;
   country: string;
   countryIso: string;
-  state: string;
-  city: string;
-  pincode: string;
   phone: string;
   email: string;
   /** Optional: collected later at the loan sign-up / OTP step. */
@@ -111,9 +108,6 @@ export const accountFieldDefaults = (
     ["email", profile.email?.trim() ?? ""],
     ["dob", profile.dob?.trim() ?? ""],
     ["panNumber", (profile.pan ?? "").replace(/\s/g, "").toUpperCase()],
-    ["state", profile.state?.trim() ?? ""],
-    ["city", profile.city?.trim() ?? ""],
-    ["pincode", (profile.pincode ?? "").replace(/\D/g, "")],
   ];
   return candidates.reduce<Partial<Record<LockableField, string>>>((acc, [key, value]) => {
     if (value) acc[key] = value;
