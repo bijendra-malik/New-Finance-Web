@@ -1,49 +1,26 @@
 import axiosInstance from "./axiosInstance";
 import { registerUser } from "./auth";
+import type { RegisterPayload, RegisterResponse, RegisteredAccount } from "./auth";
 
 // ── Types ────────────────────────────────────────────────────────────────────────
 
-export interface RegisterFranchisePayload {
-  role: "Franchise";
-  name: string;
-  mobile: string;
-  email: string;
-  continent: string;
-  country: string;
-}
+/**
+ * Franchise registration is the shared /auth/register call with the franchise
+ * role, so the payload and response reuse the auth module's types instead of
+ * restating the endpoint's contract here.
+ */
+export type RegisterFranchisePayload = RegisterPayload & { role: "Franchise" };
+export type RegisterFranchiseResponse = RegisterResponse;
 
-export interface RegisterFranchiseResponse {
-  success: boolean;
-  message: string;
-  /** The registered franchisee (returned by the backend when the call succeeds). */
-  franchise?: {
-    _id: string;
-    name: string;
-    mobile: string;
-    email: string;
-    isVerified: boolean;
-    role: string;
-    continent: string;
-    country: string;
-    isActive: boolean;
-  };
+/** The franchise account record returned by the franchise endpoints. */
+export interface FranchiseAccount extends RegisteredAccount {
+  /** The franchise status surfaced by the profile endpoint. */
+  franchiseStatus?: "Pending" | "Active" | "Suspended" | string;
 }
 
 export interface FranchiseProfileResponse {
   success: boolean;
-  franchise?: {
-    _id: string;
-    name: string;
-    mobile: string;
-    email: string;
-    role: string;
-    continent: string;
-    country: string;
-    isActive: boolean;
-    isVerified: boolean;
-    /** The franchise status surfaced by the profile endpoint. */
-    franchiseStatus?: "Pending" | "Active" | "Suspended" | string;
-  };
+  franchise?: FranchiseAccount;
 }
 
 export interface ApplyFranchisePayload {
@@ -63,17 +40,7 @@ export interface ApplyFranchiseResponse {
   success: boolean;
   message: string;
   franchiseStatus: string;
-  franchise?: {
-    _id: string;
-    name: string;
-    mobile: string;
-    email: string;
-    isVerified: boolean;
-    role: string;
-    continent: string;
-    country: string;
-    isActive: boolean;
-  };
+  franchise?: RegisteredAccount;
 }
 
 export interface FranchiseLoginPayload {
@@ -95,15 +62,13 @@ export interface FranchiseLoginResponse {
 
 /**
  * Register a new franchise user and (on the backend) send any required verification OTP.
- * POST /auth/register
+ *
+ * This is the shared POST /auth/register endpoint, called through auth.ts — the
+ * franchise difference is the `role` field, not a second endpoint.
  */
 export const registerFranchise = async (
   payload: RegisterFranchisePayload,
-): Promise<RegisterFranchiseResponse> => {
-  // Reuse the shared /auth/register endpoint via auth.ts.
-  const result = await registerUser(payload);
-  return result as RegisterFranchiseResponse;
-};
+): Promise<RegisterFranchiseResponse> => registerUser(payload);
 
 /**
  * Fetch the authenticated franchise profile (requires a bearer token in the request).
