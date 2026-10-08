@@ -94,7 +94,7 @@ const LoanStatusShell = <T extends AppLike>({
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
 
-      {/* ── Application ID banner ── */}
+      {/* Application ID banner */}
       <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal33}` }}>
         <div className="h-1.5" style={{ background: `linear-gradient(90deg,${C.teal},${C.navy})` }} />
         <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
@@ -120,7 +120,7 @@ const LoanStatusShell = <T extends AppLike>({
         </div>
       </div>
 
-      {/* ── Product detail cards ── */}
+      {/* Product detail cards */}
       {renderApp?.(displayed)}
     </div>
   );

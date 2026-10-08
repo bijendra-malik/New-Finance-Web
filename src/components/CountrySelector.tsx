@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
 import type { Country } from "../api/masters";
 
-// ── Static data ─────────────────────────────────────────────────────
-// Live continents, countries and flags all come from the masters API;
-// continents the backend doesn't serve (yet) stay as static "coming soon" rows.
+// Static data Live continents, countries and flags all come from the masters API; continents the backend doesn't serve (yet) stay as static "coming soon" rows.
 const STATIC_CONTINENTS = [
   "Africa",
   "North America",
@@ -92,7 +90,7 @@ const CountrySelector = () => {
 
   return (
     <div ref={dropdownRef} className="relative inline-block">
-      {/* ── Trigger button (flag + country name) ── */}
+      {/* Trigger button (flag + country name) */}
       <button
         onClick={() => { setIsOpen(!isOpen); setOpenContinent(null); }}
         className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/60 hover:bg-white border border-slate-200 transition-all duration-200 hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
@@ -123,7 +121,7 @@ const CountrySelector = () => {
         </svg>
       </button>
 
-      {/* ── Dropdown panel — continents → countries ── */}
+      {/* Dropdown panel — continents → countries */}
       {isOpen && (
         <div
           className="absolute right-0 top-11 z-9999 rounded-2xl shadow-2xl ring-1 ring-white/60 bg-white/90 backdrop-blur-2xl overflow-visible"

@@ -70,7 +70,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
 
   return (
     <>
-      {/* ── BANNER ─────────────────────────────────────────────────── */}
+      {/* BANNER */}
       <section
         className="relative w-full min-h-75 md:min-h-90 flex items-center overflow-hidden mt-(--header-h)"
         style={{
@@ -183,7 +183,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
         </div>
       </section>
 
-      {/* ── CONTENT ────────────────────────────────────────────────── */}
+      {/* CONTENT */}
       <div className="bg-white">
 
         {/* Document list */}
@@ -226,7 +226,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                   boxShadow: "0 2px 12px rgba(6,106,156,0.06)",
                 }}
               >
-                {/* ── Section heading bar ── */}
+                {/* Section heading bar */}
                 <div
                   className="flex items-center gap-3 px-5 py-3"
                   style={{
@@ -264,7 +264,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                   </span>
                 </div>
 
-                {/* ── Doc items ── */}
+                {/* Doc items */}
                 <ul className="divide-y divide-gray-50">
                   {section.docs.map((doc, idx) => (
                     <li
@@ -350,7 +350,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
               {steps.map((step, idx) => (
                 <div key={idx} className="flex items-center flex-1 min-w-0">
 
-                  {/* ── STEP CARD ── */}
+                  {/* STEP CARD */}
                   <div className="step-card flex-1 min-w-0">
                     {/* Step number pill */}
                     <div className="flex items-center justify-between w-full mb-4">
@@ -378,7 +378,7 @@ const DocPageLayout = ({ loanName, breadcrumb, bannerBg, sections, applySlug }: 
                     <div className="step-accent-bar" style={{ background: step.color }} />
                   </div>
 
-                  {/* ── ARROW BETWEEN CARDS ── */}
+                  {/* ARROW BETWEEN CARDS */}
                   {idx < steps.length - 1 && (
                     <div className="step-arrow">
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">

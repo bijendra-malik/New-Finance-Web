@@ -192,8 +192,7 @@ interface PillMultiSelectProps {
 }
 export const PillMultiSelect = memo(({ options, selected, onChange, color = C.teal, disabled = false }: PillMultiSelectProps) => {
   const toggle = (item: string) => { if (!disabled) onChange(selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item]); };
-  // Alpha tints can't be appended to a var() colour, so each shade is looked
-  // up by the brand colour's variable name in the :root token set.
+  // Alpha tints can't be appended to a var() colour, so each shade is looked up by the brand colour's variable name in the :root token set.
   const shade = (alpha: string): string => {
     const m = /var\(--brand-([a-z-]+)\)/.exec(color);
     return m ? `var(--brand-${m[1]}-${alpha})` : `${color}${alpha}`;

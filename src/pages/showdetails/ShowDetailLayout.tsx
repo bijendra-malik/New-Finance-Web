@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
+import SectionHeading from "../../components/ui/SectionHeading";
 import useSEO from "../../hooks/useSEO";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -38,31 +39,8 @@ export interface ShowDetailLayoutProps {
   previewCount?: number;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 const ACCENT = "var(--brand-navy)";
 
-// Shared section-heading component — gradient underline matching text width
-const SectionHeading = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-stretch gap-3 mb-3">
-    {/* left accent bar — full height of heading */}
-    <div
-      className="w-0.75 rounded-full shrink-0 self-stretch"
-      style={{ background: "linear-gradient(180deg,#27ae90,var(--brand-navy))", minHeight: "1.25rem" }}
-    />
-    <div className="inline-block">
-      <h2 className="text-base md:text-lg font-bold text-gray-900 leading-snug">
-        {children}
-      </h2>
-      {/* gradient underline — only as wide as heading text */}
-      <div
-        className="mt-0.5 h-0.5 w-full rounded-full"
-        style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 60%,transparent 100%)" }}
-      />
-    </div>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
 const ShowDetailLayout = ({
   loanName,
   breadcrumb,
@@ -89,7 +67,7 @@ const ShowDetailLayout = ({
 
   return (
     <>
-      {/* ── BANNER ────────────────────────────────────────────────────── */}
+      {/* BANNER */}
       <section
         className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden mt-(--header-h)"
         style={{
@@ -219,7 +197,7 @@ const ShowDetailLayout = ({
         .sdl-apply-inner:active { transform: scale(0.96); }
       `}</style>
 
-      {/* ── CONTENT ───────────────────────────────────────────────────── */}
+      {/* CONTENT */}
       <div className="bg-white">
         <div className="w-full max-w-5xl mx-auto px-6 md:px-12 py-8">
 
@@ -256,7 +234,7 @@ const ShowDetailLayout = ({
         </div>
       </div>
 
-      {/* ── Modal ─────────────────────────────────────────────────────── */}
+      {/* Modal */}
       <ApplicationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

@@ -89,7 +89,7 @@ const Home = () => {
   return (
     <>
     <div aria-hidden style={{ height: "var(--header-h)" }} />
-    {/* ── HERO BANNER ── */}
+    {/* HERO BANNER */}
     <div
       className="hero-viewport relative w-full overflow-hidden bg-slate-950"
     >
@@ -99,7 +99,7 @@ const Home = () => {
           .hero-viewport { height: calc(100dvh - var(--header-h)); }
         }
       `}</style>
-      {/* ── Video loading spinner (hidden once first frame is ready) ── */}
+      {/* Video loading spinner (hidden once first frame is ready) */}
       {!videoReady && (
         <div
           className="absolute inset-0 flex items-center justify-center bg-slate-950"
@@ -113,7 +113,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* ── Video background ── */}
+      {/* Video background */}
       <video
         ref={videoRef}
         autoPlay

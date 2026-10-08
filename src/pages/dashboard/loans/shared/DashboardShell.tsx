@@ -73,7 +73,7 @@ const DashboardShell = <T,>({
       }}
     >
 
-      {/* ══ COL 1: LEFT SIDEBAR ══════════════════════════════════════════════ */}
+      {/* COL 1: LEFT SIDEBAR */}
       <aside
         className="hidden md:flex flex-col w-60 shrink-0 border-r"
         style={{ background: "linear-gradient(180deg, var(--brand-navy-deep) 0%, var(--brand-navy) 100%)", borderColor:"rgba(255,255,255,0.08)" }}
@@ -130,7 +130,7 @@ const DashboardShell = <T,>({
         </div>
       </aside>
 
-      {/* ══ COL 2: MAIN CONTENT (CENTER) ════════════════════════════════════ */}
+      {/* COL 2: MAIN CONTENT (CENTER) */}
       <main id="loan-dashboard-main" className="flex-1 overflow-y-auto h-full">
         {/* Mobile tab bar */}
         <div className="md:hidden sticky top-0 z-20 flex border-b"
@@ -170,7 +170,7 @@ const DashboardShell = <T,>({
         </div>
       </main>
 
-      {/* ══ COL 3: RIGHT PANEL — only bell + profile ══════════════════════ */}
+      {/* COL 3: RIGHT PANEL — only bell + profile */}
       <aside
         className="hidden lg:flex flex-col w-72 shrink-0 border-l"
         style={{ background: "#f8fafc", borderColor: "#e2e8f0" }}

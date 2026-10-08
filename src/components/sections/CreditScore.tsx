@@ -264,7 +264,7 @@ const CreditScore = () => {
   return (
     <section ref={sectionRef} className="w-full bg-[#f0f9ff] py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
 
-      {/* ── Heading ── */}
+      {/* Heading */}
       <h2 className="text-center md:text-3xl sm:text-2xl font-bold text-slate-700 uppercase tracking-wide mb-2">
         Get Your{" "}
         <span style={{ color: "#006699" }}>Free Credit Score</span>{" "}
@@ -274,7 +274,7 @@ const CreditScore = () => {
         Powered by Equifax · Updated instantly · No impact on score
       </p>
 
-      {/* ── Main card ── */}
+      {/* Main card */}
       <div className="max-w-3xl mx-auto flex flex-col items-center">
 
         {/* Gauge row */}

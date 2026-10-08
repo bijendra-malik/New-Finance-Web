@@ -198,7 +198,7 @@ const Footer = () => {
       {/* Top accent line */}
       <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
 
-      {/* ── Main grid ── */}
+      {/* Main grid */}
       <div
         className="ftr-content ftr-main-pad"
         style={{ maxWidth: "1280px", margin: "0 auto", padding: "72px 0px 65px", minHeight: "300px" }}
@@ -213,7 +213,7 @@ const Footer = () => {
           }}
         >
 
-          {/* ── Col 1: Company ── */}
+          {/* Col 1: Company */}
           <div style={{ alignSelf: "start" }}>
             <p className="ftr-heading">Company</p>
             <div className="ftr-divider" />
@@ -232,7 +232,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ── Col 2: Resources ── */}
+          {/* Col 2: Resources */}
           <div style={{ alignSelf: "start" }}>
             <p className="ftr-heading">Resources</p>
             <div className="ftr-divider" />
@@ -251,7 +251,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ── Col 3 (CENTER): Logo + Globe video ── */}
+          {/* Col 3 (CENTER): Logo + Globe video */}
           <div className="ftr-globe-col" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "25px", textAlign: "center" }}>
             <Link to="/" style={{ textDecoration: "none" }}>
               <div style={{ display: "flex", gap: "3px", alignItems: "baseline" }}>
@@ -275,7 +275,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ── Col 4: Knowledge ── */}
+          {/* Col 4: Knowledge */}
           <div style={{ alignSelf: "start" }}>
             <p className="ftr-heading">Knowledge</p>
             <div className="ftr-divider" />
@@ -295,7 +295,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ── Col 5: Stay Updated + Socials ── */}
+          {/* Col 5: Stay Updated + Socials */}
           <div style={{ alignSelf: "start" }}>
             <p className="ftr-heading">Stay Updated</p>
             <div className="ftr-divider" />
@@ -320,7 +320,7 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* ── Bottom bar ── */}
+      {/* Bottom bar */}
       <div className="ftr-content" style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}>
         <div style={{
           maxWidth: "1280px", margin: "0 auto",

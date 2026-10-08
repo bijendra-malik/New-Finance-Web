@@ -1,10 +1,7 @@
 import axiosInstance from "../axiosInstance";
 import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
 
-// ── Home Loan ─────────────────────────────────────────────────────────────────
-// Aligned with the backend's HomeLoan document (POST /home-loan/apply,
-// GET /home-loan/applications). transactionBankName is a plain string for a
-// single bank, or an object for "Multiple Transaction Banks".
+// Home Loan Aligned with the backend's HomeLoan document (POST /home-loan/apply, GET /home-loan/applications). transactionBankName is a plain string for a single bank, or an object for "Multiple Transaction Banks".
 
 export interface HomeLoanTransactionBank {
   displayName: string;

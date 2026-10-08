@@ -37,7 +37,7 @@ const FAQ = () => {
 
   return (
     <>
-      {/* ══════════ SECTION 1 — How We Work + FAQ ══════════ */}
+      {/* SECTION 1 — How We Work + FAQ */}
       <section className="relative w-full py-16 px-10 md:px-6 bg-white overflow-hidden">
         {/* Top accent bar */}
         <div
@@ -46,7 +46,7 @@ const FAQ = () => {
         />
 
         <div className="relative z-10 max-w-6xl mx-auto">
-          {/* ── Heading ── */}
+          {/* Heading */}
           <div className="text-center mb-8">
             <h2
               className="text-3xl md:text-4xl font-extrabold mb-0 inline-block relative"
@@ -63,7 +63,7 @@ const FAQ = () => {
             </p>
           </div>
 
-          {/* ── Two Column Grid ── */}
+          {/* Two Column Grid */}
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
             {/* LEFT — Process steps */}
@@ -261,7 +261,7 @@ const FAQ = () => {
         </div>
       </section>
 
-      {/* ══════════ Bottom CTA Section ══════════ */}
+      {/* Bottom CTA Section */}
      
       <div
         className="w-full relative overflow-hidden"

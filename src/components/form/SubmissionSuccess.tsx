@@ -31,7 +31,7 @@ const Section = ({ section }: { section: SuccessSection }) => {
 
 const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantName, mobile, email, sections }: SubmissionSuccessProps) => (
   <div className="max-w-3xl mx-auto space-y-5">
-    {/* ── Receipt header — letterhead style ── */}
+    {/* Receipt header — letterhead style */}
     <div className="rounded-(--form-card-radius) overflow-hidden shadow-xl bg-(--form-card-bg)" style={{ border: `1px solid ${C.teal33}` }}>
       <div className="h-1.5" style={{ background: `linear-gradient(90deg,${C.teal},${C.navy})` }} />
 
@@ -62,7 +62,7 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
         )}
       </div>
 
-      {/* ── At-a-glance strip: applicant + product + status ── */}
+      {/* At-a-glance strip: applicant + product + status */}
       <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x" style={{ borderColor: `${C.teal1f}`, background: FORM.subtleBg }}>
         {[
           ["Product", productName],
@@ -77,10 +77,10 @@ const SubmissionSuccess = ({ refNo, fullId, createdAt, productName, applicantNam
       </div>
     </div>
 
-    {/* ── Every section of the filed application ── */}
+    {/* Every section of the filed application */}
     {sections.map(s => <Section key={s.title} section={s} />)}
 
-    {/* ── What happens next + footer ── */}
+    {/* What happens next + footer */}
     <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.teal33}` }}>
       <div className="px-6 py-4 flex items-start gap-3" style={{ background: C.teal14 }}>
         <span className="text-lg shrink-0">📞</span>

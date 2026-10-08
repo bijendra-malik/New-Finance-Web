@@ -111,8 +111,7 @@ export const validateApplication = (raw: unknown): ApplicationValidationResult =
       if (value !== undefined && value !== null && !isDateString(value)) errors.push(`${key}: parseable date string required`);
       continue;
     }
-    // Any other key must be a primitive or a string array — catches nested
-    // objects/arrays of the wrong shape drifting in from the backend.
+    // Any other key must be a primitive or a string array — catches nested objects/arrays of the wrong shape drifting in from the backend.
     const okPrimitive = value === null || value === undefined || ["string", "number", "boolean"].includes(typeof value);
     const okArray = Array.isArray(value) && value.every(x => typeof x === "string");
     if (!okPrimitive && !okArray) errors.push(`${key}: unexpected value type`);

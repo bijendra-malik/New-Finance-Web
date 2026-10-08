@@ -32,9 +32,7 @@ export const formatIndianNumber = (raw: string): string => {
   return rest ? `${rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${last3}` : last3;
 };
 
-// 15-character GSTIN: 2-digit state code, 5-letter + 4-digit PAN, 1 letter,
-// entity digit, literal Z, checksum — only lets characters through where the
-// GSTIN structure expects them.
+// 15-character GSTIN: 2-digit state code, 5-letter + 4-digit PAN, 1 letter, entity digit, literal Z, checksum — only lets characters through where the GSTIN structure expects them.
 export const formatGSTIN = (raw: string): string => {
   const chars = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
   let out = "";

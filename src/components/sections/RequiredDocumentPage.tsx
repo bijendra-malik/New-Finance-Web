@@ -57,7 +57,7 @@ const RequiredDocumentPage = () => {
 
   return (
     <>
-      {/* ── BANNER ─────────────────────────────────────────────────────────── */}
+      {/* BANNER */}
       <section
         className="relative w-full min-h-80 md:min-h-95 flex items-center overflow-hidden mt-(--header-h)"
       >
@@ -120,10 +120,10 @@ const RequiredDocumentPage = () => {
         </div>
       </section>
 
-      {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
+      {/* MAIN CONTENT */}
       <div className="bg-white">
 
-        {/* ── Document List ── */}
+        {/* Document List */}
         <div className="w-full max-w-4xl mx-auto px-6 md:px-8 py-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
             Required Documents For {loanName}
@@ -153,7 +153,7 @@ const RequiredDocumentPage = () => {
           </div>
         </div>
 
-        {/* ── How It Works ── */}
+        {/* How It Works */}
         <div className="w-full border-t border-gray-100 py-6 bg-gray-50">
           <div className="max-w-5xl mx-auto px-6 md:px-12">
 
@@ -192,7 +192,7 @@ const RequiredDocumentPage = () => {
 
       </div>
 
-      {/* ── Modal ─────────────────────────────────────────────────────────── */}
+      {/* Modal */}
       {gate}
     </>
   );

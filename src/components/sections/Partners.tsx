@@ -104,86 +104,13 @@ const LogoCard = ({ logo }: { logo: { src: string; name: string } }) => (
 
 import { useRef } from "react";
 
-// ── Animated counter hook ─────────────────────────────────────────────────────
-// const useCounter = (target: number, duration = 1800, started = false) => {
-//   const [count, setCount] = useState(0);
-//   const raf = useRef<number | null>(null);
-//   const start = useRef<number | null>(null);
-
-//   useEffect(() => {
-//     if (!started) return;
-//     const animate = (ts: number) => {
-//       if (!start.current) start.current = ts;
-//       const progress = Math.min((ts - start.current) / duration, 1);
-//       const eased = 1 - Math.pow(1 - progress, 3);
-//       setCount(Math.round(eased * target));
-//       if (progress < 1) raf.current = requestAnimationFrame(animate);
-//     };
-//     raf.current = requestAnimationFrame(animate);
-//     return () => { if (raf.current) cancelAnimationFrame(raf.current); };
-//   }, [started, target, duration]);
-
-//   return count;
-// };
-
-// ── Stats config with SVG icons & descriptions ────────────────────────────────
-// const STATS = [
-//   {
-//     target: 38,
-//     suffix: "+",
-//     label: "Partner Banks",
-//     desc: "Trusted by India's top financial institutions",
-//     color: "#0891b2",
-//     icon: (
-//       <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-//         <path d="M3 6h18M3 12h18m-9-6v12m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round"/>
-//       </svg>
-//     ),
-//   },
-//   {
-//     target: 500,
-//     suffix: "Cr+",
-//     prefix: "₹",
-//     label: "Loans Disbursed",
-//     desc: "Transforming lives with accessible credit",
-//     color: "#059669",
-//     icon: (
-//       <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-//         <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
-//       </svg>
-//     ),
-//   },
-//   {
-//     target: 100,
-//     suffix: "K+",
-//     label: "Happy Customers",
-//     desc: "Successfully empowering Indian households",
-//     color: "#7c3aed",
-//     icon: (
-//       <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-//         <path d="M12 4.354a4 4 0 110 5.292M19 12a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round"/>
-//       </svg>
-//     ),
-//   },
-// ];
-
 const Partners = () => {
   const sectionRef = useRef<HTMLElement>(null);
-
-  // Start counters when section enters viewport
-  // useEffect(() => {
-  //   const observer = new IntersectionObserver(
-  //     ([entry]) => { if (entry.isIntersecting) setStarted(true); },
-  //     { threshold: 0.3 }
-  //   );
-  //   if (sectionRef.current) observer.observe(sectionRef.current);
-  //   return () => observer.disconnect();
-  // }, []);
 
   return (
     <section ref={sectionRef} className="w-full bg-slate-50 py-8 md:py-15 overflow-hidden">
 
-      {/* ── Heading — two lines only ── */}
+      {/* Heading — two lines only */}
       <div className="text-center mb-8 px-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 leading-snug">
           Trusted by India's Leading Institutions —{" "}
@@ -196,7 +123,7 @@ const Partners = () => {
         </p>
       </div>
 
-      {/* ── Row 1 — scrolls LEFT ── */}
+      {/* Row 1 — scrolls LEFT */}
       <div className="relative mb-10">
         <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
           style={{ background: "linear-gradient(to right, #f8fafc, transparent)" }} />
@@ -207,7 +134,7 @@ const Partners = () => {
         </div>
       </div>
 
-      {/* ── Row 2 — scrolls RIGHT ── */}
+      {/* Row 2 — scrolls RIGHT */}
       <div className="relative mb-6">
         <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
           style={{ background: "linear-gradient(to right, #f8fafc, transparent)" }} />
@@ -217,13 +144,6 @@ const Partners = () => {
           {[...ROW2, ...ROW2].map((logo, i) => <LogoCard key={`r2-${i}`} logo={logo} />)}
         </div>
       </div>
-
-      {/* ── Stats row — 3 cards only, animated count-up with hover effects ── */}
-      {/* <div className="max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pb-12">
-        {STATS.map((stat) => (
-          <StatCard key={stat.label} stat={stat} started={started} />
-        ))}
-      </div> */}
 
       <style>{`
         @keyframes scrollLeft {

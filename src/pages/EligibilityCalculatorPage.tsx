@@ -101,7 +101,7 @@ const EligibilityCalculatorPage = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-(--header-h)">
 
-      {/* ── Top nav bar ─────────────────────────────────────────────── */}
+      {/* Top nav bar */}
       <div
         className="sticky top-0 z-20 flex items-center gap-3 px-6 py-4 shadow-sm"
         style={{ background: "linear-gradient(90deg, #0f766e 0%, #059669 100%)" }}
@@ -118,7 +118,7 @@ const EligibilityCalculatorPage = () => {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
-        {/* ── Page heading ───────────────────────────────────────────── */}
+        {/* Page heading */}
         {!result && (
           <div className="mb-8 text-center">
             <span className="inline-block text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full mb-3">
@@ -241,7 +241,7 @@ const EligibilityCalculatorPage = () => {
 
             <form onSubmit={handleSubmit} noValidate className="px-6 md:px-8 py-7">
 
-              {/* ── Row 1: Country | Product | Full Name ── */}
+              {/* Row 1: Country | Product | Full Name */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Country *</label>
@@ -266,7 +266,7 @@ const EligibilityCalculatorPage = () => {
                 </div>
               </div>
 
-              {/* ── Row 2: DOB | Mobile | Email ── */}
+              {/* Row 2: DOB | Mobile | Email */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Date of Birth *</label>
@@ -293,7 +293,7 @@ const EligibilityCalculatorPage = () => {
                 </div>
               </div>
 
-              {/* ── Row 3: Occupation | Income | EMI ── */}
+              {/* Row 3: Occupation | Income | EMI */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-6">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Occupation *</label>
@@ -324,10 +324,10 @@ const EligibilityCalculatorPage = () => {
                 </div>
               </div>
 
-              {/* ── Divider ── */}
+              {/* Divider */}
               <hr className="border-gray-100 mb-5" />
 
-              {/* ── Authorise checkbox ── */}
+              {/* Authorise checkbox */}
               <label className="flex items-start gap-3 cursor-pointer mb-7 group">
                 <div className="relative mt-0.5 shrink-0">
                   <input type="checkbox" checked={form.authorized} onChange={e => set("authorized", e.target.checked)}
@@ -345,7 +345,7 @@ const EligibilityCalculatorPage = () => {
               </label>
               {errors.authorized && <p className="text-xs text-red-500 -mt-5 mb-5 ml-8">{errors.authorized}</p>}
 
-              {/* ── Submit ── */}
+              {/* Submit */}
               <div className="flex justify-center">
                 <button
                   type="submit"
@@ -376,7 +376,7 @@ const EligibilityCalculatorPage = () => {
           </div>
         )}
 
-        {/* ── Trust badges ──────────────────────────────────────────── */}
+        {/* Trust badges */}
         {!result && (
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
             {[
