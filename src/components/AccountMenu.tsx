@@ -16,6 +16,7 @@ import type { AccountProfile, Role } from "../utils/accountProfile";
 import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
 import { getApiErrorMessage } from "../utils/apiError";
 import { loginUser, registerUser, verifyOTP } from "../api/auth";
+import Button from "./ui/Button";
 
 export type { AccountProfile, Role };
 
@@ -108,8 +109,7 @@ const PANEL_ATTR = "data-account-panel";
       />
     );
   }
-  // A stored value can resolve to a place the masters list hasn't loaded (or
-  // that isn't in it at all) — keep it selectable so it still shows.
+  // A stored value can resolve to a place the masters list hasn't loaded (or that isn't in it at all) — keep it selectable so it still shows.
   const list = value && !options.includes(value) ? [...options, value] : options;
   return (
     <div className="relative">
@@ -154,9 +154,10 @@ const AccountMenu = () => {
   // Sign In / Sign Up tabs
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [signin, setSignin] = useState({ phone: "" });
+  const [signinError, setSigninError] = useState("");
+  const [signupError, setSignupError] = useState("");
 
-  // OTP verification — this is where the JWT for the apply flow is produced
-  // (both after Sign Up, whose register call sends the OTP, and after Sign In).
+  // OTP verification — this is where the JWT for the apply flow is produced (both after Sign Up, whose register call sends the OTP, and after Sign In).
   const [otpOpen, setOtpOpen] = useState(false);
   const [otpMobile, setOtpMobile] = useState("");
   const [otpValue, setOtpValue] = useState("");
@@ -167,28 +168,12 @@ const AccountMenu = () => {
   /** Sign-up record held until the OTP confirms the mobile. */
   const [pendingProfile, setPendingProfile] = useState<AccountProfile | null>(null);
 
-  // Separate portal-mounted DOM for the error popups (kept above the
-  // whole panel, including the role confirmation dialog).
-  const errorPortalRef = useRef<HTMLDivElement | null>(null);
-
-  // Right-side error popups
-  const [errorToasts, setErrorToasts] = useState<{ id: number; msg: string }[]>([]);
-  const pushErrors = (msgs: string[]) => {
-    msgs.forEach((msg, i) => {
-      const id = Date.now() + i;
-      setErrorToasts((list) => (list.some((x) => x.msg === msg) ? list : [...list, { id, msg }]));
-      setTimeout(() => setErrorToasts((list) => list.filter((x) => x.id !== id)), 4500);
-    });
-  };
-
   const resetOtp = () => {
     setOtpOpen(false);
     setOtpValue("");
     setOtpError("");
     setResendMsg("");
     setPendingProfile(null);
-    // Clear the toast container so a previous flow's errors don't show in this one.
-    setErrorToasts([]);
   };
 
   // Location masters
@@ -201,8 +186,6 @@ const AccountMenu = () => {
   const suppressReopen = useRef(false);
 
   // A loan product was clicked while logged out — open this panel centrally.
-  // If the panel was just closed by an outside click, don't let a product button
-  // re-open it immediately (the visitor dismissed the panel on purpose).
   useEffect(() => {
     const handler = () => {
       if (suppressReopen.current) {
@@ -213,8 +196,7 @@ const AccountMenu = () => {
     };
     onSignUpRequested(handler);
     return () => {
-      // onSignUpRequested returns a cleanup fn, but we registered via the
-      // module-level Set — best effort: the process is short-lived anyway.
+      // onSignUpRequested returns a cleanup fn, but we registered via the module-level Set — best effort: the process is short-lived anyway.
     };
   }, []);
 
@@ -269,13 +251,10 @@ const AccountMenu = () => {
   useEffect(() => {
     if (!panelOpen) return;
     const onPointerDown = (e: MouseEvent) => {
-      // The panel and the role dialog are portalled to <body>, so their clicks
-      // land outside `rootRef` — ignore them or the panel would close itself.
+      // The panel and the role dialog are portalled to <body>, so their clicks land outside `rootRef` — ignore them or the panel would close itself.
       if ((e.target as Element)?.closest?.(`[${PANEL_ATTR}], [data-role-confirm]`)) return;
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        // A product button's onClick will call requestSignUp -> setPanelOpen(true)
-        // right after this mousedown. Mark it so the reopen handler can skip it,
-        // and drop any pending product so requestSignUp is a no-op.
+        // A product button's onClick will call requestSignUp -> setPanelOpen(true) right after this mousedown.
         suppressReopen.current = true;
         consumePendingProduct();
         resetOtp();
@@ -295,6 +274,7 @@ const AccountMenu = () => {
 
   const setField = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setSignupError("");
     setErrors((prev) => {
       if (!prev[key]) return prev;
       const next = { ...prev };
@@ -323,7 +303,6 @@ const AccountMenu = () => {
     if (digitsOf(form.phone).length !== 10) next.phone = "Enter a valid 10-digit mobile number";
     if (!emailOk(form.email.trim())) next.email = "Enter a valid email address";
     setErrors(next);
-    if (Object.keys(next).length) pushErrors(Object.values(next));
     return Object.keys(next).length === 0;
   };
 
@@ -337,9 +316,7 @@ const AccountMenu = () => {
       countryIso: form.countryIso,
       phone: form.phone.trim(),
       email: form.email.trim(),
-    };
-    setErrorToasts([]);
-    // Register sends the OTP; an already-registered mobile falls back to the
+    };    // Register sends the OTP; an already-registered mobile falls back to the
     // login endpoint so the visitor can still verify it.
     try {
       await registerUser({
@@ -351,15 +328,15 @@ const AccountMenu = () => {
         country: saved.country,
       });
     } catch {
+      // An already-registered mobile is fine — fall back to the login endpoint.
       try {
         await loginUser({ mobile: digitsOf(saved.phone) });
       } catch (err) {
-        pushErrors([getApiErrorMessage(err, "Could not send the OTP. Please try again.")]);
+        setSignupError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
         return;
       }
     }
-    // Hold the record until verify-otp succeeds — that's what stores the
-    // session and signals the pending "Apply Now" to continue.
+    // Hold the record until verify-otp succeeds — that's what stores the session and signals the pending "Apply Now" to continue.
     setPendingProfile(saved);
     setOtpMobile(digitsOf(saved.phone));
     setOtpValue("");
@@ -371,15 +348,14 @@ const AccountMenu = () => {
   const switchMode = (next: "signup" | "signin") => {
     setMode(next);
     setErrors({});
-    setErrorToasts([]);
+    setSigninError("");
+    setSignupError("");
   };
 
-  // Cancel dismisses the panel the same way a backdrop click does — including
-  // dropping a pending "Apply Now" product so a later sign-up doesn't open it.
+  // Cancel dismisses the panel the same way a backdrop click does — including dropping a pending "Apply Now" product so a later sign-up doesn't open it.
   const onCancel = () => {
     consumePendingProduct();
     setErrors({});
-    setErrorToasts([]);
     resetOtp();
     setPanelOpen(false);
   };
@@ -388,19 +364,19 @@ const AccountMenu = () => {
     e.preventDefault();
     const phone = digitsOf(signin.phone);
     if (phone.length !== 10) {
-      pushErrors(["Enter your 10-digit mobile number"]);
+      setSigninError("Enter your 10-digit mobile number");
       return;
     }
     const stored = readAccountRecord();
     if (!stored || digitsOf(stored.phone) !== phone) {
-      pushErrors(["No account found with this mobile number. Please register first."]);
+      setSigninError("No account found with this mobile number. Please register first.");
       return;
     }
+    setSigninError("");
     // The record already exists — send its OTP, then verify below.
     try {
       await loginUser({ mobile: phone });
-    } catch (err) {
-      pushErrors([getApiErrorMessage(err, "Could not send the OTP. Please try again.")]);
+    } catch {
       return;
     }
     setPendingProfile(null);
@@ -411,8 +387,8 @@ const AccountMenu = () => {
     setOtpOpen(true);
   };
 
-  // Verify the OTP — success stores the session (JWT + record) and lets any
-  // pending "Apply Now" continue into the application modal.
+
+  // Verify the OTP — success stores the session (JWT + record) and lets any pending "Apply Now" continue into the application modal.
   const onOtpVerify = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     const code = otpValue.trim();
@@ -441,7 +417,6 @@ const AccountMenu = () => {
     } catch (err) {
       const msg = getApiErrorMessage(err, "Invalid OTP. Please try again.");
       setOtpError(msg);
-      pushErrors([msg]);
     } finally {
       setOtpBusy(false);
     }
@@ -459,7 +434,6 @@ const AccountMenu = () => {
     } catch (err) {
       const msg = getApiErrorMessage(err, "Failed to resend OTP.");
       setOtpError(msg);
-      pushErrors([msg]);
     } finally {
       setResending(false);
     }
@@ -476,8 +450,7 @@ const AccountMenu = () => {
     setProfile(null);
     setPanelOpen(false);
   };  // ── Signed in: flag + country on the left, initials on the right ────────────
-  // Returns the logged-in account button; the signed-out panel is rendered
-  // by the block below this one (it reuses `rootRef`).
+  // Returns the logged-in account button; the signed-out panel is rendered by the block below this one (it reuses `rootRef`).
   if (profile) {
     return (
       <div ref={rootRef} className="relative">
@@ -729,8 +702,7 @@ const AccountMenu = () => {
                             inputMode="numeric"
                             maxLength={6}
                             value={otpValue}
-                            // Auto-stop: keep digits only and never grow past 6, so a
-                            // 7th keypress (or a pasted longer code) is discarded.
+                            // Auto-stop: keep digits only and never grow past 6, so a 7th keypress (or a pasted longer code) is discarded.
                             onChange={(e) => {
                               setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6));
                               setOtpError("");
@@ -750,12 +722,10 @@ const AccountMenu = () => {
                             className="flex-1 rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-slate-200">
                             ← Back
                           </button>
-                          <button type="submit"
-                            disabled={otpBusy || otpValue.length < 6}
-                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition disabled:opacity-70 cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                          <Button type="submit" className="flex-1"
+                            disabled={otpBusy || otpValue.length < 6}>
                             {otpBusy ? "Verifying…" : "Verify & Continue →"}
-                          </button>
+                          </Button>
                         </div>
 
                         <p className="text-center text-xs text-slate-400">
@@ -772,13 +742,14 @@ const AccountMenu = () => {
                       <form onSubmit={onSignInSubmit} className="space-y-3.5">
                         <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5">
                           <Label>Mobile Number</Label>
-                          <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                          <div className={`flex items-center overflow-hidden rounded-xl border bg-white ${signinError ? "border-red-400" : "border-slate-200"}`}>
                             <span className="shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">&#x1F1EE;&#x1F1F3; +91</span>
                             <input type="tel" inputMode="numeric" maxLength={10} value={signin.phone}
                               placeholder="10-digit registered mobile"
-                              onChange={(e) => setSignin({ phone: e.target.value.replace(/[\D]/g, "") })}
+                              onChange={(e) => { setSignin({ phone: e.target.value.replace(/[\D]/g, "") }); setSigninError(""); }}
                               className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" />
                           </div>
+                          {signinError && <p className="mt-1 text-[10px] font-medium text-red-500">{signinError}</p>}
                         </div>
                         <div className="flex gap-3 pt-1">
                           <button type="button" onClick={onCancel}
@@ -787,9 +758,7 @@ const AccountMenu = () => {
                               focus:outline-none focus:ring-2 focus:ring-slate-200">
                             Cancel
                           </button>
-                          <button type="submit"
-                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Sign In</button>
+                          <Button type="submit" className="flex-1">Sign In</Button>
                         </div>
                         <p className="text-center text-xs text-slate-400">New to Indexia? <button type="button" onClick={() => switchMode("signup")}
                           className="font-semibold text-(--brand-navy) hover:underline cursor-pointer">Create an account</button></p>
@@ -869,6 +838,12 @@ const AccountMenu = () => {
                           </div>
                         </div>
 
+                        {signupError && (
+                          <p className="rounded-xl border border-red-200 bg-(--form-error-bg) px-3 py-2 text-[11px] font-medium text-red-600">
+                            {signupError}
+                          </p>
+                        )}
+
                         <div className="flex gap-3 pt-1">
                           <button type="button" onClick={onCancel}
                             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600
@@ -876,9 +851,7 @@ const AccountMenu = () => {
                               focus:outline-none focus:ring-2 focus:ring-slate-200">
                             Cancel
                           </button>
-                          <button type="submit"
-                            className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-                            style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>Submit</button>
+                          <Button type="submit" className="flex-1">Submit</Button>
                         </div>
                       </form>
                     )}
@@ -890,26 +863,7 @@ const AccountMenu = () => {
           document.body
         )}
 
-      {/* Separate portal-mounted DOM node, kept above the whole panel
-          (modals, role confirmation dialog, and backdrop) so the error
-          popups render at the top instead of inside the stacked layout. */}
-      {errorToasts.length > 0 &&
-        createPortal(
-          <div ref={errorPortalRef} className="fixed top-4 right-4 z-9999 flex flex-col items-end gap-2 pointer-events-none">
-            {errorToasts.map((t) => (
-              <div
-                key={t.id}
-                role="alert"
-                className="animate-toast-in max-w-68 rounded-lg border border-red-200 bg-(--form-error-bg) px-4 py-2.5 text-xs font-semibold leading-snug text-red-600 shadow-lg"
-              >
-                {t.msg}
-              </div>
-            ))}
-          </div>,
-          document.body
-        )}
-
-      {/* ── Role confirmation ── */}
+      {/* Role confirmation */}
       {confirmRole &&
         createPortal(
           <div
@@ -945,14 +899,12 @@ const AccountMenu = () => {
                 >
                   Go back
                 </button>
-                <button
-                  type="button"
+                <Button
                   onClick={applyRole}
-                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition duration-200 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-                  style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}
+                  className="flex-1"
                 >
                   Confirm
-                </button>
+                </Button>
               </div>
             </div>
           </div>,
