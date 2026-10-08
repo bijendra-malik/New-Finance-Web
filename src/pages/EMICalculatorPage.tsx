@@ -1,217 +1,13 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import type { ReactElement } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/common/Container";
 import bgImage from "../assets/customer-img.png";
 import useSEO from "../hooks/useSEO";
+import { T, serif, loanTypes, banks, fmt } from "./emiCalculatorData";
+import { Icon } from "./emiCalculatorIcons";
+import { DonutChart, Slider } from "./emiCalculatorControls";
+import { useCountUp } from "./useCountUp";
 
-// ── Design tokens (Bisleri green / lime / deep blue / grey brief) ─────────────
-const T = {
-  navy: "var(--brand-navy)",       // deep blue — primary dark, headers, hero
-  navyDeep: "#032B5C",   // darker blue for gradients/depth
-  gold: "var(--brand-yellow)",       // lime — CTA, high-energy accents
-  goldSoft: "#E7F98F",   // soft lime for text-on-dark / highlights
-  cream: "#F1FAF8",      // teal-tinted off-white background
-  paper: "#FFFFFF",
-  ink: "#0C2A4D",
-  inkSoft: "var(--brand-gray)",    // grey — secondary text
-  emerald: "var(--brand-teal)",    // bisleri green — principal, primary active color
-  emeraldSoft: "#D7F5F1",
-  rust: "#2E6FB5",       // mid-blue — interest, secondary data color
-  rustSoft: "#DEEAF8",
-  limeDark: "#8FA916",   // accessible lime for text/borders on light bg
-  limeSoft: "#F2FAD1",
-  line: "#E2E8E7",
-};
-
-const serif = { fontFamily: "'Fraunces', Georgia, serif" };
-
-// ── Loan type config ──────────────────────────────────────────────────────────
-const loanTypes = [
-  { id: "personal",  label: "Personal",   full: "Personal Loan",        rate: 11.0, minAmt: 50000,   maxAmt: 5000000,  minTenure: 1, maxTenure: 5  },
-  { id: "home",      label: "Home",       full: "Home Loan",            rate: 8.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 30 },
-  { id: "car", label: "Vehicle", full: "Vehicle Loan",             rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 7  },
-  { id: "business",  label: "Business",   full: "Business Loan",        rate: 12.0, minAmt: 100000,  maxAmt: 10000000, minTenure: 1, maxTenure: 5  },
-  { id: "education", label: "Education",  full: "Education Loan",       rate: 8.0,  minAmt: 100000,  maxAmt: 2000000,  minTenure: 1, maxTenure: 7  },
-  { id: "lap",       label: "Property",   full: "Loan Against Property",rate: 9.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 20 },
-  { id: "balance",   label: "Transfer",   full: "Balance Transfer",     rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 5  },
-  { id: "credit",    label: "Credit Card",full: "Credit Card",          rate: 18.0, minAmt: 10000,   maxAmt: 500000,   minTenure: 1, maxTenure: 3  },
-];
-
-const banks = [
-  { id: "hdfc",   label: "HDFC Bank" },
-  { id: "icici",  label: "ICICI Bank" },
-  { id: "axis",   label: "Axis Bank" },
-  { id: "kotak",  label: "Kotak Mahindra Bank" },
-  { id: "sbi",    label: "State Bank of India" },
-  { id: "pnb",    label: "PNB Housing" },
-  { id: "bajaj",  label: "Bajaj Finserv" },
-  { id: "tata",   label: "Tata Capital" },
-];
-
-// ── Icons (minimal line icons, one per loan type) ─────────────────────────────
-const icons: Record<string, ReactElement> = {
-  personal: (
-    <>
-      <circle cx="12" cy="8" r="3.4" />
-      <path d="M5 20c1.2-4 4-5.8 7-5.8s5.8 1.8 7 5.8" />
-    </>
-  ),
-  home: (
-    <>
-      <path d="M4 11.5 12 4l8 7.5" />
-      <path d="M6 10v9h12v-9" />
-      <path d="M10 19v-5h4v5" />
-    </>
-  ),
-  car: (
-    <>
-      <path d="M4 16V12l2-4h12l2 4v4" />
-      <path d="M4 16h16" />
-      <circle cx="7.5" cy="16.5" r="1.6" />
-      <circle cx="16.5" cy="16.5" r="1.6" />
-    </>
-  ),
-  business: (
-    <>
-      <rect x="4" y="8.5" width="16" height="10.5" rx="1.2" />
-      <path d="M9 8.5V6.2A1.2 1.2 0 0 1 10.2 5h3.6a1.2 1.2 0 0 1 1.2 1.2V8.5" />
-      <path d="M4 13h16" />
-    </>
-  ),
-  education: (
-    <>
-      <path d="M2.5 8.5 12 4l9.5 4.5L12 13z" />
-      <path d="M6 10.6V15c0 1.6 2.7 2.9 6 2.9s6-1.3 6-2.9v-4.4" />
-    </>
-  ),
-  lap: (
-    <>
-      <path d="M4 11.5 12 4l8 7.5" />
-      <path d="M6 10v9h12v-9" />
-      <circle cx="12" cy="14.5" r="1.6" />
-      <path d="M12 16v1.8" />
-    </>
-  ),
-  balance: (
-    <>
-      <path d="M4 8h13" />
-      <path d="M14 4.5 17.5 8 14 11.5" />
-      <path d="M20 16H7" />
-      <path d="M10 12.5 6.5 16 10 19.5" />
-    </>
-  ),
-  credit: (
-    <>
-      <rect x="3.5" y="6" width="17" height="12" rx="1.6" />
-      <path d="M3.5 10.2h17" />
-      <path d="M6.5 14.3h4" />
-    </>
-  ),
-};
-
-const Icon = ({ id, active }: { id: string; active: boolean }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="20"
-    height="20"
-    fill="none"
-    stroke={active ? "#fff" : T.navy}
-    strokeWidth="1.6"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {icons[id]}
-  </svg>
-);
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const fmt = (n: number) => "\u20B9" + Math.round(n).toLocaleString("en-IN");
-
-// Count-up hook — animates a displayed number toward its target
-function useCountUp(target: number, duration = 450) {
-  const [value, setValue] = useState(target);
-  const fromRef = useRef(target);
-  const startRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const from = fromRef.current;
-    const delta = target - from;
-    if (Math.abs(delta) < 1) {
-      setValue(target);
-      fromRef.current = target;
-      return;
-    }
-    startRef.current = null;
-    let raf: number;
-    const step = (ts: number) => {
-      if (startRef.current === null) startRef.current = ts;
-      const p = Math.min(1, (ts - startRef.current) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setValue(from + delta * eased);
-      if (p < 1) raf = requestAnimationFrame(step);
-      else fromRef.current = target;
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target]);
-
-  return value;
-}
-
-// Donut chart — principal vs interest, with a center label
-function DonutChart({ principal, interest }: { principal: number; interest: number }) {
-  const total = principal + interest;
-  const pct = total === 0 ? 0 : principal / total;
-  const r = 62;
-  const stroke = 20;
-  const c = 2 * Math.PI * r;
-  const principalLen = c * pct;
-
-  return (
-    <div className="relative" style={{ width: 176, height: 176 }}>
-      <svg viewBox="0 0 176 176" width="176" height="176">
-        <circle cx="88" cy="88" r={r} fill="none" stroke={T.rustSoft} strokeWidth={stroke} />
-        <circle
-          cx="88" cy="88" r={r} fill="none"
-          stroke={T.emerald} strokeWidth={stroke}
-          strokeDasharray={`${principalLen} ${c - principalLen}`}
-          strokeLinecap="round"
-          transform="rotate(-90 88 88)"
-          style={{ transition: "stroke-dasharray 0.5s ease" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[11px] font-semibold tracking-wide" style={{ color: T.inkSoft }}>Principal</span>
-        <span className="text-xl font-bold" style={{ ...serif, color: T.navy }}>{(pct * 100).toFixed(1)}%</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Styled range slider ────────────────────────────────────────────────────────
-function Slider({
-  value, min, max, step, onChange, color,
-}: { value: number; min: number; max: number; step: number; onChange: (n: number) => void; color: string }) {
-  const pct = ((value - min) / (max - min)) * 100;
-  return (
-    <input
-      type="range"
-      min={min} max={max} step={step} value={value}
-      onChange={e => onChange(Number(e.target.value))}
-      className="emi-slider w-full cursor-pointer"
-      style={{
-        // CSS custom properties must be cast — React's CSSProperties type
-        // only knows fixed property names.
-        "--fill": `${pct}%`,
-        "--track-color": color,
-      } as React.CSSProperties}
-    />
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
 const EMICalculatorPage = () => {
   useSEO({
     title: "EMI Calculator — Monthly Instalment & Interest",
@@ -304,7 +100,7 @@ const EMICalculatorPage = () => {
         .emi-slider::-moz-range-track { background: transparent; }
       `}</style>
 
-      {/* ════════════════════════ HERO BANNER ════════════════════════ */}
+      {/* HERO BANNER */}
       <section
         className="relative w-full overflow-hidden mt-(--header-h)"
         style={{ minHeight: 380 }}
@@ -367,12 +163,12 @@ const EMICalculatorPage = () => {
         </div>
       </section>
 
-      {/* ════════════════════════ CALCULATOR ════════════════════════ */}
+      {/* CALCULATOR */}
       <Container>
         <div className="py-10 px-4 md:px-8">
           <div className="max-w-5xl mx-auto">
 
-            {/* ── Loan type chips ── */}
+            {/* Loan type chips */}
             <div className="mb-5">
               <label className="block text-xs font-bold uppercase tracking-wide mb-2.5" style={{ color: T.inkSoft }}>
                 What are you borrowing for?
@@ -400,7 +196,7 @@ const EMICalculatorPage = () => {
               </div>
             </div>
 
-            {/* ── Bank select + rate badge ── */}
+            {/* Bank select + rate badge */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
               <div className="relative flex-1 max-w-xs">
                 <select
@@ -423,7 +219,7 @@ const EMICalculatorPage = () => {
               </span>
             </div>
 
-            {/* ── Main card ── */}
+            {/* Main card */}
             <div className="rounded-3xl overflow-hidden" style={{ background: T.paper, boxShadow: "0 12px 32px rgba(5,66,137,0.08)", border: `1px solid ${T.line}` }}>
               <div className="grid grid-cols-1 lg:grid-cols-5">
 
@@ -570,7 +366,7 @@ const EMICalculatorPage = () => {
         </div>
       </Container>
 
-      {/* ════════════════════ AMORTIZATION TABLE ════════════════════ */}
+      {/* AMORTIZATION TABLE */}
       <div style={{ background: T.paper, borderTop: `1px solid ${T.line}` }}>
         <Container>
           <div className="py-10 px-4 md:px-8">
@@ -631,7 +427,7 @@ const EMICalculatorPage = () => {
         </Container>
       </div>
 
-      {/* ════════════════════════ FAQ ════════════════════════════════ */}
+      {/* FAQ */}
       <div style={{ background: T.cream, borderTop: `1px solid ${T.line}` }}>
         <Container>
           <div className="py-10 px-4 md:px-8">
