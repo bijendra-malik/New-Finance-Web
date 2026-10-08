@@ -6,11 +6,11 @@ import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSIN
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
+import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
+import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
@@ -18,9 +18,7 @@ import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
 import { GSTIN_REGEX, stripOther } from "../../../../../utils/validation";
 
-// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-// Type lives in the API layer (aligned with the backend's EducationLoan document);
-// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+// Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
 
 
@@ -89,11 +87,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
-  const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  // The /employment-types API is only available for Home Loan, so employment
-  // types stay static for this product.
   const employmentTypeOptions = useMemo(
     () => [...masters.homeEmploymentTypes],
     [masters.homeEmploymentTypes]
@@ -121,7 +116,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
-    setTouched(p=>(p[f]?p:{...p,[f]:true}));
+    touch(f);
   };
 
   const employmentBranchFields: (keyof FormData)[] = [
@@ -150,11 +145,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       businessState:"", businessCity:"",
       businessPincode:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
     }));
-    setTouched(p=>{
-      const next = {...p, employmentType:true};
-      for(const f of employmentBranchFields) delete next[f];
-      return next;
-    });
+    touch("employmentType");
+    untouch(employmentBranchFields);
   };
 
   const addTransactionBank = (value:string) =>
@@ -167,9 +159,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
-    // Pincode ↔ State/City consistency (15) and duplicate-application
-    // detection (16) are enforced server-side; the frontend validates the
-    // pincode format itself below.
+    // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
     else if(draft.loanAmount>15000000) e.loanAmount="Maximum loan amount is ₹1,50,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
@@ -318,12 +308,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   };
 
   const allErrors = computeErrors();
-  const errors:Partial<Record<keyof FormData,string>> = {};
-  (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
-
-
-  const markAllTouched = (keys: string[]) =>
-    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
@@ -440,23 +425,25 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     onSubmitSuccess: onSubmit,
   });
 
-  if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <SubmittedReceiptView app={submittedApp} productName="Education Loan" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
-  );
-
   return (
-    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
-      {submitted && submittedApp && (
-        <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
-      )}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{color:C.dark}}>
-          Unlock the best Education Loan offers suitable for your needs from 43+ lenders
-        </h1>
-        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory. All amounts should be entered in INR (₹).</p>
-      </div>
+    <LoanApplicationFormShell
+      productName="Education Loan"
+      headline="Unlock the best Education Loan offers suitable for your needs from 43+ lenders"
+      application={submittedApp}
+      submitted={submitted}
+      showFormAfterSubmit={showFormAfterSubmit}
+      onShowForm={setShowFormAfterSubmit}
+      buildSections={buildProductSections}
+      onSubmit={handleSubmit}
+      agreed={agreed}
+      onAgreedChange={setAgreed}
+      apiError={apiError}
+      submitAttempted={submitAttempted}
+      invalidCount={Object.keys(allErrors).length}
+      isSubmitting={isSubmitting}
+    >
 
-      {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
+      {/* LOAN REQUIREMENTS */}
       <FormCard title="Loan Requirements" subtitle="Tell us about the course you're financing">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
@@ -517,7 +504,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
+      {/* INCOME DETAILS */}
       <FormCard title="Income Details (Self/Father/Mother)" subtitle="Tell us about the co-applicant's employment">
         <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
@@ -697,7 +684,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         onPincodeResolved={r=>onPincodeResolved("residence",r)}
         states={masters.states} residenceStatuses={masters.residenceStatuses} loadCities={loadCities} fullNamePlaceholder="As per Aadhaar Card" dobLabel="Date of Birth (as per aadhar card)" panLabel="PAN Number (if any)" panRequired={false} />
 
-      {/* ── PERSONAL DETAILS (PARENT) ────────────────────────────────── */}
+      {/* PERSONAL DETAILS (PARENT) */}
       <FormCard title="Personal Details (Parent)" subtitle="Co-applicant details as per official documents">
         <div className={FORM.grid}>
           <SelectWithOther
@@ -758,9 +745,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
-        invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
-    </form>
+    </LoanApplicationFormShell>
   );
 };
 

@@ -6,11 +6,11 @@ import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
+import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
+import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
@@ -18,9 +18,7 @@ import { buildProductSections } from "./receiptSections";
 import { applyFilmLoan } from "../../../../../api/loanApplications";
 import type { FilmLoanApplication } from "../../../../../api/loanApplications";
 
-// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-// Type lives in the API layer (aligned with the backend's FilmLoan document);
-// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+// Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's FilmLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { FilmLoanApplication } from "../../../../../api/loanApplications";
 
 const FILM_LANGUAGES = ["Hindi","English","Tamil","Telugu","Malayalam","Kannada","Bengali","Marathi","Punjabi","Gujarati","Bhojpuri","Odia","Assamese",OTHER_OPTION];
@@ -72,11 +70,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
-  const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  // The /employment-types API is only available for Home Loan, so employment
-  // types stay static for this product.
   const employmentTypeOptions = useMemo(
     () => [...masters.businessEmploymentTypes],
     [masters.businessEmploymentTypes]
@@ -89,14 +84,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 
-
-
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
-
-
 
   const addFilmLanguageOther = (value:string) =>
     setForm(p=>({...p, filmLanguagesOther:[...p.filmLanguagesOther, value]}));
@@ -110,7 +101,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
-    setTouched(p=>(p[f]?p:{...p,[f]:true}));
+    touch(f);
   };
 
   const employmentBranchFields: (keyof FormData)[] = [
@@ -132,11 +123,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       profession:"", professionOther:"",
       currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     }));
-    setTouched(p=>{
-      const next = {...p, employmentType:true};
-      for(const f of employmentBranchFields) delete next[f];
-      return next;
-    });
+    touch("employmentType");
+    untouch(employmentBranchFields);
   };
 
   const addTransactionBank = (value:string) =>
@@ -148,9 +136,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
-    // Pincode ↔ State/City consistency (15) and duplicate-application
-    // detection (16) are enforced server-side; the frontend validates the
-    // pincode format itself below.
+    // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(!draft.filmComesUnder) e.filmComesUnder="Please select what the film comes under";
     else if(draft.filmComesUnder===OTHER_OPTION&&!draft.filmComesUnderOther.trim()) e.filmComesUnderOther="Please mention film category";
     if(draft.filmLanguages.length===0) e.filmLanguages="Select at least one language";
@@ -221,12 +207,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   };
 
   const allErrors = computeErrors();
-  const errors:Partial<Record<keyof FormData,string>> = {};
-  (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
-
-
-  const markAllTouched = (keys: string[]) =>
-    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
@@ -306,23 +287,25 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     onSubmitSuccess: onSubmit,
   });
 
-  if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <SubmittedReceiptView app={submittedApp} productName="Film Funding" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
-  );
-
   return (
-    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
-      {submitted && submittedApp && (
-        <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
-      )}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{color:C.dark}}>
-          Unlock the best Film Funding offers suitable for your needs from 43+ lenders
-        </h1>
-        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory. All amounts should be entered in INR (₹).</p>
-      </div>
+    <LoanApplicationFormShell
+      productName="Film Funding"
+      headline="Unlock the best Film Funding offers suitable for your needs from 43+ lenders"
+      application={submittedApp}
+      submitted={submitted}
+      showFormAfterSubmit={showFormAfterSubmit}
+      onShowForm={setShowFormAfterSubmit}
+      buildSections={buildProductSections}
+      onSubmit={handleSubmit}
+      agreed={agreed}
+      onAgreedChange={setAgreed}
+      apiError={apiError}
+      submitAttempted={submitAttempted}
+      invalidCount={Object.keys(allErrors).length}
+      isSubmitting={isSubmitting}
+    >
 
-      {/* ── FUNDs REQUIREMENTS ─────────────────────────────────────── */}
+      {/* FUNDs REQUIREMENTS */}
       <FormCard title="Funds Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <SelectWithOther
@@ -373,7 +356,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
+      {/* INCOME DETAILS */}
       <FormCard title="Income Details" subtitle="Tell us about your business and income">
         <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
@@ -487,9 +470,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         onPincodeResolved={r=>onPincodeResolved("residence",r)}
         states={masters.states} residenceStatuses={masters.residenceStatuses} loadCities={loadCities} />
 
-      <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
-        invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
-    </form>
+    </LoanApplicationFormShell>
   );
 };
 

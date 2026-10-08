@@ -9,18 +9,17 @@ import type { BusinessLoanApplication } from "../../../../../api/loanApplication
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
+import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
+import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import { NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
-// Type lives in the API layer now (aligned with the backend's BusinessLoan document);
-// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+// Type lives in the API layer now (aligned with the backend's BusinessLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { BusinessLoanApplication };
 
 const SELF_EMPLOYED_BUSINESS = "Self Employed - Business";
@@ -68,10 +67,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
-  const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
-  // The /employment-types API is only available for Home Loan, so employment
-  // types stay static for this product.
+  // The /employment-types API is only available for Home Loan, so employment types stay static for this product.
   const employmentTypeOptions = useMemo(
     () => [...masters.businessEmploymentTypes],
     [masters.businessEmploymentTypes]
@@ -84,18 +81,14 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 
-
-
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
 
-
-
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
-    setTouched(p=>(p[f]?p:{...p,[f]:true}));
+    touch(f);
   };
 
   const employmentBranchFields: (keyof FormData)[] = [
@@ -119,11 +112,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       profession:"", professionOther:"",
       currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     }));
-    setTouched(p=>{
-      const next = {...p, employmentType:true};
-      for(const f of employmentBranchFields) delete next[f];
-      return next;
-    });
+    touch("employmentType");
+    untouch(employmentBranchFields);
   };
 
   const addTransactionBank = (value:string) =>
@@ -136,9 +126,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
-    // Pincode ↔ State/City consistency (15) and duplicate-application
-    // detection (16) are enforced server-side; the frontend validates the
-    // pincode format itself below.
+    // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
@@ -204,13 +192,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   };
 
   const allErrors = computeErrors();
-  const errors:Partial<Record<keyof FormData,string>> = {};
-  (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
-
-  // Validate, then submit to the backend; the success screen renders the saved document.
-
-  const markAllTouched = (keys: string[]) =>
-    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
@@ -300,23 +282,25 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     onSubmitSuccess: onSubmit,
   });
 
-  if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <SubmittedReceiptView app={submittedApp} productName="Business Loan" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
-  );
-
   return (
-    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
-      {submitted && submittedApp && (
-        <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
-      )}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{color:C.dark}}>
-          Unlock the best Business Loan offers suitable for your needs from 43+ lenders
-        </h1>
-        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory. All amounts should be entered in INR (₹).</p>
-      </div>
+    <LoanApplicationFormShell
+      productName="Business Loan"
+      headline="Unlock the best Business Loan offers suitable for your needs from 43+ lenders"
+      application={submittedApp}
+      submitted={submitted}
+      showFormAfterSubmit={showFormAfterSubmit}
+      onShowForm={setShowFormAfterSubmit}
+      buildSections={buildProductSections}
+      onSubmit={handleSubmit}
+      agreed={agreed}
+      onAgreedChange={setAgreed}
+      apiError={apiError}
+      submitAttempted={submitAttempted}
+      invalidCount={Object.keys(allErrors).length}
+      isSubmitting={isSubmitting}
+    >
 
-      {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
+      {/* LOAN REQUIREMENTS */}
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
@@ -331,7 +315,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         </div>
       </FormCard>
 
-      {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
+      {/* INCOME DETAILS */}
       <FormCard title="Income Details" subtitle="Tell us about your business and income">
         <div className={FORM.grid}>
           {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
@@ -473,9 +457,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
         onPincodeResolved={r=>onPincodeResolved("residence",r)}
         states={masters.states} residenceStatuses={masters.residenceStatuses} loadCities={loadCities} />
 
-      <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
-        invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
-    </form>
+    </LoanApplicationFormShell>
   );
 };
 

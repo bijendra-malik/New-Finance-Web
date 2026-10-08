@@ -1,28 +1,24 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
-import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
 import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import SubmittedReceiptView from "../../../../../components/form/SubmittedReceiptView";
+import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
+import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
-import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
+import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { ConsentAndSubmit, SubmittedFormBanner } from "../../../../../components/form/SubmitSection";
-import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
+import { formatIndianNumber } from "../../../../../utils/formatters";
 import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
-import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
+import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyWorkingCapital } from "../../../../../api/loanApplications";
 import type { WorkingCapitalApplication } from "../../../../../api/loanApplications";
 
-// ── Local type — no backend yet, this is purely the shape used to render the UI success state ──
-// Type lives in the API layer (aligned with the backend's WorkingCapital document);
-// re-exported so the dashboard and LoanStatus imports keep working unchanged.
+// Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's WorkingCapital document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { WorkingCapitalApplication } from "../../../../../api/loanApplications";
-
 
 interface ApplicationFormProps {
   userName?: string;
@@ -75,11 +71,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
-  const [touched, setTouched] = useState<Partial<Record<keyof FormData,boolean>>>({});
 
   // Banks/loan-type pills unlock only once some existing-loan exposure is entered.
-  // The /employment-types API is only available for Home Loan, so employment
-  // types stay static for this product.
   const employmentTypeOptions = useMemo(
     () => [...masters.workingCapitalEmploymentTypes],
     [masters.workingCapitalEmploymentTypes]
@@ -92,23 +85,19 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business", "collateralProperty"] });
 
-
   const collateralPropertyCityOptions = useMemo(
     () => loadCities(form.collateralPropertyState),
     [form.collateralPropertyState, loadCities]
   );
-
 
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
 
-
-
   const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
     setForm(p=>({...p,[f]:v}));
-    setTouched(p=>(p[f]?p:{...p,[f]:true}));
+    touch(f);
   };
 
   const employmentBranchFields: (keyof FormData)[] = [
@@ -134,11 +123,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       profession:"", professionOther:"",
       currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     }));
-    setTouched(p=>{
-      const next = {...p, employmentType:true};
-      for(const f of employmentBranchFields) delete next[f];
-      return next;
-    });
+    touch("employmentType");
+    untouch(employmentBranchFields);
   };
 
   const addTransactionBank = (value:string) =>
@@ -150,9 +136,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
-    // Pincode ↔ State/City consistency (15) and duplicate-application
-    // detection (16) are enforced server-side; the frontend validates the
-    // pincode format itself below.
+    // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹10,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
@@ -246,12 +230,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   };
 
   const allErrors = computeErrors();
-  const errors:Partial<Record<keyof FormData,string>> = {};
-  (Object.keys(touched) as (keyof FormData)[]).forEach(k=>{ if(touched[k]&&allErrors[k]) errors[k]=allErrors[k]; });
-
-
-  const markAllTouched = (keys: string[]) =>
-    setTouched(p => { const next = { ...p }; keys.forEach(k => { next[k as keyof FormData] = true; }); return next; });
+  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
@@ -361,23 +340,25 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     onSubmitSuccess: onSubmit,
   });
 
-  if(submitted && submittedApp && !showFormAfterSubmit) return (
-    <SubmittedReceiptView app={submittedApp} productName="Working Capital" buildSections={buildProductSections} onBack={() => setShowFormAfterSubmit(true)} />
-  );
-
   return (
-    <form className={`${FORM.maxWidth} mx-auto`} onSubmit={handleSubmit} noValidate>
-      {submitted && submittedApp && (
-        <SubmittedFormBanner refNo={submittedApp._id.slice(-10).toUpperCase()} onViewReceipt={() => setShowFormAfterSubmit(false)} />
-      )}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{color:C.dark}}>
-          Unlock the best Working Capital offers suitable for your needs from 43+ lenders
-        </h1>
-        <p className="text-xs mt-1.5" style={{color:C.gray}}>Fields with asterisk mark (*) are mandatory. All amounts should be entered in INR (₹).</p>
-      </div>
+    <LoanApplicationFormShell
+      productName="Working Capital"
+      headline="Unlock the best Working Capital offers suitable for your needs from 43+ lenders"
+      application={submittedApp}
+      submitted={submitted}
+      showFormAfterSubmit={showFormAfterSubmit}
+      onShowForm={setShowFormAfterSubmit}
+      buildSections={buildProductSections}
+      onSubmit={handleSubmit}
+      agreed={agreed}
+      onAgreedChange={setAgreed}
+      apiError={apiError}
+      submitAttempted={submitAttempted}
+      invalidCount={Object.keys(allErrors).length}
+      isSubmitting={isSubmitting}
+    >
 
-      {/* ── LOAN REQUIREMENTS ────────────────────────────────────────── */}
+      {/* LOAN REQUIREMENTS */}
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
@@ -423,176 +404,23 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         </div>
       </FormCard>
 
-      {/* ── INCOME DETAILS ───────────────────────────────────────────── */}
-      <FormCard title="Income Details" subtitle="Tell us about your business and income">
-        <div className={FORM.grid}>
-          {form.employmentType===SELF_EMPLOYED_BUSINESS&&(
-            <div>
-              <h3 className="text-sm font-bold mt-2" style={{color:C.dark}}>Business Details</h3>
-            </div>
-          )}
-          <div id="employmentType"><FieldLabel label="Employment Type" required/>
-            <SelectField value={form.employmentType} onChange={setEmploymentType} options={employmentTypeOptions} placeholder="Select" err={errors.employmentType}/>
-          </div>
-
-          {form.employmentType===SALARIED&&(<>
-            <div id="companyName"><FieldLabel label="Company Name" required/>
-              <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company full name" err={errors.companyName}/>
-            </div>
-            <SelectWithOther
-              id="companyType" label="Company Type" required
-              value={form.companyType} onChange={v=>{
-                set("companyType",v);
-                if(v!==OTHER_OPTION) set("companyTypeOther","");
-              }} options={masters.companyTypes} err={errors.companyType}
-              otherId="companyTypeOther" otherLabel="Mention Company Type"
-              otherValue={form.companyTypeOther} onOtherChange={v=>set("companyTypeOther",v)}
-              otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
-            />
-            <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
-              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Enter Amount in INR"
-                err={errors.monthlyNetSalary}/>
-            </div>
-            <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
-              <SelectField value={form.salaryReceivedAs} onChange={v=>{
-                set("salaryReceivedAs",v);
-                if(v==="Cash"){ set("salaryBankName",""); set("salaryBankNameOther",""); }
-              }} options={masters.salaryModes} placeholder="Select" err={errors.salaryReceivedAs}/>
-            </div>
-            {form.salaryReceivedAs&&form.salaryReceivedAs!=="Cash"&&(
-              <SelectWithOther
-                id="salaryBankName" label="Salary Bank Name" required
-                value={form.salaryBankName} onChange={v=>{
-                  set("salaryBankName",v);
-                  if(v!==OTHER_OPTION) set("salaryBankNameOther","");
-                }} options={masters.banks} err={errors.salaryBankName}
-                otherId="salaryBankNameOther" otherLabel="Mention Salary Bank Name"
-                otherValue={form.salaryBankNameOther} onOtherChange={v=>set("salaryBankNameOther",v)}
-                otherPlaceholder="Enter bank name" otherErr={errors.salaryBankNameOther}
-              />
-            )}
-          </>)}
-
-          {form.employmentType===SELF_EMPLOYED_PROFESSIONAL&&(<>
-            <SelectWithOther
-              id="profession" label="Profession" required
-              value={form.profession} onChange={v=>{
-                set("profession",v);
-                if(v!==OTHER_OPTION) set("professionOther","");
-              }} options={masters.professions} err={errors.profession}
-              otherId="professionOther" otherLabel="Mention Profession"
-              otherValue={form.professionOther} onOtherChange={v=>set("professionOther",v)}
-              otherPlaceholder="Enter profession" otherErr={errors.professionOther}
-            />
-            <div id="currentYearTurnover"><FieldLabel label="Current Year Turn Over" required/>
-              <AmountField value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)} onChange={v=>set("currentYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.currentYearTurnover}/>
-            </div>
-            <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
-              <AmountField value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)} onChange={v=>set("priorYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.priorYearTurnover}/>
-            </div>
-            <div id="currentYearNetIncome"><FieldLabel label="Current Year Net Income" required/>
-              <AmountField value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)} onChange={v=>set("currentYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.currentYearNetIncome}/>
-            </div>
-            <div id="previousYearNetIncome"><FieldLabel label="Previous Year Net Income" required/>
-              <AmountField value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)} onChange={v=>set("previousYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.previousYearNetIncome}/>
-            </div>
-          </>)}
-
-          {form.employmentType===SELF_EMPLOYED_BUSINESS&&(<>
-            <SelectWithOther
-              id="businessType" label="Company Type" required
-              value={form.businessType} onChange={v=>{
-                set("businessType",v);
-                if(v!==OTHER_OPTION) set("businessTypeOther","");
-              }} options={masters.businessTypes} err={errors.businessType}
-              otherId="businessTypeOther" otherLabel="Mention Company Type"
-              otherValue={form.businessTypeOther} onOtherChange={v=>set("businessTypeOther",v)}
-              otherPlaceholder="Enter company type" otherErr={errors.businessTypeOther}
-            />
-            <div id="businessName"><FieldLabel label="Company Full Name" required/>
-              <TextField value={form.businessName} onChange={v=>set("businessName",v.slice(0,100))} maxLength={100} placeholder="Registered business / firm name" err={errors.businessName}/>
-            </div>
-
-            <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
-                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
-              </div>
-              <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
-                <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="ABCDE1234F" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>
-              </div>
-              <SelectWithOther
-                id="natureOfBusiness" label="Nature Of Business" required
-                value={form.natureOfBusiness} onChange={v=>{
-                  set("natureOfBusiness",v);
-                  if(v!==OTHER_OPTION) set("natureOfBusinessOther","");
-                }} options={masters.natureOfBusiness} err={errors.natureOfBusiness}
-                otherId="natureOfBusinessOther" otherLabel="Mention Nature Of Business"
-                otherValue={form.natureOfBusinessOther} onOtherChange={v=>set("natureOfBusinessOther",v)}
-                otherPlaceholder="Enter nature of business" otherErr={errors.natureOfBusinessOther}
-              />
-
-              <SelectWithOther
-                id="industryType" label="Industry Type" required
-                value={form.industryType} onChange={v=>{
-                  set("industryType",v);
-                  if(v!==OTHER_OPTION) set("industryTypeOther","");
-                  else set("subIndustry","");
-                }} options={masters.industryTypes} err={errors.industryType}
-                otherId="industryTypeOther" otherLabel="Mention Industry Type"
-                otherValue={form.industryTypeOther} onOtherChange={v=>set("industryTypeOther",v)}
-                otherPlaceholder="Enter industry type" otherErr={errors.industryTypeOther}
-              />
-              {form.industryType!==OTHER_OPTION&&(
-                <div id="subIndustry"><FieldLabel label="Sub Industry"/>
-                  <TextField value={form.subIndustry} onChange={v=>set("subIndustry",v)} placeholder="Optional"/>
-                </div>
-              )}
-
-              <div id="businessEstablishedDate"><FieldLabel label="Date Of Business Establishment" required/>
-                <DateField value={form.businessEstablishedDate} onChange={v=>set("businessEstablishedDate",v)}
-                  err={errors.businessEstablishedDate} maxDate={new Date()} minDate={new Date(new Date().getFullYear()-100,0,1)}
-                  portalId="business-established-datepicker-portal"/>
-              </div>
-
-              <div id="transactionBankName"><FieldLabel label="Transaction Bank Name"/>
-                <SelectField value={form.transactionBankName} onChange={v=>{
-                  set("transactionBankName",v);
-                  if(v!==OTHER_OPTION) set("transactionBankNameOther","");
-                  if(v!==MULTIPLE_TRANSACTION_BANKS) setForm(p=>({...p, transactionBanks:[]}));
-                }} options={transactionBankOptions} placeholder="Select" err={errors.transactionBankName}/>
-              </div>
-              {form.transactionBankName===OTHER_OPTION&&(
-                <div id="transactionBankNameOther"><FieldLabel label="Mention Bank Name" required/>
-                  <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter bank name" err={errors.transactionBankNameOther}/>
-                </div>
-              )}
-              {form.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&(
-                <div className="md:col-span-2 mt-4" id="transactionBanks">
-                  <OtherOptionList label="Transaction Banks" placeholder="Enter bank name"
-                    items={form.transactionBanks} onAdd={addTransactionBank} onRemove={removeTransactionBank} color={C.teal}/>
-                  <FieldError msg={errors.transactionBanks}/>
-                </div>
-              )}
-
-              <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
-                <AmountField value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)} onChange={v=>set("lastYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.lastYearTurnover}/>
-              </div>
-              <div id="last2YearsTurnover"><FieldLabel label="Last (2 Years old) Turnover"/>
-                <AmountField value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)} onChange={v=>set("last2YearsTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR"/>
-              </div>
-              <div id="lastYearNetIncome"><FieldLabel label="Last Year Net Income" required/>
-                <AmountField value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)} onChange={v=>set("lastYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.lastYearNetIncome}/>
-              </div>
-              <div id="last2YearsNetIncome"><FieldLabel label="Last (2 Years old) Net Income"/>
-                <AmountField value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)} onChange={v=>set("last2YearsNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR"/>
-              </div>
-          </>)}
-
-          {(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)&&(
-            <BusinessPlaceSection form={form} set={(key, value) => set(key, value)} errors={errors}
-              onPincodeResolved={r=>onPincodeResolved("business",r)}
-              states={masters.states} businessPlaceStatuses={masters.businessPlaceStatuses} loadCities={loadCities} />
-          )}
-        </div>
+      {/* INCOME DETAILS */}
+            <FormCard title="Income Details" subtitle="Tell us about your employment and income">
+        <IncomeDetailsSection
+          form={form}
+          errors={errors}
+          set={set}
+          masters={masters}
+          employmentTypeOptions={employmentTypeOptions}
+          onEmploymentTypeChange={setEmploymentType}
+          onClearTransactionBanks={() => setForm(p => ({ ...p, transactionBanks: [] }))}
+          transactionBankOptions={transactionBankOptions}
+          addTransactionBank={addTransactionBank}
+          removeTransactionBank={removeTransactionBank}
+          datePickerPortalId="business-established-datepicker-portal"
+          loadCities={loadCities}
+          onPincodeResolved={r => onPincodeResolved("business", r)}
+        />
       </FormCard>
 
       <ExistingLoanExposureSection form={form} set={(key, value) => set(key, value)} errors={errors}
@@ -603,9 +431,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         onPincodeResolved={r=>onPincodeResolved("residence",r)}
         states={masters.states} residenceStatuses={masters.residenceStatuses} loadCities={loadCities} />
 
-      <ConsentAndSubmit agreed={agreed} onAgreedChange={setAgreed} apiError={apiError} submitAttempted={submitAttempted}
-        invalidCount={Object.keys(allErrors).length} isSubmitting={isSubmitting} submitted={submitted} />
-    </form>
+    </LoanApplicationFormShell>
   );
 };
 
