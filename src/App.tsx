@@ -10,9 +10,14 @@ import Login from "./pages/auth/Login";
 import ContactPage from "./pages/ContactPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import FranchiseLoginPage from "./pages/FranchiseLoginPage";
-import BeAnAssociatePage from "./pages/BeAnAssociatePage";
 import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
 import EMICalculatorPage from "./pages/EMICalculatorPage";
+
+// Large marketing pages, split out of the initial bundle
+const FranchiseOpportunityPage = lazy(() => import("./pages/FranchiseOpportunityPage"));
+
+// ── Franchisor partner portal ────────────────────────────────────────────────
+const FranchisorDashboardPage = lazy(() => import("./pages/FranchisorDashboardPage"));
 
 // ── Loan dashboards ──────────────────────────────────────────────────────────
 const PersonalLoanDashboard = lazy(() => import("./pages/dashboard/loans/PersonalLoan/PersonalLoanDashboard"));
@@ -190,8 +195,9 @@ function App() {
               ))}
 
               {/* Static pages */}
+              <Route path="/franchise" element={<FranchiseOpportunityPage />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
-              <Route path="/be-an-associate" element={<BeAnAssociatePage />} />
+              <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
