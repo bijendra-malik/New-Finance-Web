@@ -1,12 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import type { RegisterPayload } from "../../api/auth";
-import { registerUser, loginUser, verifyOTP } from "../../api/auth";
-import { useAuth } from "../../context/authContext";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { mergeAccountDetails, readStoredProfile } from "../../utils/accountProfile";
-import { PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
+import { mergeAccountDetails, readAccountRecord } from "../../utils/accountProfile";
 import { applyRegister } from "../../api/auth";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -20,6 +17,7 @@ const dashboardRoutes: Record<string, string> = {
   "Loan Against Property":    "/dashboard/loanagainstproperty",
   "Balance Transfer":         "/dashboard/balancetransfer",
   "Credit Card":              "/dashboard/creditcard",
+
   "Premium Credit Cards":     "/dashboard/creditcard",
   "Project Loan":             "/dashboard/projectloan",
   "Commercial Purchase":      "/dashboard/commercialpurchase",
@@ -43,31 +41,23 @@ interface ApplicationModalProps {
   productName?: string;
 }
 
-type AuthMode = "signin" | "signup";
-type Step     = "details" | "otp";
+type Step = "details" | "eligibility" | "form";
 
-// ── Inline icons (brand panel) ─────────────────────────────────────────────────
+const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
 
-const IconAmount = () => (
-  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
+// PAN validation lives in src/utils/validation.ts (PAN_REGEX) — the same
+// rule the dashboard panels already use; the modal just reuses it here.
 
-const IconDocs = () => (
-  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-  </svg>
-);
+interface EligResult {
+  eligible: boolean;
+  maxLoan: string;
+  emi: string;
+  message: string;
+}
 
-const IconFast = () => (
-  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
+/** ₹1,23,456 — same formatting as the public eligibility calculator. */
+const fmt = (n: number) =>
+  "₹" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 // ── Inline Spinner ─────────────────────────────────────────────────────────────
 
@@ -81,16 +71,14 @@ const Spinner = ({ small }: { small?: boolean }) => (
 // ── Reusable Field ─────────────────────────────────────────────────────────────
 
 const Field = ({
-  label, type, name, value, onChange, placeholder, error, disabled,
-  maxLength, max, extraCls = "",
+  label, type, name, value, onChange, placeholder, error, disabled,  maxLength, max, extraCls = "", required = true,
 }: {
   label: string; type: string; name: string; value: string;
-  onChange: (v: string) => void; placeholder?: string;
-  error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string;
+  onChange: (v: string) => void; placeholder?: string; error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string; required?: boolean;
 }) => (
   <div>
     <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
-      {label} <span className="text-red-500 ml-0.5">*</span>
+      {label} {required && <span className="text-red-500 ml-0.5">*</span>}
     </label>
     <input
       type={type} name={name} value={value}
@@ -111,105 +99,81 @@ const Field = ({
 const ApplicationModal = ({
   isOpen,
   onClose,
-  productName = "Personal Loan",
+  productName = "",
 }: ApplicationModalProps) => {
-  const { login, isLoggedIn } = useAuth();
+  const productNameFirstWord = productName.trim().split(/\s+/)[0]?.toLowerCase();
   const navigate  = useNavigate();
-  const account = useMemo(() => readStoredProfile(), []);
-  const lockedFromAccount = useMemo(
-    () => ({
-      name: account?.name?.trim() ?? "",
-      mobile: (account?.phone ?? "").replace(/\D/g, "").slice(-10),
-      email: account?.email?.trim() ?? "",
-    }),
-    [account]
-  );
-  const hasLockedContact =
-    !!lockedFromAccount.name || !!lockedFromAccount.mobile || !!lockedFromAccount.email;
+  // Read the account on every render while open: it's external state that is
+  // usually created *after* this component first mounts (sign-up runs while
+  // it's already mounted), so a mount-time memo would go stale.
+  const account = isOpen ? readAccountRecord() : null;
+  // The account created in the header panel — shown read-only below.
+  const accountMobile = (account?.phone ?? "").replace(/\D/g, "").slice(-10);
 
-  // Already logged in — skip signup/OTP entirely, jump straight to the loan detail page.
-  useEffect(() => {
-    if (isOpen && isLoggedIn) {
-      navigate(dashboardRoutes[productName] ?? "/dashboard/personalloan");
-      onClose();
-    }
-  }, [isOpen, isLoggedIn, productName, navigate, onClose]);
-
-  // ── Mode & Step ───────────────────────────────────────────────────────────
-  const [mode, setMode] = useState<AuthMode>("signup");
+  // ── Step ─────────────────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("details");
 
-  // ── Sign Up fields ────────────────────────────────────────────────────────
-  const [signup, setSignup] = useState(() => {
-    const stored = readStoredProfile();
-    return {
-      name: stored?.name ?? "",
-      phone: (stored?.phone ?? "").replace(/\D/g, "").slice(-10),
-      email: stored?.email ?? "",
-      dob: stored?.dob ?? "",
-      pan: (stored?.pan ?? "").toUpperCase(),
-    };
-  });
-  const registerPayload = useMemo<RegisterPayload>(() => ({
-    name: signup.name,
-    mobile: signup.phone,
-    email: signup.email,
-    role: "Customer",
-    continent: "Asia",
-    country: "India",
-  }), [signup.name, signup.phone, signup.email]);
-  const [signupErrors, setSignupErrors] = useState<Record<string, string>>({});
+  // ── Eligibility fields — POST /customer/apply-register { product, dob, panNumber }
+  // The product is the one the visitor chose to apply for (prop), never picked here.
+  const [dob, setDob] = useState(() => readAccountRecord()?.dob ?? "");
+  const [pan, __setPan] = useState(() => (readAccountRecord()?.pan ?? "").toUpperCase());
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // ── Sign In fields ────────────────────────────────────────────────────────
-  const [signinPhone, setSigninPhone] = useState("");
-  const [signinPhoneError, setSigninPhoneError] = useState("");
+  // ── Eligibility test — occupation / income / existing EMIs ────────────────
+  const [occupation,    setOccupation]    = useState("");
+  const [monthlyIncome, setMonthlyIncome] = useState("");
+  const [existingEmi,   setExistingEmi]   = useState("");
+  const [authorized,    setAuthorized]    = useState(false);
+  const [eligErrors,    setEligErrors]    = useState<Record<string, string>>({});
+  const [eligResult,    setEligResult]    = useState<EligResult | null>(null);
 
-  // ── OTP ───────────────────────────────────────────────────────────────────
-  const [otp, setOtp]           = useState("");
-  const [otpError, setOtpError] = useState("");
+  // ── PAN-format setter (the structured "autostop" A→Z then 0-9 flush) ─────
+  // "Autostop alphanumeric letters": while typing, keep A-Z letters until the
+  // 5-letter block is full, then only accept 0-9 digits for the next 4 slots;
+  // slot 10 accepts a letter only — the check letter from the card.
+  const setPan = function (v: string) {
+    const clean = v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+    let structured = "";
+    for (const c of clean) {
+      const pos = structured.length;
+      if (pos < 5 && /[A-Z]/.test(c)) structured += c;                 // letters autostop at 5
+      else if (pos >= 5 && pos < 9 && /[0-9]/.test(c)) structured += c; // digits autostop at 4
+      else if (pos === 9 && /[A-Z]/.test(c)) structured += c;           // check letter only
+    }
+    __setPan(structured);
+    setFieldErrors((p) => ({ ...p, pan: "" }));
+  };
 
-  // ── Shared loading / error ────────────────────────────────────────────────
-  const [isSending,   setIsSending]   = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [apiError,    setApiError]    = useState("");
-  const [resendMsg,   setResendMsg]   = useState("");
+  // ── Step 1 — Save eligibility details → eligibility test ────────────────────
+  const [isSending,  setIsSending]  = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [apiError,   setApiError]   = useState("");
 
-  // Freeze the page behind the popup, so only the popup's own areas scroll.
-  // (Renders nothing once logged in — don't hold the lock then.)
-  useEffect(() => {
-    if (!isOpen || isLoggedIn) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isOpen, isLoggedIn]);
+  // ── Right-side error popups ────────────────────────────────────────────────
+  const [errorToasts, setErrorToasts] = useState<{ id: number; msg: string }[]>([]);
+  const pushErrors = (msgs: string[]) => {
+    msgs.forEach((msg, i) => {
+      const id = Date.now() + i;
+      setErrorToasts((list) => (list.some((x) => x.msg === msg) ? list : [...list, { id, msg }]));
+      setTimeout(() => setErrorToasts((list) => list.filter((x) => x.id !== id)), 4500);
+    });
+  };
 
-  if (!isOpen || isLoggedIn) return null;
-
-  const isBusy   = isSending || isVerifying;
-  const mobile   = mode === "signup" ? signup.phone : signinPhone;
-
-  // ── Reset ─────────────────────────────────────────────────────────────────
+  const isBusy = isSending || isChecking;
 
   const resetAll = () => {
-    setMode("signup");
     setStep("details");
-    setSignup({
-      name: account?.name ?? "",
-      phone: (account?.phone ?? "").replace(/\D/g, "").slice(-10),
-      email: account?.email ?? "",
-      dob: account?.dob ?? "",
-      pan: (account?.pan ?? "").toUpperCase(),
-    });
-    setSignupErrors({});
-    setSigninPhone("");
-    setSigninPhoneError("");
-    setOtp("");
-    setOtpError("");
+    setDob(account?.dob ?? "");
+    __setPan((account?.pan ?? "").toUpperCase());
+    setFieldErrors({});
+    setOccupation("");
+    setMonthlyIncome("");
+    setExistingEmi("");
+    setAuthorized(false);
+    setEligErrors({});
+    setEligResult(null);
     setApiError("");
-    setResendMsg("");
+    setErrorToasts([]);
   };
 
   const handleClose = () => {
@@ -218,122 +182,120 @@ const ApplicationModal = ({
     onClose();
   };
 
-  const switchMode = (m: AuthMode) => {
-    setMode(m);
-    setStep("details");
-    setApiError("");
-    setOtp("");
-    setOtpError("");
-    setResendMsg("");
-  };
+  // Escape closes the panel, like the backdrop and the Cancel button.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  });
 
-  // ── Validate sign-up fields ───────────────────────────────────────────────
+  // Freeze the page behind the popup, so only the popup's own areas scroll.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
 
-  const validateSignup = () => {
+  if (!isOpen) return null;
+
+  // ── Validate eligibility fields ───────────────────────────────────────────
+
+  const validateDetails = () => {
     const e: Record<string, string> = {};
-    if (!lockedFromAccount.name) {
-      if (!signup.name.trim()) e.name = "Name is required";
-    }
-    if (!lockedFromAccount.mobile) {
-      if (!signup.phone.trim()) e.phone = "Phone is required";
-      else if (!/^\d{10}$/.test(signup.phone)) e.phone = "Enter valid 10-digit number";
-    }
-    if (!lockedFromAccount.email) {
-      if (!signup.email.trim()) e.email = "Email is required";
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signup.email)) e.email = "Enter valid email";
-    }
-    if (!signup.dob) e.dob = "Date of birth is required";
-    else if (!isAtLeastAge(signup.dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
-    if (!signup.pan.trim()) e.pan = "PAN is required";
-    else if (!PAN_REGEX.test(signup.pan)) e.pan = "Enter a valid PAN, e.g. ABCDE1234F";
-    setSignupErrors(e);
+    if (!accountMobile) e.account = "No account found — create one from the Login menu first";
+    if (!dob) e.dob = "Date of birth is required";
+    else if (!isAtLeastAge(dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
+    validatePan("pan", pan, e);
+    setFieldErrors(e);
+    if (Object.keys(e).length) pushErrors(Object.values(e));
     return Object.keys(e).length === 0;
   };
 
-  const validateSignin = () => {
-    if (!signinPhone.trim()) { setSigninPhoneError("Phone is required"); return false; }
-    if (!/^\d{10}$/.test(signinPhone)) { setSigninPhoneError("Enter valid 10-digit number"); return false; }
-    setSigninPhoneError("");
-    return true;
+  const validatePan = (name: "pan", value: string, e: Record<string, string>) => {
+    if (!value.trim()) { e[name] = "PAN is required"; return; }
+    if (!PAN_REGEX.test(value)) { e[name] = "Enter a valid PAN, e.g. ABCDE1234F"; return; }
   };
 
-  // ── Step 1 — Send OTP ─────────────────────────────────────────────────────
+  // ── Step 1 — Save eligibility details → eligibility test ────────────────────
 
-  const handleSendOtp = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+
+  const handleDetailsSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
-    if (mode === "signup" && !validateSignup()) return;
-    if (mode === "signin" && !validateSignin()) return;
+    if (!validateDetails()) return;
 
     setIsSending(true);
     setApiError("");
     try {
-      if (mode === "signup") {
-        await registerUser(registerPayload);
-        mergeAccountDetails({ dob: signup.dob, pan: signup.pan });
-        await          applyRegister({
-          product: productName,
-          dob: signup.dob,
-          panNumber: signup.pan,
-        });
-      } else {
-        await loginUser({ mobile: signinPhone });
-      }
-      setStep("otp");
+      await applyRegister({
+        product: productNameFirstWord,
+        dob,
+        panNumber: pan,
+      });
+      mergeAccountDetails({ dob, pan });
+      setStep("eligibility");
     } catch (err) {
-      setApiError(getApiErrorMessage(err, "Failed to send OTP. Please try again."));
+      const msg = getApiErrorMessage(err, "Failed to save your details. Please try again.");
+      setApiError(msg);
+      pushErrors([msg]);
     } finally {
       setIsSending(false);
     }
   };
 
-  // ── Step 2 — Verify OTP → login → navigate ────────────────────────────────
+  // ── Step 2 — Eligibility test (same rule as the public calculator:
+  // net monthly income minus existing EMIs must clear ₹15,000) ────────────────
 
-  const handleVerifyOtp = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  const validateEligibility = () => {
+    const e: Record<string, string> = {};
+    if (!occupation) e.occupation = "Select your occupation";
+    if (!monthlyIncome) e.monthlyIncome = "Net monthly income is required";
+    else if (!(parseFloat(monthlyIncome) > 0)) e.monthlyIncome = "Enter a valid income";
+    if (!authorized) e.authorized = "Please authorise to proceed";
+    setEligErrors(e);
+    if (Object.keys(e).length) pushErrors(Object.values(e));
+    return Object.keys(e).length === 0;
+  };
+
+  const handleEligibility = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
-    if (!otp.trim())              { setOtpError("Please enter the OTP"); return; }
-    if (!/^\d{4,8}$/.test(otp))  { setOtpError("Enter a valid OTP"); return; }
+    if (!validateEligibility()) return;
 
-    setIsVerifying(true);
-    setOtpError("");
-    try {
-      const res = await verifyOTP({ mobile, otp: otp.trim() });
-      login(res.token, res.user);
-      resetAll();
-      onClose();
-      navigate(dashboardRoutes[productName] ?? "/dashboard/personalloan");
-    } catch (err) {
-      setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
-    } finally {
-      setIsVerifying(false);
-    }
+    setIsChecking(true);
+    setTimeout(() => {
+      const income = parseFloat(monthlyIncome) || 0;
+      const emiAmt = parseFloat(existingEmi) || 0;
+      const net = income - emiAmt;
+      const eligible = net >= 15000;
+      const maxLoan = Math.floor((net * 0.5 * 60) / 1000) * 1000;
+      const firstName = account?.name?.split(" ")[0] || "there";
+      const result: EligResult = {
+        eligible,
+        maxLoan: eligible ? fmt(maxLoan) : "₹0",
+        emi: eligible ? fmt(Math.round(maxLoan / 60)) : "₹0",
+        message: eligible
+          ? `Great news, ${firstName}! Based on your profile, you may be eligible for a loan up to ${fmt(maxLoan)}.`
+          : "Your current income or obligations may not meet the minimum eligibility threshold. Try reducing existing EMIs or applying with a co-applicant.",
+      };
+      setEligResult(result);
+      setIsChecking(false);
+      // Eligible → straight to the hand-off screen for the application form.
+      if (result.eligible) setStep("form");
+    }, 900);
   };
 
-  // ── Resend OTP ────────────────────────────────────────────────────────────
+  // ── Step 3 — Open the product's application form (dashboard) ─────────────────
 
-  const handleResend = async () => {
-    setIsResending(true);
-    setOtpError("");
-    setResendMsg("");
-    try {
-      if (mode === "signup") {
-        await registerUser(registerPayload);
-      } else {
-        await loginUser({ mobile: signinPhone });
-      }
-      setResendMsg("OTP resent successfully!");
-      setTimeout(() => setResendMsg(""), 3000);
-    } catch (err) {
-      setOtpError(getApiErrorMessage(err, "Failed to resend OTP."));
-    } finally {
-      setIsResending(false);
-    }
+  const handleOpenForm = () => {
+    resetAll();
+    onClose();
+    navigate(dashboardRoutes[productNameFirstWord] ?? "/dashboard/personalloan");
   };
-
-  // ── Progress pill active key ────────────────────────────────────────────
-
-  const progressActive = step === "details"
-    ? mode === "signup" ? "account" : "signin"
-    : "otp";
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -348,142 +310,79 @@ const ApplicationModal = ({
         onClick={handleClose}
       />
 
-      {/* Modal — 2-panel: brand (left) + form (right). Sits above the header. */}
+      {/* Modal — single-card eligibility gateway */}
       <div className="fixed inset-0 z-110 flex items-center justify-center p-3 sm:p-4">
-        <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="apply-modal-title"
+          className="w-full max-w-xl min-w-0 flex flex-col shadow-2xl rounded-2xl overflow-hidden bg-white max-h-[92vh]"
+        >
 
-          {/* LEFT PANEL — Brand / marketing (navy gradient) */}
-          <div
-            className="relative w-full md:w-80 shrink-0 flex flex-col justify-between
-              bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
-              shadow-xl overflow-hidden"
-            style={{
-              /* subtle top-edge teal highlight */
-              boxShadow: "0 0 0 1px rgba(38,174,144,0.25), 0 20px 60px -20px rgba(0,0,0,0.6)",
-            }}
-          >
-            {/* Top accent bar — brand teal */}
+          {/* ── Header band — navy, single column: this is the eligibility
+              gateway, not a login panel ── */}
+          <div className="relative shrink-0 overflow-hidden bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep) text-white">
             <div className="h-1 w-full bg-(--brand-teal)" />
-
-            {/* Top padding + inner content */}
-            <div className="flex flex-col justify-between flex-1 p-4 sm:p-5 md:px-8 md:py-6 text-white overflow-y-auto overscroll-contain">
-
-              {/* Top: product badge */}
-                <div>
+            <div className="px-5 py-3.5 sm:px-6 sm:py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
                     text-[10px] font-bold uppercase tracking-wider bg-(--brand-yellow) text-(--brand-dark)
                     shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                    Apply Now
+                    Eligibility check
                   </span>
-                  <h3 className="mt-2 text-sm font-bold text-(--brand-yellow)
-                    uppercase tracking-[0.18em] leading-tight">
+                  <h2 id="apply-modal-title" className="mt-1.5 text-lg sm:text-xl font-extrabold tracking-tight">
                     {productName}
-                  </h3>
-              </div>
-
-              {/* Brand panel body — visual feature cards */}
-              <div className="mt-3 mb-3 md:mt-5 md:mb-6 flex flex-col gap-2 md:gap-3">
-                {/* Big headline */}
-                <p className="text-lg sm:text-xl md:text-4xl font-extrabold leading-[1.15] tracking-tight
-                  text-white drop-shadow-sm">
-                  Get{" "}
-                  <span className="text-(--brand-yellow)">funds</span>{" "}
-                  when you need them
-                </p>
-                <p className="hidden md:block text-sm leading-relaxed text-white/70 max-w-[50ch]">
-                  Fast approval, minimal paperwork. <br />
-                  Apply in minutes and get a decision quickly.
-                </p>
-
-                {/* Feature pills — icon + text, teal-tinted backgrounds.
-                    Hidden on small screens so the brand panel stays short. */}
-                <div className="hidden md:grid grid-cols-1 gap-2.5 mt-1">
-                  {[
-                    { icon: <IconAmount />, title: "Quick disbursal",
-                      desc: "Funds credited to your account once approved" },
-                    { icon: <IconDocs />, title: "Minimal documents",
-                      desc: "PAN, Aadhaar & a few details is all it takes" },
-                    { icon: <IconFast />, title: "Apply in minutes",
-                      desc: "No branch visit — start & finish online" },
-                  ].map((f, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 rounded-xl px-4 py-3.5
-                        bg-white/10 backdrop-blur-[2px] border border-white/10"
-                    >
-                      <div className="shrink-0 mt-0.5 rounded-lg bg-(--brand-teal)
-                        bg-opacity-20 p-2 text-(--brand-teal)">
-                        {f.icon}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{f.title}</p>
-                        <p className="text-xs mt-0.5 text-white/65 leading-relaxed">{f.desc}</p>
-                      </div>
-                    </div>
-                  ))}
+                  </h2>
+                  <p className="mt-0.5 text-xs sm:text-sm text-white/70">
+                    Two quick details to check your eligibility, then the application form.
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="Close"
+                  className="shrink-0 rounded-lg border border-white/25 bg-white/10 p-1.5 text-white/80 hover:bg-white/20 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-white/70 cursor-pointer"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
 
-              {/* Spacer pushes the progress pill to the bottom */}
-              <div className="flex-1" />
+              {/* Step rail — this flow's real sequence */}
+              <ol className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
 
-              {/* Progress pill — states which step is active */}
-              <div className="flex items-center gap-2">
                 {[
-                  { key: "account",  label: "Account",  active: progressActive === "account" },
-                  { key: "otp",      label: "OTP",      active: progressActive === "otp" },
-                ].map((p, i) => (
-                  <div key={p.key} className="flex items-center gap-2">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-                      transition-all ${p.active
+                  { label: "Your details",     active: step === "details" },
+                  { label: "Eligibility test", active: step === "eligibility" },
+                  { label: "Application form", active: step === "form" },
+                ].map((s, i, arr) => (
+                  <li key={s.label} className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+                      text-[11px] font-bold uppercase tracking-wider transition-all
+                      ${s.active
                         ? "bg-(--brand-teal) text-white shadow-(--brand-teal-44)"
-                        : "bg-white/15 text-white/50"}`}>
-                      {p.active ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5"
-                          viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                      ) : i + 1}
-                    </div>
-                    <span className={`text-xs font-semibold tracking-wide ${p.active
-                      ? "text-white"
-                      : "text-white/45"}`}>{p.label}</span>
-                    {i === 0 && <div className={`h-px w-5 transition-all ${progressActive === "otp" ? "bg-white/35" : "bg-white/10"}`} />}
-                  </div>
+                        : "bg-white/10 text-white/55 border border-white/15"}`}>
+                      {s.active && (
+                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                      {i + 1}. {s.label}
+                    </span>
+                    {i < arr.length - 1 && (
+                      <span aria-hidden className="text-white/30 text-xs">→</span>
+                    )}
+                  </li>
                 ))}
-              </div>
+              </ol>
             </div>
           </div>
 
-          {/* ═══════════════════════════════════════════════════════════════════
-            RIGHT PANEL — Form card
-            ═══════════════════════════════════════════════════════════════════ */}
           <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
 
-            {/* Thin teal top edge */}
-            <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
-
             {/* ── Body (scrolls when taller than the card) ── */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-7 md:py-6">
-
-              {/* Title — mirrors the brand panel */}
-              <div className="mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--brand-navy)
-                  bg-(--brand-navy-14) px-2 py-0.5 rounded-full text-center">
-                  {productName}
-                </p>
-                <h2 className="text-lg font-bold text-(--form-dark) mt-1.5 text-center">
-                  {step === "details"
-                    ? mode === "signup" ? "Create your account" : "Welcome back"
-                    : "Verify your number"}
-                </h2>
-                <p className="text-xs text-(--brand-gray) mt-0.5 text-center">
-                  {step === "details"
-                    ? mode === "signup"
-                      ? "Sign up to apply for this loan"
-                      : "Sign in to continue your application"
-                    : `Enter the OTP sent to +91 ${mobile}`}
-                </p>
-              </div>
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-3.5 md:px-6 md:py-4">
 
               {/* API-level error */}
               {apiError && (
@@ -494,82 +393,87 @@ const ApplicationModal = ({
                 </div>
               )}
 
-              {/* ── Sign In / Sign Up tab switcher — details step ── */}
+              {/* ── Details step: locked record + PAN inputs ── */}
               {step === "details" && (
-                <div className="flex rounded-xl border border-slate-200 p-0.5 mb-5 bg-slate-50" role="tablist">
-                  {(["signup", "signin"] as const).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      role="tab"
-                      aria-selected={mode === m}
-                      onClick={() => switchMode(m)}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all
-                        ${mode === m
-                          ? "bg-white text-(--brand-navy) shadow-sm"
-                          : "text-slate-500 hover:text-slate-700 hover:bg-white/50"}`}
-                    >
-                      {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* ── SIGN UP — details step ── */}
-              {step === "details" && mode === "signup" && (
-                <form onSubmit={handleSendOtp} className="space-y-3.5" noValidate>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <Field
-                      label="Full Name" type="text" name="name"
-                      value={signup.name}
-                      onChange={(v) => { setSignup((p) => ({ ...p, name: v })); setSignupErrors((p) => ({ ...p, name: "" })); }}
-                      placeholder="As per your ID card"
-                      error={signupErrors.name} disabled={isSending || !!lockedFromAccount.name}
-                    />
-                    <Field
-                      label="Mobile Number" type="tel" name="phone"
-                      value={signup.phone}
-                      onChange={(v) => { setSignup((p) => ({ ...p, phone: v.replace(/\D/g, "") })); setSignupErrors((p) => ({ ...p, phone: "" })); }}
-                      placeholder="10-digit mobile number"
-                      maxLength={10} error={signupErrors.phone} disabled={isSending || !!lockedFromAccount.mobile}
-                    />
-                    <div className="sm:col-span-2">
-                      <Field
-                        label="Email Address" type="email" name="email"
-                        value={signup.email}
-                        onChange={(v) => { setSignup((p) => ({ ...p, email: v })); setSignupErrors((p) => ({ ...p, email: "" })); }}
-                        placeholder="your@email.com"
-                        error={signupErrors.email} disabled={isSending || !!lockedFromAccount.email}
-                      />
-                    </div>
-                  </div>
-
-                  {hasLockedContact && (
-                    <p className="-mt-2 text-xs text-slate-400">
-                      🔒 Name, mobile and email were filled when you created your account.
+                <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
+                  {fieldErrors.account && (
+                    <p className="text-xs font-medium text-red-500">{fieldErrors.account}</p>
+                  )}
+                  {!account && !fieldErrors.account && (
+                    <p className="text-xs font-medium text-amber-600">
+                      No account found — create one from the Login menu first.
                     </p>
                   )}
 
-                  {/* DOB + PAN — de-emphasized (only editable fields, from PAN card) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-1">
+                  {/* Registered details — created at sign-up, not editable here */}
+                  <section
+                    aria-labelledby="registered-details-heading"
+                    className="rounded-xl border border-dashed border-(--brand-teal-60) bg-(--form-subtle-bg) px-4 py-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <h3
+                        id="registered-details-heading"
+                        className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--brand-navy)"
+                      >
+                        Registered details
+                      </h3>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-(--brand-yellow)/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                        <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                        Locked
+                      </span>
+                    </div>
+                    <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
+                      {([
+                        ["Full name", account?.name],
+                        ["Mobile", accountMobile ? `+91 ${accountMobile}` : ""],
+                        ["Email", account?.email],
+                        ["Role", account?.role],
+                        ["Country", account?.country],
+                      ] as const).map(([label, value]) => (
+                        <div key={label} className="min-w-0">
+                          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
+                          <dd className="truncate text-sm font-semibold text-slate-700">{value || "—"}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <p className="mt-2 text-[11px] leading-snug text-slate-500">
+                      Created when you registered — these carry into every application form and can't be changed here.
+                    </p>
+                  </section>
+
+                  {/* Product — the one chosen to apply for; sent unchanged */}
+                  <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
+                    <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-slate-800">
+                      <svg className="h-4 w-4 shrink-0 text-(--brand-teal)" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {productName}
+                    </p>
+                  </div>
+
+                  {/* DOB + PAN — from PAN card */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
                     <Field
                       label="Date of Birth" type="date" name="dob"
-                      value={signup.dob}
+                      value={dob}
                       max={latestDobForAge(21)}
-                      onChange={(v) => { setSignup((p) => ({ ...p, dob: v })); setSignupErrors((p) => ({ ...p, dob: "" })); }}
-                      error={signupErrors.dob} disabled={isSending}
-                      extraCls="opacity-80"
+                      onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
+                      error={fieldErrors.dob} disabled={isSending}
                     />
                     <Field
                       label="PAN Number" type="text" name="pan"
-                      value={signup.pan}
+                      value={pan}
                       maxLength={10}
-                      onChange={(v) => { setSignup((p) => ({ ...p, pan: v.toUpperCase().replace(/[^A-Z0-9]/g, "") })); setSignupErrors((p) => ({ ...p, pan: "" })); }}
+                      onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
                       placeholder="ABCDE1234F"
-                      error={signupErrors.pan} disabled={isSending}
+                      error={fieldErrors.pan} disabled={isSending}
                       extraCls="uppercase tracking-wider"
                     />
-                  </div>
+                   </div>
 
                   {/* Subtle note — these come from PAN card */}
                   <p className="text-xs text-slate-400 -mt-1">
@@ -591,146 +495,215 @@ const ApplicationModal = ({
                         from-(--brand-navy) to-(--brand-dark) hover:from-(--brand-dark)
                         hover:to-(--brand-navy-deep) shadow-(--brand-navy-44)"
                       style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
-                      {isSending ? <><Spinner /> Sending OTP...</> : "Send OTP →"}
+                      {isSending ? <><Spinner /> Saving...</> : "Continue →"}
                     </button>
                   </div>
-
-                  <p className="text-xs text-slate-400 text-center">
-                    Already have an account?{" "}
-                    <button type="button" onClick={() => switchMode("signin")}
-                      className="text-(--brand-navy) font-semibold hover:underline">
-                      Sign In
-                    </button>
-                  </p>
                 </form>
               )}
 
-              {/* ── SIGN IN — details step ── */}
-              {step === "details" && mode === "signin" && (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full
-                      bg-(--brand-navy-14) mb-3 border border-(--brand-navy-22)">
-                      <svg className="w-6 h-6 text-(--brand-navy)" fill="none" stroke="currentColor"
-                        strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                      </svg>
+              {/* ── Eligibility test step: income + EMIs ── */}
+              {step === "eligibility" && !eligResult && (
+                <form onSubmit={handleEligibility} className="space-y-3" noValidate>
+                  <div>
+                    <h2 className="text-lg font-bold text-(--form-dark)">Eligibility test</h2>
+                    <p className="text-xs text-(--brand-gray) mt-0.5">
+                      A quick check on your income and existing EMIs — nothing is sent to a lender yet.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                        Occupation <span className="text-red-500 ml-0.5">*</span>
+                      </label>
+                      <select
+                        value={occupation}
+                        disabled={isChecking}
+                        onChange={(e) => { setOccupation(e.target.value); setEligErrors((p) => ({ ...p, occupation: "" })); }}
+                        className={`w-full px-3.5 py-2.5 border rounded-lg text-sm bg-white transition-all
+                          focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal)
+                          disabled:bg-(--form-field-bg-disabled) disabled:cursor-not-allowed
+                          ${eligErrors.occupation ? "border-red-400" : "border-(--form-field-border)"}`}
+                        style={eligErrors.occupation ? { borderColor: "#ef4444" } : undefined}
+                      >
+                        <option value="">Select occupation</option>
+                        {OCCUPATIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                      {eligErrors.occupation && <p className="text-xs text-red-500 mt-1">{eligErrors.occupation}</p>}
                     </div>
-                    <p className="text-sm text-slate-500">Enter your registered mobile number</p>
+                    <Field
+                      label="Net Monthly Income" type="number" name="monthlyIncome"
+                      value={monthlyIncome}
+                      placeholder="e.g. 50000"
+                      onChange={(v) => { setMonthlyIncome(v); setEligErrors((p) => ({ ...p, monthlyIncome: "" })); }}
+                      error={eligErrors.monthlyIncome} disabled={isChecking}
+                    />
                   </div>
 
                   <Field
-                    label="Mobile Number" type="tel" name="signinPhone"
-                    value={signinPhone}
-                    onChange={(v) => { setSigninPhone(v.replace(/\D/g, "")); setSigninPhoneError(""); }}
-                    placeholder="10-digit registered mobile"
-                    maxLength={10} error={signinPhoneError} disabled={isSending}
+                    label="Existing EMI (if any)" type="number" name="existingEmi"
+                    value={existingEmi}
+                    placeholder="e.g. 5000"
+                    required={false}
+                    onChange={(v) => setExistingEmi(v)}
+                    disabled={isChecking}
                   />
 
-                  <div className="flex gap-3 pt-1">
-                    <button type="button" onClick={handleClose} disabled={isSending}
+                  <hr className="border-slate-100" />
+
+                  {/* Authorise */}
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={authorized}
+                        disabled={isChecking}
+                        onChange={(e) => { setAuthorized(e.target.checked); setEligErrors((p) => ({ ...p, authorized: "" })); }}
+                        className="sr-only"
+                      />
+                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition
+                        ${authorized
+                          ? "border-(--brand-teal) bg-(--brand-teal)"
+                          : eligErrors.authorized ? "border-red-400" : "border-slate-300 group-hover:border-(--brand-teal)"}`}>
+                        <svg className={`h-3.5 w-3.5 text-white transition ${authorized ? "opacity-100" : "opacity-0"}`}
+                          fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span className="text-xs leading-relaxed text-slate-500">
+                        I authorise Indexia Finance and its partner providers to call or SMS me about this application and agree to the{" "}
+                        <span className="font-semibold text-(--brand-navy) underline">Terms of use</span>.
+                      </span>
+                    </label>
+                    {eligErrors.authorized && <p className="ml-8 mt-1 text-xs text-red-500">{eligErrors.authorized}</p>}
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <button type="button" onClick={() => setStep("details")} disabled={isChecking}
                       className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
                         border border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition
                         focus:outline-none focus:ring-2 focus:ring-slate-200">
-                      Cancel
+                      ← Back
                     </button>
-                    <button type="submit" disabled={isSending}
+                    <button type="submit" disabled={isChecking}
                       className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-70
                         flex items-center justify-center gap-2 transition
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)
-                        from-(--brand-navy) to-(--brand-dark) hover:from-(--brand-dark)
-                        hover:to-(--brand-navy-deep) shadow-(--brand-navy-44)"
+                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
                       style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
-                      {isSending ? <><Spinner /> Sending OTP...</> : "Send OTP →"}
+                      {isChecking ? <><Spinner /> Checking...</> : "Check eligibility →"}
                     </button>
                   </div>
-
-                  <p className="text-xs text-slate-400 text-center">
-                    New user?{" "}
-                    <button type="button" onClick={() => switchMode("signup")}
-                      className="text-(--brand-navy) font-semibold hover:underline">
-                      Create account
-                    </button>
-                  </p>
                 </form>
               )}
 
-              {/* ── OTP step (same for both modes) ── */}
-              {step === "otp" && (
-                <form onSubmit={handleVerifyOtp} className="space-y-5">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full
-                      bg-(--brand-navy-14) mb-3 border border-(--brand-navy-22)">
-                      <svg className="w-6 h-6 text-(--brand-navy)" fill="none" stroke="currentColor"
-                        strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round"
-                          d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18h3" />
+              {/* ── Not eligible — stays on the eligibility step ── */}
+              {step === "eligibility" && eligResult && !eligResult.eligible && (
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-red-200 bg-linear-to-br from-red-50 to-amber-50 px-5 py-6 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500 shadow-lg">
+                      <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </div>
-                    <p className="text-sm text-slate-500">One-time password sent to</p>
-                    <p className="text-base font-bold text-slate-900">+91 {mobile}</p>
+                    <h2 className="text-xl font-extrabold text-red-800">Not eligible yet</h2>
+                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-red-700">{eligResult.message}</p>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">
-                      Enter OTP <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={otp}
-                      onChange={(e) => { setOtp(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
-                      placeholder="• • • • • •"
-                      disabled={isVerifying}
-                      maxLength={8}
-                      autoFocus
-                      className={`w-full px-4 py-3.5 border rounded-lg text-xl tracking-[0.4em]
-                        text-center font-bold transition disabled:bg-slate-100
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal)
-                        ${otpError ? "border-red-400" : "border-slate-300"}`}
-                      style={otpError ? { borderColor: "#ef4444" } : undefined}
-                    />
-                    {otpError  && <p className="text-xs text-red-500 mt-1 text-center">{otpError}</p>}
-                    {resendMsg && <p className="text-xs text-green-600 mt-1 text-center font-medium">{resendMsg}</p>}
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isVerifying || otp.length < 4}
-                    className="w-full py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-70
-                      flex items-center justify-center gap-2 transition
-                      from-(--brand-navy) to-(--brand-dark) hover:from-(--brand-dark)
-                      hover:to-(--brand-navy-deep) shadow-(--brand-navy-44)
-                      focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-                    style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}
-                  >
-                    {isVerifying ? <><Spinner /> Verifying...</> : "✓ Verify & Continue"}
-                  </button>
-
-                  <div className="flex justify-between items-center">
-                    <button
-                      type="button"
-                      onClick={() => { setStep("details"); setOtp(""); setOtpError(""); setResendMsg(""); setApiError(""); }}
-                      disabled={isVerifying}
-                      className="text-sm text-slate-500 hover:text-slate-700 disabled:opacity-40 transition"
-                    >
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => { setEligResult(null); setStep("details"); }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
+                        border border-slate-300 hover:bg-slate-50 transition
+                        focus:outline-none focus:ring-2 focus:ring-slate-200">
                       ← Change details
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleResend}
-                      disabled={isResending || isVerifying}
-                      className="text-sm text-(--brand-navy) hover:text-(--brand-navy-deep)
-                        font-medium disabled:opacity-40 flex items-center gap-1 transition">
-                      {isResending ? <><Spinner small /> Resending...</> : "Resend OTP"}
+                    <button type="button" onClick={() => setEligResult(null)}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition
+                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
+                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                      Try again →
                     </button>
                   </div>
-                </form>
+                </div>
+              )}
+
+              {/* ── Step 3: eligible → hand off to the application form ── */}
+              {step === "form" && eligResult?.eligible && (
+                <div className="space-y-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-teal-50 px-5 py-6 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-lg">
+                      <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-extrabold text-emerald-800">You're eligible! 🎉</h2>
+                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-emerald-700">{eligResult.message}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-teal-200 bg-white p-4 text-center shadow-sm">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Max. Loan Amount</p>
+                      <p className="mt-1 text-2xl font-extrabold text-(--brand-teal)">{eligResult.maxLoan}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">Estimated eligibility</p>
+                    </div>
+                    <div className="rounded-xl border border-teal-200 bg-white p-4 text-center shadow-sm">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Est. Monthly EMI</p>
+                      <p className="mt-1 text-2xl font-extrabold text-(--brand-teal)">{eligResult.emi}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">Over 60 months</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
+                  </div>
+
+                  <p className="text-center text-xs text-slate-500">
+                    Next: fill in the <span className="font-semibold text-(--form-dark)">{productName}</span> application form — your registered details are carried into it.
+                  </p>
+
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => { setEligResult(null); setStep("eligibility"); }}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
+                        border border-slate-300 hover:bg-slate-50 transition
+                        focus:outline-none focus:ring-2 focus:ring-slate-200">
+                      ← Back
+                    </button>
+                    <button type="button" onClick={handleOpenForm}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white
+                        flex items-center justify-center gap-2 transition
+                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
+                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                      Open application form →
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Right-side error popups */}
+      <div className="fixed top-4 right-4 z-120 flex flex-col items-end gap-2 pointer-events-none">
+        {errorToasts.map((t) => (
+          <div
+            key={t.id}
+            role="alert"
+            className="animate-toast-in max-w-76 rounded-lg border border-red-200 bg-(--form-error-bg) px-4 py-2.5 text-xs font-semibold leading-snug text-red-600 shadow-lg"
+          >
+            {t.msg}
+          </div>
+        ))}
       </div>
     </>,
     document.body
@@ -738,3 +711,4 @@ const ApplicationModal = ({
 };
 
 export default ApplicationModal;
+
