@@ -2,6 +2,18 @@ import axiosInstance from "./axiosInstance";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+export interface RegisteredAccount {
+  _id: string;
+  name: string;
+  mobile: string;
+  email: string;
+  isVerified: boolean;
+  role: string;
+  continent: string;
+  country: string;
+  isActive: boolean;
+}
+
 export interface RegisterPayload {
   name: string;
   mobile: string;
@@ -14,6 +26,7 @@ export interface RegisterPayload {
 export interface RegisterResponse {
   success: boolean;
   message: string;
+  franchise?: RegisteredAccount;
 }
 
 export interface LoginPayload {
