@@ -1,4 +1,5 @@
 import axios from "axios";
+import { FRANCHISE_TOKEN_KEY, clearFranchiseSession } from "../utils/franchiseSession";
 
 const axiosInstance = axios.create({
   baseURL:
@@ -9,10 +10,21 @@ const axiosInstance = axios.create({
   },
 });
 
+/**
+ * Franchise partner endpoints carry their own session token. Kept as an explicit
+ * allow-list so a franchise credential is never attached to a customer call
+ * (or leaked to any future non-franchise endpoint).
+ */
+const isFranchiseEndpoint = (url: string): boolean =>
+  url.startsWith("/franchise/") || url.startsWith("/auth/franchise/");
+
 // Attach token to every request if available
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const url = config.url ?? "";
+    const token = isFranchiseEndpoint(url)
+      ? localStorage.getItem(FRANCHISE_TOKEN_KEY) ?? localStorage.getItem("token")
+      : localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,13 +33,19 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 globally — clear token and redirect to home
+// Handle 401 globally — clear the session that the rejected call belongs to
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      const url: string = error.config?.url ?? "";
+      if (isFranchiseEndpoint(url)) {
+        // A failed franchise call must not sign the customer out.
+        clearFranchiseSession();
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     }
     return Promise.reject(error);
   }

@@ -39,7 +39,7 @@ const ROLES: { role: Role; blurb: string; icon: string }[] = [
     icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
   },
   {
-    role: "Franchisee",
+    role: "Franchise",
     blurb: "Partner with us and grow your network",
     icon: "M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z",
   },
@@ -155,9 +155,12 @@ const AccountMenu = () => {
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [signin, setSignin] = useState({ phone: "" });
   const [signinError, setSigninError] = useState("");
+  const [signinNotice, setSigninNotice] = useState("");
   const [signupError, setSignupError] = useState("");
 
   // OTP verification — this is where the JWT for the apply flow is produced (both after Sign Up, whose register call sends the OTP, and after Sign In).
+  const [signupBusy, setSignupBusy] = useState(false);
+  const [signinBusy, setSigninBusy] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [otpMobile, setOtpMobile] = useState("");
   const [otpValue, setOtpValue] = useState("");
@@ -306,6 +309,14 @@ const AccountMenu = () => {
     return Object.keys(next).length === 0;
   };
 
+  /**
+   * Registration calls /auth/register and nothing else.
+   *
+   * It used to fall back to /auth/login when register failed, which sent two OTP
+   * requests for one sign-up (and burned the OTP rate limit when the first one
+   * failed). Verifying a mobile number is the sign-in step's job, so on success we
+   * hand the visitor over to it instead of opening the OTP dialog from here.
+   */
   const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validate()) return;
@@ -316,8 +327,10 @@ const AccountMenu = () => {
       countryIso: form.countryIso,
       phone: form.phone.trim(),
       email: form.email.trim(),
-    };    // Register sends the OTP; an already-registered mobile falls back to the
-    // login endpoint so the visitor can still verify it.
+    };
+
+    setSignupBusy(true);
+    setSignupError("");
     try {
       await registerUser({
         name: saved.name,
@@ -327,22 +340,27 @@ const AccountMenu = () => {
         continent: form.continent,
         country: saved.country,
       });
-    } catch {
-      // An already-registered mobile is fine — fall back to the login endpoint.
-      try {
-        await loginUser({ mobile: digitsOf(saved.phone) });
-      } catch (err) {
-        setSignupError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
-        return;
-      }
+    } catch (err) {
+      setSignupError(getApiErrorMessage(err, "Could not complete the registration. Please try again."));
+      return;
+    } finally {
+      setSignupBusy(false);
     }
-    // Hold the record until verify-otp succeeds — that's what stores the session and signals the pending "Apply Now" to continue.
+
+    // Registration is done. Hold the record so the sign-in that follows stores it
+    // (and any pending "Apply Now" continues), then open the Sign In tab with the
+    // mobile already filled in.
     setPendingProfile(saved);
-    setOtpMobile(digitsOf(saved.phone));
+    setSignin({ phone: digitsOf(saved.phone) });
+    setSigninError("");
+    setSigninNotice(
+      "Your registration is successful. Kindly log in with this mobile number to continue.",
+    );
+    setOtpOpen(false);
     setOtpValue("");
     setOtpError("");
     setResendMsg("");
-    setOtpOpen(true);
+    switchMode("signin");
   };
 
   const switchMode = (next: "signup" | "signin") => {
@@ -350,6 +368,9 @@ const AccountMenu = () => {
     setErrors({});
     setSigninError("");
     setSignupError("");
+    // The registration hand-off notice only belongs on the sign-in step it was
+    // created for; switching tabs by hand clears it.
+    if (next !== "signin") setSigninNotice("");
   };
 
   // Cancel dismisses the panel the same way a backdrop click does — including dropping a pending "Apply Now" product so a later sign-up doesn't open it.
@@ -368,18 +389,28 @@ const AccountMenu = () => {
       return;
     }
     const stored = readAccountRecord();
-    if (!stored || digitsOf(stored.phone) !== phone) {
+    const justRegistered = pendingProfile && digitsOf(pendingProfile.phone) === phone;
+    // Either the record is already on this device, or the visitor registered in the
+    // previous step — in which case the record is written once sign-in completes.
+    if (!justRegistered && (!stored || digitsOf(stored.phone) !== phone)) {
       setSigninError("No account found with this mobile number. Please register first.");
       return;
     }
     setSigninError("");
-    // The record already exists — send its OTP, then verify below.
+    setSigninNotice("");
+    setSigninBusy(true);
+    // The record exists (or was just registered) — send its OTP, then verify below.
     try {
       await loginUser({ mobile: phone });
-    } catch {
+    } catch (err) {
+      setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
       return;
+    } finally {
+      setSigninBusy(false);
     }
-    setPendingProfile(null);
+    // A record that was just registered is still pending — keep it so verify-otp
+    // stores the profile and the pending "Apply Now" continues.
+    if (!justRegistered) setPendingProfile(null);
     setOtpMobile(phone);
     setOtpValue("");
     setOtpError("");
@@ -740,6 +771,18 @@ const AccountMenu = () => {
 
                     {!otpOpen && mode === "signin" && (
                       <form onSubmit={onSignInSubmit} className="space-y-3.5">
+                        {/* Hand-off from the registration step. */}
+                        {signinNotice && (
+                          <p
+                            role="status"
+                            className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[11.5px] leading-snug text-emerald-800"
+                          >
+                            <span className="shrink-0" aria-hidden="true">&#x2705;</span>
+                            <span>
+                              <strong>{signinNotice}</strong> We&apos;ll send a one-time password to this number.
+                            </span>
+                          </p>
+                        )}
                         <div className="rounded-xl border border-slate-200 bg-white/80 px-3 py-2.5">
                           <Label>Mobile Number</Label>
                           <div className={`flex items-center overflow-hidden rounded-xl border bg-white ${signinError ? "border-red-400" : "border-slate-200"}`}>
@@ -758,7 +801,9 @@ const AccountMenu = () => {
                               focus:outline-none focus:ring-2 focus:ring-slate-200">
                             Cancel
                           </button>
-                          <Button type="submit" className="flex-1">Sign In</Button>
+                          <Button type="submit" className="flex-1" loading={signinBusy}>
+                            {signinBusy ? "Sending OTP…" : "Sign In"}
+                          </Button>
                         </div>
                         <p className="text-center text-xs text-slate-400">New to Indexia? <button type="button" onClick={() => switchMode("signup")}
                           className="font-semibold text-(--brand-navy) hover:underline cursor-pointer">Create an account</button></p>
@@ -845,13 +890,18 @@ const AccountMenu = () => {
                         )}
 
                         <div className="flex gap-3 pt-1">
-                          <button type="button" onClick={onCancel}
+                          <button type="button" onClick={onCancel} disabled={signupBusy}
                             className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600
                               border border-slate-300 hover:bg-slate-50 transition cursor-pointer
+                              disabled:opacity-50 disabled:cursor-not-allowed
                               focus:outline-none focus:ring-2 focus:ring-slate-200">
                             Cancel
                           </button>
-                          <Button type="submit" className="flex-1">Submit</Button>
+                          {/* Busy state matters here: a second click while /auth/register is in flight
+                              would send a duplicate registration (and burn the OTP rate limit). */}
+                          <Button type="submit" className="flex-1" loading={signupBusy}>
+                            {signupBusy ? "Registering…" : "Submit"}
+                          </Button>
                         </div>
                       </form>
                     )}
