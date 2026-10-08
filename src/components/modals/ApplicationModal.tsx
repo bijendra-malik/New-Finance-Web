@@ -5,32 +5,33 @@ import { useNavigate } from "react-router-dom";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { mergeAccountDetails, readAccountRecord } from "../../utils/accountProfile";
 import { applyRegister } from "../../api/auth";
+import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
 
 const dashboardRoutes: Record<string, string> = {
-  "Personal Loan":            "/dashboard/personalloan",
-  "Business Loan":            "/dashboard/businessloan",
-  "Home Loan":                "/dashboard/homeloan",
-  "Vehicle Loan":             "/dashboard/carloan",
-  "Education Loan":           "/dashboard/educationloan",
-  "Loan Against Property":    "/dashboard/loanagainstproperty",
-  "Balance Transfer":         "/dashboard/balancetransfer",
-  "Credit Card":              "/dashboard/creditcard",
+  "Personal Loan": "/dashboard/personalloan",
+  "Business Loan": "/dashboard/businessloan",
+  "Home Loan": "/dashboard/homeloan",
+  "Vehicle Loan": "/dashboard/carloan",
+  "Education Loan": "/dashboard/educationloan",
+  "Loan Against Property": "/dashboard/loanagainstproperty",
+  "Balance Transfer": "/dashboard/balancetransfer",
+  "Credit Card": "/dashboard/creditcard",
 
-  "Premium Credit Cards":     "/dashboard/creditcard",
-  "Project Loan":             "/dashboard/projectloan",
-  "Commercial Purchase":      "/dashboard/commercialpurchase",
+  "Premium Credit Cards": "/dashboard/creditcard",
+  "Project Loan": "/dashboard/projectloan",
+  "Commercial Purchase": "/dashboard/commercialpurchase",
   "Commercial Purchase Loan": "/dashboard/commercialpurchase",
-  "Working Capital":          "/dashboard/workingcapital",
-  "Working Capital Loan":     "/dashboard/workingcapital",
+  "Working Capital": "/dashboard/workingcapital",
+  "Working Capital Loan": "/dashboard/workingcapital",
   "Lease Rental Discounting": "/dashboard/leaserental",
-  "Film Funding":             "/dashboard/filmfunding",
-  "OD CC Limit":               "/dashboard/odcclimit",
-  "Loan Against Share":        "/dashboard/loanagainstshare",
-  "NPA":                       "/dashboard/npa",
-  "Gold Loan":                 "/dashboard/goldloan",
-  "FDI":                       "/dashboard/fdi",
+  "Film Funding": "/dashboard/filmfunding",
+  "OD CC Limit": "/dashboard/odcclimit",
+  "Loan Against Share": "/dashboard/loanagainstshare",
+  "NPA": "/dashboard/npa",
+  "Gold Loan": "/dashboard/goldloan",
+  "FDI": "/dashboard/fdi",
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -45,8 +46,7 @@ type Step = "details" | "eligibility" | "form";
 
 const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
 
-// PAN validation lives in src/utils/validation.ts (PAN_REGEX) — the same
-// rule the dashboard panels already use; the modal just reuses it here.
+// PAN validation lives in src/utils/validation.ts (PAN_REGEX) — the same rule the dashboard panels already use; the modal just reuses it here.
 
 interface EligResult {
   eligible: boolean;
@@ -71,7 +71,7 @@ const Spinner = ({ small }: { small?: boolean }) => (
 // ── Reusable Field ─────────────────────────────────────────────────────────────
 
 const Field = ({
-  label, type, name, value, onChange, placeholder, error, disabled,  maxLength, max, extraCls = "", required = true,
+  label, type, name, value, onChange, placeholder, error, disabled, maxLength, max, extraCls = "", required = true,
 }: {
   label: string; type: string; name: string; value: string;
   onChange: (v: string) => void; placeholder?: string; error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string; required?: boolean;
@@ -102,10 +102,8 @@ const ApplicationModal = ({
   productName = "",
 }: ApplicationModalProps) => {
   const productNameFirstWord = productName.trim().split(/\s+/)[0]?.toLowerCase();
-  const navigate  = useNavigate();
-  // Read the account on every render while open: it's external state that is
-  // usually created *after* this component first mounts (sign-up runs while
-  // it's already mounted), so a mount-time memo would go stale.
+  const navigate = useNavigate();
+  // Read the account on every render while open: it's external state that is usually created *after* this component first mounts (sign-up runs while it's already mounted), so a mount-time memo would go stale.
   const account = isOpen ? readAccountRecord() : null;
   // The account created in the header panel — shown read-only below.
   const accountMobile = (account?.phone ?? "").replace(/\D/g, "").slice(-10);
@@ -113,24 +111,20 @@ const ApplicationModal = ({
   // ── Step ─────────────────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("details");
 
-  // ── Eligibility fields — POST /customer/apply-register { product, dob, panNumber }
-  // The product is the one the visitor chose to apply for (prop), never picked here.
+  // Eligibility fields — POST /customer/apply-register { product, dob, panNumber } The product is the one the visitor chose to apply for (prop), never picked here.
   const [dob, setDob] = useState(() => readAccountRecord()?.dob ?? "");
   const [pan, __setPan] = useState(() => (readAccountRecord()?.pan ?? "").toUpperCase());
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // ── Eligibility test — occupation / income / existing EMIs ────────────────
-  const [occupation,    setOccupation]    = useState("");
+  const [occupation, setOccupation] = useState("");
   const [monthlyIncome, setMonthlyIncome] = useState("");
-  const [existingEmi,   setExistingEmi]   = useState("");
-  const [authorized,    setAuthorized]    = useState(false);
-  const [eligErrors,    setEligErrors]    = useState<Record<string, string>>({});
-  const [eligResult,    setEligResult]    = useState<EligResult | null>(null);
+  const [existingEmi, setExistingEmi] = useState("");
+  const [authorized, setAuthorized] = useState(false);
+  const [eligErrors, setEligErrors] = useState<Record<string, string>>({});
+  const [eligResult, setEligResult] = useState<EligResult | null>(null);
 
-  // ── PAN-format setter (the structured "autostop" A→Z then 0-9 flush) ─────
-  // "Autostop alphanumeric letters": while typing, keep A-Z letters until the
-  // 5-letter block is full, then only accept 0-9 digits for the next 4 slots;
-  // slot 10 accepts a letter only — the check letter from the card.
+  // PAN-format setter (the structured "autostop" A→Z then 0-9 flush) "Autostop alphanumeric letters": while typing, keep A-Z letters until the 5-letter block is full, then only accept 0-9 digits for the next 4 slots; slot 10 accepts a letter only — the check letter from the card.
   const setPan = function (v: string) {
     const clean = v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
     let structured = "";
@@ -145,19 +139,9 @@ const ApplicationModal = ({
   };
 
   // ── Step 1 — Save eligibility details → eligibility test ────────────────────
-  const [isSending,  setIsSending]  = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [apiError,   setApiError]   = useState("");
-
-  // ── Right-side error popups ────────────────────────────────────────────────
-  const [errorToasts, setErrorToasts] = useState<{ id: number; msg: string }[]>([]);
-  const pushErrors = (msgs: string[]) => {
-    msgs.forEach((msg, i) => {
-      const id = Date.now() + i;
-      setErrorToasts((list) => (list.some((x) => x.msg === msg) ? list : [...list, { id, msg }]));
-      setTimeout(() => setErrorToasts((list) => list.filter((x) => x.id !== id)), 4500);
-    });
-  };
+  const [apiError, setApiError] = useState("");
 
   const isBusy = isSending || isChecking;
 
@@ -173,7 +157,7 @@ const ApplicationModal = ({
     setEligErrors({});
     setEligResult(null);
     setApiError("");
-    setErrorToasts([]);
+
   };
 
   const handleClose = () => {
@@ -213,7 +197,6 @@ const ApplicationModal = ({
     else if (!isAtLeastAge(dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
     validatePan("pan", pan, e);
     setFieldErrors(e);
-    if (Object.keys(e).length) pushErrors(Object.values(e));
     return Object.keys(e).length === 0;
   };
 
@@ -242,14 +225,12 @@ const ApplicationModal = ({
     } catch (err) {
       const msg = getApiErrorMessage(err, "Failed to save your details. Please try again.");
       setApiError(msg);
-      pushErrors([msg]);
     } finally {
       setIsSending(false);
     }
   };
 
-  // ── Step 2 — Eligibility test (same rule as the public calculator:
-  // net monthly income minus existing EMIs must clear ₹15,000) ────────────────
+  // Step 2 — Eligibility test (same rule as the public calculator: net monthly income minus existing EMIs must clear ₹15,000)
 
   const validateEligibility = () => {
     const e: Record<string, string> = {};
@@ -258,7 +239,6 @@ const ApplicationModal = ({
     else if (!(parseFloat(monthlyIncome) > 0)) e.monthlyIncome = "Enter a valid income";
     if (!authorized) e.authorized = "Please authorise to proceed";
     setEligErrors(e);
-    if (Object.keys(e).length) pushErrors(Object.values(e));
     return Object.keys(e).length === 0;
   };
 
@@ -299,9 +279,7 @@ const ApplicationModal = ({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  // Portalled to <body>: an ancestor with its own stacking context (e.g. the
-  // hero's `absolute z-10` wrapper) would otherwise trap the popup under the
-  // header, no matter how high its z-index is.
+  // Portalled to <body>: an ancestor with its own stacking context (e.g. the hero's `absolute z-10` wrapper) would otherwise trap the popup under the header, no matter how high its z-index is.
   return createPortal(
     <>
       {/* Backdrop — above the header (z-55) */}
@@ -353,7 +331,7 @@ const ApplicationModal = ({
               <ol className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
 
                 {[
-                  { label: "Your details",     active: step === "details" },
+                  { label: "Your details", active: step === "details" },
                   { label: "Eligibility test", active: step === "eligibility" },
                   { label: "Application form", active: step === "form" },
                 ].map((s, i, arr) => (
@@ -381,7 +359,7 @@ const ApplicationModal = ({
 
           <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
 
-            {/* ── Body (scrolls when taller than the card) ── */}
+            {/* Body (scrolls when taller than the card) */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-3.5 md:px-6 md:py-4">
 
               {/* API-level error */}
@@ -393,7 +371,7 @@ const ApplicationModal = ({
                 </div>
               )}
 
-              {/* ── Details step: locked record + PAN inputs ── */}
+              {/* Details step: locked record + PAN inputs */}
               {step === "details" && (
                 <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
                   {fieldErrors.account && (
@@ -473,7 +451,7 @@ const ApplicationModal = ({
                       error={fieldErrors.pan} disabled={isSending}
                       extraCls="uppercase tracking-wider"
                     />
-                   </div>
+                  </div>
 
                   {/* Subtle note — these come from PAN card */}
                   <p className="text-xs text-slate-400 -mt-1">
@@ -482,26 +460,18 @@ const ApplicationModal = ({
 
                   {/* Buttons */}
                   <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={handleClose} disabled={isSending}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
-                        border border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition
-                        focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    <Button variant="outline" className="flex-1 rounded-lg font-semibold"
+                      onClick={handleClose} disabled={isSending}>
                       Cancel
-                    </button>
-                    <button type="submit" disabled={isSending}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-70
-                        flex items-center justify-center gap-2 transition
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)
-                        from-(--brand-navy) to-(--brand-dark) hover:from-(--brand-dark)
-                        hover:to-(--brand-navy-deep) shadow-(--brand-navy-44)"
-                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                    </Button>
+                    <Button type="submit" className="flex-1 rounded-lg font-semibold" disabled={isSending}>
                       {isSending ? <><Spinner /> Saving...</> : "Continue →"}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
 
-              {/* ── Eligibility test step: income + EMIs ── */}
+              {/* Eligibility test step: income + EMIs */}
               {step === "eligibility" && !eligResult && (
                 <form onSubmit={handleEligibility} className="space-y-3" noValidate>
                   <div>
@@ -580,24 +550,18 @@ const ApplicationModal = ({
 
                   {/* Buttons */}
                   <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setStep("details")} disabled={isChecking}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
-                        border border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition
-                        focus:outline-none focus:ring-2 focus:ring-slate-200">
+                    <Button variant="outline" className="flex-1 rounded-lg font-semibold"
+                      onClick={() => setStep("details")} disabled={isChecking}>
                       ← Back
-                    </button>
-                    <button type="submit" disabled={isChecking}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-70
-                        flex items-center justify-center gap-2 transition
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                    </Button>
+                    <Button type="submit" className="flex-1 rounded-lg font-semibold" disabled={isChecking}>
                       {isChecking ? <><Spinner /> Checking...</> : "Check eligibility →"}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
 
-              {/* ── Not eligible — stays on the eligibility step ── */}
+              {/* Not eligible — stays on the eligibility step */}
               {step === "eligibility" && eligResult && !eligResult.eligible && (
                 <div className="space-y-4">
                   <div className="rounded-2xl border border-red-200 bg-linear-to-br from-red-50 to-amber-50 px-5 py-6 text-center">
@@ -624,17 +588,14 @@ const ApplicationModal = ({
                         focus:outline-none focus:ring-2 focus:ring-slate-200">
                       ← Change details
                     </button>
-                    <button type="button" onClick={() => setEligResult(null)}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                    <Button className="flex-1 rounded-lg font-semibold" onClick={() => setEligResult(null)}>
                       Try again →
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
 
-              {/* ── Step 3: eligible → hand off to the application form ── */}
+              {/* Step 3: eligible → hand off to the application form */}
               {step === "form" && eligResult?.eligible && (
                 <div className="space-y-4">
                   <div className="rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-teal-50 px-5 py-6 text-center">
@@ -678,13 +639,9 @@ const ApplicationModal = ({
                         focus:outline-none focus:ring-2 focus:ring-slate-200">
                       ← Back
                     </button>
-                    <button type="button" onClick={handleOpenForm}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white
-                        flex items-center justify-center gap-2 transition
-                        focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-                      style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
+                    <Button className="flex-1 rounded-lg font-semibold" onClick={handleOpenForm}>
                       Open application form →
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -692,23 +649,9 @@ const ApplicationModal = ({
           </div>
         </div>
       </div>
-
-      {/* Right-side error popups */}
-      <div className="fixed top-4 right-4 z-120 flex flex-col items-end gap-2 pointer-events-none">
-        {errorToasts.map((t) => (
-          <div
-            key={t.id}
-            role="alert"
-            className="animate-toast-in max-w-76 rounded-lg border border-red-200 bg-(--form-error-bg) px-4 py-2.5 text-xs font-semibold leading-snug text-red-600 shadow-lg"
-          >
-            {t.msg}
-          </div>
-        ))}
-      </div>
     </>,
     document.body
   );
 };
 
 export default ApplicationModal;
-
