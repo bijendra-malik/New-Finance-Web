@@ -1,6 +1,4 @@
-// ── Account profile storage ───────────────────────────────────────────────────
-// The account created from the header panel is kept in localStorage so both the
-// header and the shared loan-application form can read it synchronously.
+// Account profile storage The account created from the header panel is kept in localStorage so both the header and the shared loan-application form can read it synchronously.
 
 export type Role = "Customer" | "Franchisee";
 
