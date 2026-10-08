@@ -106,19 +106,3 @@
     scroll-behavior: auto !important;
   }
 }
-
-/* ── Right-side error popups ───────────────────────────────────────────────── */
-@keyframes toast-in-right {
-  from {
-    transform: translateX(115%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-toast-in {
-  animation: toast-in-right 0.25s ease-out;
-}
