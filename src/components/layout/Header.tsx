@@ -10,9 +10,9 @@ const isRealSafari = /^((?!chrome|android|crios|fxios|edg|opr).)*safari/i.test(
 );
 
 const Header = () => {
-  const [loanOpen, setLoanOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
+  const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
 
   const showDetailsMap: Record<string, string> = {
     personalloan:       "/showdetails/personal-loan",
@@ -56,19 +56,23 @@ const Header = () => {
     { label: "FDI",                      slug: "fdi" },
   ];
 
+  // Franchise entries live in a dropdown so the nav keeps its width at the lg band.
+  const franchiseLinks = [
+    { label: "Be a Franchisor",   href: "/franchise",         desc: "Plans, payout model and the application" },
+  ];
+
   const navLinks = [
     { label: "Home",               href: "/" },
-    { label: "Loan Product",       dropdown: true, href: "" },
+    { label: "Loan Product",       dropdown: "loans", href: "" },
     { label: "EMI Calculator",     href: "/emi-calculator" },
     { label: "Loan Eligibility",   href: "/eligibility-calculator" },
-    { label: "Franchise Login",    href: "/franchise-login" },
-    { label: "Be An Associate",    href: "/be-an-associate" },
+    { label: "Franchise",          dropdown: "franchise", href: "" },
     { label: "Contact Us",         href: "/contact" },
-  ] satisfies { label: string; href: string; dropdown?: boolean }[];
+  ] satisfies { label: string; href: string; dropdown?: string }[];
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
-    setMobileSubmenuOpen(false);
+    setOpenMobileDropdown(null);
   };
 
   return (
@@ -139,22 +143,22 @@ const Header = () => {
                     <li
                       key={link.label}
                       className="relative"
-                      onMouseEnter={() => setLoanOpen(true)}
-                      onMouseLeave={() => setLoanOpen(false)}
+                      onMouseEnter={() => setOpenDropdown(link.dropdown!)}
+                      onMouseLeave={() => setOpenDropdown(null)}
                     >
                       {/* Non-clickable dropdown trigger — opens on hover (desktop) */}
                       <span
                         role="button"
                         tabIndex={0}
                         aria-haspopup="true"
-                        aria-expanded={loanOpen}
+                        aria-expanded={openDropdown === link.dropdown}
                         onClick={(e) => e.preventDefault()}
                         className="nav-link flex items-center gap-1 select-none"
                       >
                         {link.label}
                         <svg
                           className={`h-3 w-3 transition-transform duration-300 ${
-                            loanOpen ? "rotate-180" : ""
+                            openDropdown === link.dropdown ? "rotate-180" : ""
                           }`}
                           viewBox="0 0 20 20"
                           fill="currentColor"
@@ -170,11 +174,12 @@ const Header = () => {
                       {/* Mega dropdown */}
                       <div
                         className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
-                          loanOpen
+                          openDropdown === link.dropdown
                             ? "opacity-100 visible translate-y-0"
                             : "opacity-0 invisible -translate-y-2"
                         }`}
                       >
+                        {link.dropdown === "loans" ? (
                         <div className="w-160 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
                           <p className="mb-4 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
                             Loan Products
@@ -194,6 +199,38 @@ const Header = () => {
                             ))}
                           </div>
                         </div>
+                        ) : (
+                          <div className="w-88 rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-slate-900/5">
+                            <p className="px-2.5 pb-2 pt-1 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
+                              Franchise
+                            </p>
+                            {franchiseLinks.map((item) => (
+                              <Link
+                                key={item.label}
+                                to={item.href}
+                                className="block rounded-xl px-2.5 py-2.5 transition-colors hover:bg-slate-50"
+                              >
+                                <span className="block text-[13px] font-semibold text-slate-700">{item.label}</span>
+                                <span className="mt-0.5 block text-[11.5px] text-slate-400">{item.desc}</span>
+                              </Link>
+                            ))}
+                            {/* Franchisor Login — its own CTA, opening the dedicated login page */}
+                            <Link
+                              to="/franchise-login"
+                              className="mt-2 flex items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-white transition-transform hover:-translate-y-0.5"
+                              style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+                            >
+                              <span>
+                                <span className="block text-[13px] font-bold">Franchisor Login</span>
+                                <span className="mt-0.5 block text-[11px] text-white/60">Partner portal access</span>
+                              </span>
+                              <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="4.5" y="10" width="15" height="10.5" rx="2" />
+                                <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+                              </svg>
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </li>
                   ) : (
@@ -228,13 +265,16 @@ const Header = () => {
                 link.dropdown ? (
                   <li key={link.label}>
                     <button
-                      onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
+                      onClick={() =>
+                        setOpenMobileDropdown(openMobileDropdown === link.dropdown ? null : link.dropdown!)
+                      }
+                      aria-expanded={openMobileDropdown === link.dropdown}
                       className="w-full text-left flex items-center justify-between px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
                     >
                       <span className="pointer-events-none">{link.label}</span>
                       <svg
                         className={`h-4 w-4 transition-transform duration-300 ${
-                          mobileSubmenuOpen ? "rotate-180" : ""
+                          openMobileDropdown === link.dropdown ? "rotate-180" : ""
                         }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -247,18 +287,40 @@ const Header = () => {
                       </svg>
                     </button>
 
-                    {mobileSubmenuOpen && (
+                    {openMobileDropdown === link.dropdown && (
                       <div className="bg-slate-50 border-l-4 border-emerald-500 pl-0">
-                        {loanProducts.map((item) => (
-                          <Link
-                            key={item.slug}
-                            to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
-                            onClick={closeMobileMenu}
-                          >
-                            → {item.label}
-                          </Link>
-                        ))}
+                        {link.dropdown === "loans"
+                          ? loanProducts.map((item) => (
+                              <Link
+                                key={item.slug}
+                                to={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                                className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
+                                onClick={closeMobileMenu}
+                              >
+                                → {item.label}
+                              </Link>
+                            ))
+                          : franchiseLinks.map((item) => (
+                              <Link
+                                key={item.label}
+                                to={item.href}
+                                className="block px-8 py-3 text-xs font-semibold text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100"
+                                onClick={closeMobileMenu}
+                              >
+                                → {item.label}
+                                <span className="mt-0.5 block text-[10.5px] font-normal text-slate-400">
+                                  {item.desc}
+                                </span>
+                              </Link>
+                            ))}
+                        <Link
+                          to="/franchise-login"
+                          className="block px-8 py-3.5 text-xs font-bold text-white"
+                          style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+                          onClick={closeMobileMenu}
+                        >
+                          Franchisor Login →
+                        </Link>
                       </div>
                     )}
                   </li>
