@@ -131,9 +131,7 @@ const PANEL_ATTR = "data-account-panel";
       </span>
     </div>
   );
-};
-
-// ── Component ─────────────────────────────────────────────────────────────────
+};  // ── Component ─────────────────────────────────────────────────────────────────
 const AccountMenu = () => {
   const [profile, setProfile] = useState<AccountProfile | null>(readStoredProfile);
   const [language, setLanguage] = useState<string>(readStoredLanguage);
@@ -156,7 +154,6 @@ const AccountMenu = () => {
   // Sign In / Sign Up tabs
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [signin, setSignin] = useState({ phone: "" });
-  const [signinError, setSigninError] = useState("");
 
   // OTP verification — this is where the JWT for the apply flow is produced
   // (both after Sign Up, whose register call sends the OTP, and after Sign In).
@@ -170,12 +167,28 @@ const AccountMenu = () => {
   /** Sign-up record held until the OTP confirms the mobile. */
   const [pendingProfile, setPendingProfile] = useState<AccountProfile | null>(null);
 
+  // Separate portal-mounted DOM for the error popups (kept above the
+  // whole panel, including the role confirmation dialog).
+  const errorPortalRef = useRef<HTMLDivElement | null>(null);
+
+  // Right-side error popups
+  const [errorToasts, setErrorToasts] = useState<{ id: number; msg: string }[]>([]);
+  const pushErrors = (msgs: string[]) => {
+    msgs.forEach((msg, i) => {
+      const id = Date.now() + i;
+      setErrorToasts((list) => (list.some((x) => x.msg === msg) ? list : [...list, { id, msg }]));
+      setTimeout(() => setErrorToasts((list) => list.filter((x) => x.id !== id)), 4500);
+    });
+  };
+
   const resetOtp = () => {
     setOtpOpen(false);
     setOtpValue("");
     setOtpError("");
     setResendMsg("");
     setPendingProfile(null);
+    // Clear the toast container so a previous flow's errors don't show in this one.
+    setErrorToasts([]);
   };
 
   // Location masters
@@ -310,6 +323,7 @@ const AccountMenu = () => {
     if (digitsOf(form.phone).length !== 10) next.phone = "Enter a valid 10-digit mobile number";
     if (!emailOk(form.email.trim())) next.email = "Enter a valid email address";
     setErrors(next);
+    if (Object.keys(next).length) pushErrors(Object.values(next));
     return Object.keys(next).length === 0;
   };
 
@@ -324,7 +338,7 @@ const AccountMenu = () => {
       phone: form.phone.trim(),
       email: form.email.trim(),
     };
-    setSigninError("");
+    setErrorToasts([]);
     // Register sends the OTP; an already-registered mobile falls back to the
     // login endpoint so the visitor can still verify it.
     try {
@@ -340,7 +354,7 @@ const AccountMenu = () => {
       try {
         await loginUser({ mobile: digitsOf(saved.phone) });
       } catch (err) {
-        setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
+        pushErrors([getApiErrorMessage(err, "Could not send the OTP. Please try again.")]);
         return;
       }
     }
@@ -357,7 +371,7 @@ const AccountMenu = () => {
   const switchMode = (next: "signup" | "signin") => {
     setMode(next);
     setErrors({});
-    setSigninError("");
+    setErrorToasts([]);
   };
 
   // Cancel dismisses the panel the same way a backdrop click does — including
@@ -365,7 +379,7 @@ const AccountMenu = () => {
   const onCancel = () => {
     consumePendingProduct();
     setErrors({});
-    setSigninError("");
+    setErrorToasts([]);
     resetOtp();
     setPanelOpen(false);
   };
@@ -374,22 +388,21 @@ const AccountMenu = () => {
     e.preventDefault();
     const phone = digitsOf(signin.phone);
     if (phone.length !== 10) {
-      setSigninError("Enter your 10-digit mobile number");
+      pushErrors(["Enter your 10-digit mobile number"]);
       return;
     }
     const stored = readAccountRecord();
     if (!stored || digitsOf(stored.phone) !== phone) {
-      setSigninError("No account found for this mobile number. Please sign up.");
+      pushErrors(["No account found with this mobile number. Please register first."]);
       return;
     }
     // The record already exists — send its OTP, then verify below.
     try {
       await loginUser({ mobile: phone });
     } catch (err) {
-      setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
+      pushErrors([getApiErrorMessage(err, "Could not send the OTP. Please try again.")]);
       return;
     }
-    setSigninError("");
     setPendingProfile(null);
     setOtpMobile(phone);
     setOtpValue("");
@@ -414,6 +427,7 @@ const AccountMenu = () => {
       if (pendingProfile) {
         writeStoredProfile(pendingProfile);
         setProfile(pendingProfile);
+        consumePendingProduct();
       } else {
         const stored = readAccountRecord();
         startSession();
@@ -425,7 +439,9 @@ const AccountMenu = () => {
       setPanelOpen(false);
       emitAccountReady();
     } catch (err) {
-      setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
+      const msg = getApiErrorMessage(err, "Invalid OTP. Please try again.");
+      setOtpError(msg);
+      pushErrors([msg]);
     } finally {
       setOtpBusy(false);
     }
@@ -441,7 +457,9 @@ const AccountMenu = () => {
       setResendMsg("OTP resent successfully!");
       setTimeout(() => setResendMsg(""), 3000);
     } catch (err) {
-      setOtpError(getApiErrorMessage(err, "Failed to resend OTP."));
+      const msg = getApiErrorMessage(err, "Failed to resend OTP.");
+      setOtpError(msg);
+      pushErrors([msg]);
     } finally {
       setResending(false);
     }
@@ -457,9 +475,9 @@ const AccountMenu = () => {
     logout();
     setProfile(null);
     setPanelOpen(false);
-  };
-
-  // ── Signed in: flag + country on the left, initials on the right ────────────
+  };  // ── Signed in: flag + country on the left, initials on the right ────────────
+  // Returns the logged-in account button; the signed-out panel is rendered
+  // by the block below this one (it reuses `rootRef`).
   if (profile) {
     return (
       <div ref={rootRef} className="relative">
@@ -573,7 +591,7 @@ const AccountMenu = () => {
             />
 
             {/* 2-panel modal: brand (left) + form (right) */}
-            <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4" data-account-panel>
+            <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4" data-account-panel style={{ zIndex: 100 }}>
               <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
 
                 {/* LEFT - Brand panel */}
@@ -681,9 +699,6 @@ const AccountMenu = () => {
                       </p>
                     </div>
 
-                    {errors.role && mode === "signup" && <p className="text-[11px] font-medium text-red-500 mb-3">{errors.role}</p>}
-                    {signinError && <p className="text-[11px] font-medium text-red-500 mb-3">{signinError}</p>}
-
                     {!otpOpen && (
                     <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
                       {(["signup", "signin"] as const).map((m) => (
@@ -712,15 +727,19 @@ const AccountMenu = () => {
                           <input
                             type="text"
                             inputMode="numeric"
-                            maxLength={8}
+                            maxLength={6}
                             value={otpValue}
-                            onChange={(e) => { setOtpValue(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
+                            // Auto-stop: keep digits only and never grow past 6, so a
+                            // 7th keypress (or a pasted longer code) is discarded.
+                            onChange={(e) => {
+                              setOtpValue(e.target.value.replace(/\D/g, "").slice(0, 6));
+                              setOtpError("");
+                            }}
                             placeholder="• • • • • •"
                             disabled={otpBusy}
                             autoFocus
                             className={`w-full rounded-xl border px-3 py-3 text-center text-xl font-bold tracking-[0.4em] text-slate-800 shadow-sm outline-none transition focus:ring-2 focus:ring-emerald-400/25 disabled:bg-slate-100 ${otpError ? "border-red-400 bg-red-50/30" : "border-slate-300 focus:border-emerald-400"}`}
                           />
-                          {otpError && <p className="mt-1 text-[11px] font-medium text-red-500">{otpError}</p>}
                           {resendMsg && <p className="mt-1 text-[11px] font-medium text-emerald-600">{resendMsg}</p>}
                         </div>
 
@@ -732,7 +751,7 @@ const AccountMenu = () => {
                             ← Back
                           </button>
                           <button type="submit"
-                            disabled={otpBusy || otpValue.length < 4}
+                            disabled={otpBusy || otpValue.length < 6}
                             className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white shadow-(--brand-navy-44) transition disabled:opacity-70 cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
                             style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-dark) 100%)" }}>
                             {otpBusy ? "Verifying…" : "Verify & Continue →"}
@@ -757,10 +776,9 @@ const AccountMenu = () => {
                             <span className="shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">&#x1F1EE;&#x1F1F3; +91</span>
                             <input type="tel" inputMode="numeric" maxLength={10} value={signin.phone}
                               placeholder="10-digit registered mobile"
-                              onChange={(e) => { setSignin({ phone: e.target.value.replace(/[\D]/g, "") }); setSigninError(""); }}
+                              onChange={(e) => setSignin({ phone: e.target.value.replace(/[\D]/g, "") })}
                               className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" />
                           </div>
-                          {signinError && <p className="mt-1 text-[11px] font-medium text-red-500">{signinError}</p>}
                         </div>
                         <div className="flex gap-3 pt-1">
                           <button type="button" onClick={onCancel}
@@ -872,6 +890,25 @@ const AccountMenu = () => {
           document.body
         )}
 
+      {/* Separate portal-mounted DOM node, kept above the whole panel
+          (modals, role confirmation dialog, and backdrop) so the error
+          popups render at the top instead of inside the stacked layout. */}
+      {errorToasts.length > 0 &&
+        createPortal(
+          <div ref={errorPortalRef} className="fixed top-4 right-4 z-9999 flex flex-col items-end gap-2 pointer-events-none">
+            {errorToasts.map((t) => (
+              <div
+                key={t.id}
+                role="alert"
+                className="animate-toast-in max-w-68 rounded-lg border border-red-200 bg-(--form-error-bg) px-4 py-2.5 text-xs font-semibold leading-snug text-red-600 shadow-lg"
+              >
+                {t.msg}
+              </div>
+            ))}
+          </div>,
+          document.body
+        )}
+
       {/* ── Role confirmation ── */}
       {confirmRole &&
         createPortal(
@@ -882,10 +919,12 @@ const AccountMenu = () => {
             aria-label="Confirm role"
             data-role-confirm
             onClick={() => setConfirmRole(null)}
+            style={{ zIndex: 110 }}
           >
             <div
               className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
+              style={{ zIndex: 130 }}
             >
               <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
