@@ -1,5 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useApplyGate } from "../../hooks/useApplyGate";
+import { useApplyGate, useApplyAccess } from "../../hooks/useApplyGate";
+import { useMemo } from "react";
 
 // ── Document data ─────────────────────────────────────────────────────────────
 const documentSections = [
@@ -52,6 +53,8 @@ const RequiredDocumentPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { requestApply, gate } = useApplyGate();
+  const applyAccess = useApplyAccess();
+  const applyBlocked = useMemo(() => Boolean(applyAccess.blocked), [applyAccess]);
 
   const loanName = searchParams.get("loan") || "Personal Loan";
 
@@ -105,9 +108,13 @@ const RequiredDocumentPage = () => {
               </p>
 
               <button
-                onClick={() => requestApply(loanName)}
+                onClick={() => !applyBlocked && requestApply(loanName)}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 style={{
+                  opacity: applyBlocked ? 0.5 : 1,
+                  cursor: applyBlocked ? "not-allowed" : "pointer",
+                  filter: applyBlocked ? "grayscale(0.6)" : "none",
+                  pointerEvents: applyBlocked ? "none" : "auto",
                   background: "linear-gradient(135deg, var(--brand-teal) 0%,  var(--brand-navy) 100%)",
                   boxShadow: "0 4px 18px rgba(46,139,87,0.45)",
                 }}
