@@ -21,7 +21,7 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
     id="franchisee-application"
     eyebrow="Franchisee Application"
     title="Become an Indexia Franchisee"
-    subtitle="Share your details exactly as they appear on your PAN card, then pick the package duration that suits your business."
+    subtitle="Register or sign in first, then share your business details exactly as they appear on your PAN card and pick the package duration that suits you."
     tone="tint"
   >
     <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:items-start">
@@ -56,11 +56,13 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
           </span>
           <h3 className="mt-3.5 text-[13.5px] font-bold text-white">Where your application goes</h3>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/70">
-            Submissions are addressed to our franchise team at{" "}
+            Your application is submitted to our franchise team for review. Once your details are
+            verified, you will be issued a <strong>franchise ID and password</strong> to sign in to the
+            franchisor dashboard. Prefer email? Write to{" "}
             <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-yellow) hover:underline">
               {FRANCHISE_EMAIL}
             </a>
-            . Keep the reference details for your records.
+            .
           </p>
           <p className="mt-4 border-t border-white/15 pt-3.5 text-[11.5px] text-white/50">
             The one-time franchisee agreement fee is charged separately from the plan fee you select. It is
