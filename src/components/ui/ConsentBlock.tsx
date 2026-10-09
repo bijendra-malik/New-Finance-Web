@@ -1,6 +1,4 @@
-// ConsentBlock — terms-of-use checkbox, API error banner and the submit
-// button. Extracted so loan submission forms and franchise forms share one
-// consent/submit block instead of re-declaring it.
+// Terms checkbox + error banner + submit button shared by loan and franchise forms.
 
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";

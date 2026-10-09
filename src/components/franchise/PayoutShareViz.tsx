@@ -1,6 +1,4 @@
-// PayoutShareViz — the 80/20 split bar plus the worked-rupee example panel.
-// Extracted so FranchisePayout and any future partner dashboard share one
-// visualisation instead of re-declaring the same bar + example block.
+// 80/20 split bar + worked-rupee example panel shared by FranchisePayout and partner dashboards.
 
 import { ShareSplitBar } from "./ShareSplit";
 import { INDEXIA_SHARE, PARTNER_SHARE } from "./franchiseData";
@@ -56,8 +54,7 @@ interface PayoutShareVizProps {
   className?: string;
 }
 
-/** The split bar + worked-rupee example, shown together so the percentages are
- * labelled once and the arithmetic is not left implicit. */
+
 const PayoutShareViz = ({ exampleTotal = 100000, className = "" }: PayoutShareVizProps) => (
   <div className={className}>
     <ShareSplitBar compact />

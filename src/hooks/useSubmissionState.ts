@@ -1,6 +1,4 @@
-// useSubmissionState — manages the pending → success → submitted lifecycle that
-// every loan and franchise form re-implements with its own booleans. One hook,
-// one source of truth for: isSubmitting, submitted, successMessage, apiError.
+// Manages idle → submitting → success → submitted lifecycle shared by loan and franchise forms.
 
 import { useState, useCallback } from "react";
 
@@ -18,9 +16,7 @@ interface UseSubmissionStateReturn {
   succeed: (message?: string) => void;
   /** Call on failed POST or validation gate — records the error message. */
   fail: (message: string) => void;
-  /** Call after success when the receipt/confirmation view has been shown —
-   * moves the form into the terminal "submitted" phase so the success banner
-   * stays visible but the success popup is cleared. */
+  /** Moves form into terminal "submitted" phase after the receipt view is shown. */
   markDone: () => void;
   /** Resets everything back to idle — used by "submit another" flows. */
   reset: () => void;

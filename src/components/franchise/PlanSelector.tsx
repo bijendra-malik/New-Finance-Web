@@ -1,7 +1,4 @@
-// PlanSelector — the plan summary card + package dropdown used by FranchisePlans
-// and FranchiseForm. One module so the plan fee/renewal/duration read-out is
-// rendered from one place, and the package dropdown is shared between the plans
-// comparison and the application form.
+// Plan summary card + package dropdown shared by FranchisePlans and FranchiseForm.
 
 import { FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
 import { AGREEMENT_FEE } from "./franchiseData";
@@ -13,8 +10,7 @@ interface PlanSummaryProps {
   className?: string;
 }
 
-/** The selected-plan read-out shown in the application form. Reused from
- * FranchisePlans' comparison card so the fee/renewal/duration text is consistent. */
+
 export const PlanSummary = ({ plan, className = "" }: PlanSummaryProps) => (
   <div className={className}>
     {plan ? (
@@ -54,8 +50,7 @@ interface PackageSelectorProps {
   id?: string;
 }
 
-/** Package-duration dropdown that mirrors FranchisePlans' plan list and uses the
- * same fee strings, so the comparison card and the form dropdown agree. */
+
 export const PackageSelector = ({
   value,
   onChange,
@@ -94,7 +89,7 @@ interface PlanSelectorProps {
   className?: string;
 }
 
-/** Combined plan summary + package selector used by the franchise forms. */
+
 export const PlanSelector = ({
   plan,
   value,

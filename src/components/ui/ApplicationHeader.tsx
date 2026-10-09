@@ -1,6 +1,4 @@
-// ApplicationHeader — headline + mandatory-field note shown above every
-// application form. Extracted so loan and franchise forms share one header
-// instead of re-declaring the same two-line block.
+// Headline + mandatory-field note shared by loan and franchise forms.
 
 import { THEME as C } from "../../constants/theme";
 

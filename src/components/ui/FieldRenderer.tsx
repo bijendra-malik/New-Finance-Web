@@ -1,5 +1,4 @@
-// FieldRenderer — opinionated field primitives so forms stop re-declaring
-// the same input/select/textarea boilerplate and the same error-row layout.
+// Opinionated field primitives so forms stop re-declaring input/select/textarea boilerplate.
 
 import { memo } from "react";
 import { cx } from "../ui/cx";
@@ -15,7 +14,7 @@ interface BaseFieldProps {
   children: React.ReactNode;
 }
 
-/** Single form field: label, field node, then error or hint row. */
+
 export const Field = memo(({ id, label, required, error, hint, full, children }: BaseFieldProps) => (
   <div className={full ? "sm:col-span-2" : ""}>
     <label htmlFor={id} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
@@ -31,7 +30,7 @@ export const Field = memo(({ id, label, required, error, hint, full, children }:
 ));
 Field.displayName = "Field";
 
-/** Text input with error state + disabled styling. */
+
 export const TextField = memo(
   ({
     value,
@@ -70,7 +69,7 @@ export const TextField = memo(
 );
 TextField.displayName = "TextField";
 
-/** Select with error state + disabled styling. */
+
 export const SelectField = memo(
   ({
     value,
@@ -106,7 +105,7 @@ export const SelectField = memo(
 );
 SelectField.displayName = "SelectField";
 
-/** Textarea with error state. */
+
 export const TextAreaField = memo(
   ({
     value,

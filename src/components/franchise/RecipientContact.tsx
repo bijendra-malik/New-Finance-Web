@@ -1,6 +1,4 @@
-// RecipientContact — the "where your application goes" + "prefer email?" block
-// that the franchise pages repeat. One module so FranchiseeApplication,
-// FranchisorFormModal and any future franchise section share one contact block.
+// "Where your application goes" + "prefer email?" block shared across franchise pages.
 
 import FranchiseIcon from "./FranchiseIcon";
 import { FRANCHISE_EMAIL } from "./franchiseData";

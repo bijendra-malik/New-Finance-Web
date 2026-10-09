@@ -1,5 +1,4 @@
-// LeadFormConfig — shared field-configuration shape + tiny validators.
-
+// Shared field-configuration shape + tiny validators.
 export interface LeadFieldConfig {
   half: boolean;
   name: string;
@@ -11,7 +10,7 @@ export interface LeadFieldConfig {
   full?: boolean;
 }
 
-/** Minimal validators reused by every generic enquiry / lead form. */
+
 export const validateTel = (v: string): string | undefined =>
   v && !/^\d{10}$/.test(v) ? "Enter a valid 10-digit number" : undefined;
 
