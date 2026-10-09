@@ -59,6 +59,14 @@ const initialsOf = (name: string): string =>
 // Indian mobile numbers are a fixed 10 digits, so the stored value is capped there.
 const digitsOf = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
+/** Maps the API's free-form `role` onto the app's two account roles. */
+const normalizeRole = (role?: string): Role | null => {
+  const value = typeof role === "string" ? role.trim().toLowerCase() : "";
+  if (value === "customer") return "Customer";
+  if (value === "franchise") return "Franchise";
+  return null;
+};
+
 // ── Small presentational pieces ───────────────────────────────────────────────
 const Chevron = ({ open }: { open: boolean }) => (
   <svg
@@ -137,7 +145,7 @@ const AccountMenu = () => {
   const [profile, setProfile] = useState<AccountProfile | null>(readStoredProfile);
   const [language, setLanguage] = useState<string>(readStoredLanguage);
   const [panelOpen, setPanelOpen] = useState(false);
-  const { login, logout } = useAuth();
+  const { user: apiUser, login, logout } = useAuth();
 
   // Sign-up form state
   const [form, setForm] = useState({
@@ -152,7 +160,7 @@ const AccountMenu = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmRole, setConfirmRole] = useState<Role | null>(null);
 
-  // Sign In / Sign Up tabs
+  // Sign In / Sign Up tabs + OTP
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [signin, setSignin] = useState({ phone: "" });
   const [signinError, setSigninError] = useState("");
@@ -434,7 +442,21 @@ const AccountMenu = () => {
     try {
       const res = await verifyOTP({ mobile: otpMobile, otp: code });
       login(res.token, res.user);
-      if (pendingProfile) {
+      const roleFromApi = normalizeRole(res.user?.role);
+      if (roleFromApi) {
+        const base = pendingProfile ?? readAccountRecord();
+        const apiProfile: AccountProfile = {
+          name: res.user.name?.trim() || base?.name || "",
+          role: roleFromApi,
+          country: base?.country ?? "",
+          countryIso: base?.countryIso ?? "",
+          phone: (res.user.mobile ?? base?.phone ?? "").trim(),
+          email: (res.user.email ?? base?.email ?? "").trim(),
+        };
+        writeStoredProfile(apiProfile);
+        setProfile(apiProfile);
+        consumePendingProduct();
+      } else if (pendingProfile) {
         writeStoredProfile(pendingProfile);
         setProfile(pendingProfile);
         consumePendingProduct();
@@ -483,9 +505,27 @@ const AccountMenu = () => {
     logout();
     setProfile(null);
     setPanelOpen(false);
-  };  // ── Signed in: flag + country on the left, initials on the right ────────────
+  };
+
+  const apiRole = normalizeRole(apiUser?.role);
+  const account: AccountProfile | null =
+    profile ??
+    (apiUser
+      ? {
+        name: apiUser.name?.trim() ?? "",
+        role: apiRole ?? "Customer",
+        country: "",
+        countryIso: "",
+        phone: apiUser.mobile ?? "",
+        email: apiUser.email ?? "",
+      }
+      : null);
+  // The role shown comes from the API, falling back to the stored registration.
+  const displayRole = apiRole ?? account?.role ?? "";
+
+  // ── Signed in: flag + country on the left, initials on the right ────────────
   // Returns the logged-in account button; the signed-out panel is rendered by the block below this one (it reuses `rootRef`).
-  if (profile) {
+  if (account) {
     return (
       <div ref={rootRef} className="relative">
         <button
@@ -495,77 +535,79 @@ const AccountMenu = () => {
           className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-2 py-1.5 transition-all duration-200 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 cursor-pointer"
         >
           <span className="flex items-center gap-1.5">
-            {profile.countryIso && (
-              <span className={`fi fi-${profile.countryIso} text-lg rounded-sm overflow-hidden block`} />
+            {account.countryIso && (
+              <span className={`fi fi-${account.countryIso} text-lg rounded-sm overflow-hidden block`} />
             )}
             <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">
-              {profile.country}
+              {account.country}
             </span>
           </span>
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-white ring-2 ring-emerald-500/20">
-            {initialsOf(profile.name)}
+            {initialsOf(account.name)}
           </span>
           <Chevron open={panelOpen} />
         </button>
 
         {panelOpen && (
           <div className="absolute right-0 top-12 z-60 w-72.5 rounded-2xl bg-white/95 shadow-2xl ring-1 ring-white/60 backdrop-blur-2xl p-4">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">
-                {initialsOf(profile.name)}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-800">{profile.name}</p>
-                <p className="truncate text-xs text-slate-500">{profile.email}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white">
+                  {initialsOf(account.name)}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-800">{account.name}</p>
+                  <p className="truncate text-xs text-slate-500">{account.email}</p>
+                </div>
               </div>
+
+              <dl className="grid grid-cols-2 gap-x-3 gap-y-2 border-b border-slate-100 text-xs">
+                <div className="min-w-0">
+                  <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Role</dt>
+                  <dd className="truncate font-semibold text-slate-700">{displayRole}</dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Country</dt>
+                  <dd className="flex items-center gap-1 truncate font-semibold text-slate-700">
+                    {account.countryIso && (
+                      <span className={`fi fi-${account.countryIso} text-sm rounded-sm overflow-hidden block`} />
+                    )}
+                    {account.country}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="border-t border-slate-100 pt-3">
+                <Label>Language</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {LANGUAGES.map((item) => (
+                    <button
+                      key={item.code}
+                      onClick={() => onLanguage(item.code)}
+                      title={item.label}
+                      aria-pressed={language === item.code}
+                      className={
+                        language === item.code
+                          ? "min-w-11 rounded-lg border border-emerald-500 bg-emerald-500 px-2.5 py-1.5 text-[11px] font-semibold text-white cursor-pointer"
+                          : "min-w-11 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 transition-colors duration-150 cursor-pointer hover:bg-slate-50"
+                      }
+                    >
+                      {item.short}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-600 transition-colors duration-150 hover:border-red-300 hover:bg-red-100 cursor-pointer"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+                Sign out
+              </button>
             </div>
-
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-2 border-b border-slate-100 py-3 text-xs">
-              <div className="min-w-0">
-                <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Role</dt>
-                <dd className="truncate font-semibold text-slate-700">{profile.role}</dd>
-              </div>
-              <div className="min-w-0">
-                <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Country</dt>
-                <dd className="flex items-center gap-1 truncate font-semibold text-slate-700">
-                  {profile.countryIso && (
-                    <span className={`fi fi-${profile.countryIso} text-sm rounded-sm overflow-hidden block`} />
-                  )}
-                  {profile.country}
-                </dd>
-              </div>
-            </dl>
-
-            <div className="pt-3">
-              <Label>Language</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {LANGUAGES.map((item) => (
-                  <button
-                    key={item.code}
-                    onClick={() => onLanguage(item.code)}
-                    title={item.label}
-                    aria-pressed={language === item.code}
-                    className={`min-w-11 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-150 cursor-pointer ${language === item.code
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                  >
-                    {item.short}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onSignOut}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-600 transition-colors duration-150 hover:border-red-300 hover:bg-red-100 cursor-pointer"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-              </svg>
-              Sign out
-            </button>
           </div>
         )}
       </div>
@@ -707,14 +749,14 @@ const AccountMenu = () => {
                     </div>
 
                     {!otpOpen && (
-                    <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
-                      {(["signup", "signin"] as const).map((m) => (
-                        <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
-                          className={`flex-1 rounded-lg py-1.5 px-3 text-xs font-bold transition-all duration-200 cursor-pointer ${mode === m ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                          {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
-                        </button>
-                      ))}
-                    </div>
+                      <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
+                        {(["signup", "signin"] as const).map((m) => (
+                          <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
+                            className={`flex-1 rounded-lg py-1.5 px-3 text-xs font-bold transition-all duration-200 cursor-pointer ${mode === m ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                            {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
+                          </button>
+                        ))}
+                      </div>
                     )}
 
                     {otpOpen && (
@@ -772,7 +814,7 @@ const AccountMenu = () => {
                       </form>
                     )}
 
-                    {!otpOpen && mode === "signin" && (
+                    {mode === "signin" && !otpOpen && (
                       <form onSubmit={onSignInSubmit} className="space-y-3.5">
                         {/* Hand-off from the registration step. */}
                         {signinNotice && (
