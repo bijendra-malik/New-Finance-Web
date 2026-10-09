@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { ReactNode } from "react";
 import PageBanner from "../components/common/PageBanner";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
-import type { FranchiseIconName } from "../components/franchise/FranchiseIcon";
-import { FRANCHISE_EMAIL, PARTNER_SHARE, INDEXIA_SHARE } from "../components/franchise/franchiseData";
+import PartnerWorkspace from "../components/franchise/dashboard/PartnerWorkspace";
+import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
 import { fetchFranchiseProfile } from "../api/franchise";
 import type { FranchiseProfileResponse } from "../api/franchise";
 import useSEO from "../hooks/useSEO";
@@ -62,56 +61,6 @@ const statusTone = (status?: string): StatusTone => {
       };
   }
 };
-
-// ── Small building blocks ────────────────────────────────────────────────────
-
-const Card = ({
-  title,
-  icon,
-  aside,
-  children,
-}: {
-  title: string;
-  icon: FranchiseIconName;
-  aside?: ReactNode;
-  children: ReactNode;
-}) => (
-  <section
-    className="rounded-2xl bg-white p-6"
-    style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 16px rgba(6,106,156,0.06)" }}
-  >
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
-          style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
-        >
-          <FranchiseIcon name={icon} filled className="h-5 w-5" />
-        </span>
-        <h2 className="text-[15px] font-extrabold text-slate-800">{title}</h2>
-      </div>
-      {aside}
-    </div>
-    <div className="mt-5">{children}</div>
-  </section>
-);
-
-const Field = ({ label, value }: { label: string; value?: string }) => (
-  <div>
-    <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-    <dd className="mt-1 text-[13.5px] font-semibold text-slate-700 wrap-break-word">{value || "—"}</dd>
-  </div>
-);
-
-/** Honest placeholder for a section whose backend does not exist yet. */
-const NotConnectedYet = ({ what }: { what: string }) => (
-  <div className="rounded-xl px-4 py-4" style={{ background: "var(--form-subtle-bg)", border: "1px dashed var(--form-field-border-strong)" }}>
-    <p className="text-[12.5px] font-semibold text-slate-600">{what} is not connected to this dashboard yet.</p>
-    <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-      Rather than show placeholder figures, this space stays empty until the backend exposes it.
-    </p>
-  </div>
-);
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -408,84 +357,14 @@ const FranchisorDashboardPage = () => {
           )}
         </div>
 
-        {/* Cards */}
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card title="Franchise profile" icon="user">
-            <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Franchisee ID" value={session.franchiseId} />
-              <Field label="Name" value={name} />
-              <Field label="Registered mobile" value={profile?.mobile ?? session.mobile} />
-              <Field label="Registered email" value={profile?.email ?? session.email} />
-              <Field label="Region" value={[profile?.country ?? session.country, profile?.continent ?? session.continent].filter(Boolean).join(" · ")} />
-              <Field label="Role" value={profile?.role ?? "Franchise"} />
-            </dl>
-          </Card>
-
-          <Card
-            title="Agreement status"
-            icon="process"
-            aside={
-              <span className="rounded-full px-3 py-1 text-[11px] font-bold" style={{ background: status.bg, color: status.text, border: `1px solid ${status.border}` }}>
-                {status.label}
-              </span>
-            }
-          >
-            <p className="text-[13px] leading-relaxed text-slate-600">{status.blurb}</p>
-            <div className="mt-5 rounded-xl px-4 py-3.5" style={{ background: "var(--brand-navy-14)" }}>
-              <p className="text-[12px] font-bold text-(--brand-navy)">Plan, renewal and agreement dates</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-slate-600">
-                Your plan tenure, renewal date and agreement copy are issued with your franchise agreement. Write to the
-                franchise team to have them re-sent.
-              </p>
-            </div>
-          </Card>
-
-          <Card title="Customer leads" icon="lead">
-            <NotConnectedYet what="Lead submission and tracking" />
-            <p className="mt-4 text-[12.5px] leading-relaxed text-slate-600">
-              Leads are submitted to the Indexia desk today, and the status of each case is shared by the franchise team.
-            </p>
-          </Card>
-
-          <Card title="Payouts" icon="rupee">
-            <NotConnectedYet what="Payout statements" />
-            <div className="mt-4 flex items-center gap-4 rounded-xl px-4 py-3.5" style={{ background: "var(--form-subtle-bg)" }}>
-              <div className="text-center">
-                <p className="text-lg font-extrabold text-(--brand-navy)">{PARTNER_SHARE}%</p>
-                <p className="text-[11px] font-semibold text-slate-500">Partner share</p>
-              </div>
-              <span className="h-8 w-px" style={{ background: "var(--form-field-border-strong)" }} aria-hidden="true" />
-              <div className="text-center">
-                <p className="text-lg font-extrabold text-(--brand-navy)">{INDEXIA_SHARE}%</p>
-                <p className="text-[11px] font-semibold text-slate-500">Indexia share</p>
-              </div>
-              <p className="text-[11.5px] leading-relaxed text-slate-500">
-                Eligible payouts are shared on successful disbursement, subject to product, lender and regulatory terms.
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Quick links */}
-        <div className="mt-6 rounded-2xl bg-white p-6" style={{ border: "1px solid rgba(6,106,156,0.12)" }}>
-          <h2 className="text-[15px] font-extrabold text-slate-800">Quick links</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
-            {[
-              { to: "/franchise", label: "Franchise opportunity" },
-              { to: "/requireddocument", label: "Required documents" },
-              { to: "/emi-calculator", label: "EMI calculator" },
-              { to: "/contact", label: "Contact the franchise team" },
-            ].map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-[12.5px] font-semibold text-slate-600 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+        {/* Partner workspace */}
+        <PartnerWorkspace
+          session={session}
+          profile={profile}
+          status={status}
+          loading={loading}
+          onRefresh={refresh}
+        />
       </div>
     </div>
   );

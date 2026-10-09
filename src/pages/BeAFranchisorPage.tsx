@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 import { FRANCHISE_PLANS } from "../components/franchise/franchiseData";
 import FranchiseHero from "../components/franchise/FranchiseHero";
+import FranchiseSubNav from "../components/franchise/FranchiseSubNav";
 import FranchiseJourney from "../components/franchise/FranchiseJourney";
 import FranchisePayout from "../components/franchise/FranchisePayout";
 import FranchisePlans from "../components/franchise/FranchisePlans";
@@ -53,6 +54,7 @@ const BeAFranchisorPage = () => {
   return (
     <div className="bg-white">
       <FranchiseHero />
+      <FranchiseSubNav />
       <FranchiseJourney />
       <FranchisePayout />
       <FranchisePlans

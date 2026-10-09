@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ApiUser } from "../api/auth";
 import { fetchProfile } from "../api/auth";
 import type { ProfileResponse } from "../api/auth";
 import { AuthContext } from "./authContext";
+import type { AuthVisibility } from "./authContext";
 
 // ── Provider ─────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem("token");
   });
+
+  /**
+   * Derived from the live session, so a login or logout re-renders every
+   * subscriber (header nav, apply buttons) without a page reload.
+   * The API's `role` is free-form, so match it case-insensitively.
+   */
+  const authVisibility: AuthVisibility = useMemo(() => {
+    const role = typeof user?.role === "string" ? user.role.trim().toLowerCase() : "";
+    if (role === "franchise") return "franchise";
+    if (role === "customer") return "customer";
+    return "signed-out";
+  }, [user]);
 
   // On mount — if token exists, re-validate by fetching profile
   useEffect(() => {
@@ -62,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoggedIn: !!token, login, logout, refreshProfile }}
+      value={{ user, token, isLoggedIn: !!token, authVisibility, login, logout, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

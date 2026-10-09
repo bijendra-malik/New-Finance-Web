@@ -27,7 +27,7 @@ const SectionShell = ({ id, eyebrow, title, subtitle, tone = "white", children }
   return (
     <section
       id={id}
-      className={cx("relative w-full scroll-mt-24 px-6 py-14 md:px-8 md:py-18", TONES[tone])}
+      className={cx("franchise-anchor relative w-full px-6 py-10 md:px-8 md:py-14", TONES[tone])}
       style={tone === "tint" ? TINT_STYLE : onNavy ? NAVY_STYLE : undefined}
     >
       {tone === "tint" && (
@@ -35,7 +35,7 @@ const SectionShell = ({ id, eyebrow, title, subtitle, tone = "white", children }
       )}
 
       <div className="relative mx-auto max-w-6xl">
-        <header className="mb-9 max-w-3xl">
+        <header className="mb-7 max-w-3xl">
           <span
             className={cx(
               "text-[11px] font-extrabold uppercase tracking-[0.18em]",
@@ -57,7 +57,7 @@ const SectionShell = ({ id, eyebrow, title, subtitle, tone = "white", children }
             style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
           />
           {subtitle && (
-            <p className={cx("mt-4 text-sm leading-relaxed md:text-[15px]", onNavy ? "text-white/75" : "text-slate-500")}>
+            <p className={cx("mt-3 text-sm leading-relaxed md:text-[15px]", onNavy ? "text-white/75" : "text-slate-500")}>
               {subtitle}
             </p>
           )}

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Container from "../common/Container";
 import AccountMenu from "../AccountMenu";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
+import { useAuth } from "../../context/authContext";
 
 const isRealSafari = /^((?!chrome|android|crios|fxios|edg|opr).)*safari/i.test(
   navigator.userAgent
@@ -57,18 +58,37 @@ const Header = () => {
   ];
 
   // Franchise entries live in a dropdown so the nav keeps its width at the lg band.
+  const { user } = useAuth();
+  const isCustomer = Boolean(user?.role && user.role.toLowerCase() === "customer");
+
+  // The route decides which tab keeps its teal fill once the pointer leaves.
+  const { pathname } = useLocation();
+  const isRouteActive = (href: string, match?: string) =>
+    match
+      ? pathname.startsWith(match)
+      : href === "/"
+        ? pathname === "/"
+        : pathname === href || pathname.startsWith(`${href}/`);
+
+  // Signed-in Customers do not see the franchise nav; signed-out visitors and Franchise
+  // users do (Franchise users use it to apply or to reach the portal login).
   const franchiseLinks = [
     { label: "Be a Franchisor",   href: "/franchise",         desc: "Plans, payout model and the application" },
   ];
 
-  const navLinks = [
-    { label: "Home",               href: "/" },
-    { label: "Loan Product",       dropdown: "loans", href: "" },
-    { label: "EMI Calculator",     href: "/emi-calculator" },
-    { label: "Loan Eligibility",   href: "/eligibility-calculator" },
-    { label: "Franchise",          dropdown: "franchise", href: "" },
-    { label: "Contact Us",         href: "/contact" },
-  ] satisfies { label: string; href: string; dropdown?: string }[];
+  type NavItem = { label: string; href: string; dropdown?: string; match?: string };
+
+  const navLinks: NavItem[] = (() => {
+    const all: NavItem[] = [
+      { label: "Home",               href: "/" },
+      { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
+      { label: "EMI Calculator",     href: "/emi-calculator" },
+      { label: "Loan Eligibility",   href: "/eligibility-calculator" },
+      { label: "Franchise",          dropdown: "franchise", href: "", match: "/franchise" },
+      { label: "Contact Us",         href: "/contact" },
+    ];
+    return isCustomer ? all.filter((l) => l.label !== "Franchise") : all;
+  })();
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -109,7 +129,7 @@ const Header = () => {
 
             {/* Account menu (all sizes) + Hamburger (small screens) — pinned right */}
             <div className="col-start-3 row-start-1 flex items-center gap-3 justify-self-end">
-              <AccountMenu />
+                <AccountMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="flex items-center justify-center w-10 h-10 cursor-pointer z-60 lg:hidden"
@@ -153,7 +173,10 @@ const Header = () => {
                         aria-haspopup="true"
                         aria-expanded={openDropdown === link.dropdown}
                         onClick={(e) => e.preventDefault()}
-                        className="nav-link flex items-center gap-1 select-none"
+                        aria-current={isRouteActive(link.href, link.match) ? "page" : undefined}
+                        className={`nav-link flex items-center gap-1 select-none${
+                          isRouteActive(link.href, link.match) ? " is-active" : ""
+                        }`}
                       >
                         {link.label}
                         <svg
@@ -235,7 +258,11 @@ const Header = () => {
                     </li>
                   ) : (
                     <li key={link.label}>
-                      <Link to={link.href} className="nav-link">
+                      <Link
+                        to={link.href}
+                        aria-current={isRouteActive(link.href) ? "page" : undefined}
+                        className={`nav-link${isRouteActive(link.href) ? " is-active" : ""}`}
+                      >
                         {link.label}
                       </Link>
                     </li>
@@ -386,6 +413,16 @@ const Header = () => {
         }
         .nav-link:hover::before,
         .nav-link:hover::after {
+          transform: scaleY(1);
+          opacity: 1;
+        }
+
+        /* The current tab keeps that teal box after the mouse exits. */
+        .nav-link.is-active {
+          color: #fff;
+        }
+        .nav-link.is-active::before,
+        .nav-link.is-active::after {
           transform: scaleY(1);
           opacity: 1;
         }

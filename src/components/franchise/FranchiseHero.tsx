@@ -13,7 +13,7 @@ import FranchiseNetworkGraphic from "./FranchiseNetworkGraphic";
  */
 const FranchiseHero = () => (
   <section
-    className="relative mt-(--header-h) w-full overflow-hidden px-6 pb-14 pt-12 md:px-8 md:pb-16 md:pt-16"
+    className="franchise-hero relative mt-(--header-h) flex w-full items-center overflow-hidden px-6 py-12 md:px-8 md:py-14"
     style={{ background: "linear-gradient(125deg,#0b1730 0%,#123f6b 46%,#0f7ba8 78%,#17a08a 100%)" }}
   >
     {/* Decorative rings + glow */}
@@ -24,8 +24,8 @@ const FranchiseHero = () => (
       style={{ background: "linear-gradient(90deg,transparent,rgba(242,242,49,0.55),transparent)" }}
     />
 
-    <div className="relative mx-auto max-w-6xl">
-      <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
+    <div className="relative mx-auto w-full max-w-6xl">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
         {/* Copy */}
         <div>
           <span
@@ -88,27 +88,6 @@ const FranchiseHero = () => (
         </div>
       </div>
 
-      {/* In-page jump links — a table of contents, not a second copy of the sections. */}
-      <nav aria-label="On this page" className="mt-12 flex flex-wrap items-center gap-2.5">
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/40">On this page</span>
-        {[
-          ["how-it-works", "How it works"],
-          ["payouts", "Payouts"],
-          ["plans", "Plans & fees"],
-          ["benefits", "Why partner"],
-          ["franchisee-application", "Apply"],
-          ["faqs", "FAQs"],
-        ].map(([id, label]) => (
-          <a
-            key={id}
-            href={`#${id}`}
-            className="rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold text-white/75 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
-            style={{ border: "1px solid rgba(255,255,255,0.16)" }}
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
     </div>
   </section>
 );

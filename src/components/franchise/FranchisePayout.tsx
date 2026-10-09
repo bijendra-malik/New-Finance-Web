@@ -77,7 +77,7 @@ const FranchisePayout = () => (
       className="mt-10 rounded-3xl bg-white p-6 md:p-9"
       style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 4px 22px rgba(6,106,156,0.08)" }}
     >
-      <div className="max-w-3xl">
+      <div className="max-w-6xl">
         <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
           Who Gets What
         </span>

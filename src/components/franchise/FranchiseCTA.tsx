@@ -14,7 +14,7 @@ interface FranchiseCTAProps {
 const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => (
   <section
     id="become-a-franchisor"
-    className="relative w-full scroll-mt-24 overflow-hidden px-6 py-16 md:px-8 md:py-20"
+    className="franchise-anchor relative w-full overflow-hidden px-6 py-10 md:px-8 md:py-14"
     style={{ background: "linear-gradient(120deg,#0b1730 0%,#123f6b 50%,#17a08a 100%)" }}
   >
     <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full border-24 border-white/5" />
