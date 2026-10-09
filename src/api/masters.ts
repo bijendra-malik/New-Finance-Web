@@ -119,7 +119,7 @@ export interface PincodeVerification {
   info?: PincodeInfoResponse["data"];
 }
 
-// Only India is seeded today; resolve its id lazily and cache it.
+
 export const INDIA = "India";
 
 const nameToId = (list: { _id: string; name: string }[], name: string): string | null =>

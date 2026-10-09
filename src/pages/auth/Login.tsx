@@ -14,7 +14,7 @@ const Login = () => {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  // Already logged in → go straight to dashboard
+
   useEffect(() => {
     if (isLoggedIn) {
       navigate("/dashboard/personalloan", { replace: true });

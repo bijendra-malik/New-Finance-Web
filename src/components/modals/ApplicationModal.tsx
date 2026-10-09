@@ -105,7 +105,7 @@ const ApplicationModal = ({
   const navigate = useNavigate();
   // Read the account on every render while open: it's external state that is usually created *after* this component first mounts (sign-up runs while it's already mounted), so a mount-time memo would go stale.
   const account = isOpen ? readAccountRecord() : null;
-  // The account created in the header panel — shown read-only below.
+
   const accountMobile = (account?.phone ?? "").replace(/\D/g, "").slice(-10);
 
   // ── Step ─────────────────────────────────────────────────────────────────

@@ -36,7 +36,7 @@ const BeAFranchisorPage = () => {
     path: "/franchise",
   });
 
-  // The 3-year plan is the recommended default, so the application form always shows a plan and its fee.
+
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
     FRANCHISE_PLANS.find((p) => p.recommended)?.id ?? FRANCHISE_PLANS[0].id,
   );

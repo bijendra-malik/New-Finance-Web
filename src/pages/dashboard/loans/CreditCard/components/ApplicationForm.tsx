@@ -66,7 +66,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingBanksOther:[], existingLoanTypes:[], existingLoanTypesOther:[],
   });
-  // The /employment-types API is only available for Home Loan, so employment types stay static for this product.
+
   const employmentTypeOptions = useMemo(
     () => [...masters.homeEmploymentTypes],
     [masters.homeEmploymentTypes]

@@ -10,30 +10,16 @@ export const FRANCHISE_SECTIONS = [
   { id: "faqs", label: "FAQs" },
 ] as const;
 
-/**
- * The franchise page's sub-header: a sticky "On this page" bar that follows the
- * reader down the page.
- *
- * It sticks directly under the fixed site header and highlights whichever
- * section is currently in the reading position, so the nav reads as a live
- * table of contents rather than a static list of links.
- */
 const FranchiseSubNav = () => {
   const [active, setActive] = useState<string>(FRANCHISE_SECTIONS[0].id);
   const [stuck, setStuck] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  // Scroll-spy: a section becomes current once its top passes the reading line,
-  // which is the bottom of this bar.
   useEffect(() => {
     const headerPx =
       parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 80;
 
-    // Reading six rects per scroll event is cheap, and the browser already
-    // coalesces scroll events to one per frame — so this runs directly rather
-    // than via requestAnimationFrame, which is suspended in background tabs
-    // (and would leave the highlight frozen).
     const update = () => {
       const bar = barRef.current;
       if (!bar) return;
@@ -47,7 +33,7 @@ const FranchiseSubNav = () => {
         const el = document.getElementById(section.id);
         if (el && el.getBoundingClientRect().top - line <= 0) current = section.id;
       }
-      // The last section can never cross the line on a short page, so at the
+
       // bottom of the document it wins.
       const atBottom =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
@@ -65,7 +51,7 @@ const FranchiseSubNav = () => {
     };
   }, []);
 
-  // Keep the highlighted link in view when the bar scrolls horizontally.
+
   useEffect(() => {
     const list = listRef.current;
     if (!list || list.scrollWidth <= list.clientWidth) return;
@@ -77,8 +63,6 @@ const FranchiseSubNav = () => {
     });
   }, [active]);
 
-  // Anchor offsets come from `scroll-margin-top` on the sections, so scrolling
-  // lands clear of both sticky bars without hard-coding heights here.
   const go = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
     const el = document.getElementById(id);

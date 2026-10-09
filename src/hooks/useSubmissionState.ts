@@ -10,15 +10,10 @@ interface UseSubmissionStateReturn {
   submitted: boolean;
   successMessage: string | null;
   apiError: string | null;
-  /** Begins a submission — sets submitting, clears prior messages. */
   start: () => void;
-  /** Call on successful POST — records the success message and moves to success. */
   succeed: (message?: string) => void;
-  /** Call on failed POST or validation gate — records the error message. */
   fail: (message: string) => void;
-  /** Moves form into terminal "submitted" phase after the receipt view is shown. */
   markDone: () => void;
-  /** Resets everything back to idle — used by "submit another" flows. */
   reset: () => void;
 }
 

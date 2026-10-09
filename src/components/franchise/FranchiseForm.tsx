@@ -95,7 +95,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   // Backend responses (both the success confirmation and API errors) surface as a popup.
   const [popup, setPopup] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [mailtoHref, setMailtoHref] = useState("");
-  // The city field starts as free text and upgrades to a dropdown once the city master
+
   // for the chosen state arrives. Once the user types, it stays free text so their input
   // is never swapped out from under them mid-entry.
   // Pincode → location master resolution state.
@@ -133,7 +133,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
-  // Keep the current city selectable even if it isn't in the loaded master (for example a
+
   // city returned by the pincode lookup), or the dropdown would blank out the resolved value.
 
   const set = (key: FieldKey, value: string) => {
@@ -277,7 +277,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
 
-    // The verified pincode owns the location: if the applicant edited the state or city
+
     // away from it, correct them back before validating or sending.
     let current = values;
     if (

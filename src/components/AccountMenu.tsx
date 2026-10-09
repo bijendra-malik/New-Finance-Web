@@ -263,7 +263,7 @@ const AccountMenu = () => {
   useEffect(() => {
     if (!panelOpen) return;
     const onPointerDown = (e: MouseEvent) => {
-      // The panel and the role dialog are portalled to <body>, so their clicks land outside `rootRef` — ignore them or the panel would close itself.
+
       if ((e.target as Element)?.closest?.(`[${PANEL_ATTR}], [data-role-confirm]`)) return;
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
         // A product button's onClick will call requestSignUp -> setPanelOpen(true) right after this mousedown.
@@ -379,7 +379,7 @@ const AccountMenu = () => {
     setErrors({});
     setSigninError("");
     setSignupError("");
-    // The registration hand-off notice only belongs on the sign-in step it was
+
     // created for; switching tabs by hand clears it.
     if (next !== "signin") setSigninNotice("");
   };
@@ -414,7 +414,7 @@ const AccountMenu = () => {
     } finally {
       setSigninBusy(false);
     }
-    // The backend accepted the mobile and sent an OTP; proceed to the OTP step.
+
     setOtpMobile(phone);
     setOtpValue("");
     setOtpError("");
@@ -520,11 +520,11 @@ const AccountMenu = () => {
         email: apiUser.email ?? "",
       }
       : null);
-  // The role shown comes from the API, falling back to the stored registration.
+
   const displayRole = apiRole ?? account?.role ?? "";
 
   // ── Signed in: flag + country on the left, initials on the right ────────────
-  // Returns the logged-in account button; the signed-out panel is rendered by the block below this one (it reuses `rootRef`).
+
   if (account) {
     return (
       <div ref={rootRef} className="relative">

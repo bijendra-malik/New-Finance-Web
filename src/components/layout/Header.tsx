@@ -61,7 +61,7 @@ const Header = () => {
   const { user } = useAuth();
   const isCustomer = Boolean(user?.role && user.role.toLowerCase() === "customer");
 
-  // The route decides which tab keeps its teal fill once the pointer leaves.
+
   const { pathname } = useLocation();
   const isRouteActive = (href: string, match?: string) =>
     match
