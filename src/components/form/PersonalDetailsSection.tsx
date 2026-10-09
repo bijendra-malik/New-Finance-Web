@@ -14,35 +14,21 @@ export type PersonalDetailsField =
   | "state" | "city" | "pincode" | "residenceStatus" | "residenceStatusOther";
 
 interface PersonalDetailsSectionProps {
-  /** Card title, e.g. "Personal Details" or "Personal Details (Student)". */
   title?: string;
-  /** Card subtitle. */
   subtitle?: string;
-  /** Full-name input placeholder. */
   fullNamePlaceholder?: string;
-  /** Date-of-birth field label. */
   dobLabel?: string;
-  /** PAN field label. */
   panLabel?: string;
-  /** Whether the PAN field is required (default true). */
   panRequired?: boolean;
   form: Pick<Record<PersonalDetailsField, string>, PersonalDetailsField>;
   set: (key: PersonalDetailsField, value: string) => void;
   errors: Partial<Record<PersonalDetailsField, string>>;
   onPincodeResolved: (r: { pincode: string; state: string; city: string }) => void;
-  /** Master state list from useMasters. */
   states: readonly string[];
-  /** Residence-status master list from useMasters. */
   residenceStatuses: readonly string[];
-  /** City loader from useMasters — populates the residence city dropdown. */
   loadCities: (state: string) => string[];
 }
 
-/**
- * Shared Personal Details card: name, mobile, email, DOB, PAN, residence
- * State/City/pincode (pincode-first auto-fill) and residence status.
- * Forms render one line instead of repeating the ~50-line block.
- */
 export const PersonalDetailsSection = ({
   form, set, errors, onPincodeResolved, states, residenceStatuses, loadCities,
   title = "Personal Details", subtitle = "Basic details as per your official documents",

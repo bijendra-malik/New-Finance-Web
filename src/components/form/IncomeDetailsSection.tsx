@@ -6,7 +6,6 @@ import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSIN
 import type { Masters } from "../../constants/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
 
-/** Employment/income fields this section reads and writes. */
 export interface IncomeDetailsSlice {
   employmentType: string;
   companyName: string; companyType: string; companyTypeOther: string;
@@ -38,19 +37,12 @@ interface IncomeDetailsSectionProps {
   transactionBankOptions: readonly string[];
   addTransactionBank: (value: string) => void;
   removeTransactionBank: (index: number) => void;
-  /** Unique portal id so two datepickers on one page don't collide. */
   datePickerPortalId: string;
   loadCities: (state: string) => string[];
   onPincodeResolved: (r: { pincode: string; state: string; city: string }) => void;
-  /** Overrides the salary error for products with a stricter income rule. */
   salaryError?: string;
 }
 
-/**
- * The "Income Details" card shared by every product that collects salaried,
- * professional and business income. Validation stays in each form's
- * computeErrors — this only renders the fields.
- */
 const IncomeDetailsSection = ({
   form, errors, set, masters, employmentTypeOptions, onEmploymentTypeChange,
   onClearTransactionBanks, transactionBankOptions, addTransactionBank, removeTransactionBank,

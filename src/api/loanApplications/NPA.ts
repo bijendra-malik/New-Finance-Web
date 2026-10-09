@@ -30,14 +30,12 @@ export interface NPAApplication {
   existingBanksNonNpa: string[]; existingBanksNonNpaOther?: string[];
   existingLoanTypesNpa: string[]; existingLoanTypesNpaOther?: string[];
   existingLoanTypesNonNpa: string[]; existingLoanTypesNonNpaOther?: string[];
-  /** Server-set product label, e.g. "NPA". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
 }
 
-/** Body accepted by POST /npa/apply (everything except server-set fields). */
 export type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt">;
 
 // ── API Calls ─────────────────────────────────────────────────────────────────

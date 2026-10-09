@@ -59,7 +59,6 @@ const initialsOf = (name: string): string =>
 // Indian mobile numbers are a fixed 10 digits, so the stored value is capped there.
 const digitsOf = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
-/** Maps the API's free-form `role` onto the app's two account roles. */
 const normalizeRole = (role?: string): Role | null => {
   const value = typeof role === "string" ? role.trim().toLowerCase() : "";
   if (value === "customer") return "Customer";
@@ -91,10 +90,9 @@ const Label = ({ children }: { children: React.ReactNode }) => (
 const fieldClass =
   "w-full rounded-xl border border-slate-200 bg-white/80 px-3 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/25";
 
-/** Marks portalled surfaces so the outside-click listener ignores clicks in them. */
 const PANEL_ATTR = "data-account-panel";
 
-/** Select when options exist, free-text input otherwise. */  const Combo = ({
+const Combo = ({
   value,
   options,
   onChange,
@@ -177,7 +175,6 @@ const AccountMenu = () => {
   const [otpBusy, setOtpBusy] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMsg, setResendMsg] = useState("");
-  /** Sign-up record held until the OTP confirms the mobile. */
   const [pendingProfile, setPendingProfile] = useState<AccountProfile | null>(null);
 
   const resetOtp = () => {
@@ -320,14 +317,6 @@ const AccountMenu = () => {
     return Object.keys(next).length === 0;
   };
 
-  /**
-   * Registration calls /auth/register and nothing else.
-   *
-   * It used to fall back to /auth/login when register failed, which sent two OTP
-   * requests for one sign-up (and burned the OTP rate limit when the first one
-   * failed). Verifying a mobile number is the sign-in step's job, so on success we
-   * hand the visitor over to it instead of opening the OTP dialog from here.
-   */
   const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validate()) return;
@@ -633,17 +622,14 @@ const AccountMenu = () => {
       {panelOpen &&
         createPortal(
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 z-90 bg-black/50 backdrop-blur-sm"
               onClick={() => setPanelOpen(false)}
             />
 
-            {/* 2-panel modal: brand (left) + form (right) */}
             <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4" data-account-panel style={{ zIndex: 100 }}>
               <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
 
-                {/* LEFT - Brand panel */}
                 <div
                   className="relative w-full md:w-80 shrink-0 flex flex-col justify-between
                     bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
@@ -676,7 +662,6 @@ const AccountMenu = () => {
                       </p>
                     </div>
 
-                    {/* Marketing cards — desktop only, so the panel stays short on small screens */}
                     <div className="hidden md:grid grid-cols-1 gap-2 my-5">
                       {mode === "signup"
                         ? [
@@ -732,7 +717,6 @@ const AccountMenu = () => {
                   </div>
                 </div>
 
-                {/* RIGHT - Form card */}
                 <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
                   <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
                   <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-6 md:py-5">
@@ -816,7 +800,6 @@ const AccountMenu = () => {
 
                     {mode === "signin" && !otpOpen && (
                       <form onSubmit={onSignInSubmit} className="space-y-3.5">
-                        {/* Hand-off from the registration step. */}
                         {signinNotice && (
                           <p
                             role="status"
@@ -945,8 +928,6 @@ const AccountMenu = () => {
                               focus:outline-none focus:ring-2 focus:ring-slate-200">
                             Cancel
                           </button>
-                          {/* Busy state matters here: a second click while /auth/register is in flight
-                              would send a duplicate registration (and burn the OTP rate limit). */}
                           <Button type="submit" className="flex-1" loading={signupBusy}>
                             {signupBusy ? "Registering…" : "Submit"}
                           </Button>
@@ -961,7 +942,6 @@ const AccountMenu = () => {
           document.body
         )}
 
-      {/* Role confirmation */}
       {confirmRole &&
         createPortal(
           <div

@@ -1,6 +1,5 @@
 import { THEME as C } from "../../constants/theme";
 
-/** Headline + mandatory-field note shown above every application form. */
 const FormPageHeader = ({ headline }: { headline: string }) => (
   <div className="mb-6">
     <h1 className="text-xl font-bold" style={{ color: C.dark }}>{headline}</h1>

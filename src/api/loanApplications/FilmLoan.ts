@@ -25,14 +25,12 @@ export interface FilmLoanApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
-  /** Server-set product label, e.g. "Film Funding". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
 }
 
-/** Body accepted by POST /film-funding/apply (everything except server-set fields). */
 export type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
 
 // ── API Calls ─────────────────────────────────────────────────────────────────

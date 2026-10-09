@@ -64,7 +64,6 @@ AmountField.displayName = "AmountField";
 
 interface SelectFieldProps {
   value: string; onChange: (v: string) => void; options: readonly string[]; placeholder: string; err?: string; disabled?: boolean;
-  /** Optional per-option label override — defaults to the raw value. */
   formatOption?: (value: string) => string;
 }
 export const SelectField = memo(({ value, onChange, options, placeholder, err, disabled = false, formatOption }: SelectFieldProps) => (
@@ -151,7 +150,6 @@ DateInput.displayName = "DateInput";
 interface DateFieldProps {
   value: string; onChange: (v: string) => void; err?: string;
   minDate: Date; maxDate: Date; portalId: string;
-  /** Locked fields (pre-filled from the applicant's account) can't be edited. */
   disabled?: boolean;
 }
 export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalId, disabled = false }: DateFieldProps) => (
@@ -336,7 +334,6 @@ interface PincodeInputFieldProps {
   onResolved?: (result: { pincode: string; state: string; city: string }) => void;
   disabled?: boolean;
 }
-/** Digits only, max 6, no leading zero (Indian pincodes never start with 0) — matches /^[1-9]\d{5}$/ used in each form's computeErrors(). */
 const sanitizePincode = (raw: string) =>
   raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
 

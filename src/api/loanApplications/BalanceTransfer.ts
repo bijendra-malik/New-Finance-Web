@@ -25,14 +25,12 @@ export interface BalanceTransferApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
-  /** Server-set product label, e.g. "Balance Transfer". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
 }
 
-/** Body accepted by POST /balance-transfer/apply (everything except server-set fields). */
 export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt">;
 
 // ── API Calls ─────────────────────────────────────────────────────────────────

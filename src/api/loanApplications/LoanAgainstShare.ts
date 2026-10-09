@@ -24,14 +24,12 @@ export interface LoanAgainstShareApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
-  /** Server-set product label, e.g. "Loan Against Share". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
 }
 
-/** Body accepted by POST /loan-against-share/apply (everything except server-set fields). */
 export type LoanAgainstSharePayload = Omit<LoanAgainstShareApplication, "_id" | "status" | "createdAt" | "updatedAt">;
 
 // ── API Calls ─────────────────────────────────────────────────────────────────

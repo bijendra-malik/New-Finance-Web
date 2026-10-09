@@ -241,7 +241,6 @@ export const verifyPincode = (pincode: string): Promise<PincodeVerification> => 
   return promise;
 };
 
-/** Reset pincode lookups — exposed so outside data (e.g. backend seeding) can force a re-check. */
 export const clearPincodeCache = (pincode?: string): void => {
   if (pincode) pincodePromises.delete(pincode.trim());
   else pincodePromises.clear();

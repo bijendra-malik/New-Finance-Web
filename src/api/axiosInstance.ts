@@ -10,11 +10,6 @@ const axiosInstance = axios.create({
   },
 });
 
-/**
- * Franchise partner endpoints carry their own session token. Kept as an explicit
- * allow-list so a franchise credential is never attached to a customer call
- * (or leaked to any future non-franchise endpoint).
- */
 const isFranchiseEndpoint = (url: string): boolean =>
   url.startsWith("/franchise/") || url.startsWith("/auth/franchise/");
 

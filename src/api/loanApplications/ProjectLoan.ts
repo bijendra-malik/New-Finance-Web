@@ -26,14 +26,12 @@ export interface ProjectLoanApplication {
   existingEMI: number; existingLoanAmount: number;
   existingBanks: string[]; otherBankList?: string[];
   existingLoanTypes: string[]; otherLoanList?: string[];
-  /** Server-set product label, e.g. "Project Loan". */
   loanType?: string;
   status: "Submitted";
   createdAt: string;
   updatedAt?: string;
 }
 
-/** Body accepted by POST /project-loan/apply (everything except server-set fields). */
 export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
 
 // ── API Calls ─────────────────────────────────────────────────────────────────

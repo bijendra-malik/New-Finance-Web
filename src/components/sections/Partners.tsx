@@ -83,7 +83,7 @@ const ALL_LOGOS: { src: string; name: string }[] = [
 const ROW1 = ALL_LOGOS.slice(0, 19);
 const ROW2 = ALL_LOGOS.slice(19);
 
-// Each row is duplicated so the loop is seamless
+
 const LogoCard = ({ logo }: { logo: { src: string; name: string } }) => (
   <div
     className="shrink-0 flex items-center justify-center bg-white rounded-xl mx-3 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"

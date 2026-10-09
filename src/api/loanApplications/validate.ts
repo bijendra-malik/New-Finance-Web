@@ -5,7 +5,6 @@ export interface ApplicationValidationResult {
   errors: string[];
 }
 
-/** Fields that must be non-negative finite numbers when present. */
 const NUMERIC_FIELDS = new Set<string>([
   "loanAmount", "loanTenure", "monthlyNetSalary", "monthlySalary",
   "existingEMI", "existingLoanAmount",

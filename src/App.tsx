@@ -80,7 +80,6 @@ const NpalLoanDetail = lazy(() => import("./pages/showdetails/NpalLoanDetail"));
 const GoldLoanDetail = lazy(() => import("./pages/showdetails/GoldLoanDetail"));
 const FDIDetail = lazy(() => import("./pages/showdetails/FDIDetail"));
 
-/** Redirects to home when the visitor is not logged in. */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isLoggedIn } = useAuth();
 
@@ -91,7 +90,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/** Minimal loader shown while a lazy route chunk downloads. */
 function RouteFallback() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
@@ -175,28 +173,21 @@ function App() {
         <WebsiteLayout>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
-              {/* Home page */}
               <Route path="/" element={<Home />} />
 
-              {/* Login page */}
               <Route path="/login" element={<Login />} />
 
-              {/* Required Documents page (generic / legacy) */}
               <Route path="/requireddocument" element={<RequiredDocumentPage />} />
 
-              {/* Required Documents — per loan type */}
               {requiredDocRoutes.map(([path, element]) => (
                 <Route key={path} path={path} element={element} />
               ))}
 
-              {/* Show Details pages */}
               {detailRoutes.map(([path, element]) => (
                 <Route key={path} path={path} element={element} />
               ))}
 
-              {/* Static pages */}
               <Route path="/franchise" element={<BeAFranchisorPage />} />
-              {/* Alias — the pages in this flow are titled Be a Franchisor / Franchisor Login. */}
               <Route path="/be-a-franchisor" element={<Navigate to="/franchise" replace />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
@@ -204,7 +195,6 @@ function App() {
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
 
-              {/* Loan Dashboards (Protected — requires login via OTP) */}
               {dashboardRoutes.map(([path, element]) => (
                 <Route
                   key={path}
@@ -217,7 +207,6 @@ function App() {
                 />
               ))}
 
-              {/* 404 — any unmatched URL */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

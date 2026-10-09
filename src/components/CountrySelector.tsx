@@ -90,7 +90,6 @@ const CountrySelector = () => {
 
   return (
     <div ref={dropdownRef} className="relative inline-block">
-      {/* Trigger button (flag + country name) */}
       <button
         onClick={() => { setIsOpen(!isOpen); setOpenContinent(null); }}
         className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-white/60 hover:bg-white border border-slate-200 transition-all duration-200 hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
@@ -121,7 +120,6 @@ const CountrySelector = () => {
         </svg>
       </button>
 
-      {/* Dropdown panel — continents → countries */}
       {isOpen && (
         <div
           className="absolute right-0 top-11 z-9999 rounded-2xl shadow-2xl ring-1 ring-white/60 bg-white/90 backdrop-blur-2xl overflow-visible"
@@ -144,7 +142,6 @@ const CountrySelector = () => {
                   </div>
                 )}
 
-                {/* Continents with live countries: open a country flyout. */}
                 {live.map(({ name: continent, countries }) => (
                   <div
                     key={continent}
@@ -169,7 +166,6 @@ const CountrySelector = () => {
                       </svg>
                     </button>
 
-                    {/* Country flyout */}
                     {openContinent === continent && (
                       <div
                         className="absolute right-full top-0 mr-1 rounded-2xl shadow-2xl ring-1 ring-white/60 bg-white/90 backdrop-blur-2xl py-2"
@@ -204,7 +200,6 @@ const CountrySelector = () => {
                   </div>
                 ))}
 
-                {/* Coming-soon continents: inert rows. */}
                 {comingSoon.map((continent) => (
                   <div
                     key={continent}

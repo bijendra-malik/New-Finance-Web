@@ -5,7 +5,6 @@ import SubmittedReceiptView from "./SubmittedReceiptView";
 import { ConsentAndSubmit, SubmittedFormBanner } from "./SubmitSection";
 import FormPageHeader from "./FormPageHeader";
 
-/** Identity fields every submitted application carries. */
 export interface SubmittedApplication {
   _id: string;
   createdAt: string;
@@ -32,11 +31,6 @@ interface LoanApplicationFormShellProps<TApplication extends SubmittedApplicatio
   children: ReactNode;
 }
 
-/**
- * Owns everything the 18 loan forms repeat verbatim: the receipt view switch,
- * the form element, the "already submitted" banner, the page header and the
- * consent/submit block. Product fields come in as children.
- */
 const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
   productName,
   headline,

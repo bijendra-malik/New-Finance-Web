@@ -1,4 +1,3 @@
-/** Status lifecycle stored on every backend application document. */
 export type LoanApplicationStatus = "Submitted";
 
 /** POST /{product}/apply → single saved application. */

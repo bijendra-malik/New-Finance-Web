@@ -9,21 +9,18 @@
   --header-h: 80px;
   --subnav-h: 52px;
 
-  /* Core palette */
   --brand-teal: #26ae90;
   --brand-navy: #066a9c;
   --brand-dark: #286090;
   --brand-yellow: #f2f231;
   --brand-gray: #7b7b7b;
 
-  /* ApplicationModal blues */
   --brand-blue: #2563eb;
   --brand-blue-dark: #1d4ed8;
   --brand-blue-200: #bfdbfe;
   --brand-blue-tint: #dbeafe;
   --brand-blue-bg: #eff6ff;
 
-  /* Teal alpha tints (suffix = old hex alpha) */
   --brand-teal-14: rgba(38, 174, 144, 0.08);
   --brand-teal-1a: rgba(38, 174, 144, 0.102);
   --brand-teal-1f: rgba(38, 174, 144, 0.122);
@@ -35,46 +32,39 @@
   --brand-teal-40: rgba(38, 174, 144, 0.25);
   --brand-teal-60: rgba(38, 174, 144, 0.376);
 
-  /* Navy alpha tints */
   --brand-navy-14: rgba(6, 106, 156, 0.08);
   --brand-navy-1a: rgba(6, 106, 156, 0.102);
   --brand-navy-22: rgba(6, 106, 156, 0.133);
   --brand-navy-44: rgba(6, 106, 156, 0.267);
   --brand-navy-55: rgba(6, 106, 156, 0.333);
 
-  /* Sidebar deep navy (gradient start) */
   --brand-navy-deep: #044e74;
-  /* Footer gradient light end */
   --brand-navy-light: #0a7fba;
 
-  /* Yellow alpha tints (suffix = old hex alpha) */
   --brand-yellow-30: rgba(242, 242, 49, 0.3);
 
-  /* ── Form tokens ────────────────────────────────────────────────────────── */
-  --form-page-bg: #f0f4f8;          /* dashboard backdrop behind the form */
-  --form-card-bg: #ffffff;          /* FormCard / receipt surfaces */
-  --form-field-bg: #fafafa;         /* inputs, selects, date fields */
+  --form-page-bg: #f0f4f8;
+  --form-card-bg: #ffffff;
+  --form-field-bg: #fafafa;
   --form-field-bg-disabled: #f8fafc;
   --form-field-border: #e2e8f0;
   --form-field-border-strong: #d1d5db;
-  --form-error: #ef4444;            /* error borders / accents */
-  --form-error-bg: #fef2f2;         /* API-error banner background */
+  --form-error: #ef4444;
+  --form-error-bg: #fef2f2;
   --form-error-border: #fecaca;
   --form-error-text: #dc2626;
-  --form-divider: #f1f5f9;          /* receipt row dividers */
-  --form-subtle-bg: #fbfdfc;        /* receipt at-a-glance strip */
+  --form-divider: #f1f5f9;
+  --form-subtle-bg: #fbfdfc;
 
-  /* Sizing */
-  --form-max-w: 56rem;              /* form column width (max-w-4xl) */
-  --form-gap: 1.25rem;              /* field-grid gutter (gap-5) */
-  --form-card-radius: 1rem;         /* card corners (rounded-2xl) */
-  --form-card-pad: 1.5rem;          /* card body padding (p-6) */
-  --form-field-radius: 0.75rem;     /* field corners (rounded-xl) */
-  --form-field-pad-x: 1rem;         /* px-4 */
-  --form-field-pad-y: 0.625rem;     /* py-2.5 */
+  --form-max-w: 56rem;
+  --form-gap: 1.25rem;
+  --form-card-radius: 1rem;
+  --form-card-pad: 1.5rem;
+  --form-field-radius: 0.75rem;
+  --form-field-pad-x: 1rem;
+  --form-field-pad-y: 0.625rem;
 }
 
-/* ── Login / account popup shell ───────────────────────────────────────────── */
 .auth-popup-card {
   max-height: calc(100vh - 1.5rem);
 }
@@ -108,9 +98,6 @@
   }
 }
 
-/* ── Franchise page ──────────────────────────────────────────────────────────
-   The hero fills the viewport below the fixed header; anchored sections sit
-   clear of the header plus the sticky "On this page" bar. */
 .franchise-hero {
   min-height: calc(100vh - var(--header-h));
 }
