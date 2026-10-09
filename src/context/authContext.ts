@@ -10,6 +10,20 @@ export interface AuthContextType {
   refreshProfile: () => Promise<void>;
 }
 
+export type AuthVisibility = "signed-out" | "customer" | "franchise";
+
+export interface AuthContextType {
+  user: ApiUser | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  login: (token: string, user: ApiUser) => void;
+  logout: () => void;
+  refreshProfile: () => Promise<void>;
+  authVisibility: AuthVisibility;
+  onChange: (next: AuthVisibility) => void;
+  dismiss: () => void;
+}
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
