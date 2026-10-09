@@ -1,6 +1,7 @@
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import FranchiseForm from "./FranchiseForm";
+import RecipientContact from "./RecipientContact";
 import { FRANCHISE_EMAIL } from "./franchiseData";
 
 const BEFORE_YOU_APPLY = [
@@ -44,35 +45,15 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
           </ul>
         </div>
 
-        <div
-          className="rounded-2xl p-5"
-          style={{ background: "linear-gradient(130deg,#0e1e3c 0%,#1b6ca8 100%)" }}
+        <RecipientContact
+          heading="Where your application goes"
+          footnote=
+            <>The one-time franchisee agreement fee is charged separately from the plan fee you select. It is published in full in <a href="#plans" className="font-semibold text-(--brand-yellow) hover:underline">Plans &amp; fees</a>.</>
         >
-          <span
-            className="flex h-10 w-10 items-center justify-center rounded-xl"
-            style={{ background: "rgba(255,255,255,0.14)", color: "var(--brand-yellow)" }}
-          >
-            <FranchiseIcon name="mail" className="h-5 w-5" />
-          </span>
-          <h3 className="mt-3.5 text-[13.5px] font-bold text-white">Where your application goes</h3>
-          <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/70">
-            Your application is submitted to our franchise team for review. Once your details are
-            verified, you will be issued a <strong>franchise ID and password</strong> to sign in to the
-            franchisor dashboard. Prefer email? Write to{" "}
-            <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-yellow) hover:underline">
-              {FRANCHISE_EMAIL}
-            </a>
-            .
-          </p>
-          <p className="mt-4 border-t border-white/15 pt-3.5 text-[11.5px] text-white/50">
-            The one-time franchisee agreement fee is charged separately from the plan fee you select. It is
-            published in full in{" "}
-            <a href="#plans" className="font-semibold text-(--brand-yellow) hover:underline">
-              Plans &amp; fees
-            </a>
-            .
-          </p>
-        </div>
+          Your application is submitted to our franchise team for review. Once your details are
+          verified, you will be issued a <strong>franchise ID and password</strong> to sign in to the
+          franchisor dashboard. Prefer email? Write to <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-yellow) hover:underline">{FRANCHISE_EMAIL}</a>.
+        </RecipientContact>
       </aside>
 
       {/* Form */}

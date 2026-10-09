@@ -13,12 +13,10 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
 import { applyFranchise } from "../../api/franchise";
 import type { ApplyFranchisePayload } from "../../api/franchise";
-import {
-  AGREEMENT_FEE,
-  FRANCHISE_EMAIL,
-  FRANCHISE_PLANS,
-  type FranchisePlan,
-} from "./franchiseData";
+import { FRANCHISE_EMAIL, FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
+import { PlanSummary, PackageSelector } from "./PlanSelector";
+import { LocationFields } from "../form/LocationFields";
+import { Field } from "../ui/FieldRenderer";
 
 /**
  * Application fields, plus the identity fields carried over from the account the
@@ -61,35 +59,6 @@ interface VerifiedLocation {
 
 const PINCODE_DEBOUNCE_MS = 500;
 
-const inputClass = (invalid: boolean) =>
-  `w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-    invalid ? "border-red-400 bg-red-50/40" : "border-slate-300"
-  }`;
-
-interface FieldProps {
-  id: string;
-  label: string;
-  required?: boolean;
-  error?: string;
-  hint?: string;
-  full?: boolean;
-  children: React.ReactNode;
-}
-
-const Field = ({ id, label, required, error, hint, full, children }: FieldProps) => (
-  <div className={full ? "sm:col-span-2" : ""}>
-    <label htmlFor={id} className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    {children}
-    {error ? (
-      <p className="mt-1 text-[11.5px] font-medium text-red-500">{error}</p>
-    ) : hint ? (
-      <p className="mt-1 text-[11.5px] text-slate-400">{hint}</p>
-    ) : null}
-  </div>
-);
-
 interface FranchiseFormProps {
   variant: Variant;
   /** Franchisee only — controlled by the page so the plan cards can pre-select. */
@@ -129,7 +98,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   // The city field starts as free text and upgrades to a dropdown once the city master
   // for the chosen state arrives. Once the user types, it stays free text so their input
   // is never swapped out from under them mid-entry.
-  const [cityIsFreeText, setCityIsFreeText] = useState(false);
   // Pincode → location master resolution state.
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
@@ -165,11 +133,8 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
-  const cityOptions = values.state ? loadCities(values.state) : [];
   // Keep the current city selectable even if it isn't in the loaded master (for example a
   // city returned by the pincode lookup), or the dropdown would blank out the resolved value.
-  const citySelectOptions =
-    values.city && !cityOptions.includes(values.city) ? [...cityOptions, values.city] : cityOptions;
 
   const set = (key: FieldKey, value: string) => {
     setValues((p) => ({ ...p, [key]: value }));
@@ -180,18 +145,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
     setValues((p) => ({ ...p, packageId: id }));
     setErrors((p) => ({ ...p, packageId: undefined }));
     onPackageChange?.(id);
-  };
-
-  // The pincode field owns the location resolution: clearing or shortening it drops the
-  // previously verified location, so a stale state/city can never outlive its pincode.
-  const setPincode = (raw: string) => {
-    const next = raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
-    setValues((p) => ({ ...p, pincode: next }));
-    setErrors((p) => ({ ...p, pincode: undefined }));
-    if (!PINCODE_REGEX.test(next)) {
-      setVerifiedLocation(null);
-      setPincodeStatus("idle");
-    }
   };
 
   // Resolve state and city from the pincode (location master), debounced so typing does not
@@ -530,14 +483,14 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
     );
   }
 
-  const pincodeFeedback: { error?: string; hint?: string } = (() => {
-    if (!isFranchisee) return {};
-    if (pincodeStatus === "notFound") return { error: "This pincode could not be found — check and re-enter" };
-    if (pincodeStatus === "verifying") return { hint: "Verifying pincode…" };
-    if (pincodeStatus === "error") return { hint: "Could not verify pincode right now — it will be re-checked on submit" };
-    if (verifiedLocation) return { hint: "State and city filled from this pincode." };
-    return {};
-  })();
+  function inputClass(hasError: boolean) {
+    return [
+      "w-full rounded-xl border px-3 py-2.5 text-sm text-slate-800 transition placeholder:text-slate-400",
+      hasError
+        ? "border-red-300 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+        : "border-slate-200 bg-white focus:border-(--brand-navy) focus:ring-2 focus:ring-(--brand-navy)/10",
+    ].join(" ");
+  }
 
   return (
     <>
@@ -629,88 +582,31 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         )}
 
         {isFranchisee && (
-          <Field
-            id={fid("pincode")}
-            label="Pincode"
-            required
-            error={errors.pincode ?? pincodeFeedback.error}
-            hint={pincodeFeedback.hint}
-          >
-            <input
-              id={fid("pincode")}
-              inputMode="numeric"
-              className={inputClass(!!(errors.pincode ?? pincodeFeedback.error))}
-              value={values.pincode}
-              onChange={(e) => setPincode(e.target.value)}
-              placeholder="201301"
-              maxLength={6}
-              autoComplete="postal-code"
-              aria-busy={pincodeStatus === "verifying"}
-            />
-          </Field>
-        )}
-
-        <Field id={fid("state")} label="State" required error={errors.state}>
-          {stateOptions.length > 0 ? (
-            <select
-              id={fid("state")}
-              className={inputClass(!!errors.state)}
-              value={values.state}
-              onChange={(e) => {
-                setValues((p) => ({ ...p, state: e.target.value, city: "" }));
+          <LocationFields
+            slice={{ state: values.state, city: values.city }}
+            set={(key, v) => {
+              if (key === "state") {
+                setValues((p) => ({ ...p, state: v, city: "" }));
                 setErrors((p) => ({ ...p, state: undefined, city: undefined }));
-              }}
-            >
-              <option value="">Select state</option>
-              {stateOptions.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              id={fid("state")}
-              className={inputClass(!!errors.state)}
-              value={values.state}
-              onChange={(e) => set("state", e.target.value)}
-              placeholder="Your state"
-              autoComplete="address-level1"
-            />
-          )}
-        </Field>
-
-        <Field
-          id={fid("city")}
-          label="City"
-          required
-          error={errors.city}
-          hint={isFranchisee && verifiedLocation ? "Auto-filled from your pincode" : undefined}
-        >
-          {citySelectOptions.length > 0 && !cityIsFreeText ? (
-            <select
-              id={fid("city")}
-              className={inputClass(!!errors.city)}
-              value={values.city}
-              onChange={(e) => set("city", e.target.value)}
-            >
-              <option value="">Select city</option>
-              {citySelectOptions.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              id={fid("city")}
-              className={inputClass(!!errors.city)}
-              value={values.city}
-              onChange={(e) => {
-                setCityIsFreeText(true);
-                set("city", e.target.value);
-              }}
-              placeholder="Your city"
-              autoComplete="address-level2"
-            />
-          )}
-        </Field>
+              } else {
+                set("city", v);
+              }
+            }}
+            errors={{ state: errors.state, city: errors.city }}
+            states={stateOptions}
+            loadCities={loadCities}
+            onPincodeResolved={(r) => {
+              setVerifiedLocation({ pincode: r.pincode, state: r.state, city: r.city });
+              setPincodeStatus(r.state ? "idle" : "notFound");
+              setValues((p) => ({ ...p, state: r.state, city: r.city }));
+              setErrors((p) => ({ ...p, state: undefined, city: undefined }));
+            }}
+            entityLabel=""
+            showPincode
+            pincodeStatus={pincodeStatus}
+            verifiedLocation={verifiedLocation}
+          />
+        )}
 
         {isFranchisee && (
           <>
@@ -777,54 +673,25 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
               />
             </Field>
 
-            <Field id={fid("package")} label="Interested Package Duration" required error={errors.packageId} full>
-              <select
-                id={fid("package")}
-                className={inputClass(!!errors.packageId)}
-                value={packageId}
-                onChange={(e) => setPackage(e.target.value)}
-              >
-                <option value="">Select a package duration</option>
-                {FRANCHISE_PLANS.map((p) => (
-                  <option key={p.id} value={p.id}>{p.duration} — {p.fee}</option>
-                ))}
-              </select>
-            </Field>
+            <PackageSelector
+              id={fid("package")}
+              value={packageId}
+              onChange={setPackage}
+              error={errors.packageId}
+              required
+              full
+            />
           </>
         )}
       </div>
 
-      {/* Selected plan summary — franchisee only */}
+      {/* Selected plan summary — franchisee only, rendered from the shared PlanSummary module. */}
       {isFranchisee && (
         <div
           className="rounded-2xl p-4"
           style={{ background: "var(--brand-navy-14)", border: "1px dashed var(--brand-navy-44)" }}
         >
-          {selectedPlan ? (
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
-              {[
-                ["Selected plan", selectedPlan.name],
-                ["Duration", selectedPlan.duration],
-                ["Plan fee", selectedPlan.fee],
-                ["Renewal", selectedPlan.renewal],
-              ].map(([k, v]) => (
-                <div key={k}>
-                  <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">{k}</dt>
-                  <dd className="mt-0.5 text-[13px] font-bold text-(--brand-navy)">{v}</dd>
-                </div>
-              ))}
-              <div className="col-span-2 sm:col-span-4">
-                <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
-                  Franchisee agreement fee (payable separately)
-                </dt>
-                <dd className="mt-0.5 text-[13px] font-bold text-slate-700">{AGREEMENT_FEE}</dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="text-[12.5px] text-slate-500">
-              Select a package duration above — the plan and applicable fee will be shown here before you submit.
-            </p>
-          )}
+          <PlanSummary plan={selectedPlan} />
         </div>
       )}
 

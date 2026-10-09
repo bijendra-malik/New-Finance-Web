@@ -1,22 +1,13 @@
 import { useState } from "react";
+import { type LeadFieldConfig, validateTel, validateEmail } from "../ui/LeadFormConfig";
 
 /**
  * Shared lead/enquiry form used by Franchise Login, Be An Associate and Contact pages.
  * Client-side only for now — no backend endpoint exists yet; shows a success state on submit.
  */
 
-interface FieldConfig {
-  name: string;
-  label: string;
-  type?: "text" | "tel" | "email" | "select" | "textarea";
-  placeholder?: string;
-  options?: readonly string[];
-  required?: boolean;
-  half?: boolean; // half-width on desktop
-}
-
 interface LeadFormProps {
-  fields: FieldConfig[];
+  fields: LeadFieldConfig[];
   submitLabel: string;
   successTitle: string;
   successMessage: string;
@@ -42,11 +33,14 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
         e[f.name] = `${f.label} is required`;
         continue;
       }
-      if (f.type === "tel" && values[f.name] && !/^\d{10}$/.test(values[f.name])) {
-        e[f.name] = "Enter valid 10-digit number";
+      if (f.type === "tel" && values[f.name]) {
+        const tel = validateTel(values[f.name]);
+        if (tel) e[f.name] = tel;
+        continue;
       }
-      if (f.type === "email" && values[f.name] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values[f.name])) {
-        e[f.name] = "Enter valid email";
+      if (f.type === "email" && values[f.name]) {
+        const email = validateEmail(values[f.name]);
+        if (email) e[f.name] = email;
       }
     }
     setErrors(e);

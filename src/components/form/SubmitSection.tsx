@@ -1,6 +1,5 @@
-import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";
-import { FORM } from "../../constants/formStyles";
+import { ConsentBlock } from "../ui/ConsentBlock";
 
 /** Green bar at the top of the receipt view with a "back to form" action. */
 export const SubmittedReceiptBanner = ({ onBack }: { onBack: () => void }) => (
@@ -29,49 +28,7 @@ export const SubmittedFormBanner = ({ refNo, onViewReceipt }: { refNo: string; o
   </div>
 );
 
-/** Primary submit button — disabled while sending or once already submitted. */
-export const SubmitApplicationButton = ({ isSubmitting, submitted }: { isSubmitting: boolean; submitted: boolean }) => (
-  <button type="submit" disabled={isSubmitting || submitted}
-    className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-70 flex items-center justify-center gap-2 hover:shadow-lg hover:opacity-90"
-    style={{ background: `linear-gradient(135deg, ${C.teal}, ${C.navy})` }}>
-    {isSubmitting ? (
-      <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25"/>
-        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-      </svg>Submitting...</>
-    ) : submitted ? "✓ Application Already Submitted" : "✓ Submit Application"}
-  </button>
-);
+/** Consent + submit block shared by loan and franchise submission forms. */
+export const ConsentAndSubmit = ConsentBlock;
 
-interface ConsentAndSubmitProps {
-  agreed: boolean;
-  onAgreedChange: (next: boolean) => void;
-  apiError?: string;
-  submitAttempted?: boolean;
-  invalidCount?: number;
-  isSubmitting?: boolean;
-  submitted?: boolean;
-}
-
-export const ConsentAndSubmit = ({
-  agreed, onAgreedChange, apiError = "", submitAttempted = false, invalidCount = 0, isSubmitting = false, submitted = false,
-}: ConsentAndSubmitProps) => (
-  <>
-    <label className="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
-      <input type="checkbox" checked={agreed} onChange={e=>onAgreedChange(e.target.checked)}
-        className="mt-0.5 w-4 h-4 rounded shrink-0" style={{accentColor:C.teal}}/>
-      <span className="text-xs" style={{color:C.gray}}>
-        By continuing, you agree to Indexia Finance <a href={TERMS_OF_USE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Terms of Use</a> and <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold underline" style={{color:C.navy}}>Privacy Policy</a>.
-      </span>
-    </label>
-
-    {(apiError||(submitAttempted&&invalidCount>0))&&(
-      <div className="rounded-(--form-field-radius) px-4 py-3 text-sm flex gap-2 items-start mb-5" style={{background:FORM.errorBg,border:`1px solid ${FORM.errorBorder}`,color:FORM.errorText}}>
-        <span className="shrink-0 mt-0.5">⚠️</span>
-        {apiError||`${invalidCount} field${invalidCount===1?" is":"s are"} invalid — fix the highlighted fields to submit.`}
-      </div>
-    )}
-
-    <SubmitApplicationButton isSubmitting={isSubmitting} submitted={submitted} />
-  </>
-);
+export { default } from "../ui/ConsentBlock";

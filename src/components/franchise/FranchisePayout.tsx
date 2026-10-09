@@ -1,19 +1,11 @@
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
-import { ShareSplitBar } from "./ShareSplit";
+import PayoutShareViz from "./PayoutShareViz";
 import {
   EARNING_DEPENDENCIES,
-  INDEXIA_SHARE,
   MAX_PAYOUTS,
-  PARTNER_SHARE,
   PAYOUT_DISCLAIMER,
 } from "./franchiseData";
-
-const EXAMPLE_TOTAL = 100000;
-const PARTNER_AMOUNT = (EXAMPLE_TOTAL * PARTNER_SHARE) / 100;
-const INDEXIA_AMOUNT = (EXAMPLE_TOTAL * INDEXIA_SHARE) / 100;
-
-const inr = (n: number) => `\u20B9${n.toLocaleString("en-IN")}`;
 
 /**
  * Everything money-related, in one section, each fact stated once:
@@ -72,7 +64,7 @@ const FranchisePayout = () => (
       ))}
     </div>
 
-    {/* The split, once */}
+    {/* The split — bar + worked rupee example, shared with any future partner dashboard. */}
     <div
       className="mt-10 rounded-3xl bg-white p-6 md:p-9"
       style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 4px 22px rgba(6,106,156,0.08)" }}
@@ -82,53 +74,9 @@ const FranchisePayout = () => (
           Who Gets What
         </span>
         <h3 className="mt-2 text-xl font-extrabold text-slate-800 md:text-2xl">
-          Your share <span style={{ color: "var(--brand-teal)" }}>{PARTNER_SHARE}%</span> · Indexia share{" "}
-          <span style={{ color: "var(--brand-navy)" }}>{INDEXIA_SHARE}%</span>
+          Your share <span style={{ color: "var(--brand-teal)" }}>{80}%</span> · Indexia share <span style={{ color: "var(--brand-navy)" }}>{20}%</span>
         </h3>
-
-        {/* The bar draws the split; the worked example below gives it in rupees, so the
-            percentages are labelled once rather than three times. */}
-        <div className="mt-5">
-          <ShareSplitBar compact />
-        </div>
-
-        {/* Worked example — the same split in rupees, so the arithmetic is not left implicit. */}
-        <div className="mt-6 rounded-2xl border border-slate-200">
-          <div
-            className="flex items-center justify-between gap-3 rounded-t-2xl px-4 py-2.5"
-            style={{ background: "var(--brand-navy-14)" }}
-          >
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-(--brand-navy)">
-              If an eligible case pays out {inr(EXAMPLE_TOTAL)}
-            </span>
-            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              Illustrative
-            </span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-3" style={{ background: "var(--brand-teal-14)" }}>
-            <span className="flex items-center gap-2 text-[13px] font-semibold text-slate-700">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand-teal)" }} />
-              Franchise Partner — {PARTNER_SHARE}%
-            </span>
-            <span className="text-lg font-extrabold" style={{ color: "var(--brand-teal)" }}>
-              {inr(PARTNER_AMOUNT)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between border-t border-dashed border-slate-200 px-4 py-3">
-            <span className="flex items-center gap-2 text-[13px] font-semibold text-slate-700">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand-navy)" }} />
-              Indexia Finance — {INDEXIA_SHARE}%
-            </span>
-            <span className="text-lg font-extrabold" style={{ color: "var(--brand-navy)" }}>
-              {inr(INDEXIA_AMOUNT)}
-            </span>
-          </div>
-        </div>
-
-        <p className="mt-4 text-[11.5px] leading-relaxed text-slate-500">
-          Illustrative example only. Actual payouts vary by lender, product, loan amount, customer profile and
-          applicable terms.
-        </p>
+        <PayoutShareViz />
       </div>
     </div>
 

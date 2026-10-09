@@ -1,7 +1,8 @@
 import Modal from "../ui/Modal";
 import FranchiseForm from "./FranchiseForm";
-import FranchiseIcon from "./FranchiseIcon";
+import RecipientContact from "./RecipientContact";
 import { FRANCHISE_EMAIL } from "./franchiseData";
+import FranchiseIcon from "./FranchiseIcon";
 
 /** Modal wrapper around the franchisor variant of the shared franchise form. */
 const FranchisorFormModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
@@ -42,13 +43,10 @@ const FranchisorFormModal = ({ open, onClose }: { open: boolean; onClose: () => 
     {/* Body */}
     <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
       <FranchiseForm variant="franchisor" />
-      <p className="mt-5 border-t border-dashed border-slate-200 pt-4 text-[11.5px] leading-relaxed text-slate-400">
-        Prefer email? Write to{" "}
-        <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-navy) hover:underline">
-          {FRANCHISE_EMAIL}
-        </a>
-        .
-      </p>
+      <RecipientContact
+        heading="Where your enquiry goes"
+        children={<>Prefer email? Write to <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-navy) hover:underline">{FRANCHISE_EMAIL}</a>.</>}
+      />
     </div>
   </Modal>
 );
