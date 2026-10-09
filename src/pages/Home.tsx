@@ -24,7 +24,7 @@ const Home = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
 
-  // Keep the hero video playing by default, but respect an explicit user pause.
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -33,7 +33,7 @@ const Home = () => {
     v.volume = 0;
 
     const syncState = () => {
-      // Keep local state in sync with the real media element.
+
       setIsPaused(v.paused);
     };
 

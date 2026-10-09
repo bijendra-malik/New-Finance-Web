@@ -1,14 +1,5 @@
-// Franchise partner session storage.
-//
-// The franchisor portal is a separate identity from the retail customer session
-// that AuthProvider keeps under "token"/"user". Franchise credentials therefore
-// live under their own keys, so signing in as a franchise partner never disturbs
-// a customer login and vice versa.
-//
-// The session is written the moment /franchise/login succeeds. `name`, `mobile`
-// and `email` are filled in later by the dashboard from
-// GET /auth/franchise/profile, because the login response only carries the
-// franchisee ID and token.
+// Franchise partner session storage. Credentials live under their own keys so a
+// franchise login never disturbs a retail customer session.
 
 export const FRANCHISE_SESSION_KEY = "indexia_franchise_session";
 export const FRANCHISE_TOKEN_KEY = "indexia_franchise_token";
@@ -65,7 +56,7 @@ export const mergeFranchiseProfile = (
   const session = readFranchiseSession();
   if (!session) return null;
   const merged: FranchiseSession = { ...session };
-  // Named fields rather than a generic key loop, so each assignment stays type-checked.
+
   const textFields = [
     "franchiseId",
     "name",

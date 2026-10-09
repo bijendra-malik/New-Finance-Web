@@ -90,7 +90,7 @@ const FranchisorDashboardPage = () => {
     if (!result.ok) {
       setProfile(null);
       setError(result.message);
-      // The axios interceptor drops the franchise session when the backend rejects
+
       // the token, so mirror that here: a dead session must not keep rendering a
       // dashboard it can no longer back with data.
       if (!readFranchiseSession()) {
