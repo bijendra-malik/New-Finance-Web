@@ -15,6 +15,7 @@ import {
 import type { AccountProfile, Role } from "../utils/accountProfile";
 import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
 import { getApiErrorMessage } from "../utils/apiError";
+import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX } from "../utils/validation";
 import { loginUser, registerUser, verifyOTP } from "../api/auth";
 import Button from "./ui/Button";
 
@@ -55,8 +56,8 @@ const initialsOf = (name: string): string =>
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("") || "?";
 
-const emailOk = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
-const digitsOf = (value: string) => value.replace(/\D/g, "");
+// Indian mobile numbers are a fixed 10 digits, so the stored value is capped there.
+const digitsOf = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 // ── Small presentational pieces ───────────────────────────────────────────────
 const Chevron = ({ open }: { open: boolean }) => (
@@ -302,9 +303,11 @@ const AccountMenu = () => {
     if (!form.role) next.role = "Select a role to continue";
     if (!form.continent) next.continent = "Select a continent";
     if (!form.country) next.country = "Select a country";
-    if (!form.name.trim()) next.name = "Enter your name";
-    if (digitsOf(form.phone).length !== 10) next.phone = "Enter a valid 10-digit mobile number";
-    if (!emailOk(form.email.trim())) next.email = "Enter a valid email address";
+    const name = form.name.trim();
+    if (!name) next.name = "Enter your name";
+    else if (!NAME_REGEX.test(name)) next.name = "Name must be at least 2 characters and use only letters, spaces, dots or hyphens";
+    if (!MOBILE_REGEX.test(digitsOf(form.phone))) next.phone = "Enter a valid 10-digit mobile number";
+    if (!EMAIL_REGEX.test(form.email.trim())) next.email = "Enter a valid email address";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -388,18 +391,13 @@ const AccountMenu = () => {
       setSigninError("Enter your 10-digit mobile number");
       return;
     }
-    const stored = readAccountRecord();
-    const justRegistered = pendingProfile && digitsOf(pendingProfile.phone) === phone;
-    // Either the record is already on this device, or the visitor registered in the
-    // previous step — in which case the record is written once sign-in completes.
-    if (!justRegistered && (!stored || digitsOf(stored.phone) !== phone)) {
-      setSigninError("No account found with this mobile number. Please register first.");
-      return;
-    }
+    // `indexia_account` is the older sign-up-gating record (loan apply flow). It is NOT the
+    // auth source of truth. A real customer may have no local record and still sign in via
+    // OTP — the backend decides whether the mobile is registered. We only refuse to send the
+    // OTP when the mobile is clearly invalid; everything else is handled by /auth/login.
     setSigninError("");
     setSigninNotice("");
     setSigninBusy(true);
-    // The record exists (or was just registered) — send its OTP, then verify below.
     try {
       await loginUser({ mobile: phone });
     } catch (err) {
@@ -408,9 +406,14 @@ const AccountMenu = () => {
     } finally {
       setSigninBusy(false);
     }
-    // A record that was just registered is still pending — keep it so verify-otp
-    // stores the profile and the pending "Apply Now" continues.
-    if (!justRegistered) setPendingProfile(null);
+    // The backend accepted the mobile and sent an OTP; proceed to the OTP step.
+    setOtpMobile(phone);
+    setOtpValue("");
+    setOtpError("");
+    setResendMsg("");
+    setOtpOpen(true);
+    // Drop any leftover pending profile from a previous registration attempt.
+    setPendingProfile(null);
     setOtpMobile(phone);
     setOtpValue("");
     setOtpError("");
@@ -789,7 +792,7 @@ const AccountMenu = () => {
                             <span className="shrink-0 whitespace-nowrap border-r border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">&#x1F1EE;&#x1F1F3; +91</span>
                             <input type="tel" inputMode="numeric" maxLength={10} value={signin.phone}
                               placeholder="10-digit registered mobile"
-                              onChange={(e) => { setSignin({ phone: e.target.value.replace(/[\D]/g, "") }); setSigninError(""); }}
+                              onChange={(e) => { setSignin({ phone: e.target.value.replace(/[\D]/g, "").slice(0, 10) }); setSigninError(""); }}
                               className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" />
                           </div>
                           {signinError && <p className="mt-1 text-[10px] font-medium text-red-500">{signinError}</p>}
@@ -871,8 +874,11 @@ const AccountMenu = () => {
                               {errors.name && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.name}</p>}
                             </div>
                             <div>
-                              <input className={fieldClass} value={form.phone} inputMode="numeric" placeholder="Mobile Number" autoComplete="tel"
-                                onChange={(e) => setField("phone", e.target.value)} />
+                              <div className={`flex items-center overflow-hidden rounded-xl border bg-white/80 shadow-sm transition focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 ${errors.phone ? "border-red-400" : "border-slate-200"}`}>
+                                <span className="shrink-0 whitespace-nowrap border-r border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" aria-hidden="true">🇮🇳 +91</span>
+                                <input className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" value={form.phone} type="tel" inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" autoComplete="tel"
+                                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} />
+                              </div>
                               {errors.phone && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.phone}</p>}
                             </div>
                             <div className="col-span-2">
