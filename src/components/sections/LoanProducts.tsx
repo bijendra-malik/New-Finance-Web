@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import React from "react";
-import { useApplyGate } from "../../hooks/useApplyGate";
+import { useApplyGate, useApplyAccess } from "../../hooks/useApplyGate";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Mousewheel } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
@@ -37,25 +37,33 @@ const loans: LoanItem[] = [
 // ── Globe Wireframe (without hover) ───────────────────────────────────────────
 import { ColoredRing, GlobeEarth, GlobeWireframe } from "./LoanGlobes";
 
-const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => void }) => {
-  const { label, ringColors, onApplyClick } = props;
+const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => void; applyDisabled?: boolean }) => {
+  const { label, ringColors, onApplyClick, applyDisabled = false } = props;
   const [hovered, setHovered] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (onApplyClick) onApplyClick(label);
+    if (onApplyClick && !applyDisabled) onApplyClick(label);
   };
+
+  const disabledStyle = applyDisabled
+    ? {
+        opacity: 0.45,
+        cursor: "not-allowed" as const,
+        filter: "grayscale(0.55)" as const,
+        pointerEvents: "none" as const,
+      }
+    : {};
 
   return (
     <div
-      className="flex flex-col items-center cursor-pointer w-full"
-      onMouseEnter={() => setHovered(true)}
+      className="flex flex-col items-center w-full"
+      style={{ ...disabledStyle }}
+      onMouseEnter={() => !applyDisabled && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
-      style={{
-        position: "relative",
-        zIndex: hovered ? 20 : 1,
-      }}
+      role={applyDisabled ? "button" : undefined}
+      aria-disabled={applyDisabled}
     >
       {/* Globe circle */}
       <div
@@ -64,7 +72,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
           width: 110,
           height: 110,
           borderRadius: "50%",
-          transform: hovered ? "scale(1.08)" : "scale(1)",
+          transform: (hovered && !applyDisabled) ? "scale(1.08)" : "scale(1)",
           transition: "transform 0.3s ease",
           flexShrink: 0,
         }}
@@ -79,7 +87,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
             zIndex: 1,
           }}
         >
-          {hovered ? <GlobeEarth /> : <GlobeWireframe />}
+          {(!applyDisabled && hovered) ? <GlobeEarth /> : <GlobeWireframe />}
         </div>
 
         {/* Layer 2 — 4-color ring */}
@@ -98,7 +106,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
             alignItems: "center",
             justifyContent: "center",
             pointerEvents: "none",
-            backgroundColor: hovered ? "rgba(0,0,0,0.35)" : "transparent",
+            backgroundColor: (!applyDisabled && hovered) ? "rgba(0,0,0,0.35)" : "transparent",
             transition: "background-color 0.3s ease",
           }}
         >
@@ -111,14 +119,14 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
               lineHeight: 1.35,
               letterSpacing: 0.2,
               padding: "0 10px",
-              color: hovered ? "#ffffff" : "var(--brand-dark)",
-              textShadow: hovered
+              color: (!applyDisabled && hovered) ? "#ffffff" : "var(--brand-dark)",
+              textShadow: (!applyDisabled && hovered)
                 ? "0 1px 6px rgba(0,0,0,0.9)"
                 : "0 1px 0 rgba(255,255,255,0.9), 0 -1px 0 rgba(255,255,255,0.9), 1px 0 0 rgba(255,255,255,0.9), -1px 0 0 rgba(255,255,255,0.9)",
               transition: "color 0.3s ease",
             }}
           >
-            {hovered ? (
+            {(!applyDisabled && hovered) ? (
               <>Apply<br />Now</>
             ) : (
               label
@@ -136,6 +144,8 @@ const LoanProducts = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const { requestApply, gate } = useApplyGate();
+  const applyAccess = useApplyAccess();
+  const applyBlocked = useMemo(() => Boolean(applyAccess.blocked), [applyAccess]);
 
   const handleApplyClick = (productName: string) => {
     requestApply(productName);
@@ -249,7 +259,7 @@ const LoanProducts = () => {
             >
               {loans.map((loan) => (
                 <SwiperSlide key={loan.label} className="py-1">
-                  <LoanCard {...loan} onApplyClick={handleApplyClick} />
+                  <LoanCard {...loan} onApplyClick={handleApplyClick} applyDisabled={applyBlocked} />
                 </SwiperSlide>
               ))}
             </Swiper>
