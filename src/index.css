@@ -7,6 +7,7 @@
 */
 :root {
   --header-h: 80px;
+  --subnav-h: 52px;
 
   /* Core palette */
   --brand-teal: #26ae90;
@@ -105,4 +106,21 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── Franchise page ──────────────────────────────────────────────────────────
+   The hero fills the viewport below the fixed header; anchored sections sit
+   clear of the header plus the sticky "On this page" bar. */
+.franchise-hero {
+  min-height: calc(100vh - var(--header-h));
+}
+
+@supports (height: 100dvh) {
+  .franchise-hero {
+    min-height: calc(100dvh - var(--header-h));
+  }
+}
+
+.franchise-anchor {
+  scroll-margin-top: calc(var(--header-h) + var(--subnav-h) + 0.75rem);
 }
