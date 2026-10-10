@@ -43,6 +43,15 @@ const statusTone = (status?: string): StatusTone => {
         border: "rgba(224,168,0,0.45)",
         text: "#92620a",
       };
+    case "approved":
+      return {
+        label: "Approved",
+        blurb:
+          "Your franchise agreement is approved. Leads and payouts open up once the franchise team marks the account active.",
+        bg: "rgba(38,174,144,0.12)",
+        border: "rgba(38,174,144,0.4)",
+        text: "#0f766e",
+      };
     case "suspended":
       return {
         label: "Suspended",
@@ -51,14 +60,18 @@ const statusTone = (status?: string): StatusTone => {
         border: "rgba(239,68,68,0.35)",
         text: "#b91c1c",
       };
-    default:
+    default: {
+      const reported = status?.trim();
       return {
-        label: status?.trim() || "Not reported",
-        blurb: "The agreement status has not been reported by the backend yet.",
+        label: reported || "Not reported",
+        blurb: reported
+          ? "This is the agreement status on your live franchise profile. Contact the franchise desk if it looks out of date."
+          : "The agreement status has not been reported by the backend yet.",
         bg: "var(--brand-navy-14)",
         border: "var(--brand-navy-44)",
         text: "var(--brand-navy)",
       };
+    }
   }
 };
 
@@ -77,12 +90,12 @@ const FranchisorDashboardPage = () => {
   // Read once: a session without a token is treated as signed out rather than
   // rendered as a broken dashboard.
   const [hasToken, setHasToken] = useState(() => Boolean(readFranchiseToken()));
-  const [profile, setProfile] = useState<FranchiseProfileResponse["franchise"] | null>(null);
+  const [profile, setProfile] = useState<FranchiseProfileResponse["user"] | null>(null);
   const [loading, setLoading] = useState(() => Boolean(readFranchiseSession()));
   const [error, setError] = useState<string | null>(null);
 
   type ProfileResult =
-    | { ok: true; franchise: NonNullable<FranchiseProfileResponse["franchise"]> }
+    | { ok: true; account: NonNullable<FranchiseProfileResponse["user"]> }
     | { ok: false; message: string };
 
   /** Applies an already-settled profile result. Safe to call from async work. */
@@ -99,27 +112,27 @@ const FranchisorDashboardPage = () => {
       }
       return;
     }
-    const franchise = result.franchise;
-    setProfile(franchise);
+    const account = result.account;
+    setProfile(account);
     setError(null);
     setSession(
       mergeFranchiseProfile({
-        franchiseId: franchise._id,
-        name: franchise.name,
-        mobile: franchise.mobile,
-        email: franchise.email,
-        franchiseStatus: franchise.franchiseStatus,
-        isVerified: franchise.isVerified,
-        continent: franchise.continent,
-        country: franchise.country,
+        franchiseId: account.franchiseId,
+        name: account.name,
+        mobile: account.mobile,
+        email: account.email,
+        franchiseStatus: account.franchiseStatus,
+        isVerified: account.isVerified,
+        continent: account.continent,
+        country: account.country,
       }),
     );
   }, []);
 
   /** Turns a settled response into the outcome the applier expects. */
   const readResult = (res: FranchiseProfileResponse): ProfileResult =>
-    res.success && res.franchise
-      ? { ok: true, franchise: res.franchise }
+    res.success && res.user
+      ? { ok: true, account: res.user }
       : {
           ok: false,
           message: res.success
