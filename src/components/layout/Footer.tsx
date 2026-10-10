@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import footerBg from "../../assets/bg-footerimg01.png";
@@ -7,17 +7,39 @@ import { SITE_URL } from "../../constants/siteLinks";
 
 const Footer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Browsers without IntersectionObserver simply attach the video right away.
+  const [reachedFooter, setReachedFooter] = useState(
+    () => typeof IntersectionObserver === "undefined",
+  );
+
+  // The globe clip is ~6 MB and purely decorative, so it is only attached once the
+  // footer approaches the viewport instead of loading on every page.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || reachedFooter) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setReachedFooter(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "600px" },
+    );
+    observer.observe(v);
+    return () => observer.disconnect();
+  }, [reachedFooter]);
 
   useEffect(() => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !reachedFooter) return;
     v.defaultMuted = true;
     v.muted = true;
     const play = () => { v.play().catch(() => {}); };
     play();
     v.addEventListener("pause", play);
     return () => v.removeEventListener("pause", play);
-  }, []);
+  }, [reachedFooter]);
 
   return (
     <>
@@ -265,7 +287,8 @@ const Footer = () => {
               <video
                 ref={videoRef}
                 className="ftr-globe-video"
-                src={globeVideo}
+                src={reachedFooter ? globeVideo : undefined}
+                preload="none"
                 autoPlay
                 loop
                 muted
