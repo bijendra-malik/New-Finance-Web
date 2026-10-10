@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getApiErrorMessage } from "../utils/apiError";
+import { emitApplicationSubmitted } from "../utils/applicationEvents";
 
 interface UseApplicationSubmitArgs<TApplication> {
   computeErrors: () => object;
@@ -31,11 +32,21 @@ export const useApplicationSubmit = <TApplication extends { _id: string }>({
   const [submittedApp, setSubmittedApp] = useState<TApplication | null>(null);
   const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
 
-  const computeRef = useRef(computeErrors); computeRef.current = computeErrors;
-  const markRef = useRef(markAllTouched); markRef.current = markAllTouched;
-  const submitRef = useRef(submit); submitRef.current = submit;
-  const agreedRef = useRef(agreed); agreedRef.current = agreed;
-  const successRef = useRef(onSubmitSuccess); successRef.current = onSubmitSuccess;
+  const computeRef = useRef(computeErrors);
+  const markRef = useRef(markAllTouched);
+  const submitRef = useRef(submit);
+  const agreedRef = useRef(agreed);
+  const successRef = useRef(onSubmitSuccess);
+
+  // Keep the latest props in refs after each render — writing them during render
+  // is not allowed by the react-hooks rules.
+  useEffect(() => {
+    computeRef.current = computeErrors;
+    markRef.current = markAllTouched;
+    submitRef.current = submit;
+    agreedRef.current = agreed;
+    successRef.current = onSubmitSuccess;
+  });
 
   const handleSubmit = useCallback(async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -53,6 +64,8 @@ export const useApplicationSubmit = <TApplication extends { _id: string }>({
       const app = await submitRef.current();
       setSubmittedApp(app); setSubmitted(true);
       successRef.current?.(app._id, app);
+      // The header chip and /applications pick the new one up immediately.
+      emitApplicationSubmitted();
     } catch (err) {
       setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
     } finally { setIsSubmitting(false); }
