@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /** The franchise page's sections, in document order. */
-export const FRANCHISE_SECTIONS = [
+const FRANCHISE_SECTIONS = [
   { id: "how-it-works", label: "How it works" },
   { id: "payouts", label: "Payouts" },
   { id: "plans", label: "Plans & fees" },
