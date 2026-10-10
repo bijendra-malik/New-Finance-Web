@@ -48,9 +48,9 @@ const statusTone = (status?: string): StatusTone => {
         label: "Approved",
         blurb:
           "Your franchise agreement is approved. Leads and payouts open up once the franchise team marks the account active.",
-        bg: "rgba(38,174,144,0.12)",
-        border: "rgba(38,174,144,0.4)",
-        text: "#0f766e",
+        bg: "rgba(38,174,144,0.2)",
+        border: "#22bfb3",
+        text: "#22bfb3",
       };
     case "suspended":
       return {
