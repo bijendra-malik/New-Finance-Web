@@ -7,6 +7,7 @@ import type {
 } from "../FranchiseIcon";
 import type { FranchiseAccount } from "../../../api/franchise";
 import type { FranchiseSession } from "../../../utils/franchiseSession";
+import { formatTimestamp } from "../../../utils/formatters";
 import {
   INDEXIA_SHARE,
   LEAD_STAGE_TONES,
@@ -452,13 +453,45 @@ const PartnerWorkspace = ({ session, profile, status, loading, onRefresh }: Part
               }
             >
               <dl className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Field label="Franchisee ID" value={session.franchiseId} />
+                <Field label="Franchisee ID" value={profile?.franchiseId ?? session.franchiseId} />
                 <Field label="Partner name" value={name} />
                 <Field label="Role" value={profile?.role ?? "Franchise"} />
+                <Field label="Status" value={profile?.franchiseStatus ?? status.label} />
+                <Field
+                  label="Account active"
+                  value={profile?.isActive === true ? "Yes" : profile?.isActive === false ? "No" : undefined}
+                />
+                <Field
+                  label="Verified"
+                  value={profile?.isVerified === true ? "Yes" : profile?.isVerified === false ? "No" : undefined}
+                />
                 <Field label="Registered mobile" value={profile?.mobile ?? session.mobile} />
                 <Field label="Registered email" value={profile?.email ?? session.email} />
+                <Field label="PAN" value={profile?.panNumber} />
+                <Field label="Package" value={profile?.package} />
+                <Field label="City" value={profile?.city} />
+                <Field label="State" value={profile?.state} />
+                <Field label="Pincode" value={profile?.pincode} />
                 <Field label="Region" value={region} />
+                <Field label="Registered on" value={formatTimestamp(profile?.createdAt)} />
+                <Field label="Last login" value={formatTimestamp(profile?.lastLogin)} />
               </dl>
+
+              {profile?.businessDetails && (
+                <div className="mt-5 border-t border-slate-100 pt-4">
+                  <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-(--brand-navy)">
+                    Business details
+                  </p>
+                  <dl className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Field label="Business name" value={profile.businessDetails.businessName} />
+                    <Field label="Business type" value={profile.businessDetails.businessType} />
+                    <Field label="GST number" value={profile.businessDetails.gstNumber} />
+                    <Field label="Address" value={profile.businessDetails.address} />
+                    <Field label="Years in business" value={profile.businessDetails.yearsInBusiness} />
+                  </dl>
+                </div>
+              )}
+
               <p className="mt-5 text-[11.5px] leading-relaxed text-slate-500">
                 These fields come from your live franchise profile. To change any of them, write to the franchise desk
                 with your franchisee ID.
