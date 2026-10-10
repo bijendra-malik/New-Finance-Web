@@ -29,6 +29,7 @@ export const useApplyAccess = () => {
 export const useApplyGate = () => {
   const [productName, setProductName] = useState<string | null>(null);
   const access = useApplyAccess();
+  const { isLoggedIn } = useAuth();
 
   useEffect(
     () =>
@@ -48,13 +49,13 @@ export const useApplyGate = () => {
         setTimeout(() => setBlockedToast(null), 5000);
         return;
       }
-      if (!readStoredProfile() && !useAuth().isLoggedIn) {
+      if (!readStoredProfile() && !isLoggedIn) {
         requestSignUp(product);
         return;
       }
       setProductName(product);
     },
-    [access],
+    [access, isLoggedIn],
   );
 
   const close = useCallback(() => {
