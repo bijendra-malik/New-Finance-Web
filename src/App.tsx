@@ -11,6 +11,7 @@ import Login from "./pages/auth/Login";
 import ContactPage from "./pages/ContactPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import FranchiseLoginPage from "./pages/FranchiseLoginPage";
+import MyApplicationsPage from "./pages/MyApplicationsPage";
 import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
 import EMICalculatorPage from "./pages/EMICalculatorPage";
 
@@ -193,6 +194,7 @@ function App() {
               <Route path="/be-a-franchisor" element={<Navigate to="/franchise" replace />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
+              <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
