@@ -51,6 +51,8 @@ export interface ApiUser {
   isVerified: boolean;
   role: string;
   isActive: boolean;
+  continent?: string;
+  country?: string;
   lastLogin: string;
   createdAt: string;
   updatedAt: string;
