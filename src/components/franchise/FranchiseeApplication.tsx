@@ -1,3 +1,5 @@
+import { useAuth } from "../../context/authContext";
+import { isFranchiseSignedIn, readFranchiseSession } from "../../utils/franchiseSession";
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import FranchiseForm from "./FranchiseForm";
@@ -17,7 +19,63 @@ interface FranchiseeApplicationProps {
 }
 
 /** Section 11 — the franchisee application form. */
-const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplicationProps) => (
+const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplicationProps) => {
+  const { isLoggedIn } = useAuth();
+  const session = isFranchiseSignedIn() ? readFranchiseSession() : null;
+  const status = (session?.franchiseStatus ?? "").trim().toLowerCase();
+  const approved = status === "active" || session?.isVerified === true;
+
+  if (approved && isLoggedIn) {
+    return (
+      <SectionShell
+        id="franchisee-application"
+        eyebrow="Franchisee Application"
+        title="Application Received"
+        subtitle="Your franchise application is already in progress. If your agreement is active, you can submit customer leads from the dashboard."
+        tone="tint"
+      >
+        <div
+          className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 md:p-9"
+          style={{ boxShadow: "0 6px 22px rgba(38,174,144,0.08)" }}
+        >
+          <div className="flex items-start gap-4">
+            <span
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white"
+              style={{ background: "linear-gradient(135deg,#26ae90,var(--brand-teal))" }}
+            >
+              <FranchiseIcon name="check" filled className="h-6 w-6" />
+            </span>
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-800">You already applied as a franchisee</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-slate-600">
+                This page is hidden because your franchise application has already been submitted. If your
+                franchise agreement is active, sign in to the franchisor dashboard to submit leads and view
+                payouts.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <a
+                  href={`mailto:${FRANCHISE_EMAIL}`}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+                  style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+                >
+                  <FranchiseIcon name="mail" className="h-4 w-4" />
+                  Contact the franchise team
+                </a>
+                <a
+                  href="/franchise-login"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Back to login
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionShell>
+    );
+  }
+
+  return (
   <SectionShell
     id="franchisee-application"
     eyebrow="Franchisee Application"
@@ -78,6 +136,7 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
       </div>
     </div>
   </SectionShell>
-);
+  );
+};
 
 export default FranchiseeApplication;
