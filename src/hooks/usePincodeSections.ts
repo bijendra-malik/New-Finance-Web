@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const PINCODE_CITY_MISMATCH = "Selected city does not match the verified pincode";
 
@@ -33,11 +33,16 @@ export const usePincodeSections = ({ set, loadCities, sections }: UsePincodeSect
   const [verified, setVerified] = useState<Partial<Record<PincodeSectionName, VerifiedPincode>>>({});
 
   const sectionsRef = useRef(sections);
-  sectionsRef.current = sections;
   const setRef = useRef(set);
-  setRef.current = set;
   const loadRef = useRef(loadCities);
-  loadRef.current = loadCities;
+
+  // Keep the latest props in refs after each render — writing them during render
+  // is not allowed by the react-hooks rules.
+  useEffect(() => {
+    sectionsRef.current = sections;
+    setRef.current = set;
+    loadRef.current = loadCities;
+  });
 
   const onPincodeResolved = useCallback<UsePincodeSectionsResult["onPincodeResolved"]>((prefix, r) => {
     const section = PINCODE_SECTIONS[prefix];
