@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import WebsiteLayout from "./components/layout/WebsiteLayout";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./context/authContext";
 import Home from "./pages/Home";
@@ -171,8 +172,9 @@ function App() {
     <Router>
       <AuthProvider>
         <WebsiteLayout>
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
+          <ErrorBoundary>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
               <Route path="/" element={<Home />} />
 
               <Route path="/login" element={<Login />} />
@@ -207,9 +209,10 @@ function App() {
                 />
               ))}
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </WebsiteLayout>
       </AuthProvider>
     </Router>
