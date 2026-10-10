@@ -2,25 +2,48 @@ import axiosInstance from "./axiosInstance";
 import { registerUser } from "./auth";
 import type { RegisterPayload, RegisterResponse, RegisteredAccount } from "./auth";
 
-// ── Types ────────────────────────────────────────────────────────────────────────
-
-/**
- * Franchise registration is the shared /auth/register call with the franchise
- * role, so the payload and response reuse the auth module's types instead of
- * restating the endpoint's contract here.
- */
 export type RegisterFranchisePayload = RegisterPayload & { role: "Franchise" };
 export type RegisterFranchiseResponse = RegisterResponse;
 
-/** The franchise account record returned by the franchise endpoints. */
-export interface FranchiseAccount extends RegisteredAccount {
-  /** The franchise status surfaced by the profile endpoint. */
-  franchiseStatus?: "Pending" | "Active" | "Suspended" | string;
+/**
+ * The franchise account record returned by the franchise endpoints.
+ *
+ * The backend profile call wraps the account under `user`, so the response shape
+ * stays explicit here instead of being inferred from the auth module's account type.
+ */
+export interface FranchiseAccount {
+  _id?: string;
+  name?: string;
+  mobile?: string;
+  email?: string;
+  isVerified?: boolean;
+  role?: string;
+  continent?: string;
+  country?: string;
+  isActive?: boolean;
+  lastLogin?: string;
+  franchiseStatus?: string;
+  panNumber?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
+  package?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  franchiseId?: string;
+  businessDetails?: {
+    businessName?: string;
+    businessType?: string;
+    gstNumber?: string;
+    address?: string;
+    yearsInBusiness?: string;
+  };
 }
 
 export interface FranchiseProfileResponse {
   success: boolean;
-  franchise?: FranchiseAccount;
+  message?: string;
+  user?: FranchiseAccount;
 }
 
 export interface ApplyFranchisePayload {
@@ -44,25 +67,24 @@ export interface ApplyFranchiseResponse {
 }
 
 export interface FranchiseLoginPayload {
-  /** The franchisee ID as issued by the backend, e.g. "FRN000003". */
   franchiseId: string;
-  /** Password as issued to the franchisee. */
   password: string;
 }
 
 export interface FranchiseLoginResponse {
   success: boolean;
   message: string;
-  /** Filled by the backend on success so the caller can distinguish auth failure from unknown-user. */
   franchiseId?: string;
   token?: string;
+  /** Agreement status when the backend reports it on a successful sign-in. */
+  franchiseStatus?: string;
+  /** Verification flag when the backend reports it on a successful sign-in. */
+  isVerified?: boolean;
 }
 
 // ── API calls ───────────────────────────────────────────────────────────────────
 
 /**
- * Register a new franchise user and (on the backend) send any required verification OTP.
- *
  * This is the shared POST /auth/register endpoint, called through auth.ts — the
  * franchise difference is the `role` field, not a second endpoint.
  */
