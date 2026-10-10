@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { THEME as C } from "../../constants/theme";
 import { ConsentBlock } from "../ui/ConsentBlock";
 
@@ -29,6 +30,6 @@ export const SubmittedFormBanner = ({ refNo, onViewReceipt }: { refNo: string; o
 );
 
 /** Consent + submit block shared by loan and franchise submission forms. */
-export const ConsentAndSubmit = ConsentBlock;
-
-export { default } from "../ui/ConsentBlock";
+export const ConsentAndSubmit = (props: ComponentProps<typeof ConsentBlock>) => (
+  <ConsentBlock {...props} />
+);
