@@ -1,6 +1,20 @@
 export const toISODate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+/** ISO timestamp → readable local date-time, e.g. "9 Oct 2026, 5:30 pm". Unparseable values pass through as-is. */
+export const formatTimestamp = (value?: string | null): string | undefined => {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
+
 export const formatPAN = (raw: string): string => {
   const chars = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
   let out = "";
