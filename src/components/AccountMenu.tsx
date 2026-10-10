@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
+import { fetchContinents, fetchCountriesByContinent, resolveCountryIso } from "../api/masters";
 import type { Continent, Country } from "../api/masters";
 import { useAuth } from "../context/authContext";
 import {
@@ -143,7 +143,7 @@ const AccountMenu = () => {
   const [profile, setProfile] = useState<AccountProfile | null>(readStoredProfile);
   const [language, setLanguage] = useState<string>(readStoredLanguage);
   const [panelOpen, setPanelOpen] = useState(false);
-  const { user: apiUser, login, logout } = useAuth();
+  const { user: apiUser, login, logout, refreshProfile } = useAuth();
 
   // Sign-up form state
   const [form, setForm] = useState({
@@ -437,7 +437,7 @@ const AccountMenu = () => {
         const apiProfile: AccountProfile = {
           name: res.user.name?.trim() || base?.name || "",
           role: roleFromApi,
-          country: base?.country ?? "",
+          country: base?.country || res.user.country || "",
           countryIso: base?.countryIso ?? "",
           phone: (res.user.mobile ?? base?.phone ?? "").trim(),
           email: (res.user.email ?? base?.email ?? "").trim(),
@@ -497,18 +497,69 @@ const AccountMenu = () => {
   };
 
   const apiRole = normalizeRole(apiUser?.role);
-  const account: AccountProfile | null =
-    profile ??
-    (apiUser
+  // The stored record is primary, but an API-only session (or a record made
+  // before region data existed) can miss the country the profile API already
+  // reports — fall back to it so the menu is never blank.
+  const apiCountry = apiUser?.country?.trim() || "";
+  const account: AccountProfile | null = profile
+    ? apiCountry && !profile.country
+      ? { ...profile, country: apiCountry }
+      : profile
+    : apiUser
       ? {
         name: apiUser.name?.trim() ?? "",
         role: apiRole ?? "Customer",
-        country: "",
+        country: apiCountry,
         countryIso: "",
         phone: apiUser.mobile ?? "",
         email: apiUser.email ?? "",
       }
-      : null);
+      : null;
+
+  // Once the profile API fills in a country the stored record lacks, persist it
+  // so every other consumer (application modal, loan forms) sees the same value.
+  // The menu itself renders the merged view derived above, so only storage needs
+  // updating here.
+  useEffect(() => {
+    if (!profile || profile.country || !apiCountry) return;
+    writeStoredProfile({ ...profile, country: apiCountry });
+  }, [profile, apiCountry]);
+
+  // A session stored before the backend reported region data has no country in
+  // either place — ask the profile API once for a fresh copy. The refresh
+  // updates `user`, which re-renders the merged view above.
+  useEffect(() => {
+    if (profile?.country || apiCountry) return;
+    refreshProfile().catch(() => {
+      // An expired token is cleared by the axios interceptor; nothing to do here.
+    });
+    // Runs once on mount; refreshProfile from context is intentionally not a dep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The backend keeps the country name but not the flag code, and only the
+  // sign-up form ever stores an ISO — resolve it from location masters so
+  // API-signed-in sessions get their flag too.
+  const [resolvedIso, setResolvedIso] = useState("");
+  const flagIso = account?.countryIso || resolvedIso;
+  useEffect(() => {
+    const name = account?.country ?? "";
+    if (!name || account?.countryIso) return;
+    let cancelled = false;
+    resolveCountryIso(name)
+      .then((iso) => {
+        if (!iso || cancelled) return;
+        setResolvedIso(iso);
+        const stored = readAccountRecord();
+        if (stored && !stored.countryIso) writeStoredProfile({ ...stored, countryIso: iso });
+      })
+      .catch(() => {
+        // Masters unreachable — the country name alone still shows.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [account?.country, account?.countryIso]);
 
   const displayRole = apiRole ?? account?.role ?? "";
 
@@ -524,8 +575,8 @@ const AccountMenu = () => {
           className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-2 py-1.5 transition-all duration-200 hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1 cursor-pointer"
         >
           <span className="flex items-center gap-1.5">
-            {account.countryIso && (
-              <span className={`fi fi-${account.countryIso} text-lg rounded-sm overflow-hidden block`} />
+            {flagIso && (
+              <span className={`fi fi-${flagIso} text-lg rounded-sm overflow-hidden block`} />
             )}
             <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">
               {account.country}
@@ -558,8 +609,8 @@ const AccountMenu = () => {
                 <div className="min-w-0">
                   <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Country</dt>
                   <dd className="flex items-center gap-1 truncate font-semibold text-slate-700">
-                    {account.countryIso && (
-                      <span className={`fi fi-${account.countryIso} text-sm rounded-sm overflow-hidden block`} />
+                    {flagIso && (
+                      <span className={`fi fi-${flagIso} text-sm rounded-sm overflow-hidden block`} />
                     )}
                     {account.country}
                   </dd>
