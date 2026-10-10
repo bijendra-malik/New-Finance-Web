@@ -65,8 +65,8 @@ const FranchiseNetworkGraphic = () => (
 
     {/* Payout badge */}
     <g>
-      <rect x="168" y="226" width="124" height="30" rx="15" fill="rgba(242,242,49,0.16)" stroke="rgba(242,242,49,0.55)" />
-      <text x="230" y="245" fontSize="11" fontWeight="800" textAnchor="middle" fill="#f2f231">
+      <rect x="153" y="230" width="155" height="30" rx="15" fill="rgba(242,242,49,0.16)" stroke="rgba(242,242,49,0.55)" />
+      <text x="230" y="249" fontSize="11" fontWeight="800" textAnchor="middle" fill="#f2f231">
         Revenue share on payout
       </text>
     </g>
