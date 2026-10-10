@@ -352,7 +352,11 @@ export const PincodeInputField = memo(({
   const latestRequest = useRef(0);
   const lastResolved = useRef("");
   const onResolvedRef = useRef(onResolved);
-  onResolvedRef.current = onResolved;
+
+  // Keep the latest callback in a ref without writing it during render.
+  useEffect(() => {
+    onResolvedRef.current = onResolved;
+  });
 
   useEffect(() => {
     const requestSeq = ++latestRequest.current;
@@ -361,11 +365,16 @@ export const PincodeInputField = memo(({
         lastResolved.current = "";
         onResolvedRef.current?.({ pincode: value, state: "", city: "" });
       }
-      setFeedback(null);
-      return;
+      // Drop stale feedback on the next tick so the effect body itself does not
+      // update state synchronously.
+      const clearTimer = setTimeout(() => {
+        if (latestRequest.current === requestSeq) setFeedback(null);
+      }, 0);
+      return () => clearTimeout(clearTimer);
     }
-    setFeedback({ status: "verifying" });
     const timer = setTimeout(() => {
+      if (latestRequest.current !== requestSeq) return;
+      setFeedback({ status: "verifying" });
       verifyPincode(value)
         .then((result: PincodeVerification) => {
           if (latestRequest.current !== requestSeq) return;
