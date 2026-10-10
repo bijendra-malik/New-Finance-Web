@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Container from "../common/Container";
 import AccountMenu from "../AccountMenu";
+import ApplicationsChip from "./ApplicationsChip";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 import { useAuth } from "../../context/authContext";
@@ -129,6 +130,7 @@ const Header = () => {
 
             {/* Account menu (all sizes) + Hamburger (small screens) — pinned right */}
             <div className="col-start-3 row-start-1 flex items-center gap-3 justify-self-end">
+                <ApplicationsChip />
                 <AccountMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
