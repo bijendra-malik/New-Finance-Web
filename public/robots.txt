@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Auth-gated areas — nothing here is useful to crawlers.
+Disallow: /dashboard/
+Disallow: /franchisor-dashboard
+
 Sitemap: https://indexiafinance.com/sitemap.xml
