@@ -33,7 +33,7 @@ const sections: DetailSection[] = [
           </p>
         </div>
         <div className="shrink-0 w-full lg:w-80">
-          <img src={commercialImg} alt="Commercial Purchase"
+          <img loading="lazy" decoding="async" src={commercialImg} alt="Commercial Purchase"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
       </div>

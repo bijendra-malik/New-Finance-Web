@@ -52,7 +52,7 @@ const sections: DetailSection[] = [
           </div>
         </div>
         <div className="shrink-0 w-full lg:w-80">
-          <img src={againstloanDetails} alt="Loan Against Property"
+          <img loading="lazy" decoding="async" src={againstloanDetails} alt="Loan Against Property"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
       </div>

@@ -48,7 +48,7 @@ const sections: DetailSection[] = [
           </p>
         </div>
         <div className="shrink-0 w-full lg:w-80">
-          <img src={ODCCImg} alt="OD CC Limit"
+          <img loading="lazy" decoding="async" src={ODCCImg} alt="OD CC Limit"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
       </div>
