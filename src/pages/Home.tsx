@@ -89,6 +89,9 @@ const Home = () => {
   return (
     <>
     <div aria-hidden style={{ height: "var(--header-h)" }} />
+    {/* The visual hero is a video, so the page keeps a real H1 for crawlers and
+        screen readers without changing the design. */}
+    <h1 className="sr-only">Indexia Finance — Personal, Business &amp; Home Loans Online</h1>
     {/* HERO BANNER */}
     <div
       className="hero-viewport relative w-full overflow-hidden bg-slate-950"

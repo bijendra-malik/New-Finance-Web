@@ -23,6 +23,8 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-blue-50">
+      {/* The visible content is the sign-in modal, so the page keeps a real H1. */}
+      <h1 className="sr-only">Log in to your Indexia Finance account</h1>
       {/* Modal is always open on this page; closing navigates back home */}
       <ApplicationModal
         isOpen={true}
