@@ -39,13 +39,11 @@ export interface FranchiseAccount {
     yearsInBusiness?: string;
   };
 }
-
 export interface FranchiseProfileResponse {
   success: boolean;
   message?: string;
   user?: FranchiseAccount;
 }
-
 export interface ApplyFranchisePayload {
   panNumber: string;
   state: string;
@@ -58,19 +56,16 @@ export interface ApplyFranchisePayload {
   address: string;
   yearsInBusiness: string;
 }
-
 export interface ApplyFranchiseResponse {
   success: boolean;
   message: string;
   franchiseStatus: string;
   franchise?: RegisteredAccount;
 }
-
 export interface FranchiseLoginPayload {
   franchiseId: string;
   password: string;
 }
-
 export interface FranchiseLoginResponse {
   success: boolean;
   message: string;
@@ -84,18 +79,12 @@ export interface FranchiseLoginResponse {
 
 // ── API calls ───────────────────────────────────────────────────────────────────
 
-/**
- * This is the shared POST /auth/register endpoint, called through auth.ts — the
- * franchise difference is the `role` field, not a second endpoint.
- */
+/** This is the shared POST /auth/register endpoint, called through auth.ts — the franchise difference is the `role` field, not a second endpoint. */
 export const registerFranchise = async (
   payload: RegisterFranchisePayload,
 ): Promise<RegisterFranchiseResponse> => registerUser(payload);
 
-/**
- * Fetch the authenticated franchise profile (requires a bearer token in the request).
- * GET /auth/franchise/profile
- */
+/** Fetch the authenticated franchise profile (requires the user token in the request). GET /auth/franchise/profile */
 export const fetchFranchiseProfile = async (): Promise<FranchiseProfileResponse> => {
   const response = await axiosInstance.get<FranchiseProfileResponse>(
     "/auth/franchise/profile",
@@ -103,10 +92,7 @@ export const fetchFranchiseProfile = async (): Promise<FranchiseProfileResponse>
   return response.data;
 };
 
-/**
- * Submit a franchise application.
- * POST /franchise/apply
- */
+/** Submit a franchise application. POST /franchise/apply */
 export const applyFranchise = async (
   payload: ApplyFranchisePayload,
 ): Promise<ApplyFranchiseResponse> => {
