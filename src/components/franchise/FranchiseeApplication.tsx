@@ -1,6 +1,9 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
-import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
-import { isFranchiseSignedIn, readFranchiseSession } from "../../utils/franchiseSession";
+import { useFranchiseStatus } from "../../hooks/useFranchiseStatus";
+import { readFranchiseSession } from "../../utils/franchiseSession";
+import { requestSignUp } from "../../utils/signInGate";
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import FranchiseForm from "./FranchiseForm";
@@ -21,79 +24,48 @@ interface FranchiseeApplicationProps {
 
 /** Section 11 — the franchisee application form. */
 const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplicationProps) => {
-  const { isLoggedIn } = useAuth();
-  // Franchisor login is disabled (greyed out) for signed-out visitors.
-  const franchisorLoginEnabled = useFranchisorLoginAccess();
-  const session = isFranchiseSignedIn() ? readFranchiseSession() : null;
-  const status = (session?.franchiseStatus ?? "").trim().toLowerCase();
-  const approved = status === "active" || session?.isVerified === true;
-
-  if (approved && isLoggedIn) {
-    return (
-      <SectionShell
-        id="franchisee-application"
-        eyebrow="Franchisee Application"
-        title="Application Received"
-        subtitle="Your franchise application is already in progress. If your agreement is active, you can submit customer leads from the dashboard."
-        tone="tint"
-      >
-        <div
-          className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 md:p-9"
-          style={{ boxShadow: "0 6px 22px rgba(38,174,144,0.08)" }}
-        >
-          <div className="flex items-start gap-4">
-            <span
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white"
-              style={{ background: "linear-gradient(135deg,#26ae90,var(--brand-teal))" }}
-            >
-              <FranchiseIcon name="check" filled className="h-6 w-6" />
-            </span>
-            <div>
-              <h3 className="text-lg font-extrabold text-slate-800">You already applied as a franchisee</h3>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-slate-600">
-                This page is hidden because your franchise application has already been submitted. If your
-                franchise agreement is active, sign in to the franchisor dashboard to submit leads and view
-                payouts.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <a
-                  href={`mailto:${FRANCHISE_EMAIL}`}
-                  className="inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-                  style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
-                >
-                  <FranchiseIcon name="mail" className="h-4 w-4" />
-                  Contact the franchise team
-                </a>
-                {franchisorLoginEnabled ? (
-                <a
-                  href="/franchise-login"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Back to login
-                </a>
-                ) : (
-                <span
-                  aria-disabled="true"
-                  title="Sign in to access the franchisor portal"
-                  className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-400"
-                >
-                  Back to login
-                </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </SectionShell>
-    );
-  }
+  const { user, isLoggedIn } = useAuth();
+  const session = readFranchiseSession();
+  const [submittedStatus, setSubmittedStatus] = useState<string | null>(null);
+  const franchiseStatus = useFranchiseStatus(isLoggedIn || Boolean(session));
+  const status = (submittedStatus ?? (franchiseStatus.reported ? franchiseStatus.status : null) ?? user?.franchiseStatus ?? session?.franchiseStatus ?? "")
+    .trim()
+    .toLowerCase();
+  const normalizedStatus = status === "none" ? "" : status;
+  const statusMessage = (() => {
+    if (franchiseStatus.loading) {
+      return { title: "Checking application status", message: "Please wait while we check your franchise application.", tone: "blue" as const };
+    }
+    switch (normalizedStatus) {
+      case "pending":
+        return { title: "Application Received", message: "Your franchise application has been received and is awaiting review by our team.", tone: "blue" as const };
+      case "approved":
+      case "active":
+        return { title: "Application Approved", message: "Your application is approved. Kindly go to Franchisor Login to access your dashboard.", tone: "green" as const };
+      case "rejected":
+        return { title: "Application Not Approved", message: "Your franchise application was not approved. Contact the franchise team if you would like to discuss your application.", tone: "red" as const };
+      case "unapproved":
+      case "unverified":
+        return { title: "Application Under Review", message: "Your franchise account is not approved or verified yet. Please contact the franchise team for an update.", tone: "amber" as const };
+      default:
+        return normalizedStatus
+          ? { title: "Application Status", message: "Your franchise application is being reviewed. Contact the franchise team for more information.", tone: "blue" as const }
+          : null;
+    }
+  })();
+  const statusColors = {
+    blue: "border-blue-200 bg-blue-50 text-blue-800",
+    green: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    red: "border-red-200 bg-red-50 text-red-800",
+    amber: "border-amber-200 bg-amber-50 text-amber-800",
+  };
 
   return (
   <SectionShell
     id="franchisee-application"
     eyebrow="Franchisee Application"
-    title="Become an Indexia Franchisee"
-    subtitle="Register or sign in first, then share your business details exactly as they appear on your PAN card and pick the package duration that suits you."
+    title={statusMessage?.title ?? "Become an Indexia Franchisee"}
+    subtitle={statusMessage?.message ?? "Register or sign in first, then share your business details exactly as they appear on your PAN card and pick the package duration that suits you."}
     tone="tint"
   >
     <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:items-start">
@@ -127,11 +99,51 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
         </RecipientContact>
       </aside>
 
-      {/* Form */}
+      {/* Application form or current application status */}
       <div
         className="rounded-3xl bg-white p-6 md:p-8"
         style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 6px 26px rgba(6,106,156,0.1)" }}
       >
+        {statusMessage ? (
+          <div className={`rounded-2xl border p-6 ${statusColors[statusMessage.tone]}`}>
+            <div className="flex items-start gap-3">
+              <FranchiseIcon name={statusMessage.tone === "green" ? "check" : statusMessage.tone === "red" ? "support" : "clock"} filled className="mt-0.5 h-6 w-6 shrink-0" />
+              <div>
+                <h3 className="text-base font-extrabold">{statusMessage.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed">{statusMessage.message}</p>
+                {normalizedStatus === "approved" || normalizedStatus === "active" ? (
+                  <Link
+                    to="/franchise-login"
+                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+                  >
+                    Go to Franchisor Login
+                  </Link>
+                ) : normalizedStatus === "rejected" || normalizedStatus === "unapproved" || normalizedStatus === "unverified" ? (
+                  <a
+                    href={`mailto:${FRANCHISE_EMAIL}`}
+                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+                  >
+                    Contact the franchise team
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : (
+        <>
+        {!isLoggedIn && (
+          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
+            <p className="text-sm font-semibold">Register or log in to apply for a franchise.</p>
+            <p className="mt-1 text-xs leading-relaxed text-blue-800">Sign in first, then complete your Franchisee Application below.</p>
+            <button
+              type="button"
+              onClick={() => requestSignUp()}
+              className="mt-3 inline-flex items-center rounded-lg bg-(--brand-navy) px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
+            >
+              Register / Log In
+            </button>
+          </div>
+        )}
         <div className="mb-6 flex items-center gap-3">
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
@@ -145,7 +157,16 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
           </div>
         </div>
 
-        <FranchiseForm variant="franchisee" packageId={packageId ?? undefined} onPackageChange={onPackageChange} />
+        {isLoggedIn && (
+          <FranchiseForm
+            variant="franchisee"
+            packageId={packageId ?? undefined}
+            onPackageChange={onPackageChange}
+            onApplicationStatus={setSubmittedStatus}
+          />
+        )}
+        </>
+        )}
       </div>
     </div>
   </SectionShell>
