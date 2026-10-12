@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
 import Button from "../components/ui/Button";
@@ -9,18 +9,20 @@ import type { FranchiseAccount } from "../api/franchise";
 import {
   saveFranchiseSession,
   readFranchiseSession,
-  readFranchiseToken,
+  isFranchiseSignedIn,
   mergeFranchiseProfile,
 } from "../utils/franchiseSession";
 import { formatTimestamp } from "../utils/formatters";
 import { getApiErrorMessage } from "../utils/apiError";
 import useSEO from "../hooks/useSEO";
+import { useAuth } from "../context/authContext";
+import useFranchiseStatus from "../hooks/useFranchiseStatus";
 
 const FRANCHISE_ONBOARD_DISMISSED_KEY = "indexia_franchise_onboarding_dismissed";
 
 /** Profile + onboarding banner shown after login; dismissal persists forever. */
 
-type Notice = { tone: "info" | "warn"; title: string; body: string } | null;
+type Notice = { tone: "info" | "warn" | "error"; title: string; body: string } | null;
 
 const PORTAL_POINTS = [
   "Check your franchise agreement status at a glance",
@@ -37,6 +39,83 @@ const DEFAULT_NOTICE: Notice = {
     "Write to the franchise team if you need access.",
 };
 
+/** Any live session the franchise profile endpoint can authenticate: the
+ *  franchisor login, or the header (customer) login — the axios interceptor
+ *  attaches whichever bearer token the franchise endpoints accept. */
+const hasProfileSession = (): boolean =>
+  isFranchiseSignedIn() || localStorage.getItem("token") !== null;
+
+type ProfileProblem = { tone: "error" | "info"; text: string };
+
+/** A header-login account with no franchise record attached — not an error. */
+const NO_FRANCHISE_PROFILE: ProfileProblem = {
+  tone: "info",
+  text: "No franchisor profile is linked to this account yet. Apply for a franchise and the team will connect it here.",
+};
+
+const hasReportedFranchiseStatus = (value?: string): boolean =>
+  Boolean(value?.trim() && value.trim().toLowerCase() !== "none");
+
+/** Tone + explanation for the API's `franchiseStatus` on the profile card. */
+const statusInfo = (raw?: string) => {
+  const reported = (raw ?? "").trim();
+  switch (reported.toLowerCase()) {
+    case "approved":
+      return {
+        label: "Approved",
+        message:
+          "Your franchise application is approved. The franchise team will issue your portal credentials and agreement details.",
+        bg: "rgba(38,174,144,0.12)",
+        border: "rgba(38,174,144,0.4)",
+        text: "#0f766e",
+      };
+    case "rejected":
+      return {
+        label: "Rejected",
+        message:
+          "Your franchise application was not approved. Write to the franchise team if you would like it reviewed again.",
+        bg: "#fef2f2",
+        border: "rgba(239,68,68,0.35)",
+        text: "#b91c1c",
+      };
+    case "pending":
+      return {
+        label: "Pending",
+        message:
+          "Your application is with the franchise team for review. Portal access opens once the agreement is confirmed.",
+        bg: "#eff6ff",
+        border: "rgba(59,130,246,0.4)",
+        text: "#1d4ed8",
+      };
+    case "active":
+      return {
+        label: "Active",
+        message: "Your franchise agreement is active — sign in below to open your dashboard.",
+        bg: "rgba(38,174,144,0.12)",
+        border: "rgba(38,174,144,0.4)",
+        text: "#0f766e",
+      };
+    case "suspended":
+      return {
+        label: "Suspended",
+        message: "This franchise account is suspended. Contact the franchise team before signing in further.",
+        bg: "#fef2f2",
+        border: "rgba(239,68,68,0.35)",
+        text: "#b91c1c",
+      };
+    default:
+      return {
+        label: reported || "Not reported",
+        message: reported
+          ? "This is the status reported on your franchise profile. Contact the franchise desk if it looks out of date."
+          : "The backend has not reported a franchise status for this account yet.",
+        bg: "var(--brand-navy-14)",
+        border: "var(--brand-navy-22)",
+        text: "var(--brand-navy)",
+      };
+  }
+};
+
 const FranchiseLoginPage = () => {
   useSEO({
     title: "Franchisor Login",
@@ -46,6 +125,10 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
+  // The header (customer) login also unlocks this page's profile — see hasProfileSession.
+  const { isLoggedIn } = useAuth();
+  // GET /franchise/status controls whether the portal login can be opened.
+  const liveFranchiseStatus = useFranchiseStatus(isLoggedIn || isFranchiseSignedIn());
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -53,9 +136,9 @@ const FranchiseLoginPage = () => {
   const [notice, setNotice] = useState<Notice>(DEFAULT_NOTICE);
   const [submitting, setSubmitting] = useState(false);
   const [profile, setProfile] = useState<FranchiseAccount | null>(null);
-  const [profileError, setProfileError] = useState<string | null>(null);
-  // A session token means a profile request is on its way, so start in the loading state.
-  const [profileLoading, setProfileLoading] = useState(() => readFranchiseToken() !== null);
+  const [profileError, setProfileError] = useState<ProfileProblem | null>(null);
+  // A live session means a profile request is on its way, so start in the loading state.
+  const [profileLoading, setProfileLoading] = useState(() => hasProfileSession());
   // Computed once on mount from the persisted session — not reactive state.
   const [onboarding, setOnboarding] = useState<{
     title: string;
@@ -83,22 +166,32 @@ const FranchiseLoginPage = () => {
   });
 
   useEffect(() => {
-    // The bearer token lives under its own storage key, so read it directly —
-    // the session record never carries a token of its own.
-    const token = readFranchiseToken();
-    if (!token) return;
+    // \"Your Franchisor Profile\" belongs to a live session only — the franchisor
+    // login or the header (customer) login. Signed-out visitors never trigger it.
+    if (!hasProfileSession()) return;
     let active = true;
 
     fetchFranchiseProfile()
       .then((response) => {
         if (!active) return;
+        // The session can end while the request is in flight (the axios 401
+        // interceptor clears it) — never surface profile data signed out.
+        if (!hasProfileSession()) return;
         if (response.success && response.user) {
           setProfile(response.user);
+          // Persists only for a franchise session; a header-login account has no
+          // franchise record to merge into, so this is a no-op there.
           mergeFranchiseProfile(response.user);
         } else {
           setProfileError(
-            response.message ||
-              "Could not load your franchisor profile details.",
+            isFranchiseSignedIn()
+              ? {
+                  tone: "error",
+                  text:
+                    response.message ||
+                    "Could not load your franchisor profile details.",
+                }
+              : NO_FRANCHISE_PROFILE,
           );
         }
       })
@@ -107,8 +200,16 @@ const FranchiseLoginPage = () => {
         const rejected = (error as { response?: unknown })?.response !== undefined;
         setProfileError(
           rejected
-            ? "Your franchise session is no longer valid. Sign in again to load your profile."
-            : "Could not reach the franchise service. Check your connection and try again.",
+            ? isFranchiseSignedIn()
+              ? {
+                  tone: "error",
+                  text: "Your franchise session is no longer valid. Sign in again to load your profile.",
+                }
+              : NO_FRANCHISE_PROFILE
+            : {
+                tone: "error",
+                text: "Could not reach the franchise service. Check your connection and try again.",
+              },
         );
       })
       .finally(() => {
@@ -118,7 +219,32 @@ const FranchiseLoginPage = () => {
     return () => {
       active = false;
     };
-  }, []);
+    // Refetch when the header session appears or ends; the franchise session is
+    // static storage, so mount coverage is enough for it.
+  }, [isLoggedIn]);
+
+  // A header sign-in that ends while this page is open: drop the profile and
+  // send the visitor back to the sign-in form with a message.
+  const wasLoggedIn = useRef(isLoggedIn);
+  useEffect(() => {
+    if (isLoggedIn) {
+      wasLoggedIn.current = true;
+      return;
+    }
+    if (!wasLoggedIn.current) return;
+    wasLoggedIn.current = false;
+    setProfile(null);
+    setProfileError(null);
+    setProfileLoading(false);
+    setNotice({
+      tone: "info",
+      title: "You have been signed out",
+      body: "Sign in again with your franchisee ID and password to view your franchisor profile and status.",
+    });
+    const idField = document.getElementById("franchisor-id");
+    idField?.scrollIntoView({ behavior: "smooth", block: "center" });
+    idField?.focus();
+  }, [isLoggedIn]);
 
   const handleSubmit = async (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
@@ -186,6 +312,132 @@ const FranchiseLoginPage = () => {
     }
   };
 
+  const franchiseSession = readFranchiseSession();
+  const franchiseStatus = (
+    liveFranchiseStatus.reported
+      ? liveFranchiseStatus.status
+      : profile?.franchiseStatus ?? franchiseSession?.franchiseStatus ?? ""
+  ).trim().toLowerCase();
+
+  // Locked screens — no login form.
+  if (!isLoggedIn && !isFranchiseSignedIn()) {
+    return (
+      <>
+        <PageBanner
+          breadcrumb="Franchisor Login"
+          title="Franchisor"
+          highlight="Login"
+          tagline="Partner portal access for Indexia Finance franchisees"
+        />
+        <div className="bg-white">
+          <div className="mx-auto max-w-3xl px-6 py-14 md:px-8">
+            <div
+              className="rounded-2xl p-7 text-center"
+              style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 16px rgba(6,106,156,0.08)" }}
+            >
+              <span
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl text-white"
+                style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+              >
+                <FranchiseIcon name="lock" filled className="h-6 w-6" />
+              </span>
+              <h1 className="mt-4 text-xl font-bold text-slate-800">Sign in first</h1>
+              <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
+                The franchisor portal is only available to signed-in franchise partners. If you already have an
+                account, sign in from the login menu first. If you are not a franchisee yet, apply using the link
+                below.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
+                  style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
+                >
+                  <FranchiseIcon name="user" className="h-4 w-4" />
+                  Go to login
+                </Link>
+                <Link
+                  to="/franchise"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-600 transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
+                >
+                  Apply for a franchise
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (liveFranchiseStatus.loading || profileLoading) {
+    return (
+      <>
+        <PageBanner breadcrumb="Franchisor Login" title="Franchisor" highlight="Login" tagline="Partner portal access for Indexia Finance franchisees" />
+        <div className="mx-auto flex min-h-64 max-w-3xl items-center justify-center gap-3 px-6 py-16 text-sm font-semibold text-slate-600">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-(--brand-teal) border-t-transparent" aria-hidden="true" />
+          Checking your franchise status…
+        </div>
+      </>
+    );
+  }
+
+  const statusIsNone = franchiseStatus === "none" || (liveFranchiseStatus.reported && franchiseStatus === "");
+  if (statusIsNone || franchiseStatus === "pending") {
+    const pending = franchiseStatus === "pending";
+    return (
+      <>
+        <PageBanner
+          breadcrumb="Franchisor Login"
+          title="Franchisor"
+          highlight="Login"
+          tagline="Partner portal access for Indexia Finance franchisees"
+        />
+        <div className="bg-white">
+          <div className="mx-auto max-w-3xl px-6 py-14 md:px-8">
+            <div
+              className="rounded-2xl p-7 text-center"
+              style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 16px rgba(6,106,156,0.08)" }}
+            >
+              <span
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl text-white"
+                style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+              >
+                <FranchiseIcon name="lock" filled className="h-6 w-6" />
+              </span>
+              <h1 className="mt-4 text-xl font-bold text-slate-800">Franchisor login is locked</h1>
+              <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
+                {pending
+                  ? "Your franchise application has been received and is pending review. Login will become available once your status changes."
+                  : "No franchise application is on file yet. Submit the Franchisee Application before accessing the franchisor login."}
+              </p>
+              <p className="mx-auto mt-3 max-w-lg text-[12.5px] leading-relaxed text-slate-500">
+                If you believe this is a mistake, contact the franchise desk with your franchisee ID or registered
+                email so they can check your account.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisor portal login details")}`}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
+                  style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
+                >
+                  <FranchiseIcon name="mail" className="h-4 w-4" />
+                  {pending ? "Contact the franchise team" : "Email the franchise team"}
+                </a>
+                <Link
+                  to="/franchise"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-600 transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
+                >
+                  Back to franchise opportunity
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <PageBanner
@@ -208,15 +460,35 @@ const FranchiseLoginPage = () => {
 
               {profileError && (
                 <div
-                  className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5"
-                  style={{ boxShadow: "0 2px 10px rgba(220,38,38,0.06)" }}
+                  className="mb-6 rounded-2xl p-5"
+                  style={
+                    profileError.tone === "info"
+                      ? { border: "1px solid var(--brand-navy-22)", background: "var(--brand-navy-14)" }
+                      : { border: "1px solid #fecaca", background: "#fef2f2", boxShadow: "0 2px 10px rgba(220,38,38,0.06)" }
+                  }
                 >
-                  <p className="mb-2 text-sm font-bold text-red-700">Could not load your profile</p>
-                  <p className="text-xs text-red-600">{profileError}</p>
+                  <p
+                    className={`mb-2 text-sm font-bold ${
+                      profileError.tone === "info" ? "text-(--brand-navy)" : "text-red-700"
+                    }`}
+                  >
+                    {profileError.tone === "info"
+                      ? "No franchisor profile on this account"
+                      : "Could not load your profile"}
+                  </p>
+                  <p
+                    className={`text-xs ${
+                      profileError.tone === "info" ? "text-slate-600" : "text-red-600"
+                    }`}
+                  >
+                    {profileError.text}
+                  </p>
                 </div>
               )}
 
-              {profile && (
+              {/* Signed-out guard: the card is dropped the moment the session ends,
+                  even if this page still holds the fetched profile in memory. */}
+              {profile && hasProfileSession() && (
                 <div
                   className="mb-6 rounded-2xl border border-slate-200 bg-white p-5"
                   style={{ boxShadow: "0 2px 10px rgba(6,106,156,0.06)" }}
@@ -244,12 +516,16 @@ const FranchiseLoginPage = () => {
                             {profile.franchiseId}
                           </span>
                         )}
-                        {profile.franchiseStatus && (
+                        {hasReportedFranchiseStatus(profile.franchiseStatus) && (
                           <span
                             className="rounded-full px-2 py-0.5 text-[10.5px] font-bold"
-                            style={{ background: "#e6f7ee", border: "1px solid #b6e4c9", color: "#0b7a3f" }}
+                            style={{
+                              background: statusInfo(profile.franchiseStatus).bg,
+                              border: `1px solid ${statusInfo(profile.franchiseStatus).border}`,
+                              color: statusInfo(profile.franchiseStatus).text,
+                            }}
                           >
-                            {profile.franchiseStatus}
+                            {statusInfo(profile.franchiseStatus).label}
                           </span>
                         )}
                         {profile.isVerified && (
@@ -267,6 +543,22 @@ const FranchiseLoginPage = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* API status — approved / rejected / pending, in the API's own words */}
+                  {hasReportedFranchiseStatus(profile.franchiseStatus) && (
+                    <div
+                      role="status"
+                      className="mt-4 rounded-xl border px-3.5 py-3"
+                      style={{ background: statusInfo(profile.franchiseStatus).bg, borderColor: statusInfo(profile.franchiseStatus).border }}
+                    >
+                      <p className="text-[12.5px] font-bold" style={{ color: statusInfo(profile.franchiseStatus).text }}>
+                        {statusInfo(profile.franchiseStatus).label}
+                      </p>
+                      <p className="mt-0.5 text-[12px] leading-relaxed text-slate-600">
+                        {statusInfo(profile.franchiseStatus).message}
+                      </p>
+                    </div>
+                  )}
 
                   <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {[
@@ -437,20 +729,24 @@ const FranchiseLoginPage = () => {
                     role="status"
                     className="mt-6 rounded-xl border px-4 py-3.5"
                     style={
-                      notice.tone === "warn"
-                        ? { background: "#fff8e6", borderColor: "rgba(224,168,0,0.45)" }
-                        : { background: "var(--brand-navy-14)", borderColor: "var(--brand-navy-44)" }
+                      notice.tone === "error"
+                        ? { background: "#fef2f2", borderColor: "#fecaca" }
+                        : notice.tone === "warn"
+                          ? { background: "#fff8e6", borderColor: "rgba(224,168,0,0.45)" }
+                          : { background: "var(--brand-navy-14)", borderColor: "var(--brand-navy-44)" }
                     }
                   >
                     <p className="text-[12.5px] font-bold text-slate-700">{notice.title}</p>
                     <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{notice.body}</p>
-                    <a
-                      href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisor portal access request")}`}
-                      className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
-                    >
-                      <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
-                      {FRANCHISE_EMAIL}
-                    </a>
+                    {notice.tone !== "info" && (
+                      <a
+                        href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisor portal access request")}`}
+                        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
+                      >
+                        <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
+                        {FRANCHISE_EMAIL}
+                      </a>
+                    )}
                   </div>
                 )}
 
