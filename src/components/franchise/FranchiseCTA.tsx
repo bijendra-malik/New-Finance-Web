@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import FranchiseIcon from "./FranchiseIcon";
+import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 
 interface FranchiseCTAProps {
   /** Opens the franchisor-arrangement enquiry modal. */
@@ -11,7 +12,10 @@ interface FranchiseCTAProps {
  * enquiry. It carries no figures and no disclaimer of its own, since the plans
  * and payout sections above already state them.
  */
-const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => (
+const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
+  // Franchisor login is disabled (greyed out) for signed-out visitors.
+  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  return (
   <section
     id="become-a-franchisor"
     className="franchise-anchor relative w-full overflow-hidden px-6 py-10 md:px-8 md:py-14"
@@ -60,15 +64,26 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => (
       {/* The return path for partners who already hold an agreement. */}
       <p className="mx-auto mt-8 text-[12.5px] text-white/60">
         Already a franchise partner?{" "}
-        <Link
-          to="/franchise-login"
-          className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
-        >
-          Franchisor Login →
-        </Link>
+        {franchisorLoginEnabled ? (
+          <Link
+            to="/franchise-login"
+            className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
+          >
+            Franchisor Login →
+          </Link>
+        ) : (
+          <span
+            aria-disabled="true"
+            title="Sign in to access the franchisor portal"
+            className="cursor-not-allowed font-bold text-white/45"
+          >
+            Franchisor Login — sign in first
+          </span>
+        )}
       </p>
     </div>
   </section>
-);
+  );
+};
 
 export default FranchiseCTA;
