@@ -14,10 +14,10 @@ const Login = () => {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/dashboard/personalloan", { replace: true });
+      // No default loan route after sign-up.
+      // navigate("/dashboard/personalloan", { replace: true });
     }
   }, [isLoggedIn, navigate]);
 
@@ -29,7 +29,7 @@ const Login = () => {
       <ApplicationModal
         isOpen={true}
         onClose={() => navigate("/")}
-        productName="Personal Loan"
+        productName="Log in"
       />
     </div>
   );

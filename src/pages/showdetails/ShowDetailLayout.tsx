@@ -208,6 +208,12 @@ const ShowDetailLayout = ({
           box-shadow: 0 8px 28px rgba(27,108,168,0.5);
         }
         .sdl-apply-inner:active { transform: scale(0.96); }
+        .sdl-apply-wrap.apply-blocked .sdl-apply-inner,
+        .sdl-apply-wrap.apply-blocked .sdl-apply-inner:hover {
+          transform: none;
+          box-shadow: 0 4px 18px rgba(46,139,87,0.4);
+          cursor: default;
+        }
       `}</style>
 
       {/* CONTENT */}

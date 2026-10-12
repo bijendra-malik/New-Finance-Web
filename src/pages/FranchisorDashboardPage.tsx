@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
-import PartnerWorkspace from "../components/franchise/dashboard/PartnerWorkspace";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
 import { fetchFranchiseProfile } from "../api/franchise";
 import type { FranchiseProfileResponse } from "../api/franchise";
@@ -87,8 +86,6 @@ const FranchisorDashboardPage = () => {
 
   const navigate = useNavigate();
   const [session, setSession] = useState<FranchiseSession | null>(() => readFranchiseSession());
-  // Read once: a session without a token is treated as signed out rather than
-  // rendered as a broken dashboard.
   const [hasToken, setHasToken] = useState(() => Boolean(readFranchiseToken()));
   const [profile, setProfile] = useState<FranchiseProfileResponse["user"] | null>(null);
   const [loading, setLoading] = useState(() => Boolean(readFranchiseSession()));
@@ -98,14 +95,11 @@ const FranchisorDashboardPage = () => {
     | { ok: true; account: NonNullable<FranchiseProfileResponse["user"]> }
     | { ok: false; message: string };
 
-  /** Applies an already-settled profile result. Safe to call from async work. */
   const applyProfileResult = useCallback((result: ProfileResult) => {
     if (!result.ok) {
       setProfile(null);
       setError(result.message);
 
-      // the token, so mirror that here: a dead session must not keep rendering a
-      // dashboard it can no longer back with data.
       if (!readFranchiseSession()) {
         setSession(null);
         setHasToken(false);
@@ -129,7 +123,6 @@ const FranchisorDashboardPage = () => {
     );
   }, []);
 
-  /** Turns a settled response into the outcome the applier expects. */
   const readResult = (res: FranchiseProfileResponse): ProfileResult =>
     res.success && res.user
       ? { ok: true, account: res.user }
@@ -146,8 +139,6 @@ const FranchisorDashboardPage = () => {
 
   const sessionId = session?.franchiseId;
 
-  // Initial load. The request is awaited before anything is applied, so no state
-  // update happens synchronously while the effect body is running.
   useEffect(() => {
     if (!sessionId || !hasToken) return;
     let active = true;
@@ -158,8 +149,6 @@ const FranchisorDashboardPage = () => {
         applyProfileResult(readResult(res));
       } catch (error) {
         if (!active) return;
-        // A 4xx means the backend answered — the session or record is the problem,
-        // not the connection.
         const rejected = (error as { response?: unknown })?.response !== undefined;
         applyProfileResult({ ok: false, message: rejected ? EXPIRED : UNREACHABLE });
       } finally {
@@ -169,11 +158,9 @@ const FranchisorDashboardPage = () => {
     return () => {
       active = false;
     };
-    // Re-runs only when the signed-in franchisee changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, hasToken]);
 
-  /** Refresh triggered by the user, where an immediate spinner is expected. */
   const refresh = async () => {
     setLoading(true);
     try {
@@ -195,9 +182,6 @@ const FranchisorDashboardPage = () => {
     navigate("/franchise-login");
   };
 
-  // ── Signed out ─────────────────────────────────────────────────────────────
-  // A session without a token is treated as signed out: the dashboard would have
-  // nothing it could honestly read.
   if (!session || !hasToken) {
     return (
       <>
@@ -225,7 +209,6 @@ const FranchisorDashboardPage = () => {
                 structure. It is available to franchise partners with portal credentials issued with their agreement.
               </p>
 
-              {/* Why the visitor landed here — shown after a rejected or unreachable session. */}
               {error && (
                 <p
                   role="status"
@@ -257,7 +240,6 @@ const FranchisorDashboardPage = () => {
     );
   }
 
-  // ── Signed in ──────────────────────────────────────────────────────────────
   const status = statusTone(profile?.franchiseStatus ?? session.franchiseStatus);
   const name = profile?.name ?? session.name;
   const initials = (name ?? session.franchiseId)
@@ -370,14 +352,102 @@ const FranchisorDashboardPage = () => {
           )}
         </div>
 
-        {/* Partner workspace */}
-        <PartnerWorkspace
-          session={session}
-          profile={profile}
-          status={status}
-          loading={loading}
-          onRefresh={refresh}
-        />
+        {/* 4-panel dashboard */}
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
+          {/* Left panel navigation */}
+          <nav className="flex flex-col gap-2 lg:sticky lg:top-(--header-h) lg:self-start" aria-label="Dashboard sections">
+            {[
+              { id: "register-customer", label: "Register customer", icon: "user-plus" as const, desc: "Add a new client to your franchise" },
+              { id: "all-loans", label: "All loans", icon: "layers" as const, desc: "Every application under your franchise" },
+              { id: "check-status", label: "Check status", icon: "search" as const, desc: "Look up one loan's current status" },
+              { id: "apply-loan", label: "Apply loan", icon: "pen-line" as const, desc: "Submit a loan on a customer's behalf" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                style={{
+                  background: "rgba(255,255,255,0.55)",
+                  border: "1px solid rgba(6,106,156,0.12)",
+                  color: "var(--brand-navy)",
+                }}
+              >
+                <FranchiseIcon name={item.icon} className="h-4.5 w-4.5 shrink-0" />
+                <div>
+                  <p className="text-[13px] font-bold">{item.label}</p>
+                  <p className="text-[11.5px] text-slate-500">{item.desc}</p>
+                </div>
+              </button>
+            ))}
+            <div className="mt-4 rounded-xl p-4" style={{ background: "var(--brand-navy-14)" }}>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-(--brand-navy)">Partner share</p>
+              <p className="mt-1 text-2xl font-extrabold text-(--brand-navy)">80%</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-slate-500">
+                of every eligible payout, with 20% retained by Indexia.
+              </p>
+            </div>
+          </nav>
+
+          {/* Main panel content */}
+          <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-6">
+            <h2 className="text-lg font-extrabold text-slate-800">Dashboard</h2>
+            <p className="mt-1 text-[13px] text-slate-500">
+              Select a section from the left to register a customer, view loans, check status, or submit a new application.
+            </p>
+
+            {/* Placeholder panels — swap these for real sections when wired */}
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
+                    <FranchiseIcon name="user-plus" className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Register customer</p>
+                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
+                    <FranchiseIcon name="layers" className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">All loans</p>
+                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
+                    <FranchiseIcon name="search" className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Check status</p>
+                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
+                    <FranchiseIcon name="pen-line" className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-700">Apply loan</p>
+                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[11.5px] leading-relaxed text-slate-500">
+              These dashboard sections are placeholders. Wire each panel to the relevant franchise API when the endpoints are available.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
