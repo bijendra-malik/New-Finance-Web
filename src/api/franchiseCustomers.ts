@@ -231,7 +231,7 @@ export const fetchFranchiseStatus = async (): Promise<
     const body = res.data;
     let status = body?.franchiseStatus;
     if (body?.success && typeof status === "string" && status.trim()) {
-      if ( status.trim().toLowerCase() === "None" ) {
+      if (status.trim().toLowerCase() === "none") {
         status = "";
       }
       return { ok: true, status: status.trim() };
