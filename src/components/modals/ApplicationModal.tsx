@@ -34,6 +34,28 @@ const dashboardRoutes: Readonly<Record<string, string>> = {
   "FDI": "/dashboard/fdi",
 };
 
+// Homepage globe IDs do not always match the dashboard route slug.
+const productIdRoutes: Readonly<Record<string, string>> = {
+  personal: "/dashboard/personalloan",
+  business: "/dashboard/businessloan",
+  home: "/dashboard/homeloan",
+  lap: "/dashboard/loanagainstproperty",
+  balanceTransfer: "/dashboard/balancetransfer",
+  vehicleLoan: "/dashboard/carloan",
+  creditCard: "/dashboard/creditcard",
+  educationLoan: "/dashboard/educationloan",
+  projectLoan: "/dashboard/projectloan",
+  commercialPurchase: "/dashboard/commercialpurchase",
+  leaseRentalDiscounting: "/dashboard/leaserental",
+  workingCapital: "/dashboard/workingcapital",
+  filmFunding: "/dashboard/filmfunding",
+  odCcLimit: "/dashboard/odcclimit",
+  loanAgainstShare: "/dashboard/loanagainstshare",
+  goldLoan: "/dashboard/goldloan",
+  fdiLoan: "/dashboard/fdi",
+  npaLoan: "/dashboard/npa",
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ApplicationModalProps {
@@ -188,7 +210,7 @@ const ApplicationModal = ({
     setApiError("");
     try {
       await applyRegister({
-        product: resolvedId.split(/\s+/)[0] ?? "",
+        product: resolvedId,
         dob,
         panNumber: pan,
       });
@@ -206,6 +228,8 @@ const ApplicationModal = ({
     resetAll();
     onClose();
     const resolvedPath = (() => {
+      const byProductId = productIdRoutes[resolvedId];
+      if (byProductId) return byProductId;
       const exact = dashboardRoutes[resolvedId];
       if (exact) return exact;
       const byFirstWord = dashboardRoutes[resolvedId.split(/\s+/)[0]];
