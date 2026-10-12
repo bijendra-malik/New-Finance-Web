@@ -143,7 +143,7 @@ const AccountMenu = () => {
   const [profile, setProfile] = useState<AccountProfile | null>(readStoredProfile);
   const [language, setLanguage] = useState<string>(readStoredLanguage);
   const [panelOpen, setPanelOpen] = useState(false);
-  const { user: apiUser, login, logout, refreshProfile } = useAuth();
+  const { user: apiUser, login, logout, refreshProfile, isLoggedIn } = useAuth();
 
   // Sign-up form state
   const [form, setForm] = useState({
@@ -527,8 +527,10 @@ const AccountMenu = () => {
 
   // A session stored before the backend reported region data has no country in
   // either place — ask the profile API once for a fresh copy. The refresh
-  // updates `user`, which re-renders the merged view above.
+  // updates `user`, which re-renders the merged view above. Signed-out visitors
+  // never hit the profile API; there is no session for it to read.
   useEffect(() => {
+    if (!isLoggedIn) return;
     if (profile?.country || apiCountry) return;
     refreshProfile().catch(() => {
       // An expired token is cleared by the axios interceptor; nothing to do here.
