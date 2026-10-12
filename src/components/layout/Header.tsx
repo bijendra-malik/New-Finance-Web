@@ -6,6 +6,10 @@ import ApplicationsChip from "./ApplicationsChip";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 import { useAuth } from "../../context/authContext";
+import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
+import useFranchiseStatus from "../../hooks/useFranchiseStatus";
+import { useMyApplications } from "../../hooks/useMyApplications";
+import { isFranchiseSignedIn } from "../../utils/franchiseSession";
 
 const isRealSafari = /^((?!chrome|android|crios|fxios|edg|opr).)*safari/i.test(
   navigator.userAgent
@@ -59,8 +63,35 @@ const Header = () => {
   ];
 
   // Franchise entries live in a dropdown so the nav keeps its width at the lg band.
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
+  // Franchisor login is disabled (greyed out) for signed-out visitors.
+  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  // Live agreement status for a signed-in franchise partner (GET /franchise/status).
+  const franchiseStatus = useFranchiseStatus();
+  // Applications chip: only a signed-in user sees it, and only when they have
+  // applied to at least one loan product.
+  const { applications } = useMyApplications(isLoggedIn);
+  const showApplicationsChip = isLoggedIn && applications.length > 0;
+
   const isCustomer = Boolean(user?.role && user.role.toLowerCase() === "customer");
+
+  // Only a signed-in franchise partner may see the franchise status pill.
+  // A customer account must never see franchise status in the header.
+  const showFranchiseStatus = isLoggedIn && !isCustomer && isFranchiseSignedIn();
+  const franchiseStatusTone = (() => {
+    switch (franchiseStatus.status.trim().toLowerCase()) {
+      case "active":
+        return { bg: "rgba(38,174,144,0.14)", border: "rgba(38,174,144,0.45)", color: "#0f766e" };
+      case "approved":
+        return { bg: "rgba(38,174,144,0.2)", border: "#22bfb3", color: "#0f766e" };
+      case "pending":
+        return { bg: "rgba(224,168,0,0.14)", border: "rgba(224,168,0,0.45)", color: "#92620a" };
+      case "suspended":
+        return { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.35)", color: "#b91c1c" };
+      default:
+        return { bg: "rgba(15,23,42,0.06)", border: "rgba(15,23,42,0.15)", color: "#334155" };
+    }
+  })();
 
 
   const { pathname } = useLocation();
@@ -130,7 +161,24 @@ const Header = () => {
 
             {/* Account menu (all sizes) + Hamburger (small screens) — pinned right */}
             <div className="col-start-3 row-start-1 flex items-center gap-3 justify-self-end">
-                <ApplicationsChip />
+                {showFranchiseStatus && (
+                  <span
+                    title="Your franchise agreement status"
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold uppercase tracking-wider"
+                    style={{
+                      background: franchiseStatusTone.bg,
+                      border: `1px solid ${franchiseStatusTone.border}`,
+                      color: franchiseStatusTone.color,
+                    }}
+                  >
+                    <span className="relative flex h-1.5 w-1.5 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: franchiseStatusTone.color, opacity: 0.55 }} />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: franchiseStatusTone.color }} />
+                    </span>
+                    {franchiseStatus.loading ? "Status" : franchiseStatus.status.trim() || "Franchise Status"}
+                  </span>
+                )}
+                {showApplicationsChip && <ApplicationsChip />}
                 <AccountMenu />
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -239,7 +287,9 @@ const Header = () => {
                                 <span className="mt-0.5 block text-[11.5px] text-slate-400">{item.desc}</span>
                               </Link>
                             ))}
-                            {/* Franchisor Login — its own CTA, opening the dedicated login page */}
+                            {/* Franchisor Login — its own CTA, opening the dedicated login page.
+                                Signed-out visitors see it greyed out and non-clickable. */}
+                            {franchisorLoginEnabled ? (
                             <Link
                               to="/franchise-login"
                               className="mt-2 flex items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-white transition-transform hover:-translate-y-0.5"
@@ -254,6 +304,23 @@ const Header = () => {
                                 <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
                               </svg>
                             </Link>
+                            ) : (
+                            <span
+                              aria-disabled="true"
+                              title="Sign in to access the franchisor portal"
+                              className="mt-2 flex cursor-not-allowed items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-white/55"
+                              style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
+                            >
+                              <span>
+                                <span className="block text-[13px] font-bold">Franchisor Login</span>
+                                <span className="mt-0.5 block text-[11px] text-white/60">Sign in to access the partner portal</span>
+                              </span>
+                              <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="4.5" y="10" width="15" height="10.5" rx="2" />
+                                <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+                              </svg>
+                            </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -342,6 +409,7 @@ const Header = () => {
                                 </span>
                               </Link>
                             ))}
+                        {franchisorLoginEnabled ? (
                         <Link
                           to="/franchise-login"
                           className="block px-8 py-3.5 text-xs font-bold text-white"
@@ -350,6 +418,15 @@ const Header = () => {
                         >
                           Franchisor Login →
                         </Link>
+                        ) : (
+                        <span
+                          aria-disabled="true"
+                          title="Sign in to access the franchisor portal"
+                          className="block cursor-not-allowed bg-slate-100 px-8 py-3.5 text-xs font-bold text-slate-400"
+                        >
+                          Franchisor Login → (sign in first)
+                        </span>
+                        )}
                       </div>
                     )}
                   </li>
