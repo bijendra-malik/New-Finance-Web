@@ -7,7 +7,7 @@ export type FranchiseIconName =
   | "network" | "products" | "share" | "plans" | "opportunity" | "support" | "digital" | "scale"
   | "join" | "lead" | "process"
   | "unsecured" | "secured"
-  | "check" | "shield" | "rupee" | "clock" | "doc" | "lock" | "mail" | "phone" | "user" | "handshake";
+  | "check" | "shield" | "rupee" | "clock" | "doc" | "lock" | "mail" | "phone" | "user" | "handshake" | "search" | "user-plus" | "layers" | "pen-line";
 
 const PATHS: Record<FranchiseIconName, React.ReactNode> = {
   network: (
@@ -152,6 +152,32 @@ const PATHS: Record<FranchiseIconName, React.ReactNode> = {
     <>
       <path d="M3 12l3-3 3 2 3-2 3 2 3-2 3 3" />
       <path d="M6 9v5l3 3 3-3 3 3 3-3V9" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M16 16l3 3" />
+    </>
+  ),
+  "user-plus": (
+    <>
+      <circle cx="9" cy="8" r="3.4" />
+      <path d="M4 19c1-4 3.4-6 6-6s5 2 6 6" />
+      <path d="M14 17v2H9" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="M12 3l10 9-10 9-10-9z" />
+      <path d="M12 3v18" />
+      <path d="M3 12l9 9 9-9" />
+    </>
+  ),
+  "pen-line": (
+    <>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
     </>
   ),
 };
