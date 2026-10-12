@@ -48,9 +48,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => vo
 
   const disabledStyle = applyDisabled
     ? {
-        opacity: 0.45,
         cursor: "not-allowed" as const,
-        filter: "grayscale(0.55)" as const,
         pointerEvents: "none" as const,
       }
     : {};
