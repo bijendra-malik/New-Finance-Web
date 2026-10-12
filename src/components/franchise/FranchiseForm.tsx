@@ -65,6 +65,7 @@ interface FranchiseFormProps {
   /** Franchisee only — controlled by the page so the plan cards can pre-select. */
   packageId?: string;
   onPackageChange?: (planId: string) => void;
+  onApplicationStatus?: (status: string) => void;
 }
 
 /**
@@ -80,7 +81,7 @@ interface FranchiseFormProps {
  * The franchisor variant is a lightweight enquiry and still hands the details to
  * the visitor's mail client addressed to the franchise team.
  */
-const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: FranchiseFormProps) => {
+const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange, onApplicationStatus }: FranchiseFormProps) => {
   const isFranchisee = variant === "franchisee";
   const { masters, loadCities } = useMasters();
   const { user, isLoggedIn } = useAuth();
@@ -260,6 +261,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         });
         return;
       }
+      onApplicationStatus?.(res.franchiseStatus?.trim() || "pending");
       setPopup({
         tone: "success",
         message:
@@ -609,6 +611,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         {isFranchisee && (
           <LocationFields
             slice={{ state: values.state, city: values.city }}
+            pincode={values.pincode}
             set={(key, v) => {
               if (key === "state") {
                 setValues((p) => ({ ...p, state: v, city: "" }));
@@ -621,9 +624,9 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
             states={stateOptions}
             loadCities={loadCities}
             onPincodeResolved={(r) => {
-              setVerifiedLocation({ pincode: r.pincode, state: r.state, city: r.city });
-              setPincodeStatus(r.state ? "idle" : "notFound");
-              setValues((p) => ({ ...p, state: r.state, city: r.city }));
+              setVerifiedLocation(r.state ? { pincode: r.pincode, state: r.state, city: r.city } : null);
+              setPincodeStatus("idle");
+              setValues((p) => ({ ...p, pincode: r.pincode, state: r.state, city: r.city }));
               setErrors((p) => ({ ...p, state: undefined, city: undefined }));
             }}
             entityLabel=""
