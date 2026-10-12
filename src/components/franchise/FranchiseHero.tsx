@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Button from "../ui/Button";
+import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 import FranchiseIcon from "./FranchiseIcon";
 import FranchiseNetworkGraphic from "./FranchiseNetworkGraphic";
 
@@ -11,7 +12,10 @@ import FranchiseNetworkGraphic from "./FranchiseNetworkGraphic";
  * plans and payout facts each have their own section further down the page, and
  * previewing them here was what made the page read as repeating itself.
  */
-const FranchiseHero = () => (
+const FranchiseHero = () => {
+  // Franchisor login is disabled (greyed out) for signed-out visitors.
+  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  return (
   <section
     className="franchise-hero relative mt-(--header-h) flex w-full items-center overflow-hidden px-6 py-12 md:px-8 md:py-14"
     style={{ background: "linear-gradient(125deg,#0b1730 0%,#123f6b 46%,#0f7ba8 78%,#17a08a 100%)" }}
@@ -67,12 +71,22 @@ const FranchiseHero = () => (
           <p className="mt-5 flex flex-wrap items-center gap-2 text-[12.5px] text-white/55">
             <FranchiseIcon name="lock" className="h-4 w-4 shrink-0 text-white/45" />
             Already a franchise partner?{" "}
-            <Link
-              to="/franchise-login"
-              className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
-            >
-              Sign in to your dashboard
-            </Link>
+            {franchisorLoginEnabled ? (
+              <Link
+                to="/franchise-login"
+                className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
+              >
+                Sign in to your dashboard
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                title="Sign in to access the franchisor portal"
+                className="cursor-not-allowed font-bold text-white/45"
+              >
+                Sign in first to reach your dashboard
+              </span>
+            )}
           </p>
         </div>
 
@@ -90,6 +104,7 @@ const FranchiseHero = () => (
 
     </div>
   </section>
-);
+  );
+};
 
 export default FranchiseHero;

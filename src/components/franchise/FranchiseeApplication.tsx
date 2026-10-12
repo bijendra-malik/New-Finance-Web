@@ -1,4 +1,5 @@
 import { useAuth } from "../../context/authContext";
+import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 import { isFranchiseSignedIn, readFranchiseSession } from "../../utils/franchiseSession";
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
@@ -21,6 +22,8 @@ interface FranchiseeApplicationProps {
 /** Section 11 — the franchisee application form. */
 const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplicationProps) => {
   const { isLoggedIn } = useAuth();
+  // Franchisor login is disabled (greyed out) for signed-out visitors.
+  const franchisorLoginEnabled = useFranchisorLoginAccess();
   const session = isFranchiseSignedIn() ? readFranchiseSession() : null;
   const status = (session?.franchiseStatus ?? "").trim().toLowerCase();
   const approved = status === "active" || session?.isVerified === true;
@@ -61,12 +64,22 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
                   <FranchiseIcon name="mail" className="h-4 w-4" />
                   Contact the franchise team
                 </a>
+                {franchisorLoginEnabled ? (
                 <a
                   href="/franchise-login"
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
                 >
                   Back to login
                 </a>
+                ) : (
+                <span
+                  aria-disabled="true"
+                  title="Sign in to access the franchisor portal"
+                  className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-bold text-slate-400"
+                >
+                  Back to login
+                </span>
+                )}
               </div>
             </div>
           </div>

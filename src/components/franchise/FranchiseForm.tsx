@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { useAuth } from "../../context/authContext";
+import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
@@ -83,6 +84,8 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   const isFranchisee = variant === "franchisee";
   const { masters, loadCities } = useMasters();
   const { user, isLoggedIn } = useAuth();
+  // Franchisor login is disabled (greyed out) for signed-out visitors.
+  const franchisorLoginEnabled = useFranchisorLoginAccess();
 
   // Both variants can be mounted at once (the franchisor form opens in a modal over the page),
   // so every field id is namespaced per variant to keep the DOM ids unique.
@@ -333,6 +336,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 px-5 py-4">
         {popup?.tone === "success" && (
+          franchisorLoginEnabled ? (
           <Link
             to="/franchise-login"
             onClick={() => setPopup(null)}
@@ -341,6 +345,16 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
           >
             Go to Franchisor Login →
           </Link>
+          ) : (
+          <span
+            aria-disabled="true"
+            title="Sign in to access the franchisor portal"
+            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white/60"
+            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
+          >
+            Go to Franchisor Login →
+          </span>
+          )
         )}
         <Button variant="outline" size="md" onClick={() => setPopup(null)}>
           Close
@@ -414,6 +428,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         </dl>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {franchisorLoginEnabled ? (
           <Link
             to="/franchise-login"
             className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all duration-200 hover:shadow-lg"
@@ -421,6 +436,16 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
           >
             Go to Franchisor Login →
           </Link>
+          ) : (
+          <span
+            aria-disabled="true"
+            title="Sign in to access the franchisor portal"
+            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white/60"
+            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
+          >
+            Go to Franchisor Login →
+          </span>
+          )}
         </div>
       </div>
       {popupNode}
