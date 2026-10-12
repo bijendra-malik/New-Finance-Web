@@ -9,7 +9,7 @@ import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
 
-const dashboardRoutes: Record<string, string> = {
+const dashboardRoutes: Readonly<Record<string, string>> = {
   "Personal Loan": "/dashboard/personalloan",
   "Business Loan": "/dashboard/businessloan",
   "Home Loan": "/dashboard/homeloan",
@@ -40,24 +40,10 @@ interface ApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName?: string;
+  activeProduct?: { id: string } | null;
 }
 
-type Step = "details" | "eligibility" | "form";
-
-const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
-
-// PAN validation lives in src/utils/validation.ts (PAN_REGEX) — the same rule the dashboard panels already use; the modal just reuses it here.
-
-interface EligResult {
-  eligible: boolean;
-  maxLoan: string;
-  emi: string;
-  message: string;
-}
-
-/** ₹1,23,456 — same formatting as the public eligibility calculator. */
-const fmt = (n: number) =>
-  "₹" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+type Step = "details" | "form";
 
 // ── Inline Spinner ─────────────────────────────────────────────────────────────
 
@@ -100,12 +86,11 @@ const ApplicationModal = ({
   isOpen,
   onClose,
   productName = "",
+  activeProduct,
 }: ApplicationModalProps) => {
-  const productNameFirstWord = productName.trim().split(/\s+/)[0]?.toLowerCase();
   const navigate = useNavigate();
   // Read the account on every render while open: it's external state that is usually created *after* this component first mounts (sign-up runs while it's already mounted), so a mount-time memo would go stale.
   const account = isOpen ? readAccountRecord() : null;
-
   const accountMobile = (account?.phone ?? "").replace(/\D/g, "").slice(-10);
 
   // ── Step ─────────────────────────────────────────────────────────────────
@@ -115,14 +100,6 @@ const ApplicationModal = ({
   const [dob, setDob] = useState(() => readAccountRecord()?.dob ?? "");
   const [pan, __setPan] = useState(() => (readAccountRecord()?.pan ?? "").toUpperCase());
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // ── Eligibility test — occupation / income / existing EMIs ────────────────
-  const [occupation, setOccupation] = useState("");
-  const [monthlyIncome, setMonthlyIncome] = useState("");
-  const [existingEmi, setExistingEmi] = useState("");
-  const [authorized, setAuthorized] = useState(false);
-  const [eligErrors, setEligErrors] = useState<Record<string, string>>({});
-  const [eligResult, setEligResult] = useState<EligResult | null>(null);
 
   // PAN-format setter (the structured "autostop" A→Z then 0-9 flush) "Autostop alphanumeric letters": while typing, keep A-Z letters until the 5-letter block is full, then only accept 0-9 digits for the next 4 slots; slot 10 accepts a letter only — the check letter from the card.
   const setPan = function (v: string) {
@@ -140,22 +117,15 @@ const ApplicationModal = ({
 
   // ── Step 1 — Save eligibility details → eligibility test ────────────────────
   const [isSending, setIsSending] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  const isBusy = isSending || isChecking;
+  const isBusy = isSending;
 
   const resetAll = () => {
     setStep("details");
     setDob(account?.dob ?? "");
     __setPan((account?.pan ?? "").toUpperCase());
     setFieldErrors({});
-    setOccupation("");
-    setMonthlyIncome("");
-    setExistingEmi("");
-    setAuthorized(false);
-    setEligErrors({});
-    setEligResult(null);
     setApiError("");
 
   };
@@ -200,6 +170,8 @@ const ApplicationModal = ({
     return Object.keys(e).length === 0;
   };
 
+  const resolvedId = (typeof activeProduct === "string" ? activeProduct : activeProduct?.id) || productName;
+
   const validatePan = (name: "pan", value: string, e: Record<string, string>) => {
     if (!value.trim()) { e[name] = "PAN is required"; return; }
     if (!PAN_REGEX.test(value)) { e[name] = "Enter a valid PAN, e.g. ABCDE1234F"; return; }
@@ -216,65 +188,38 @@ const ApplicationModal = ({
     setApiError("");
     try {
       await applyRegister({
-        product: productNameFirstWord,
+        product: resolvedId.split(/\s+/)[0] ?? "",
         dob,
         panNumber: pan,
       });
       mergeAccountDetails({ dob, pan });
-      setStep("eligibility");
+      handleOpenForm();
     } catch (err) {
       const msg = getApiErrorMessage(err, "Failed to save your details. Please try again.");
       setApiError(msg);
     } finally {
       setIsSending(false);
     }
-  };
-
-  // Step 2 — Eligibility test (same rule as the public calculator: net monthly income minus existing EMIs must clear ₹15,000)
-
-  const validateEligibility = () => {
-    const e: Record<string, string> = {};
-    if (!occupation) e.occupation = "Select your occupation";
-    if (!monthlyIncome) e.monthlyIncome = "Net monthly income is required";
-    else if (!(parseFloat(monthlyIncome) > 0)) e.monthlyIncome = "Enter a valid income";
-    if (!authorized) e.authorized = "Please authorise to proceed";
-    setEligErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleEligibility = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-    e.preventDefault();
-    if (!validateEligibility()) return;
-
-    setIsChecking(true);
-    setTimeout(() => {
-      const income = parseFloat(monthlyIncome) || 0;
-      const emiAmt = parseFloat(existingEmi) || 0;
-      const net = income - emiAmt;
-      const eligible = net >= 15000;
-      const maxLoan = Math.floor((net * 0.5 * 60) / 1000) * 1000;
-      const firstName = account?.name?.split(" ")[0] || "there";
-      const result: EligResult = {
-        eligible,
-        maxLoan: eligible ? fmt(maxLoan) : "₹0",
-        emi: eligible ? fmt(Math.round(maxLoan / 60)) : "₹0",
-        message: eligible
-          ? `Great news, ${firstName}! Based on your profile, you may be eligible for a loan up to ${fmt(maxLoan)}.`
-          : "Your current income or obligations may not meet the minimum eligibility threshold. Try reducing existing EMIs or applying with a co-applicant.",
-      };
-      setEligResult(result);
-      setIsChecking(false);
-      // Eligible → straight to the hand-off screen for the application form.
-      if (result.eligible) setStep("form");
-    }, 900);
-  };
-
-  // ── Step 3 — Open the product's application form (dashboard) ─────────────────
+  };  // ── Step 2 — Open the product's application form (dashboard) ─────────────────
 
   const handleOpenForm = () => {
     resetAll();
     onClose();
-    navigate(dashboardRoutes[productNameFirstWord] ?? "/dashboard/personalloan");
+    const resolvedPath = (() => {
+      const exact = dashboardRoutes[resolvedId];
+      if (exact) return exact;
+      const byFirstWord = dashboardRoutes[resolvedId.split(/\s+/)[0]];
+      if (byFirstWord) return byFirstWord;
+      const byTail = Object.entries(dashboardRoutes).find((
+        [, route],
+      ) => new RegExp(`^${resolvedId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i').test(route.split('/').pop() ?? ''))?.[1];
+      return byTail ?? null;
+    })();
+    if (!resolvedPath) {
+      setApiError('Application form is not available for this product yet.');
+      return;
+    }
+    navigate(resolvedPath);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -314,7 +259,7 @@ const ApplicationModal = ({
                     {productName}
                   </h2>
                   <p className="mt-0.5 text-xs sm:text-sm text-white/70">
-                    Two quick details to check your eligibility, then the application form.
+                    Two quick details to register your application, then the application form.
                   </p>
                 </div>
                 <button
@@ -332,7 +277,6 @@ const ApplicationModal = ({
 
                 {[
                   { label: "Your details", active: step === "details" },
-                  { label: "Eligibility test", active: step === "eligibility" },
                   { label: "Application form", active: step === "form" },
                 ].map((s, i, arr) => (
                   <li key={s.label} className="flex items-center gap-2">
@@ -471,180 +415,6 @@ const ApplicationModal = ({
                 </form>
               )}
 
-              {/* Eligibility test step: income + EMIs */}
-              {step === "eligibility" && !eligResult && (
-                <form onSubmit={handleEligibility} className="space-y-3" noValidate>
-                  <div>
-                    <h2 className="text-lg font-bold text-(--form-dark)">Eligibility test</h2>
-                    <p className="text-xs text-(--brand-gray) mt-0.5">
-                      A quick check on your income and existing EMIs — nothing is sent to a lender yet.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div>
-                      <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
-                        Occupation <span className="text-red-500 ml-0.5">*</span>
-                      </label>
-                      <select
-                        value={occupation}
-                        disabled={isChecking}
-                        onChange={(e) => { setOccupation(e.target.value); setEligErrors((p) => ({ ...p, occupation: "" })); }}
-                        className={`w-full px-3.5 py-2.5 border rounded-lg text-sm bg-white transition-all
-                          focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal)
-                          disabled:bg-(--form-field-bg-disabled) disabled:cursor-not-allowed
-                          ${eligErrors.occupation ? "border-red-400" : "border-(--form-field-border)"}`}
-                        style={eligErrors.occupation ? { borderColor: "#ef4444" } : undefined}
-                      >
-                        <option value="">Select occupation</option>
-                        {OCCUPATIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                      {eligErrors.occupation && <p className="text-xs text-red-500 mt-1">{eligErrors.occupation}</p>}
-                    </div>
-                    <Field
-                      label="Net Monthly Income" type="number" name="monthlyIncome"
-                      value={monthlyIncome}
-                      placeholder="e.g. 50000"
-                      onChange={(v) => { setMonthlyIncome(v); setEligErrors((p) => ({ ...p, monthlyIncome: "" })); }}
-                      error={eligErrors.monthlyIncome} disabled={isChecking}
-                    />
-                  </div>
-
-                  <Field
-                    label="Existing EMI (if any)" type="number" name="existingEmi"
-                    value={existingEmi}
-                    placeholder="e.g. 5000"
-                    required={false}
-                    onChange={(v) => setExistingEmi(v)}
-                    disabled={isChecking}
-                  />
-
-                  <hr className="border-slate-100" />
-
-                  {/* Authorise */}
-                  <div>
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={authorized}
-                        disabled={isChecking}
-                        onChange={(e) => { setAuthorized(e.target.checked); setEligErrors((p) => ({ ...p, authorized: "" })); }}
-                        className="sr-only"
-                      />
-                      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition
-                        ${authorized
-                          ? "border-(--brand-teal) bg-(--brand-teal)"
-                          : eligErrors.authorized ? "border-red-400" : "border-slate-300 group-hover:border-(--brand-teal)"}`}>
-                        <svg className={`h-3.5 w-3.5 text-white transition ${authorized ? "opacity-100" : "opacity-0"}`}
-                          fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </span>
-                      <span className="text-xs leading-relaxed text-slate-500">
-                        I authorise Indexia Finance and its partner providers to call or SMS me about this application and agree to the{" "}
-                        <span className="font-semibold text-(--brand-navy) underline">Terms of use</span>.
-                      </span>
-                    </label>
-                    {eligErrors.authorized && <p className="ml-8 mt-1 text-xs text-red-500">{eligErrors.authorized}</p>}
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex gap-3 pt-2">
-                    <Button variant="outline" className="flex-1 rounded-lg font-semibold"
-                      onClick={() => setStep("details")} disabled={isChecking}>
-                      ← Back
-                    </Button>
-                    <Button type="submit" className="flex-1 rounded-lg font-semibold" disabled={isChecking}>
-                      {isChecking ? <><Spinner /> Checking...</> : "Check eligibility →"}
-                    </Button>
-                  </div>
-                </form>
-              )}
-
-              {/* Not eligible — stays on the eligibility step */}
-              {step === "eligibility" && eligResult && !eligResult.eligible && (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-red-200 bg-linear-to-br from-red-50 to-amber-50 px-5 py-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500 shadow-lg">
-                      <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-extrabold text-red-800">Not eligible yet</h2>
-                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-red-700">{eligResult.message}</p>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => { setEligResult(null); setStep("details"); }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
-                        border border-slate-300 hover:bg-slate-50 transition
-                        focus:outline-none focus:ring-2 focus:ring-slate-200">
-                      ← Change details
-                    </button>
-                    <Button className="flex-1 rounded-lg font-semibold" onClick={() => setEligResult(null)}>
-                      Try again →
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: eligible → hand off to the application form */}
-              {step === "form" && eligResult?.eligible && (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-teal-50 px-5 py-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-lg">
-                      <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-extrabold text-emerald-800">You're eligible! 🎉</h2>
-                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-emerald-700">{eligResult.message}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="rounded-xl border border-teal-200 bg-white p-4 text-center shadow-sm">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Max. Loan Amount</p>
-                      <p className="mt-1 text-2xl font-extrabold text-(--brand-teal)">{eligResult.maxLoan}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">Estimated eligibility</p>
-                    </div>
-                    <div className="rounded-xl border border-teal-200 bg-white p-4 text-center shadow-sm">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Est. Monthly EMI</p>
-                      <p className="mt-1 text-2xl font-extrabold text-(--brand-teal)">{eligResult.emi}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">Over 60 months</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
-                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
-                  </div>
-
-                  <p className="text-center text-xs text-slate-500">
-                    Next: fill in the <span className="font-semibold text-(--form-dark)">{productName}</span> application form — your registered details are carried into it.
-                  </p>
-
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => { setEligResult(null); setStep("eligibility"); }}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-600
-                        border border-slate-300 hover:bg-slate-50 transition
-                        focus:outline-none focus:ring-2 focus:ring-slate-200">
-                      ← Back
-                    </button>
-                    <Button className="flex-1 rounded-lg font-semibold" onClick={handleOpenForm}>
-                      Open application form →
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
