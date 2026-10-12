@@ -59,7 +59,8 @@ const ProductDetails = () => {
 
   return (
     <>
-      <style>{`        @keyframes slideInFromRight {
+      <style>{`
+      @keyframes slideInFromRight {
           from { opacity: 0; transform: translateX(36px); }
           /* transform: none (not translateX(0)) — releases the pinned stacking
              context once the entrance finishes, so hover z-ordering works */
@@ -157,13 +158,6 @@ const ProductDetails = () => {
                 >
                   {active.heading}
                 </h2>
-                {/* Tag badge */}
-                {/* <span
-                  className="mt-1.5 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide"
-                  style={{ background: meta.tagColor + "22", color: meta.tagColor, border: `1px solid ${meta.tagColor}55` }}
-                >
-                  {meta.tag}
-                </span> */}
               </div>
 
               {/* Accent + rate pill */}
@@ -337,6 +331,7 @@ const ProductDetails = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         productName={active.heading}
+        activeProduct={active}
       />
     </>
   );

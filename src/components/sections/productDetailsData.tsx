@@ -14,7 +14,7 @@ export interface Product {
 
 export const products: Product[] = [
   {
-    id: "personal-loan",
+    id: "personal",
     label: "Personal Loan",
     heading: "Personal Loan",
     subtitle: "Fulfill your dreams instantly with collateral-free personal loans up to ₹40 Lakhs",
@@ -26,7 +26,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "business-loan",
+    id: "business",
     label: "Business Loan",
     heading: "Business Loan",
     subtitle: "Fuel your business growth with fast, flexible funding up to ₹2 Crores",
@@ -38,7 +38,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "home-loan",
+    id: "home",
     label: "Home Loan",
     heading: "Home Loan",
     subtitle: "Make your dream home a reality with loans up to ₹5 Crores at lowest rates",
@@ -50,7 +50,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "loanAP-loan",
+    id: "lap",
     label: "Loan Against Property",
     heading: "Loan Against Property",
     subtitle: "Leverage your property to meet large financial needs at lower interest rates",
@@ -62,7 +62,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "balance-loan",
+    id: "balanceTransfer",
     label: "Balance Transfer",
     heading: "Balance Transfer",
     subtitle: "Move your existing high-interest loans to us and save thousands every month",
@@ -74,7 +74,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "car-loan",
+    id: "vehicleLoan",
     label: "Vehicle Loan",
     heading: "Vehicle Loan",
     subtitle: "Drive your dream car today with fast approvals and flexible EMI options",
@@ -86,7 +86,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "credit-card",
+    id: "creditCard",
     label: "Credit Card",
     heading: "Premium Credit Cards",
     subtitle: "Unlock exclusive rewards and benefits with our range of credit cards",
@@ -130,7 +130,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "education-loan",
+    id: "educationLoan",
     label: "Education Loan",
     heading: "Education Loan",
     subtitle: "Invest in your future with flexible education financing up to ₹75 Lakhs",
@@ -142,7 +142,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "project-loan",
+    id: "projectLoan",
     label: "Project Loan",
     heading: "Project Loan",
     subtitle: "Finance your business projects with tailored funding up to ₹5 Crores",
@@ -154,7 +154,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "commercial-purchase",
+    id: "commercialPurchase",
     label: "Commercial Purchase",
     heading: "Commercial Purchase Loan",
     subtitle: "Buy commercial properties and spaces with secured financing up to ₹3 Crores",
@@ -166,7 +166,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "lease-rental",
+    id: "leaseRentalDiscounting",
     label: "Lease Rental Discounting",
     heading: "Lease Rental Discounting",
     subtitle: "Unlock working capital against lease rental agreements up to ₹2 Crores",
@@ -178,7 +178,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "working-capital",
+    id: "workingCapital",
     label: "Working Capital",
     heading: "Working Capital Loan",
     subtitle: "Boost business operations with flexible working capital up to ₹1.5 Crores",
@@ -190,7 +190,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "film-funding",
+    id: "filmFunding",
     label: "Film Funding",
     heading: "Film Funding",
     subtitle: "Finance your creative projects with dedicated film production loans up to ₹50 Crores",
@@ -202,7 +202,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "od-cc-limit",
+    id: "odCcLimit",
     label: "OD CC Limit",
     heading: "OD & CC Limit",
     subtitle: "Flexible Overdraft and Cash Credit limits against your property — pay interest only on what you use",
@@ -214,7 +214,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "loan-against-share",
+    id: "loanAgainstShare",
     label: "Loan Against Share",
     heading: "Loan Against Share",
     subtitle: "Unlock liquidity from your shares and securities without selling your portfolio",
@@ -226,7 +226,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "gold-loan",
+    id: "goldLoan",
     label: "Gold Loan",
     heading: "Gold Loan",
     subtitle: "Get instant cash against your gold jewellery at attractive interest rates",
@@ -238,7 +238,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "fdi",
+    id: "fdiLoan",
     label: "FDI",
     heading: "Foreign Direct Investment (FDI)",
     subtitle: "Structured FDI funding solutions for businesses expanding into India",
@@ -250,7 +250,7 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "npa",
+    id: "npaLoan",
     label: "NPA (Non-Performing Assets)",
     heading: "NPA Resolution Loan",
     subtitle: "Restructure and resolve NPAs with specialized financial solutions",
