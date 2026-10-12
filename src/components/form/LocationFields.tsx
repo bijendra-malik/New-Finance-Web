@@ -11,6 +11,7 @@ export interface LocationSlice {
 
 interface LocationFieldsProps {
   slice: LocationSlice;
+  pincode?: string;
   set: (key: keyof LocationSlice, value: string) => void;
   errors: Partial<Record<keyof LocationSlice, string>>;
   states: readonly string[];
@@ -25,6 +26,7 @@ interface LocationFieldsProps {
 
 export const LocationFields = ({
   slice,
+  pincode,
   set,
   errors,
   states,
@@ -72,7 +74,7 @@ export const LocationFields = ({
           id={`${entityLabel.toLowerCase()}Pincode`}
           label={`Current ${entityLabel} Pincode`}
           required
-          value={slice["businessPincode" as keyof LocationSlice] ?? slice["pincode" as keyof LocationSlice] ?? ""}
+          value={pincode ?? slice["businessPincode" as keyof LocationSlice] ?? slice["pincode" as keyof LocationSlice] ?? ""}
           onChange={handlePincodeChange}
           err={pincodeError}
           disabled={false}
