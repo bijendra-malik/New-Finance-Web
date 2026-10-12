@@ -51,6 +51,7 @@ export interface ApiUser {
   isVerified: boolean;
   role: string;
   isActive: boolean;
+  franchiseStatus?: string;
   continent?: string;
   country?: string;
   lastLogin: string;
@@ -74,6 +75,49 @@ export interface ApplyRegisterPayload {
   dob: string;
   panNumber: string;
 }
+
+/** API values accepted by POST /customer/apply-register. */
+const APPLY_REGISTER_PRODUCTS: Readonly<Record<string, string>> = {
+  personal: "personal",
+  personalloan: "personal",
+  business: "business",
+  businessloan: "business",
+  home: "home",
+  homeloan: "home",
+  commercialpurchase: "commercialPurchase",
+  commercialpurchaseloan: "commercialPurchase",
+  lap: "lap",
+  loanagainstproperty: "lap",
+  workingcapital: "workingCapital",
+  workingcapitalloan: "workingCapital",
+  odcclimit: "odCcLimit",
+  odcc: "odCcLimit",
+  loanagainstshare: "loanAgainstShare",
+  las: "loanAgainstShare",
+  filmfunding: "filmFunding",
+  fdi: "fdiLoan",
+  fdiloan: "fdiLoan",
+  foreigndirectinvestmentfdi: "fdiLoan",
+  leaserentaldiscounting: "leaseRentalDiscounting",
+  lrd: "leaseRentalDiscounting",
+  balancetransfer: "balanceTransfer",
+  projectloan: "projectLoan",
+  vehicleloan: "vehicleLoan",
+  educationloan: "educationLoan",
+  goldloan: "goldLoan",
+  npa: "npaLoan",
+  npaloan: "npaLoan",
+  nparesolutionloan: "npaLoan",
+  creditcard: "creditCard",
+  premiumcreditcards: "creditCard",
+};
+
+const toApplyRegisterProduct = (product: string): string => {
+  const key = product.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  const value = APPLY_REGISTER_PRODUCTS[key];
+  if (!value) throw new Error(`Unsupported loan product: ${product}`);
+  return value;
+};
 
 export interface ApplyRegisterResponse {
   success: boolean;
@@ -103,7 +147,7 @@ export const applyRegister = async (
 ): Promise<ApplyRegisterResponse> => {
   const response = await axiosInstance.post<ApplyRegisterResponse>(
     "/customer/apply-register",
-    payload
+    { ...payload, product: toApplyRegisterProduct(payload.product) }
   );
   return response.data;
 };
