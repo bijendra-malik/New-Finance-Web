@@ -8,42 +8,35 @@ import "swiper/css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface LoanItem {
+  id: string;
   label: string;
   ringColors: string[];
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const loans: LoanItem[] = [
-  { label: "Personal Loan",            ringColors: ["#e74c3c","#f1c40f","#2ecc71","#3498db"] },
-  { label: "Business Loan",            ringColors: ["#f39c12","#f1c40f","#e74c3c","#27ae60"] },
-  { label: "Home Loan",                ringColors: ["#27ae60","#f1c40f","#e74c3c","#2980b9"] },
-  { label: "Loan Against Property",    ringColors: ["#8e44ad","#e74c3c","#f1c40f","#27ae60"] },
-  { label: "Balance Transfer",         ringColors: ["#16a085","#3498db","#e74c3c","#f39c12"] },
-  { label: "Project Loan",             ringColors: ["#f1c40f","#e74c3c","#27ae60","#2980b9"] },
-  { label: "Vehicle Loan",             ringColors: ["#e74c3c","#8e44ad","#f1c40f","#27ae60"] },
-  { label: "Education Loan",           ringColors: ["#9b59b6","#3498db","#f1c40f","#27ae60"] },
-  { label: "Credit Card",              ringColors: ["#2ecc71","#e74c3c","#3498db","#f39c12"] },
-  { label: "Commercial Purchase",      ringColors: ["#3498db","#f1c40f","#27ae60","#e74c3c"] },
-  { label: "Working Capital",          ringColors: ["#f39c12","#27ae60","#e74c3c","#3498db"] },
-  { label: "Lease Rental Discounting", ringColors: ["#8e44ad","#f1c40f","#2ecc71","#e74c3c"] },
-  { label: "OD CC Limit",              ringColors: ["#16a085","#e74c3c","#f39c12","#3498db"] },
-  { label: "Loan Against Share",       ringColors: ["#e74c3c","#3498db","#f1c40f","#27ae60"] },
-  { label: "Film Funding",             ringColors: ["#e67e22","#9b59b6","#2ecc71","#3498db"] },
-  { label: "NPA",                      ringColors: ["#c0392b","#f1c40f","#16a085","#8e44ad"] },
-  { label: "Gold Loan",                ringColors: ["#f39c12","#e74c3c","#27ae60","#2980b9"] },
-  { label: "FDI",                      ringColors: ["#2980b9","#2ecc71","#f1c40f","#e74c3c"] },
-];
+import { products } from "./productDetailsData";
+
+const loans: LoanItem[] = products.slice(0, 18).map((p) => ({
+  id: p.id, 
+  label: p.label, 
+  ringColors: [
+    "#e74c3c",
+    "#f1c40f",
+    "#2ecc71",
+    "#3498db",
+  ],
+}));
 
 // ── Globe Wireframe (without hover) ───────────────────────────────────────────
 import { ColoredRing, GlobeEarth, GlobeWireframe } from "./LoanGlobes";
 
-const LoanCard = (props: LoanItem & { onApplyClick?: (productName: string) => void; applyDisabled?: boolean }) => {
-  const { label, ringColors, onApplyClick, applyDisabled = false } = props;
+const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void; applyDisabled?: boolean }) => {
+  const { id, label, ringColors, onApplyClick, applyDisabled = false } = props;
   const [hovered, setHovered] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (onApplyClick && !applyDisabled) onApplyClick(label);
+    if (onApplyClick && !applyDisabled) onApplyClick(id);
   };
 
   const disabledStyle = applyDisabled
@@ -145,8 +138,8 @@ const LoanProducts = () => {
   const applyAccess = useApplyAccess();
   const applyBlocked = useMemo(() => Boolean(applyAccess.blocked), [applyAccess]);
 
-  const handleApplyClick = (productName: string) => {
-    requestApply(productName);
+  const handleApplyClick = (productId: string) => {
+    requestApply(productId);
   };
 
   const updateNavState = (swiper: SwiperType) => {
