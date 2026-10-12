@@ -77,7 +77,8 @@ const Header = () => {
 
   // Only a signed-in franchise partner may see the franchise status pill.
   // A customer account must never see franchise status in the header.
-  const showFranchiseStatus = isLoggedIn && !isCustomer && isFranchiseSignedIn();
+  const showFranchiseStatus = isLoggedIn && !isCustomer && isFranchiseSignedIn()
+    && !franchiseStatus.loading && Boolean(franchiseStatus.status.trim());
   const franchiseStatusTone = (() => {
     switch (franchiseStatus.status.trim().toLowerCase()) {
       case "active":
@@ -85,7 +86,8 @@ const Header = () => {
       case "approved":
         return { bg: "rgba(38,174,144,0.2)", border: "#22bfb3", color: "#0f766e" };
       case "pending":
-        return { bg: "rgba(224,168,0,0.14)", border: "rgba(224,168,0,0.45)", color: "#92620a" };
+        return { bg: "rgba(59,130,246,0.12)", border: "rgba(59,130,246,0.4)", color: "#1d4ed8" };
+      case "rejected":
       case "suspended":
         return { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.35)", color: "#b91c1c" };
       default:
@@ -175,7 +177,7 @@ const Header = () => {
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: franchiseStatusTone.color, opacity: 0.55 }} />
                       <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: franchiseStatusTone.color }} />
                     </span>
-                    {franchiseStatus.loading ? "Status" : franchiseStatus.status.trim() || "Franchise Status"}
+                    {franchiseStatus.status.trim()}
                   </span>
                 )}
                 {showApplicationsChip && <ApplicationsChip />}
