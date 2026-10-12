@@ -67,7 +67,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("user");
   };
 
+  /**
+   * Refresh the cached profile from the API — only for a signed-in session.
+   * Signing out drops the cached copy so no profile API data survives the
+   * session; an expired token is cleaned up by the axios 401 interceptor.
+   */
   const refreshProfile = async () => {
+    if (!token) {
+      setUser(null);
+      localStorage.removeItem("user");
+      return;
+    }
     const res: ProfileResponse = await fetchProfile();
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
