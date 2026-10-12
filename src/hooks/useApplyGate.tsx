@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ApplicationModal from "../components/modals/ApplicationModal";
+import { products } from "../components/sections/productDetailsData";
 import { readStoredProfile } from "../utils/accountProfile";
 import { consumePendingProduct, onAccountReady, requestSignUp } from "../utils/signInGate";
 import { useAuth } from "../context/authContext";
@@ -26,8 +27,10 @@ export const useApplyAccess = () => {
   );
 };
 
+const productLabelById = (id: string) => products.find((p) => p.id === id)?.label ?? id;
+
 export const useApplyGate = () => {
-  const [productName, setProductName] = useState<string | null>(null);
+  const [activeProductId, setActiveProductId] = useState<string | null>(null);
   const access = useApplyAccess();
   const { isLoggedIn } = useAuth();
 
@@ -35,7 +38,7 @@ export const useApplyGate = () => {
     () =>
       onAccountReady(() => {
         const pending = consumePendingProduct();
-        if (pending) setProductName(pending);
+        if (pending) setActiveProductId(pending);
       }),
     []
   );
@@ -43,23 +46,23 @@ export const useApplyGate = () => {
   const [blockedToast, setBlockedToast] = useState<{ message: string } | null>(null);
 
   const requestApply = useCallback(
-    (product: string) => {
+    (productId: string) => {
       if (access.blocked && access.reason === "franchise") {
         setBlockedToast({ message: "Loan applications are for Customer accounts. As a Franchise partner, use the Franchise menu to apply or sign in to the portal." });
         setTimeout(() => setBlockedToast(null), 5000);
         return;
       }
       if (!readStoredProfile() && !isLoggedIn) {
-        requestSignUp(product);
+        requestSignUp(productId);
         return;
       }
-      setProductName(product);
+      setActiveProductId(productId);
     },
     [access, isLoggedIn],
   );
 
   const close = useCallback(() => {
-    setProductName(null);
+    setActiveProductId(null);
     setBlockedToast(null);
   }, []);
 
@@ -89,9 +92,10 @@ export const useApplyGate = () => {
         </div>
       )}
       <ApplicationModal
-        isOpen={!!productName && productName !== "__apply_blocked__"}
+        isOpen={!!activeProductId}
         onClose={close}
-        productName={productName ?? "Personal Loan"}
+        productName={activeProductId ? productLabelById(activeProductId) : "Loan application"}
+        activeProduct={activeProductId ? { id: activeProductId} : null}
       />
     </>
   );
