@@ -8,6 +8,7 @@ import { fetchFranchiseProfile, loginFranchise } from "../api/franchise";
 import type { FranchiseAccount } from "../api/franchise";
 import {
   saveFranchiseSession,
+  clearFranchiseSession,
   readFranchiseSession,
   isFranchiseSignedIn,
   mergeFranchiseProfile,
@@ -272,6 +273,16 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
+      const status = (res.franchiseStatus ?? "").trim().toLowerCase();
+      if (status === "rejected") {
+        clearFranchiseSession();
+        setNotice({
+          tone: "error",
+          title: "Franchisor login is locked",
+          body: `Your franchise application was not approved. Contact ${FRANCHISE_EMAIL} if you would like to discuss your application.`,
+        });
+        return;
+      }
       saveFranchiseSession(
         {
           franchiseId: res.franchiseId ?? franchiseId,
@@ -281,7 +292,6 @@ const FranchiseLoginPage = () => {
         res.token,
       );
 
-      const status = (res.franchiseStatus ?? "").trim().toLowerCase();
       const active = status === "active" || res.isVerified === true;
       if (active) {
         setOnboarding({
@@ -383,8 +393,9 @@ const FranchiseLoginPage = () => {
   }
 
   const statusIsNone = franchiseStatus === "none" || (liveFranchiseStatus.reported && franchiseStatus === "");
-  if (statusIsNone || franchiseStatus === "pending") {
+  if (statusIsNone || franchiseStatus === "pending" || franchiseStatus === "rejected") {
     const pending = franchiseStatus === "pending";
+    const rejected = franchiseStatus === "rejected";
     return (
       <>
         <PageBanner
@@ -407,7 +418,9 @@ const FranchiseLoginPage = () => {
               </span>
               <h1 className="mt-4 text-xl font-bold text-slate-800">Franchisor login is locked</h1>
               <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
-                {pending
+                {rejected
+                  ? "Your franchise application was not approved, so franchisor login is unavailable. Contact the franchise team if you would like to discuss your application."
+                  : pending
                   ? "Your franchise application has been received and is pending review. Login will become available once your status changes."
                   : "No franchise application is on file yet. Submit the Franchisee Application before accessing the franchisor login."}
               </p>

@@ -13,7 +13,7 @@ import useFranchiseStatus from "./useFranchiseStatus";
  * half of the check a partner could never reach the login page again.
  *
  * The backend franchise status is authoritative. Only accounts with no status
- * (`None`) or `pending` are prevented from opening the login page.
+ * (`None`), `pending`, or `rejected` are prevented from opening the login page.
  */
 export const useFranchisorLoginAccess = (): boolean => {
   const { isLoggedIn, user } = useAuth();
@@ -25,7 +25,7 @@ export const useFranchisorLoginAccess = (): boolean => {
     .toLowerCase();
   if (statusResult.loading) return false;
   if (statusResult.reported && status === "") return false;
-  return status !== "none" && status !== "pending";
+  return status !== "none" && status !== "pending" && status !== "rejected";
 };
 
 export default useFranchisorLoginAccess;
