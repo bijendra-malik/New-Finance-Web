@@ -600,6 +600,7 @@ const AccountMenu = () => {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-slate-800">{account.name}</p>
                   <p className="truncate text-xs text-slate-500">{account.email}</p>
+                  <p className="truncate text-xs text-slate-500">{account.phone}</p>
                 </div>
               </div>
 
