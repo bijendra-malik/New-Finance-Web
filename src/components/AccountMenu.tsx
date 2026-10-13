@@ -17,6 +17,7 @@ import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../u
 import { getApiErrorMessage } from "../utils/apiError";
 import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX } from "../utils/validation";
 import { loginUser, registerUser, verifyOTP } from "../api/auth";
+import type { RegisterPayload } from "../api/auth";
 import Button from "./ui/Button";
 
 export type { AccountProfile, Role };
@@ -33,19 +34,6 @@ const LANGUAGES: Language[] = [
   { code: "hi", label: "हिन्दी", short: "हि" },
 ];
 
-const ROLES: { role: Role; blurb: string; icon: string }[] = [
-  {
-    role: "Customer",
-    blurb: "Apply for loans and track your applications",
-    icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z",
-  },
-  {
-    role: "Franchise",
-    blurb: "Partner with us and grow your network",
-    icon: "M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z",
-  },
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const initialsOf = (name: string): string =>
   name
@@ -58,6 +46,20 @@ const initialsOf = (name: string): string =>
 
 // Indian mobile numbers are a fixed 10 digits, so the stored value is capped there.
 const digitsOf = (value: string) => value.replace(/\D/g, "").slice(0, 10);
+
+const isUnregisteredMobileError = (error: unknown): boolean => {
+  const value = error as {
+    code?: string;
+    message?: string;
+    response?: { data?: { code?: string; message?: string } };
+  };
+  const rawCode = value?.response?.data?.code ?? value?.code;
+  const rawMessage = value?.response?.data?.message ?? value?.message;
+  const code = typeof rawCode === "string" ? rawCode.toLowerCase() : "";
+  const message = typeof rawMessage === "string" ? rawMessage.toLowerCase() : "";
+  return /user_not_found|account_not_found|mobile_not_registered|phone_not_registered/.test(code)
+    || /not registered|no (user|account)|((user|account|mobile|phone).*(not found|does not exist|doesn't exist))/.test(message);
+};
 
 const normalizeRole = (role?: string): Role | null => {
   const value = typeof role === "string" ? role.trim().toLowerCase() : "";
@@ -105,17 +107,6 @@ const Combo = ({
   placeholder: string;
   disabled?: boolean;
 }) => {
-  if (options.length === 0) {
-    return (
-      <input
-        className={fieldClass}
-        value={value}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    );
-  }
   // A stored value can resolve to a place the masters list hasn't loaded (or that isn't in it at all) — keep it selectable so it still shows.
   const list = value && !options.includes(value) ? [...options, value] : options;
   return (
@@ -147,7 +138,7 @@ const AccountMenu = () => {
 
   // Sign-up form state
   const [form, setForm] = useState({
-    role: "" as Role | "",
+    role: "Customer" as Role | "",
     continent: "",
     country: "",
     countryIso: "",
@@ -156,9 +147,8 @@ const AccountMenu = () => {
     email: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [confirmRole, setConfirmRole] = useState<Role | null>(null);
 
-  // Sign In / Sign Up tabs + OTP
+  // Sign-in and registration state
   const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [signin, setSignin] = useState({ phone: "" });
   const [signinError, setSigninError] = useState("");
@@ -292,20 +282,14 @@ const AccountMenu = () => {
     });
   };
 
-  const requestRole = (role: Role) => {
-    if (form.role === role) return;
-    setConfirmRole(role);
-  };
-
-  const applyRole = () => {
-    if (!confirmRole) return;
-    setField("role", confirmRole);
-    setConfirmRole(null);
+  const openLogin = (role: Role) => {
+    setForm((current) => ({ ...current, role }));
+    setMode("signin");
+    setPanelOpen(true);
   };
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-    if (!form.role) next.role = "Select a role to continue";
     if (!form.continent) next.continent = "Select a continent";
     if (!form.country) next.country = "Select a country";
     const name = form.name.trim();
@@ -320,26 +304,32 @@ const AccountMenu = () => {
   const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validate()) return;
+    const mobile = digitsOf(form.phone);
     const saved: AccountProfile = {
       name: form.name.trim(),
       role: form.role as Role,
       country: form.country,
       countryIso: form.countryIso,
-      phone: form.phone.trim(),
+      phone: mobile,
       email: form.email.trim(),
+    };
+    const payload: RegisterPayload = {
+      name: saved.name,
+      mobile,
+      email: saved.email,
+      role: saved.role,
+      continent: form.continent,
+      country: saved.country,
     };
 
     setSignupBusy(true);
     setSignupError("");
     try {
-      await registerUser({
-        name: saved.name,
-        mobile: saved.phone,
-        email: saved.email,
-        role: saved.role,
-        continent: form.continent,
-        country: saved.country,
-      });
+      const response = await registerUser(payload);
+      if (!response.success) {
+        setSignupError(response.message || "Could not complete the registration. Please try again.");
+        return;
+      }
     } catch (err) {
       setSignupError(getApiErrorMessage(err, "Could not complete the registration. Please try again."));
       return;
@@ -347,30 +337,17 @@ const AccountMenu = () => {
       setSignupBusy(false);
     }
 
-    // Registration is done. Hold the record so the sign-in that follows stores it
-    // (and any pending "Apply Now" continues), then open the Sign In tab with the
-    // mobile already filled in.
+    // Registration sent the OTP. Hold the profile for verification and open
+    // that step directly so the user does not request a duplicate OTP.
     setPendingProfile(saved);
-    setSignin({ phone: digitsOf(saved.phone) });
+    setSignin({ phone: mobile });
     setSigninError("");
-    setSigninNotice(
-      "Your registration is successful. Kindly log in with this mobile number to continue.",
-    );
-    setOtpOpen(false);
+    setSigninNotice("");
+    setOtpMobile(mobile);
     setOtpValue("");
     setOtpError("");
     setResendMsg("");
-    switchMode("signin");
-  };
-
-  const switchMode = (next: "signup" | "signin") => {
-    setMode(next);
-    setErrors({});
-    setSigninError("");
-    setSignupError("");
-
-    // created for; switching tabs by hand clears it.
-    if (next !== "signin") setSigninNotice("");
+    setOtpOpen(true);
   };
 
   // Cancel dismisses the panel the same way a backdrop click does — including dropping a pending "Apply Now" product so a later sign-up doesn't open it.
@@ -396,8 +373,28 @@ const AccountMenu = () => {
     setSigninNotice("");
     setSigninBusy(true);
     try {
-      await loginUser({ mobile: phone });
+      const response = await loginUser({ mobile: phone });
+      if (!response.success) {
+        if (isUnregisteredMobileError(response)) {
+          setForm((current) => ({ ...current, phone }));
+          setSignin({ phone });
+          setErrors({});
+          setSignupError("");
+          setMode("signup");
+          return;
+        }
+        setSigninError(response.message || "Could not send the OTP. Please try again.");
+        return;
+      }
     } catch (err) {
+      if (isUnregisteredMobileError(err)) {
+        setForm((current) => ({ ...current, phone }));
+        setSignin({ phone });
+        setErrors({});
+        setSignupError("");
+        setMode("signup");
+        return;
+      }
       setSigninError(getApiErrorMessage(err, "Could not send the OTP. Please try again."));
       return;
     } finally {
@@ -430,6 +427,10 @@ const AccountMenu = () => {
     setOtpError("");
     try {
       const res = await verifyOTP({ mobile: otpMobile, otp: code });
+      if (!res.success || !res.token || !res.user) {
+        setOtpError("The verification response was incomplete. Check the code and try again.");
+        return;
+      }
       login(res.token, res.user);
       const roleFromApi = normalizeRole(res.user?.role);
       if (roleFromApi) {
@@ -657,22 +658,15 @@ const AccountMenu = () => {
     );
   }
 
-  // ── Signed out: Sign In / Sign Up ───────────────────────────────────────────
+  // ── Signed out ──────────────────────────────────────────────────────────────
   return (
-    <div ref={rootRef} className="relative">
-      <button
-        onClick={() => setPanelOpen((open) => !open)}
-        aria-expanded={panelOpen}
-        aria-label="Login"
-        className="flex items-center gap-1.5 rounded-xl border border-(--brand-teal) bg-linear-to-r from-(--brand-navy) to-(--brand-dark) px-3 py-2 text-white shadow-md transition-all duration-200 hover:from-(--brand-dark) hover:to-(--brand-navy-deep) hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer"
-      >
-        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.5-1.632z" />
-        </svg>
-        <span className="text-xs font-semibold text-white whitespace-nowrap">Login</span>
-        <Chevron open={panelOpen} />
+    <div ref={rootRef} className="relative flex items-center gap-2">
+      <button type="button" onClick={() => openLogin("Customer")} className="rounded-xl border border-(--brand-teal) bg-linear-to-r from-(--brand-navy) to-(--brand-dark) px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold text-white shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer whitespace-nowrap">
+        Customer Login
       </button>
-
+      <button type="button" onClick={() => openLogin("Franchise")} className="rounded-xl border border-(--brand-teal) bg-(--brand-teal) px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer whitespace-nowrap">
+        Franchise Login
+      </button>
       {panelOpen &&
         createPortal(
           <>
@@ -682,121 +676,11 @@ const AccountMenu = () => {
             />
 
             <div className="fixed inset-0 z-100 flex items-center justify-center p-3 sm:p-4" data-account-panel style={{ zIndex: 100 }}>
-              <div className="auth-popup-card w-full max-w-4xl min-w-0 flex flex-col md:flex-row shadow-2xl rounded-2xl overflow-hidden">
-
-                <div
-                  className="relative w-full md:w-80 shrink-0 flex flex-col justify-between
-                    bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep)
-                    shadow-xl overflow-hidden"
-                  style={{ boxShadow: "0 0 0 1px rgba(38,174,144,0.25), 0 20px 60px -20px rgba(0,0,0,0.6)" }}
-                >
-                  <div className="h-1.5 w-full shrink-0 bg-(--brand-teal)" />
-                  <div className="flex flex-col justify-between flex-1 p-4 sm:p-5 md:p-6 text-white overflow-y-auto overscroll-contain">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-(--brand-yellow) text-(--brand-dark) shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                          {mode === "signup" ? "Sign Up" : "Sign In"}
-                        </span>
-                        <h3 className="mt-2 text-sm font-bold text-(--brand-yellow) uppercase tracking-[0.18em] leading-tight">
-                          {mode === "signup" ? "Create your account" : "Welcome back"}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 md:mt-5">
-                      <p className="text-base sm:text-lg md:text-2xl font-extrabold leading-snug tracking-tight text-white">
-                        {mode === "signup"
-                          ? <>Join <span style={{ color: "var(--brand-yellow)" }}>thousands</span> of borrowers</>
-                          : <>Access your <span style={{ color: "var(--brand-yellow)" }}>loan dashboard</span></>
-                        }
-                      </p>
-                      <p className="hidden md:block mt-2 text-sm leading-relaxed text-white/65 max-w-[50ch]">
-                        {mode === "signup" ? "Fast, fully online, and built around your PAN card." : "Sign in with the mobile number you registered with."}
-                      </p>
-                    </div>
-
-                    <div className="hidden md:grid grid-cols-1 gap-2 my-5">
-                      {mode === "signup"
-                        ? [
-                          { icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", title: "Quick approval", desc: "Apply in minutes, decide fast" },
-                          { icon: "M13 10V3L4 14h7v7l9-11h-7z", title: "Funds in 24h", desc: "Once approved, amount is credited" },
-                          { icon: "M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z", title: "PAN-based", desc: "Your PAN card is all we need" },
-                        ].map((f, i) => (
-                          <div key={i} className="flex items-start gap-3 rounded-xl px-3.5 py-2.5 bg-white/10 backdrop-blur-[2px] border border-white/10">
-                            <div className="shrink-0 mt-0.5 rounded-lg bg-(--brand-teal)/20 p-1.5 text-(--brand-teal)">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={f.icon} /></svg>
-                            </div>
-                            <div><p className="text-xs font-semibold text-white">{f.title}</p><p className="text-[10px] mt-0.5 text-white/60 leading-relaxed">{f.desc}</p></div>
-                          </div>
-                        ))
-                        : [
-                          { icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z", title: "Your profile", desc: "Access all your details in one place" },
-                          { icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v12", title: "Active sessions", desc: "See where you're signed in" },
-                          { icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", title: "Quick support", desc: "Get help from our team anytime" },
-                        ].map((f, i) => (
-                          <div key={i} className="flex items-start gap-3 rounded-xl px-3.5 py-2.5 bg-white/10 backdrop-blur-[2px] border border-white/10">
-                            <div className="shrink-0 mt-0.5 rounded-lg bg-(--brand-teal)/20 p-1.5 text-(--brand-teal)">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={f.icon} /></svg>
-                            </div>
-                            <div><p className="text-xs font-semibold text-white">{f.title}</p><p className="text-[10px] mt-0.5 text-white/60 leading-relaxed">{f.desc}</p></div>
-                          </div>
-                        ))
-                      }
-                    </div>
-
-                    <div className="flex-1" />
-
-                    <div className="flex items-center gap-2">
-                      {mode === "signup" ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-(--brand-teal) flex items-center justify-center text-xs font-bold text-white shadow-(--brand-teal-44)">✨</div>
-                            <span className="text-xs font-semibold text-white">Sign Up</span>
-                          </div>
-                          <div className="h-px w-5 bg-white/10" />
-                          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold text-white/50">🔑</div><span className="text-xs font-semibold text-white/45">Sign In</span></div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold text-white/50">✨</div>
-                            <span className="text-xs font-semibold text-white/45">Sign Up</span>
-                          </div>
-                          <div className="h-px w-5 bg-white/10" />
-                          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-(--brand-teal) flex items-center justify-center text-xs font-bold text-white shadow-(--brand-teal-44)">🔑</div><span className="text-xs font-semibold text-white">Sign In</span></div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <div className="auth-popup-card w-full max-w-lg min-w-0 flex flex-col shadow-2xl rounded-2xl overflow-hidden">
 
                 <div className="flex-1 w-full min-w-0 min-h-0 flex flex-col bg-white overflow-hidden">
                   <div className="h-1 w-full shrink-0 bg-(--brand-teal)" />
                   <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 md:px-6 md:py-5">
-                    <div className="mb-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center text-(--brand-navy) bg-(--brand-navy-14) px-2 py-0.5 rounded-full">{otpOpen ? "Verify OTP" : mode === "signup" ? "Sign Up" : "Sign In"}</p>
-                      <h2 className="text-base font-bold text-(--form-dark) mt-1 text-center">
-                        {otpOpen ? "Verify your number" : mode === "signup" ? "Create your account" : "Welcome back"}
-                      </h2>
-                      <p className="text-xs text-(--brand-gray) mt-0.5 text-center">
-                        {otpOpen
-                          ? `Enter the OTP sent to +91 ${otpMobile}`
-                          : mode === "signup" ? "Sign up to apply for a loan" : "Sign in to continue your application"}
-                      </p>
-                    </div>
-
-                    {!otpOpen && (
-                      <div className="flex rounded-xl border border-slate-200 p-0.5 mb-4 bg-slate-50" role="tablist">
-                        {(["signup", "signin"] as const).map((m) => (
-                          <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => switchMode(m)}
-                            className={`flex-1 rounded-lg py-1.5 px-3 text-xs font-bold transition-all duration-200 cursor-pointer ${mode === m ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                            {m === "signup" ? "✨ Sign Up" : "🔑 Sign In"}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
                     {otpOpen && (
                       <form onSubmit={onOtpVerify} className="space-y-3.5">
                         <div className="text-center pt-1">
@@ -887,36 +771,33 @@ const AccountMenu = () => {
                             {signinBusy ? "Sending OTP…" : "Sign In"}
                           </Button>
                         </div>
-                        <p className="text-center text-xs text-slate-400">New to Indexia? <button type="button" onClick={() => switchMode("signup")}
-                          className="font-semibold text-(--brand-navy) hover:underline cursor-pointer">Create an account</button></p>
                       </form>
                     )}
 
                     {!otpOpen && mode === "signup" && (
                       <form onSubmit={onSubmit} className="space-y-3">
-                        <p className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-amber-800">
-                          <span className="shrink-0">&#x1F4C4;</span>
-                          <span>Enter your details <strong>exactly as on your PAN card</strong> &#x2014; carried to your loan application, locked there.</span>
-                        </p>
-
                         <div>
-                          <Label>Role</Label>
+                          <Label>Your details</Label>
                           <div className="grid grid-cols-2 gap-2">
-                            {ROLES.map(({ role, blurb, icon }) => {
-                              const active = form.role === role;
-                              return (
-                                <button key={role} type="button" onClick={() => requestRole(role)} aria-pressed={active}
-                                  className={`rounded-xl border p-2.5 text-left transition-all duration-200 cursor-pointer ${active ? "border-(--brand-yellow) bg-(--brand-yellow)/10 ring-2 ring-(--brand-yellow)/40" : "border-slate-200 bg-white/80 hover:border-(--brand-navy) hover:bg-white"}`}>
-                                  <span className={`mb-1 flex h-6 w-6 items-center justify-center rounded-lg ${active ? "bg-(--brand-yellow) text-(--brand-dark)" : "bg-slate-100 text-slate-500"}`}>
-                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path strokeLinecap="round" strokeLinejoin="round" d={icon} /></svg>
-                                  </span>
-                                  <span className="block text-xs font-bold text-slate-800">{role}</span>
-                                  <span className="mt-0.5 block text-[9px] leading-snug text-slate-500">{blurb}</span>
-                                </button>
-                              );
-                            })}
+                            <div>
+                              <input className={fieldClass} value={form.name} placeholder="Full name as per PAN card" autoComplete="name"
+                                onChange={(e) => setField("name", e.target.value)} />
+                              {errors.name && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.name}</p>}
+                            </div>
+                            <div>
+                              <div className={`flex items-center overflow-hidden rounded-xl border bg-white/80 shadow-sm transition focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 ${errors.phone ? "border-red-400" : "border-slate-200"}`}>
+                                <span className="shrink-0 whitespace-nowrap border-r border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" aria-hidden="true">🇮🇳 +91</span>
+                                <input className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" value={form.phone} type="tel" inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" autoComplete="tel"
+                                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} />
+                              </div>
+                              {errors.phone && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.phone}</p>}
+                            </div>
+                            <div className="col-span-2">
+                              <input className={fieldClass} value={form.email} type="email" placeholder="Email" autoComplete="email"
+                                onChange={(e) => setField("email", e.target.value)} />
+                              {errors.email && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.email}</p>}
+                            </div>
                           </div>
-                          {errors.role && <p className="mt-1 text-[10px] font-medium text-red-500">{errors.role}</p>}
                         </div>
 
                         <div>
@@ -924,6 +805,7 @@ const AccountMenu = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <Combo value={form.continent} options={continents.map((c) => c.name)}
                               placeholder={continentsLoading ? "Loading..." : "Select continent"}
+                              disabled={continentsLoading}
                               onChange={(v) => {
                                 const picked = continents.find((item) => item.name === v);
                                 setForm((p) => ({ ...p, continent: v, country: "", countryIso: "" }));
@@ -942,30 +824,6 @@ const AccountMenu = () => {
                               onChange={(v) => { const picked = countries.find((c) => c.name === v); setForm((p) => ({ ...p, country: v, countryIso: picked?.isoCode?.toLowerCase() ?? "" })); setErrors((p) => ({ ...p, country: "" })); }} />
                           </div>
                           {(errors.continent || errors.country) && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.continent || errors.country}</p>}
-                        </div>
-
-                        <div>
-                          <Label>Your details</Label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <input className={fieldClass} value={form.name} placeholder="Full Name" autoComplete="name"
-                                onChange={(e) => setField("name", e.target.value)} />
-                              {errors.name && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.name}</p>}
-                            </div>
-                            <div>
-                              <div className={`flex items-center overflow-hidden rounded-xl border bg-white/80 shadow-sm transition focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 ${errors.phone ? "border-red-400" : "border-slate-200"}`}>
-                                <span className="shrink-0 whitespace-nowrap border-r border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" aria-hidden="true">🇮🇳 +91</span>
-                                <input className="w-full bg-transparent px-3 py-2 text-sm text-slate-700 outline-none" value={form.phone} type="tel" inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" autoComplete="tel"
-                                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} />
-                              </div>
-                              {errors.phone && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.phone}</p>}
-                            </div>
-                            <div className="col-span-2">
-                              <input className={fieldClass} value={form.email} type="email" placeholder="Email" autoComplete="email"
-                                onChange={(e) => setField("email", e.target.value)} />
-                              {errors.email && <p className="mt-0.5 text-[10px] font-medium text-red-500">{errors.email}</p>}
-                            </div>
-                          </div>
                         </div>
 
                         {signupError && (
@@ -996,52 +854,6 @@ const AccountMenu = () => {
           document.body
         )}
 
-      {confirmRole &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-110 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Confirm role"
-            data-role-confirm
-            onClick={() => setConfirmRole(null)}
-            style={{ zIndex: 110 }}
-          >
-            <div
-              className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-              style={{ zIndex: 130 }}
-            >
-              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </span>
-              <h3 className="text-base font-bold text-slate-800">Confirm your role</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-                You have selected <span className="font-semibold text-slate-800">{confirmRole}</span>. This role{" "}
-                <span className="font-semibold text-slate-800">cannot be changed later</span>, for more details
-                contact us.
-              </p>
-              <div className="mt-5 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConfirmRole(null)}
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 cursor-pointer"
-                >
-                  Go back
-                </button>
-                <Button
-                  onClick={applyRole}
-                  className="flex-1"
-                >
-                  Confirm
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   );
 };
