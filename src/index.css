@@ -111,3 +111,8 @@
 .franchise-anchor {
   scroll-margin-top: calc(var(--header-h) + var(--subnav-h) + 0.75rem);
 }
+
+[id$="-datepicker-portal"] {
+  position: relative;
+  z-index: 120;
+}
