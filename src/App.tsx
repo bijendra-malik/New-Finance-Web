@@ -20,7 +20,7 @@ const BeAFranchisorPage = lazy(() => import("./pages/BeAFranchisorPage"));
 
 // ── Franchisor partner portal ────────────────────────────────────────────────
 const FranchisorDashboardPage = lazy(() => import("./pages/FranchisorDashboardPage"));
-const FranchiseLoanFormsPage = lazy(() => import("./pages/franchise/loan-forms/FranchiseLoanFormsPage"));
+const FranchisePortalPage = lazy(() => import("./pages/franchise/loan-forms/FranchisePortalPage"));
 
 // ── Loan dashboards ──────────────────────────────────────────────────────────
 const PersonalLoanDashboard = lazy(() => import("./pages/dashboard/loans/PersonalLoan/PersonalLoanDashboard"));
@@ -195,7 +195,7 @@ function App() {
               <Route path="/be-a-franchisor" element={<Navigate to="/franchise" replace />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
-              <Route path="/franchise/loan-forms" element={<FranchiseLoanFormsPage />} />
+              <Route path="/franchise/loan-forms" element={<FranchisePortalPage />} />
               <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
