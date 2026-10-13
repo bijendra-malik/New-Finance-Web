@@ -12,9 +12,18 @@ export const useFranchiseStatus = (enabled = isFranchiseSignedIn()): { status: s
   const [status, setStatus] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [reported, setReported] = useState(false);
+  const hasFranchiseSession = enabled && isFranchiseSignedIn();
 
   useEffect(() => {
-    if (!enabled) return;
+    // The status endpoint is private to the franchise portal. Callers may pass
+    // `enabled` based on a general customer login, but a valid franchise session
+    // (including the shared auth token) is required before making the request.
+    if (!hasFranchiseSession) {
+      setLoaded(false);
+      setReported(false);
+      setStatus("");
+      return;
+    }
     let active = true;
     fetchFranchiseStatus().then((res) => {
       if (!active) return;
@@ -29,12 +38,12 @@ export const useFranchiseStatus = (enabled = isFranchiseSignedIn()): { status: s
     return () => {
       active = false;
     };
-  }, [enabled]);
+  }, [hasFranchiseSession]);
 
   return {
-    status: enabled ? status : "",
-    loading: enabled && !loaded,
-    reported: enabled && reported,
+    status: hasFranchiseSession ? status : "",
+    loading: hasFranchiseSession && !loaded,
+    reported: hasFranchiseSession && reported,
   };
 };
 
