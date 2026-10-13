@@ -42,8 +42,9 @@ const StatusChip = ({ status }: { status?: string }) => {
 };
 
 /**
- * Section 1 — every client registered under this franchise, with their basic
- * details, a way to register a new one, and each client's loans + status.
+ * Section 1 — Customer Registration: every client registered under this franchise
+ * with the basic details captured at registration, a way to register a new one,
+ * and each client's loans + status.
  */
 const FranchiseCustomersSection = () => {
   const [customers, setCustomers] = useState<FranchiseCustomer[]>([]);
@@ -117,10 +118,11 @@ const FranchiseCustomersSection = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 id="franchise-customers-heading" className="text-xl font-extrabold text-slate-800">
-            Your customers
+            Registered customers
           </h2>
           <p className="mt-1 text-[13px] text-slate-500">
-            Every client registered under your franchise ID. Register a customer once, then file any loan for them.
+            Every client registered under your franchise ID, with the details captured at registration. Register a
+            customer once, then file any loan for them from Loan Products.
           </p>
         </div>
         <Button size="md" onClick={() => setRegisterOpen(true)}>
@@ -167,7 +169,8 @@ const FranchiseCustomersSection = () => {
                 <th scope="col" className="px-5 py-3 font-bold">Customer</th>
                 <th scope="col" className="px-5 py-3 font-bold">Mobile</th>
                 <th scope="col" className="px-5 py-3 font-bold">PAN</th>
-                <th scope="col" className="px-5 py-3 font-bold">Location</th>
+                <th scope="col" className="px-5 py-3 font-bold">Date of birth</th>
+                <th scope="col" className="px-5 py-3 font-bold">Residence</th>
                 <th scope="col" className="px-5 py-3 font-bold">Registered</th>
                 <th scope="col" className="px-5 py-3 font-bold"><span className="sr-only">Actions</span></th>
               </tr>
@@ -181,6 +184,9 @@ const FranchiseCustomersSection = () => {
                   </td>
                   <td className="px-5 py-3.5 font-semibold text-slate-700">{customer.mobile}</td>
                   <td className="px-5 py-3.5 font-semibold tracking-wide text-slate-700">{customer.panNumber}</td>
+                  <td className="px-5 py-3.5 text-[12.5px] text-slate-600">
+                    {customer.dob ? new Date(`${customer.dob}T00:00:00`).toLocaleDateString("en-IN") : "—"}
+                  </td>
                   <td className="px-5 py-3.5 text-slate-600">{customer.city}, {customer.state} — {customer.pincode}</td>
                   <td className="px-5 py-3.5 text-[12.5px] text-slate-500">
                     {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString("en-IN") : "—"}

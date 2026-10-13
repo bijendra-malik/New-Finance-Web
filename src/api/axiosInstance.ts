@@ -1,4 +1,9 @@
 import axios from "axios";
+import {
+  franchiseApplyErrorInterceptor,
+  franchiseApplyRequestInterceptor,
+  franchiseApplyResponseInterceptor,
+} from "./franchiseFiling";
 
 const axiosInstance = axios.create({
   baseURL:
@@ -8,6 +13,14 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Franchise filings: while the franchisor portal has a product form open for a
+// registered client, the form's own apply POST is rewritten to the franchise
+// endpoint (and labelled) here. Inert whenever no filing is in progress.
+axiosInstance.interceptors.request.use(
+  franchiseApplyRequestInterceptor,
+  (error) => Promise.reject(error)
+);
 
 // Attach the user bearer token to every request if available.
 // Franchise portal endpoints now authenticate with the same user token, so
@@ -33,6 +46,13 @@ axiosInstance.interceptors.response.use(
     }
     return Promise.reject(error);
   }
+);
+
+// Franchise filings: keep the returned receipt coherent and surface franchise
+// failure messages through the form's own error surface.
+axiosInstance.interceptors.response.use(
+  franchiseApplyResponseInterceptor,
+  franchiseApplyErrorInterceptor
 );
 
 export default axiosInstance;

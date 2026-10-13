@@ -109,13 +109,39 @@ type DataEnvelope = { success: boolean; message?: string; data?: unknown };
 const unwrap = <T>(
   res: { data?: DataEnvelope },
   fallback: string,
-): { ok: true; data: T } | { ok: false; message: string } => {
+): { ok: true; data: T } | { ok: false, message: string } => {
   const body = res.data;
   if (!body) return { ok: false, message: fallback };
   if (body.success && body.data !== undefined && body.data !== null) {
     return { ok: true, data: body.data as T };
   }
   return { ok: false, message: body.message || fallback };
+};
+
+/**
+ * Read a list out of an endpoint's `data` payload.
+ *
+ * The franchise service wraps collections under their own key — the client's loans
+ * arrive as `data.applications` — so the named key is preferred and a bare array is
+ * still accepted, which keeps the portal working if a list endpoint is flattened.
+ */
+const unwrapList = <T>(
+  res: { data?: DataEnvelope },
+  keys: readonly string[],
+  fallback: string,
+): { ok: true; items: T[] } | { ok: false; message: string } => {
+  const unwrapped = unwrap<unknown>(res, fallback);
+  if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
+  const payload = unwrapped.data;
+  if (Array.isArray(payload)) return { ok: true, items: payload as T[] };
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    for (const key of keys) {
+      const value = record[key];
+      if (Array.isArray(value)) return { ok: true, items: value as T[] };
+    }
+  }
+  return { ok: false, message: fallback };
 };
 
 // ── API calls ────────────────────────────────────────────────────────────────
@@ -132,9 +158,19 @@ export const registerFranchiseCustomer = async (
       "/franchise/customer/register",
       payload,
     );
-    const unwrapped = unwrap<FranchiseCustomer | undefined>(res, "The customer was registered.");
+    const unwrapped = unwrap<FranchiseCustomer | { customer?: FranchiseCustomer } | undefined>(
+      res,
+      "The customer was registered.",
+    );
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, customer: unwrapped.data ?? null, message: res.data?.message || "Customer registered." };
+    const registered = unwrapped.data;
+    // The registered record may arrive directly or wrapped under `customer`; its
+    // `_id` is what every later call files against (franchiseCustomerId, :ID).
+    const customer =
+      registered && typeof registered === "object" && "_id" in registered
+        ? (registered as FranchiseCustomer)
+        : ((registered as { customer?: FranchiseCustomer } | undefined)?.customer ?? null);
+    return { ok: true, customer, message: res.data?.message || "Customer registered." };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not register the customer.") };
   }
@@ -149,9 +185,9 @@ export const fetchFranchiseCustomers = async (): Promise<
 > => {
   try {
     const res = await axiosInstance.get<FranchiseCustomersResponse>("/franchise/customers");
-    const unwrapped = unwrap<FranchiseCustomer[]>(res, "No customers were returned.");
+    const unwrapped = unwrapList<FranchiseCustomer>(res, ["customers"], "No customers were returned.");
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, customers: unwrapped.data };
+    return { ok: true, customers: unwrapped.items };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load your customers.") };
   }
@@ -179,8 +215,11 @@ export const applyFranchiseCustomerLoan = async <TPayload extends object>(
 };
 
 /**
- * A client's loans.
- * GET /franchise/customer/:id/loans
+ * A client's loans. `customerId` is the client's registry `_id` (the same value
+ * sent as `franchiseCustomerId` when filing), and each row's `applicationNo` is
+ * what the status endpoint takes back.
+ *
+ * GET /franchise/customer/:id/loans — the rows arrive under `data.applications`.
  */
 export const fetchCustomerLoans = async (
   customerId: string,
@@ -189,9 +228,13 @@ export const fetchCustomerLoans = async (
     const res = await axiosInstance.get<CustomerLoansResponse>(
       `/franchise/customer/${encodeURIComponent(customerId)}/loans`,
     );
-    const unwrapped = unwrap<FranchiseCustomerLoan[]>(res, "No loans were returned.");
+    const unwrapped = unwrapList<FranchiseCustomerLoan>(
+      res,
+      ["applications", "loans"],
+      "No loans were returned.",
+    );
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, loans: unwrapped.data };
+    return { ok: true, loans: unwrapped.items };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load this client's loans.") };
   }
@@ -200,6 +243,8 @@ export const fetchCustomerLoans = async (
 /**
  * One loan application's status.
  * GET /franchise/customer/:id/loans/:applicationNo
+ *
+ * `applicationNo` is the application number reported by the client's loan list.
  */
 export const fetchCustomerLoanStatus = async (
   customerId: string,
@@ -209,9 +254,17 @@ export const fetchCustomerLoanStatus = async (
     const res = await axiosInstance.get<CustomerLoansResponse>(
       `/franchise/customer/${encodeURIComponent(customerId)}/loans/${encodeURIComponent(applicationNo)}`,
     );
-    const unwrapped = unwrap<FranchiseCustomerLoan | FranchiseCustomerLoan[]>(res, "The loan status was not returned.");
+    const unwrapped = unwrap<FranchiseCustomerLoan | FranchiseCustomerLoan[] | { applications?: FranchiseCustomerLoan[] }>(
+      res,
+      "The loan status was not returned.",
+    );
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    const first = Array.isArray(unwrapped.data) ? unwrapped.data[0] : unwrapped.data;
+    const payload = unwrapped.data;
+    const first = Array.isArray(payload)
+      ? payload[0]
+      : payload && typeof payload === "object" && Array.isArray(payload.applications)
+        ? payload.applications[0]
+        : payload;
     if (!first) return { ok: false, message: "The loan status was not returned." };
     return { ok: true, loan: first };
   } catch (err) {

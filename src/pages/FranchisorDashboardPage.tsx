@@ -74,6 +74,42 @@ const statusTone = (status?: string): StatusTone => {
   }
 };
 
+/**
+ * The dashboard's left panel points into the franchisor portal, which owns the
+ * customer registry and the loan forms — this page stays the partner overview
+ * (agreement, profile, payouts).
+ */
+const PORTAL_SECTIONS: { id: string; label: string; icon: "user-plus" | "layers" | "search" | "pen-line"; desc: string; to: string }[] = [
+  {
+    id: "register-customer",
+    label: "Register customer",
+    icon: "user-plus",
+    desc: "Add a new client to your franchise",
+    to: "/franchise/loan-forms?section=customers",
+  },
+  {
+    id: "all-loans",
+    label: "All loans",
+    icon: "layers",
+    desc: "Every client and their applications",
+    to: "/franchise/loan-forms?section=customers",
+  },
+  {
+    id: "check-status",
+    label: "Check status",
+    icon: "search",
+    desc: "Look up one loan's current status",
+    to: "/franchise/loan-forms?section=customers",
+  },
+  {
+    id: "apply-loan",
+    label: "Apply loan",
+    icon: "pen-line",
+    desc: "Submit a loan on a customer's behalf",
+    to: "/franchise/loan-forms?section=products",
+  },
+];
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 const FranchisorDashboardPage = () => {
@@ -352,20 +388,15 @@ const FranchisorDashboardPage = () => {
           )}
         </div>
 
-        {/* 4-panel dashboard */}
+        {/* Dashboard sections — the left panel links into the franchisor portal */}
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
           {/* Left panel navigation */}
           <nav className="flex flex-col gap-2 lg:sticky lg:top-(--header-h) lg:self-start" aria-label="Dashboard sections">
-            {[
-              { id: "register-customer", label: "Register customer", icon: "user-plus" as const, desc: "Add a new client to your franchise" },
-              { id: "all-loans", label: "All loans", icon: "layers" as const, desc: "Every application under your franchise" },
-              { id: "check-status", label: "Check status", icon: "search" as const, desc: "Look up one loan's current status" },
-              { id: "apply-loan", label: "Apply loan", icon: "pen-line" as const, desc: "Submit a loan on a customer's behalf" },
-            ].map((item) => (
-              <button
+            {PORTAL_SECTIONS.map((item) => (
+              <Link
                 key={item.id}
-                type="button"
-                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                to={item.to}
+                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
                 style={{
                   background: "rgba(255,255,255,0.55)",
                   border: "1px solid rgba(6,106,156,0.12)",
@@ -373,11 +404,11 @@ const FranchisorDashboardPage = () => {
                 }}
               >
                 <FranchiseIcon name={item.icon} className="h-4.5 w-4.5 shrink-0" />
-                <div>
+                <div className="min-w-0">
                   <p className="text-[13px] font-bold">{item.label}</p>
                   <p className="text-[11.5px] text-slate-500">{item.desc}</p>
                 </div>
-              </button>
+              </Link>
             ))}
             <div className="mt-4 rounded-xl p-4" style={{ background: "var(--brand-navy-14)" }}>
               <p className="text-[11px] font-bold uppercase tracking-wider text-(--brand-navy)">Partner share</p>
@@ -390,62 +421,56 @@ const FranchisorDashboardPage = () => {
 
           {/* Main panel content */}
           <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-lg font-extrabold text-slate-800">Dashboard</h2>
+            <h2 className="text-lg font-extrabold text-slate-800">Franchisor Portal</h2>
             <p className="mt-1 text-[13px] text-slate-500">
-              Select a section from the left to register a customer, view loans, check status, or submit a new application.
+              The portal is where the day-to-day work happens — it has two sections, both live against the franchise
+              service.
             </p>
 
-            {/* Placeholder panels — swap these for real sections when wired */}
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Link
+                to="/franchise/loan-forms?section=customers"
+                className="group rounded-xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-(--brand-teal)/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
                     <FranchiseIcon name="user-plus" className="h-4.5 w-4.5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-700">Register customer</p>
-                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                    <p className="text-sm font-bold text-slate-700">1. Customer Registration</p>
+                    <p className="text-[11.5px] text-slate-500">Register a client, see their loans and each status</p>
                   </div>
                 </div>
-              </div>
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+              </Link>
+              <Link
+                to="/franchise/loan-forms?section=products"
+                className="group rounded-xl border border-slate-100 bg-slate-50 p-4 transition-all hover:border-(--brand-teal)/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
                     <FranchiseIcon name="layers" className="h-4.5 w-4.5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-700">All loans</p>
-                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
+                    <p className="text-sm font-bold text-slate-700">2. Loan Products</p>
+                    <p className="text-[11.5px] text-slate-500">File any product's application for a client</p>
                   </div>
                 </div>
-              </div>
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
-                    <FranchiseIcon name="search" className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">Check status</p>
-                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--brand-navy-14)" }}>
-                    <FranchiseIcon name="pen-line" className="h-4.5 w-4.5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">Apply loan</p>
-                    <p className="text-[11.5px] text-slate-500">Coming soon</p>
-                  </div>
-                </div>
-              </div>
+              </Link>
             </div>
 
-            <p className="mt-4 text-[11.5px] leading-relaxed text-slate-500">
-              These dashboard sections are placeholders. Wire each panel to the relevant franchise API when the endpoints are available.
-            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link
+                to="/franchise/loan-forms"
+                className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
+                style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+              >
+                <FranchiseIcon name="opportunity" className="h-4 w-4" />
+                Open the portal
+              </Link>
+              <span className="text-[11.5px] text-slate-500">
+                Filed under franchise {session.franchiseId}
+              </span>
+            </div>
           </div>
         </div>
       </div>

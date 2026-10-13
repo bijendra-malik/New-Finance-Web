@@ -161,15 +161,16 @@ const LOAN_KEY_TO_NAME: Record<string, string> = Object.fromEntries(
 const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps) => {
   return (
     <div className="mt-8">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-800">All loan products</h2>
+          <h2 className="text-xl font-extrabold text-slate-800">Loan products</h2>
           <p className="mt-1 text-[13px] text-slate-500">
             {PRODUCTS.length} products · filed under <span className="font-bold">{session.franchiseId}</span>
           </p>
         </div>
-        <p className="text-[12px] text-slate-500">
-          Open any form and fill it exactly as the customer would — validations are the same as the customer portal.
+        <p className="max-w-md text-[12px] leading-relaxed text-slate-500">
+          Select a product to pick (or register) the client it is for, then fill the form exactly as the customer
+          would — the fields and validations are the ones the customer portal uses.
         </p>
       </div>
 
@@ -225,15 +226,16 @@ const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps
       <section className="mt-8 rounded-2xl bg-(--brand-navy-14) p-5">
         <h3 className="text-xs font-extrabold uppercase tracking-wider text-(--brand-navy)">About this menu</h3>
         <p className="mt-2 text-[13px] leading-relaxed text-slate-600">
-          Each form below is the real Indexia Finance application for that product. There is no separate "franchise shape" —
-          the validations, required fields, documents and eligibility checks are exactly the ones a customer sees. When you
-          submit on a customer's behalf, your franchise ID is attached to the application so the backend can match it to your
-          account and keep an audit trail of who filed it.
+          Each form below is the real Indexia Finance application for that product — the validations, required fields,
+          documents and eligibility checks are exactly the ones a customer sees, and they stay in step because the portal
+          loads the customer-portal forms themselves. When you submit on a client's behalf, the application is filed
+          against that client's registry record and your franchise ID, so every case can be traced back to you.
         </p>
         <p className="mt-3 text-[12px] text-slate-500">
-          The customer's personal details (name, mobile, email, DOB, PAN, state, city, pincode, residence status) are
-          collected in the form just as they would be on the customer portal. You can pre-fill them if the customer has already
-          provided them, but the form will still validate every field before letting you submit.
+          The client's registered identity — name, mobile, email, date of birth, PAN and address — is filled into the form
+          and locked, so it always matches the record in Customer Registration. Fields the registry does not hold
+          (employment, income, existing loans, and product-specific questions) are filled in the form and validated as
+          usual. To change a client's identity, update the client in Customer Registration.
         </p>
       </section>
     </div>

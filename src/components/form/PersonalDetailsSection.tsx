@@ -8,6 +8,7 @@ import { THEME as C } from "../../constants/theme";
 import { FORM } from "../../constants/formStyles";
 import { formatPAN } from "../../utils/formatters";
 import { accountFieldDefaults, readStoredProfile } from "../../utils/accountProfile";
+import { useApplicantPrefill } from "../../context/applicantPrefillContext";
 
 export type PersonalDetailsField =
   | "fullName" | "mobile" | "email" | "dob" | "panNumber"
@@ -40,9 +41,13 @@ export const PersonalDetailsSection = ({
     [form.state, loadCities]
   );
 
+  // A portal (the franchisor portal filings) can supply the applicant identity;
+  // it takes precedence over the signed-in account's own details.
+  const prefill = useApplicantPrefill();
+
   const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(
-    () => accountFieldDefaults(readStoredProfile()),
-    []
+    () => prefill?.identity ?? accountFieldDefaults(readStoredProfile()),
+    [prefill]
   );
 
   const prefilled = useRef(false);
@@ -51,9 +56,13 @@ export const PersonalDetailsSection = ({
     prefilled.current = true;
     (Object.keys(locked) as PersonalDetailsField[]).forEach(key => {
       const value = locked[key];
-      if (value && !form[key]) set(key, value as string);
+      if (!value) return;
+      // A portal-supplied identity is authoritative — it must also replace
+      // whatever the form seeded from the signed-in account (the franchisee's
+      // own name/mobile would otherwise sit in the applicant's fields).
+      if (prefill || !form[key]) set(key, value as string);
     });
-  }, [locked, form, set]);
+  }, [locked, form, set, prefill]);
 
   const isLocked = (key: PersonalDetailsField) => !!locked[key];
 
@@ -62,8 +71,7 @@ export const PersonalDetailsSection = ({
         {Object.keys(locked).length > 0 && (
           <p className="mb-4 rounded-lg px-3 py-2 text-xs"
             style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
-            🔒 Name, mobile, email{locked.dob ? ", date of birth" : ""}{locked.panNumber ? ", PAN" : ""} and address were filled from your account and are locked.
-            They must match your PAN card — contact support to correct them.
+            {prefill?.note ?? `🔒 Name, mobile, email${locked.dob ? ", date of birth" : ""}${locked.panNumber ? ", PAN" : ""} and address were filled from your account and are locked. They must match your PAN card — contact support to correct them.`}
           </p>
         )}
         <div className={FORM.grid}>
