@@ -33,6 +33,9 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
     .toLowerCase();
   const normalizedStatus = status === "none" ? "" : status;
   const statusMessage = (() => {
+    if (!isLoggedIn) {
+      return { title: "Register or log in to apply", message: "Sign in to submit your franchise application and check its status.", tone: "blue" as const };
+    }
     if (franchiseStatus.loading) {
       return { title: "Checking application status", message: "Please wait while we check your franchise application.", tone: "blue" as const };
     }
@@ -111,7 +114,15 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
               <div>
                 <h3 className="text-base font-extrabold">{statusMessage.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed">{statusMessage.message}</p>
-                {normalizedStatus === "approved" || normalizedStatus === "active" ? (
+                {!isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => requestSignUp()}
+                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
+                  >
+                    Register / Log In
+                  </button>
+                ) : normalizedStatus === "approved" || normalizedStatus === "active" ? (
                   <Link
                     to="/franchise-login"
                     className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
