@@ -5,12 +5,11 @@
  * To update the banner, section heading style, or content layout —
  * change it here once and every loan detail page reflects it.
  */
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import SectionHeading from "../../components/ui/SectionHeading";
 import useSEO from "../../hooks/useSEO";
-import { useApplyAccess } from "../../hooks/useApplyGate";
 
 // ─────────────────────────────────────────────────────────────────────────────
 export interface DetailSection {
@@ -57,8 +56,6 @@ const ShowDetailLayout = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
-  const applyAccess = useApplyAccess();
-  const applyBlocked = useMemo(() => Boolean(applyAccess.blocked), [applyAccess]);
 
   useSEO({
     title: `${loanName} — Rates, Eligibility & Documents`,
@@ -140,16 +137,11 @@ const ShowDetailLayout = ({
 
             {/* RIGHT — Apply Now */}
             <div className="flex flex-col items-start lg:items-end gap-4 shrink-0 lg:pt-2">
-              <div className={`sdl-apply-wrap ${applyBlocked ? "apply-blocked" : ""}`} style={{ opacity: applyBlocked ? 0.5 : 1 }}>
+              <div className="sdl-apply-wrap">
                 <button
-                  onClick={() => !applyBlocked && setIsModalOpen(true)}
+                  onClick={() => setIsModalOpen(true)}
                   className="sdl-apply-inner"
-                  disabled={applyBlocked}
                   style={{
-                    opacity: applyBlocked ? 0.55 : 1,
-                    cursor: applyBlocked ? "not-allowed" : "pointer",
-                    filter: applyBlocked ? "grayscale(0.6)" : "none",
-                    pointerEvents: applyBlocked ? "none" : "auto",
                   }}
                 >
                   Apply Now
@@ -208,12 +200,6 @@ const ShowDetailLayout = ({
           box-shadow: 0 8px 28px rgba(27,108,168,0.5);
         }
         .sdl-apply-inner:active { transform: scale(0.96); }
-        .sdl-apply-wrap.apply-blocked .sdl-apply-inner,
-        .sdl-apply-wrap.apply-blocked .sdl-apply-inner:hover {
-          transform: none;
-          box-shadow: 0 4px 18px rgba(46,139,87,0.4);
-          cursor: default;
-        }
       `}</style>
 
       {/* CONTENT */}
