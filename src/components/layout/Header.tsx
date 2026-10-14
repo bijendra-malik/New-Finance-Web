@@ -104,7 +104,7 @@ const Header = () => {
             <Link to="/" className="col-start-1 row-start-1 flex items-center gap-3">
             <div className="col-start-1 row-start-1 flex items-center gap-3">
               {isRealSafari ? (
-                <img src={LogoAlphaWebp} alt="Indexia Finance" className="h-20 w-auto" />
+                <img src={LogoAlphaWebp} alt="Indexia Finance" decoding="async" className="h-20 w-auto" />
               ) : (
                 <video
                   src={WebmLogo}

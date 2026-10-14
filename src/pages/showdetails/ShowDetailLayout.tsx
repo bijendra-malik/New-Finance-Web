@@ -6,7 +6,7 @@
  * change it here once and every loan detail page reflects it.
  */
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import SectionHeading from "../../components/ui/SectionHeading";
 import useSEO from "../../hooks/useSEO";
@@ -55,7 +55,6 @@ const ShowDetailLayout = ({
 }: ShowDetailLayoutProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const navigate = useNavigate();
 
   useSEO({
     title: `${loanName} — Rates, Eligibility & Documents`,
@@ -64,6 +63,7 @@ const ShowDetailLayout = ({
   });
 
   const visible = expanded ? sections : sections.slice(0, previewCount);
+  const canToggleSections = sections.length > previewCount;
 
   return (
     <>
@@ -87,15 +87,10 @@ const ShowDetailLayout = ({
 
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-12 py-12">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-white/50 mb-7">
-            <button
-              onClick={() => navigate("/")}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Home
-            </button>
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/50 mb-7">
+            <Link to="/" className="hover:text-white transition-colors">Home</Link>
             <span>›</span>
-            <span className="text-white/85 font-medium">{breadcrumb}</span>
+            <span aria-current="page" className="text-white/85 font-medium">{breadcrumb}</span>
           </nav>
 
           {/* Split layout */}
@@ -119,8 +114,8 @@ const ShowDetailLayout = ({
 
               {/* Required Docs link */}
               {docsHref && (
-                <a
-                  href={docsHref}
+                <Link
+                  to={docsHref}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                   style={{
                     background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
@@ -131,7 +126,7 @@ const ShowDetailLayout = ({
                     <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Required Documents
-                </a>
+                </Link>
               )}
             </div>
 
@@ -141,8 +136,6 @@ const ShowDetailLayout = ({
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className="sdl-apply-inner"
-                  style={{
-                  }}
                 >
                   Apply Now
                 </button>
@@ -191,7 +184,7 @@ const ShowDetailLayout = ({
           background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%);
           border: none;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
           box-shadow: 0 4px 18px rgba(46,139,87,0.4);
           white-space: nowrap;
         }
@@ -200,6 +193,10 @@ const ShowDetailLayout = ({
           box-shadow: 0 8px 28px rgba(27,108,168,0.5);
         }
         .sdl-apply-inner:active { transform: scale(0.96); }
+        @media (prefers-reduced-motion: reduce) {
+          .sdl-apply-wrap::before { animation: none; }
+          .sdl-apply-inner { transition: none; }
+        }
       `}</style>
 
       {/* CONTENT */}
@@ -217,25 +214,27 @@ const ShowDetailLayout = ({
           </div>
 
           {/* Read More / Read Less */}
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-xs font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50"
-              style={{ borderColor: "var(--brand-navy-55)", color: ACCENT }}
-            >
-              {expanded ? "Read Less" : "Read More"}
-              <svg
-                className="w-4 h-4 transition-transform duration-200"
-                style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                viewBox="0 0 24 24"
+          {canToggleSections && (
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setExpanded((value) => !value)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border text-xs font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50"
+                style={{ borderColor: "var(--brand-navy-55)", color: ACCENT }}
               >
-                <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
+                {expanded ? "Read Less" : "Read More"}
+                <svg
+                  className="w-4 h-4 transition-transform duration-200"
+                  style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

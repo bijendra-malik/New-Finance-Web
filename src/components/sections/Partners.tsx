@@ -96,6 +96,7 @@ const LogoCard = ({ logo }: { logo: { src: string; name: string } }) => (
       width={110}
       height={52}
       loading="lazy"
+      decoding="async"
       className="max-w-27.5 max-h-13 object-contain"
       draggable={false}
     />

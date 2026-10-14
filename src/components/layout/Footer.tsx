@@ -215,7 +215,7 @@ const Footer = () => {
 
     <footer className="ftr-root">
       <div className="ftr-overlay" />
-      <img src={footerBg} alt="" aria-hidden="true" className="ftr-bg" />
+      <img src={footerBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="ftr-bg" />
 
       {/* Top accent line */}
       <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />

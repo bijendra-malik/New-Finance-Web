@@ -19,9 +19,6 @@ export const useFranchiseStatus = (enabled = isFranchiseSignedIn()): { status: s
     // `enabled` based on a general customer login, but a valid franchise session
     // (including the shared auth token) is required before making the request.
     if (!hasFranchiseSession) {
-      setLoaded(false);
-      setReported(false);
-      setStatus("");
       return;
     }
     let active = true;

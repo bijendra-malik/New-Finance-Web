@@ -110,6 +110,7 @@ const EMICalculatorPage = () => {
           src={bgImage}
           alt=""
           aria-hidden
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Dark navy overlay — keeps content legible while image shows through */}

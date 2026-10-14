@@ -63,17 +63,6 @@ interface ApplicationModalProps {
   activeProduct?: { id: string } | null;
 }
 
-type Step = "details" | "form";
-
-// ── Inline Spinner ─────────────────────────────────────────────────────────────
-
-const Spinner = ({ small }: { small?: boolean }) => (
-  <svg className={`${small ? "w-3.5 h-3.5" : "w-4 h-4"} animate-spin shrink-0`} fill="none" viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
-    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-  </svg>
-);
-
 // ── Reusable Field ─────────────────────────────────────────────────────────────
 
 const Field = ({
@@ -111,9 +100,6 @@ const ApplicationModal = ({
   const navigate = useNavigate();
   const setApplicantPrefill = useSetApplicantPrefill();
 
-  // ── Step ─────────────────────────────────────────────────────────────────
-  const [step, setStep] = useState<Step>("details");
-
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -136,13 +122,9 @@ const ApplicationModal = ({
   };
 
   // ── Step 1 — Save eligibility details → eligibility test ────────────────────
-  const [isSending, setIsSending] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  const isBusy = isSending;
-
   const resetAll = () => {
-    setStep("details");
     setFullName("");
     setMobile("");
     setEmail("");
@@ -154,7 +136,6 @@ const ApplicationModal = ({
   };
 
   const handleClose = () => {
-    if (isBusy) return;
     resetAll();
     onClose();
   };
@@ -196,7 +177,7 @@ const ApplicationModal = ({
     return Object.keys(e).length === 0;
   };
 
-  const resolvedId = (typeof activeProduct === "string" ? activeProduct : activeProduct?.id) || productName;
+  const productKey = activeProduct?.id ?? productName;
 
   const validatePan = (name: "pan", value: string, e: Record<string, string>) => {
     if (!value.trim()) { e[name] = "PAN is required"; return; }
@@ -210,8 +191,12 @@ const ApplicationModal = ({
     e.preventDefault();
     if (!validateDetails()) return;
 
-    setIsSending(true);
     setApiError("");
+    const dashboardPath = productIdRoutes[productKey] ?? dashboardRoutes[productKey];
+    if (!dashboardPath) {
+      setApiError("Application form is not available for this product yet.");
+      return;
+    }
     setApplicantPrefill?.({
       identity: {
         fullName: fullName.trim(),
@@ -222,30 +207,13 @@ const ApplicationModal = ({
       },
       note: "Your details are carried into the application form. You can review them there.",
     });
-    handleOpenForm();
-    setIsSending(false);
+    handleOpenForm(dashboardPath);
   };  // ── Step 2 — Open the product's application form (dashboard) ─────────────────
 
-  const handleOpenForm = () => {
+  const handleOpenForm = (dashboardPath: string) => {
     resetAll();
     onClose();
-    const resolvedPath = (() => {
-      const byProductId = productIdRoutes[resolvedId];
-      if (byProductId) return byProductId;
-      const exact = dashboardRoutes[resolvedId];
-      if (exact) return exact;
-      const byFirstWord = dashboardRoutes[resolvedId.split(/\s+/)[0]];
-      if (byFirstWord) return byFirstWord;
-      const byTail = Object.entries(dashboardRoutes).find((
-        [, route],
-      ) => new RegExp(`^${resolvedId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i').test(route.split('/').pop() ?? ''))?.[1];
-      return byTail ?? null;
-    })();
-    if (!resolvedPath) {
-      setApiError('Application form is not available for this product yet.');
-      return;
-    }
-    navigate(resolvedPath);
+    navigate(dashboardPath);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -298,12 +266,12 @@ const ApplicationModal = ({
                 </button>
               </div>
 
-              {/* Step rail — this flow's real sequence */}
+              {/* Step rail */}
               <ol className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
 
                 {[
-                  { label: "Your details", active: step === "details" },
-                  { label: "Application form", active: step === "form" },
+                  { label: "Your details", active: true },
+                  { label: "Application form", active: false },
                 ].map((s, i, arr) => (
                   <li key={s.label} className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
@@ -341,9 +309,8 @@ const ApplicationModal = ({
                 </div>
               )}
 
-              {/* Details step: capture applicant identity before opening the loan form. */}
-              {step === "details" && (
-                <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
+              {/* Capture applicant identity before opening the loan form. */}
+              <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
                   {/* Product selected on the home page. */}
                   <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
@@ -360,24 +327,24 @@ const ApplicationModal = ({
                     <Field
                       label="Full Name" type="text" name="fullName"
                       value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
-                      placeholder="As shown on your PAN card" error={fieldErrors.fullName} disabled={isSending}
+                      placeholder="As shown on your PAN card" error={fieldErrors.fullName}
                     />
                     <Field
                       label="Mobile Number" type="tel" name="mobile"
                       value={mobile} onChange={(v) => { setMobile(v.replace(/\D/g, "").slice(0, 10)); setFieldErrors((p) => ({ ...p, mobile: "" })); }}
-                      placeholder="10-digit mobile number" error={fieldErrors.mobile} disabled={isSending} maxLength={10}
+                      placeholder="10-digit mobile number" error={fieldErrors.mobile} maxLength={10}
                     />
                     <Field
                       label="Email Address" type="email" name="email"
                       value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
-                      placeholder="you@example.com" error={fieldErrors.email} disabled={isSending}
+                      placeholder="you@example.com" error={fieldErrors.email}
                     />
                     <Field
                       label="Date of Birth" type="date" name="dob"
                       value={dob}
                       max={latestDobForAge(21)}
                       onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
-                      error={fieldErrors.dob} disabled={isSending}
+                      error={fieldErrors.dob}
                     />
                     <Field
                       label="PAN Number" type="text" name="pan"
@@ -385,7 +352,7 @@ const ApplicationModal = ({
                       maxLength={10}
                       onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
                       placeholder="ABCDE1234F"
-                      error={fieldErrors.pan} disabled={isSending}
+                      error={fieldErrors.pan}
                       extraCls="uppercase tracking-wider"
                     />
                   </div>
@@ -398,15 +365,14 @@ const ApplicationModal = ({
                   {/* Buttons */}
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" className="flex-1 rounded-lg font-semibold"
-                      onClick={handleClose} disabled={isSending}>
+                      onClick={handleClose}>
                       Cancel
                     </Button>
-                    <Button type="submit" className="flex-1 rounded-lg font-semibold" disabled={isSending}>
-                      {isSending ? <><Spinner /> Saving...</> : "Continue →"}
+                    <Button type="submit" className="flex-1 rounded-lg font-semibold">
+                      Continue →
                     </Button>
                   </div>
-                </form>
-              )}
+              </form>
 
             </div>
           </div>
