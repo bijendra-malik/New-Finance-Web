@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { useLocation } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 import { FRANCHISE_PLANS } from "../components/franchise/franchiseData";
 import FranchiseHero from "../components/franchise/FranchiseHero";
@@ -42,15 +41,6 @@ const BeAFranchisorPage = () => {
     FRANCHISE_PLANS.find((p) => p.recommended)?.id ?? FRANCHISE_PLANS[0].id,
   );
   const [franchisorFormOpen, setFranchisorFormOpen] = useState(false);
-  const navigate = useNavigate();
-  const { authVisibility } = useAuth();
-
-  // A customer may sign in from the account panel without leaving this page.
-  // Send them to the customer home page as soon as the session role is known.
-  useEffect(() => {
-    if (authVisibility === "customer") navigate("/", { replace: true });
-  }, [authVisibility, navigate]);
-
   // Deep links such as /franchise#become-a-franchisor must scroll to the anchor —
   // pushState navigation does not scroll to the hash on its own.
   const { hash } = useLocation();

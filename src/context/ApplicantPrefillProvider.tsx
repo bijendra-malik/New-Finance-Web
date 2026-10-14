@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { ApplicantPrefillContext } from "./applicantPrefillContext";
+import { useState, type ReactNode } from "react";
+import { ApplicantPrefillActionsContext, ApplicantPrefillContext } from "./applicantPrefillContext";
 import type { ApplicantPrefill } from "./applicantPrefillContext";
 
 /**
@@ -11,8 +11,16 @@ export const ApplicantPrefillProvider = ({
   value,
   children,
 }: {
-  value: ApplicantPrefill;
+  value?: ApplicantPrefill;
   children: ReactNode;
-}) => <ApplicantPrefillContext.Provider value={value}>{children}</ApplicantPrefillContext.Provider>;
+}) => {
+  const [applicant, setApplicant] = useState<ApplicantPrefill | null>(value ?? null);
+  const resolvedValue = value ?? applicant;
+  return (
+    <ApplicantPrefillActionsContext.Provider value={value ? null : setApplicant}>
+      <ApplicantPrefillContext.Provider value={resolvedValue}>{children}</ApplicantPrefillContext.Provider>
+    </ApplicantPrefillActionsContext.Provider>
+  );
+};
 
 export default ApplicantPrefillProvider;

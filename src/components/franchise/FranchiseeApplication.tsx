@@ -1,9 +1,3 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
-import { useFranchiseStatus } from "../../hooks/useFranchiseStatus";
-import { readFranchiseSession } from "../../utils/franchiseSession";
-import { requestSignUp } from "../../utils/signInGate";
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import FranchiseForm from "./FranchiseForm";
@@ -24,51 +18,12 @@ interface FranchiseeApplicationProps {
 
 /** Section 11 — the franchisee application form. */
 const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplicationProps) => {
-  const { user, isLoggedIn } = useAuth();
-  const session = readFranchiseSession();
-  const [submittedStatus, setSubmittedStatus] = useState<string | null>(null);
-  const franchiseStatus = useFranchiseStatus(isLoggedIn || Boolean(session));
-  const status = (submittedStatus ?? (franchiseStatus.reported ? franchiseStatus.status : null) ?? user?.franchiseStatus ?? session?.franchiseStatus ?? "")
-    .trim()
-    .toLowerCase();
-  const normalizedStatus = status === "none" ? "" : status;
-  const statusMessage = (() => {
-    if (!isLoggedIn) {
-      return { title: "Register or log in to apply", message: "Sign in to submit your franchise application and check its status.", tone: "blue" as const };
-    }
-    if (franchiseStatus.loading) {
-      return { title: "Checking application status", message: "Please wait while we check your franchise application.", tone: "blue" as const };
-    }
-    switch (normalizedStatus) {
-      case "pending":
-        return { title: "Application Received", message: "Your franchise application has been received and is awaiting review by our team.", tone: "blue" as const };
-      case "approved":
-      case "active":
-        return { title: "Application Approved", message: "Your application is approved. Kindly go to Franchisor Login to access your dashboard.", tone: "green" as const };
-      case "rejected":
-        return { title: "Application Not Approved", message: "Your franchise application was not approved. Contact the franchise team if you would like to discuss your application.", tone: "red" as const };
-      case "unapproved":
-      case "unverified":
-        return { title: "Application Under Review", message: "Your franchise account is not approved or verified yet. Please contact the franchise team for an update.", tone: "amber" as const };
-      default:
-        return normalizedStatus
-          ? { title: "Application Status", message: "Your franchise application is being reviewed. Contact the franchise team for more information.", tone: "blue" as const }
-          : null;
-    }
-  })();
-  const statusColors = {
-    blue: "border-blue-200 bg-blue-50 text-blue-800",
-    green: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    red: "border-red-200 bg-red-50 text-red-800",
-    amber: "border-amber-200 bg-amber-50 text-amber-800",
-  };
-
   return (
   <SectionShell
     id="franchisee-application"
     eyebrow="Franchisee Application"
-    title={statusMessage?.title ?? "Become an Indexia Franchisee"}
-    subtitle={statusMessage?.message ?? "Register or sign in first, then share your business details exactly as they appear on your PAN card and pick the package duration that suits you."}
+    title="Become an Indexia Franchisee"
+    subtitle="Share your business details as they appear on official documents and choose a package duration."
     tone="tint"
   >
     <div className="grid gap-8 lg:grid-cols-[1fr_1.6fr] lg:items-start">
@@ -102,59 +57,11 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
         </RecipientContact>
       </aside>
 
-      {/* Application form or current application status */}
+      {/* Application form */}
       <div
         className="rounded-3xl bg-white p-6 md:p-8"
         style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 6px 26px rgba(6,106,156,0.1)" }}
       >
-        {statusMessage ? (
-          <div className={`rounded-2xl border p-6 ${statusColors[statusMessage.tone]}`}>
-            <div className="flex items-start gap-3">
-              <FranchiseIcon name={statusMessage.tone === "green" ? "check" : statusMessage.tone === "red" ? "support" : "clock"} filled className="mt-0.5 h-6 w-6 shrink-0" />
-              <div>
-                <h3 className="text-base font-extrabold">{statusMessage.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed">{statusMessage.message}</p>
-                {!isLoggedIn ? (
-                  <button
-                    type="button"
-                    onClick={() => requestSignUp()}
-                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-                  >
-                    Register / Log In
-                  </button>
-                ) : normalizedStatus === "approved" || normalizedStatus === "active" ? (
-                  <Link
-                    to="/franchise-login"
-                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-                  >
-                    Go to Franchisor Login
-                  </Link>
-                ) : normalizedStatus === "rejected" || normalizedStatus === "unapproved" || normalizedStatus === "unverified" ? (
-                  <a
-                    href={`mailto:${FRANCHISE_EMAIL}`}
-                    className="mt-5 inline-flex items-center rounded-xl bg-(--brand-navy) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110"
-                  >
-                    Contact the franchise team
-                  </a>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        ) : (
-        <>
-        {!isLoggedIn && (
-          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900">
-            <p className="text-sm font-semibold">Register or log in to apply for a franchise.</p>
-            <p className="mt-1 text-xs leading-relaxed text-blue-800">Sign in first, then complete your Franchisee Application below.</p>
-            <button
-              type="button"
-              onClick={() => requestSignUp()}
-              className="mt-3 inline-flex items-center rounded-lg bg-(--brand-navy) px-4 py-2 text-sm font-bold text-white transition hover:brightness-110"
-            >
-              Register / Log In
-            </button>
-          </div>
-        )}
         <div className="mb-6 flex items-center gap-3">
           <span
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
@@ -168,16 +75,11 @@ const FranchiseeApplication = ({ packageId, onPackageChange }: FranchiseeApplica
           </div>
         </div>
 
-        {isLoggedIn && (
-          <FranchiseForm
-            variant="franchisee"
-            packageId={packageId ?? undefined}
-            onPackageChange={onPackageChange}
-            onApplicationStatus={setSubmittedStatus}
-          />
-        )}
-        </>
-        )}
+        <FranchiseForm
+          variant="franchisee"
+          packageId={packageId ?? undefined}
+          onPackageChange={onPackageChange}
+        />
       </div>
     </div>
   </SectionShell>

@@ -29,7 +29,7 @@ const DashboardShell = <T,>({
   renderForm,
   renderStatus,
 }: DashboardShellProps<T>) => {
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab,     setActiveTab]     = useState<Tab>("application");
@@ -47,14 +47,12 @@ const DashboardShell = <T,>({
     return () => document.removeEventListener("mousedown", fn);
   }, []);
 
-  if (!isLoggedIn || !user) { navigate("/"); return null; }
-
   const tabs: typeof TABS = [
     { ...TABS[0], desc: applicationDesc ?? TABS[0].desc },
     TABS[1],
   ];
 
-  const initials = user.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+  const initials = user?.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) ?? "GU";
 
   const handleApplicationSubmit = (id: string, app: T) => {
     setApplicationId(id); setSubmittedApp(app);
@@ -162,7 +160,7 @@ const DashboardShell = <T,>({
 
           {/* The form stays mounted (hidden) so a submitted application survives tab switches */}
           <div style={activeTab === "application" ? undefined : { display: "none" }}>
-            {renderForm({ userName: user.name, userEmail: user.email, onSubmit: handleApplicationSubmit })}
+            {renderForm({ userName: user?.name ?? "", userEmail: user?.email ?? "", onSubmit: handleApplicationSubmit })}
           </div>
           {activeTab === "status" && (
             renderStatus({ applicationId, isSubmitted, submittedApp })
@@ -171,7 +169,7 @@ const DashboardShell = <T,>({
       </main>
 
       {/* COL 3: RIGHT PANEL — only bell + profile */}
-      <aside
+      {user && <aside
         className="hidden lg:flex flex-col w-72 shrink-0 border-l"
         style={{ background: "#f8fafc", borderColor: "#e2e8f0" }}
       >
@@ -259,7 +257,7 @@ const DashboardShell = <T,>({
             )}
           </div>
         </div>
-      </aside>
+      </aside>}
 
     </div>
   );

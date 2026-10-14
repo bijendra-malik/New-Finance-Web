@@ -168,13 +168,9 @@ const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps
             {PRODUCTS.length} products · filed under <span className="font-bold">{session.franchiseId}</span>
           </p>
         </div>
-        <p className="max-w-md text-[12px] leading-relaxed text-slate-500">
-          Select a product to pick (or register) the client it is for, then fill the form exactly as the customer
-          would — the fields and validations are the ones the customer portal uses.
-        </p>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PRODUCTS.map((product) => (
           <article
             key={product.key}
@@ -222,22 +218,6 @@ const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps
           </article>
         ))}
       </div>
-
-      <section className="mt-8 rounded-2xl bg-(--brand-navy-14) p-5">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-(--brand-navy)">About this menu</h3>
-        <p className="mt-2 text-[13px] leading-relaxed text-slate-600">
-          Each form below is the real Indexia Finance application for that product — the validations, required fields,
-          documents and eligibility checks are exactly the ones a customer sees, and they stay in step because the portal
-          loads the customer-portal forms themselves. When you submit on a client's behalf, the application is filed
-          against that client's registry record and your franchise ID, so every case can be traced back to you.
-        </p>
-        <p className="mt-3 text-[12px] text-slate-500">
-          The client's registered identity — name, mobile, email, date of birth, PAN and address — is filled into the form
-          and locked, so it always matches the record in Customer Registration. Fields the registry does not hold
-          (employment, income, existing loans, and product-specific questions) are filled in the form and validated as
-          usual. To change a client's identity, update the client in Customer Registration.
-        </p>
-      </section>
     </div>
   );
 };

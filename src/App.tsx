@@ -4,6 +4,7 @@ import WebsiteLayout from "./components/layout/WebsiteLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./context/authContext";
+import ApplicantPrefillProvider from "./context/ApplicantPrefillProvider";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
 
@@ -12,6 +13,7 @@ import ContactPage from "./pages/ContactPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import FranchiseLoginPage from "./pages/FranchiseLoginPage";
 import MyApplicationsPage from "./pages/MyApplicationsPage";
+import ApplicationStatusPage from "./pages/ApplicationStatusPage";
 import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
 import EMICalculatorPage from "./pages/EMICalculatorPage";
 
@@ -173,6 +175,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <ApplicantPrefillProvider>
         <WebsiteLayout>
           <ErrorBoundary>
             <Suspense fallback={<RouteFallback />}>
@@ -197,6 +200,7 @@ function App() {
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
               <Route path="/franchise/loan-forms" element={<FranchisePortalPage />} />
               <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
+              <Route path="/application-status" element={<ApplicationStatusPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
@@ -205,11 +209,7 @@ function App() {
                 <Route
                   key={path}
                   path={path}
-                  element={
-                    <ProtectedRoute>
-                      {element}
-                    </ProtectedRoute>
-                  }
+                  element={element}
                 />
               ))}
 
@@ -218,6 +218,7 @@ function App() {
             </Suspense>
           </ErrorBoundary>
         </WebsiteLayout>
+        </ApplicantPrefillProvider>
       </AuthProvider>
     </Router>
   );

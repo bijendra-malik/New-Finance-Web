@@ -20,7 +20,10 @@ export interface ApplicantPrefill {
 }
 
 export const ApplicantPrefillContext = createContext<ApplicantPrefill | null>(null);
+export const ApplicantPrefillActionsContext = createContext<((value: ApplicantPrefill | null) => void) | null>(null);
 
 /** The identity a host (e.g. the franchisor portal) wants a form to apply for. */
 export const useApplicantPrefill = (): ApplicantPrefill | null =>
   useContext(ApplicantPrefillContext);
+
+export const useSetApplicantPrefill = () => useContext(ApplicantPrefillActionsContext);

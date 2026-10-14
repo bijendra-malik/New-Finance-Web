@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { useAuth } from "../../context/authContext";
-import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
+import { Link } from "react-router-dom";
 import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { requestSignUp } from "../../utils/signInGate";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
 import { applyFranchise } from "../../api/franchise";
@@ -65,7 +63,6 @@ interface FranchiseFormProps {
   /** Franchisee only — controlled by the page so the plan cards can pre-select. */
   packageId?: string;
   onPackageChange?: (planId: string) => void;
-  onApplicationStatus?: (status: string) => void;
 }
 
 /**
@@ -81,12 +78,11 @@ interface FranchiseFormProps {
  * The franchisor variant is a lightweight enquiry and still hands the details to
  * the visitor's mail client addressed to the franchise team.
  */
-const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange, onApplicationStatus }: FranchiseFormProps) => {
+const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: FranchiseFormProps) => {
   const isFranchisee = variant === "franchisee";
   const { masters, loadCities } = useMasters();
-  const { user, isLoggedIn } = useAuth();
-  // Franchisor login is disabled (greyed out) for signed-out visitors.
-  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  const { user } = useAuth();
+  const franchisorLoginEnabled = true;
 
   // Both variants can be mounted at once (the franchisor form opens in a modal over the page),
   // so every field id is namespaced per variant to keep the DOM ids unique.
@@ -261,7 +257,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange, onA
         });
         return;
       }
-      onApplicationStatus?.(res.franchiseStatus?.trim() || "pending");
       setPopup({
         tone: "success",
         message:
@@ -298,13 +293,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange, onA
 
     if (!isFranchisee) {
       submitEnquiry(current);
-      return;
-    }
-    if (!isLoggedIn) {
-      setPopup({
-        tone: "error",
-        message: "Register or sign in with your mobile number before submitting your application.",
-      });
       return;
     }
     void submitApplication(current);
@@ -364,38 +352,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange, onA
       </div>
     </Modal>
   );
-
-  // ── Registration gate — a signed-out visitor cannot fill the franchisee form ──
-  if (isFranchisee && !isLoggedIn) {
-    return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-navy)">
-          <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-extrabold text-slate-800">Register to apply for a franchise</h3>
-        <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-slate-600">
-          Only registered users can submit a franchise application. Register with your name, mobile
-          number and email — those details are carried into this form automatically — then complete the
-          business details here.
-        </p>
-        <div className="mt-6">
-          <Button
-            type="button"
-            size="lg"
-            onClick={() => requestSignUp()}
-            style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-teal) 100%)" }}
-          >
-            Register / Sign In
-          </Button>
-        </div>
-        <p className="mt-3 text-[11.5px] text-slate-500">
-          Already registered? Sign in from the same panel with your mobile number.
-        </p>
-      </div>
-    );
-  }
 
   // ── Success — application received, credentials to follow ────────────────────
   if (submitted && isFranchisee) {

@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
+import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX, PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { getApiErrorMessage } from "../../utils/apiError";
-import { mergeAccountDetails, readAccountRecord } from "../../utils/accountProfile";
-import { applyRegister } from "../../api/auth";
+import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
 import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -111,16 +109,16 @@ const ApplicationModal = ({
   activeProduct,
 }: ApplicationModalProps) => {
   const navigate = useNavigate();
-  // Read the account on every render while open: it's external state that is usually created *after* this component first mounts (sign-up runs while it's already mounted), so a mount-time memo would go stale.
-  const account = isOpen ? readAccountRecord() : null;
-  const accountMobile = (account?.phone ?? "").replace(/\D/g, "").slice(-10);
+  const setApplicantPrefill = useSetApplicantPrefill();
 
   // ── Step ─────────────────────────────────────────────────────────────────
   const [step, setStep] = useState<Step>("details");
 
-  // Eligibility fields — POST /customer/apply-register { product, dob, panNumber } The product is the one the visitor chose to apply for (prop), never picked here.
-  const [dob, setDob] = useState(() => readAccountRecord()?.dob ?? "");
-  const [pan, __setPan] = useState(() => (readAccountRecord()?.pan ?? "").toUpperCase());
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [dob, setDob] = useState("");
+  const [pan, __setPan] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // PAN-format setter (the structured "autostop" A→Z then 0-9 flush) "Autostop alphanumeric letters": while typing, keep A-Z letters until the 5-letter block is full, then only accept 0-9 digits for the next 4 slots; slot 10 accepts a letter only — the check letter from the card.
@@ -145,8 +143,11 @@ const ApplicationModal = ({
 
   const resetAll = () => {
     setStep("details");
-    setDob(account?.dob ?? "");
-    __setPan((account?.pan ?? "").toUpperCase());
+    setFullName("");
+    setMobile("");
+    setEmail("");
+    setDob("");
+    __setPan("");
     setFieldErrors({});
     setApiError("");
 
@@ -184,7 +185,10 @@ const ApplicationModal = ({
 
   const validateDetails = () => {
     const e: Record<string, string> = {};
-    if (!accountMobile) e.account = "No account found — create one from the Login menu first";
+    if (!fullName.trim()) e.fullName = "Full name is required";
+    else if (!NAME_REGEX.test(fullName.trim())) e.fullName = "Enter a valid full name";
+    if (!MOBILE_REGEX.test(mobile)) e.mobile = "Enter a valid 10-digit mobile number";
+    if (!EMAIL_REGEX.test(email)) e.email = "Enter a valid email address";
     if (!dob) e.dob = "Date of birth is required";
     else if (!isAtLeastAge(dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
     validatePan("pan", pan, e);
@@ -202,26 +206,24 @@ const ApplicationModal = ({
   // ── Step 1 — Save eligibility details → eligibility test ────────────────────
 
 
-  const handleDetailsSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  const handleDetailsSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     if (!validateDetails()) return;
 
     setIsSending(true);
     setApiError("");
-    try {
-      await applyRegister({
-        product: resolvedId,
+    setApplicantPrefill?.({
+      identity: {
+        fullName: fullName.trim(),
+        mobile,
+        email: email.trim(),
         dob,
         panNumber: pan,
-      });
-      mergeAccountDetails({ dob, pan });
-      handleOpenForm();
-    } catch (err) {
-      const msg = getApiErrorMessage(err, "Failed to save your details. Please try again.");
-      setApiError(msg);
-    } finally {
-      setIsSending(false);
-    }
+      },
+      note: "Your details are carried into the application form. You can review them there.",
+    });
+    handleOpenForm();
+    setIsSending(false);
   };  // ── Step 2 — Open the product's application form (dashboard) ─────────────────
 
   const handleOpenForm = () => {
@@ -283,7 +285,7 @@ const ApplicationModal = ({
                     {productName}
                   </h2>
                   <p className="mt-0.5 text-xs sm:text-sm text-white/70">
-                    Two quick details to register your application, then the application form.
+                    Add your contact and identity details to start the application.
                   </p>
                 </div>
                 <button
@@ -339,58 +341,10 @@ const ApplicationModal = ({
                 </div>
               )}
 
-              {/* Details step: locked record + PAN inputs */}
+              {/* Details step: capture applicant identity before opening the loan form. */}
               {step === "details" && (
                 <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
-                  {fieldErrors.account && (
-                    <p className="text-xs font-medium text-red-500">{fieldErrors.account}</p>
-                  )}
-                  {!account && !fieldErrors.account && (
-                    <p className="text-xs font-medium text-amber-600">
-                      No account found — create one from the Login menu first.
-                    </p>
-                  )}
-
-                  {/* Registered details — created at sign-up, not editable here */}
-                  <section
-                    aria-labelledby="registered-details-heading"
-                    className="rounded-xl border border-dashed border-(--brand-teal-60) bg-(--form-subtle-bg) px-4 py-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <h3
-                        id="registered-details-heading"
-                        className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--brand-navy)"
-                      >
-                        Registered details
-                      </h3>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-(--brand-yellow)/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                        <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round"
-                            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                        </svg>
-                        Locked
-                      </span>
-                    </div>
-                    <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
-                      {([
-                        ["Full name", account?.name],
-                        ["Mobile", accountMobile ? `+91 ${accountMobile}` : ""],
-                        ["Email", account?.email],
-                        ["Role", account?.role],
-                        ["Country", account?.country],
-                      ] as const).map(([label, value]) => (
-                        <div key={label} className="min-w-0">
-                          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-                          <dd className="truncate text-sm font-semibold text-slate-700">{value || "—"}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                    <p className="mt-2 text-[11px] leading-snug text-slate-500">
-                      Created when you registered — these carry into every application form and can't be changed here.
-                    </p>
-                  </section>
-
-                  {/* Product — the one chosen to apply for; sent unchanged */}
+                  {/* Product selected on the home page. */}
                   <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
                     <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-slate-800">
@@ -401,8 +355,23 @@ const ApplicationModal = ({
                     </p>
                   </div>
 
-                  {/* DOB + PAN — from PAN card */}
+                  {/* Applicant details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                    <Field
+                      label="Full Name" type="text" name="fullName"
+                      value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
+                      placeholder="As shown on your PAN card" error={fieldErrors.fullName} disabled={isSending}
+                    />
+                    <Field
+                      label="Mobile Number" type="tel" name="mobile"
+                      value={mobile} onChange={(v) => { setMobile(v.replace(/\D/g, "").slice(0, 10)); setFieldErrors((p) => ({ ...p, mobile: "" })); }}
+                      placeholder="10-digit mobile number" error={fieldErrors.mobile} disabled={isSending} maxLength={10}
+                    />
+                    <Field
+                      label="Email Address" type="email" name="email"
+                      value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                      placeholder="you@example.com" error={fieldErrors.email} disabled={isSending}
+                    />
                     <Field
                       label="Date of Birth" type="date" name="dob"
                       value={dob}
@@ -423,7 +392,7 @@ const ApplicationModal = ({
 
                   {/* Subtle note — these come from PAN card */}
                   <p className="text-xs text-slate-400 -mt-1">
-                    DOB &amp; PAN must match your PAN card.
+                    Your name, date of birth and PAN should match your PAN card.
                   </p>
 
                   {/* Buttons */}
