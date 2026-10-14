@@ -14,14 +14,14 @@ const PageBanner = ({ breadcrumb, title, highlight, tagline }: PageBannerProps) 
       background: "linear-gradient(120deg, #0e1e3c 0%, #1b6ca8 55%, #1e90ff 100%)",
     }}
   >
-    <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border-24 border-white/5" />
-    <div className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full border-32 border-white/5" />
+    <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border-24 border-white/5" />
+    <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/4 h-80 w-80 rounded-full border-32 border-white/5" />
 
     <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-12 md:px-12">
-      <nav className="mb-7 flex items-center gap-2 text-sm text-white/50">
+      <nav aria-label="Breadcrumb" className="mb-7 flex items-center gap-2 text-sm text-white/50">
         <Link to="/" className="transition-colors hover:text-white">Home</Link>
         <span>›</span>
-        <span className="font-medium text-white/85">{breadcrumb}</span>
+        <span aria-current="page" className="font-medium text-white/85">{breadcrumb}</span>
       </nav>
 
       <h1 className="mb-3 text-2xl font-extrabold leading-tight text-white md:text-4xl">
