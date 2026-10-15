@@ -9,12 +9,7 @@ const FRANCHISE_SECTIONS = [
   { id: "faqs", label: "FAQs" },
 ] as const;
 
-interface FranchiseSubNavProps {
-  /** Opens the franchisee application popup — the form no longer lives on the page. */
-  onApply: () => void;
-}
-
-const FranchiseSubNav = ({ onApply }: FranchiseSubNavProps) => {
+const FranchiseSubNav = () => {
   const [active, setActive] = useState<string>(FRANCHISE_SECTIONS[0].id);
   const [stuck, setStuck] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
