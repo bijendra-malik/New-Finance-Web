@@ -4,6 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { THEME as C } from "../../../../constants/theme";
 import { FORM } from "../../../../constants/formStyles";
 import { useAuth } from "../../../../context/authContext";
+import {
+  clearApplySessionPending,
+  dropApplySession,
+  isApplySessionPending,
+} from "../../../../utils/applySession";
 
 type Tab = "application" | "status";
 
@@ -54,7 +59,26 @@ const DashboardShell = <T,>({
 
   const initials = user?.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) ?? "GU";
 
+  // `logout` is a fresh function on every render, so it is held in a ref and the
+  // exit check runs once on unmount instead of on every re-render.
+  const logoutRef = useRef(logout);
+  useEffect(() => { logoutRef.current = logout; });
+
+  // An apply-flow session only exists to file one application. Leaving the
+  // dashboard without submitting drops it, so no half-finished session is left
+  // holding a token.
+  useEffect(() => () => {
+    if (!isApplySessionPending()) return;
+    // React's dev double-mount unmounts without changing the route; only a real
+    // exit has already moved off the dashboard when this cleanup runs.
+    if (window.location.pathname.startsWith("/dashboard")) return;
+    dropApplySession();
+    logoutRef.current();
+  }, []);
+
   const handleApplicationSubmit = (id: string, app: T) => {
+    // The session has now filed an application, so it stops being disposable.
+    clearApplySessionPending();
     setApplicationId(id); setSubmittedApp(app);
     setIsSubmitted(true); setActiveTab("status");
     document.getElementById("loan-dashboard-main")?.scrollTo({ top: 0, behavior: "smooth" });
