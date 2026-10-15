@@ -208,9 +208,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
   } = useApplicationSubmit<CreditCardApplication>({
     computeErrors, markAllTouched, agreed,
-    submit: async () => {
-          const app = {
-            fullName:form.fullName, mobile:form.mobile, email:form.email,
+    submit: async () => {      const app = {
+      product:"credit-card" as const,
+      fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
             residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,

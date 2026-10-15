@@ -4,8 +4,9 @@ import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from 
 // ── Types (aligned with the backend's PersonalLoan document) ──────────────────
 
 export interface PersonalLoanPayload {
+  product: "personal";
   loanAmount: number;
-  loanTenure: number; // months
+  loanTenure: number; // years
   employmentType: string;
   companyName?: string;
   companyType?: string;
@@ -69,14 +70,14 @@ export interface PersonalLoanApplication {
 
 /**
  * Submit personal loan application.
- * POST /personal-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyPersonalLoan = async (
   payload: PersonalLoanPayload
 ): Promise<ApplyResponse<PersonalLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<PersonalLoanApplication>>(
-    "/personal-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -84,12 +85,13 @@ export const applyPersonalLoan = async (
 
 /**
  * Fetch all personal loan applications for the logged-in user.
- * GET /personal-loan/applications
+ * GET /customer/loan-apply?product=personal
  * Requires: Authorization: Bearer <token>
  */
 export const fetchPersonalLoanApplications = async (): Promise<ApplicationsResponse<PersonalLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<PersonalLoanApplication>>(
-    "/personal-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "personal" } },
   );
   return response.data;
 };

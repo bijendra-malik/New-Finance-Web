@@ -32,20 +32,20 @@ export interface LoanAgainstPropertyApplication {
   updatedAt?: string;
 }
 
-export type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "loan-against-property" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit LoanAgainstProperty application.
- * POST /loan-against-property/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyLoanAgainstProperty = async (
   payload: LoanAgainstPropertyPayload
 ): Promise<ApplyResponse<LoanAgainstPropertyApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<LoanAgainstPropertyApplication>>(
-    "/loan-against-property/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -53,12 +53,13 @@ export const applyLoanAgainstProperty = async (
 
 /**
  * Fetch all LoanAgainstProperty applications for the logged-in user.
- * GET /loan-against-property/applications
+ * GET /customer/loan-apply?product=loan-against-property
  * Requires: Authorization: Bearer <token>
  */
 export const fetchLoanAgainstPropertyApplications = async (): Promise<ApplicationsResponse<LoanAgainstPropertyApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<LoanAgainstPropertyApplication>>(
-    "/loan-against-property/applications"
+    "/customer/loan-apply",
+    { params: { product: "loan-against-property" } }
   );
   return response.data;
 };

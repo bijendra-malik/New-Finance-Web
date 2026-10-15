@@ -34,20 +34,20 @@ export interface GoldLoanApplication {
   updatedAt?: string;
 }
 
-export type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "gold" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit GoldLoan application.
- * POST /gold-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyGoldLoan = async (
   payload: GoldLoanPayload
 ): Promise<ApplyResponse<GoldLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<GoldLoanApplication>>(
-    "/gold-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -55,12 +55,13 @@ export const applyGoldLoan = async (
 
 /**
  * Fetch all GoldLoan applications for the logged-in user.
- * GET /gold-loan/applications
+ * GET /customer/loan-apply?product=gold
  * Requires: Authorization: Bearer <token>
  */
 export const fetchGoldLoanApplications = async (): Promise<ApplicationsResponse<GoldLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<GoldLoanApplication>>(
-    "/gold-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "gold" } }
   );
   return response.data;
 };

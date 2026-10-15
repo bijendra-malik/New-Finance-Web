@@ -73,7 +73,7 @@ const Header = () => {
       { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
       { label: "EMI Calculator",     href: "/emi-calculator" },
       { label: "Loan Eligibility",   href: "/eligibility-calculator" },
-      { label: "Be a Franchisor",     href: "/franchise" },
+      { label: "Be a Franchisee",     href: "/franchise" },
       { label: "Contact Us",         href: "/contact" },
     ];
     return all;

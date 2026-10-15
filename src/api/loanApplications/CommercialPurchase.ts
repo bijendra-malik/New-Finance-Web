@@ -32,20 +32,20 @@ export interface CommercialPurchaseApplication {
   updatedAt?: string;
 }
 
-export type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "commercial-purchase" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit CommercialPurchase application.
- * POST /commercial-purchase/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyCommercialPurchase = async (
   payload: CommercialPurchasePayload
 ): Promise<ApplyResponse<CommercialPurchaseApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<CommercialPurchaseApplication>>(
-    "/commercial-purchase/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -53,12 +53,13 @@ export const applyCommercialPurchase = async (
 
 /**
  * Fetch all CommercialPurchase applications for the logged-in user.
- * GET /commercial-purchase/applications
+ * GET /customer/loan-apply?product=commercial-purchase
  * Requires: Authorization: Bearer <token>
  */
 export const fetchCommercialPurchaseApplications = async (): Promise<ApplicationsResponse<CommercialPurchaseApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<CommercialPurchaseApplication>>(
-    "/commercial-purchase/applications"
+    "/customer/loan-apply",
+    { params: { product: "commercial-purchase" } }
   );
   return response.data;
 };

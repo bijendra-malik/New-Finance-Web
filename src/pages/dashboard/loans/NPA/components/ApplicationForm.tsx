@@ -268,9 +268,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
   } = useApplicationSubmit<NPAApplication>({
     computeErrors, markAllTouched, agreed,
-    submit: async () => {
-          const app = {
-            fullName:form.fullName, mobile:form.mobile, email:form.email,
+    submit: async () => {      const app = {
+      product:"npa" as const,
+      fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
             residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,

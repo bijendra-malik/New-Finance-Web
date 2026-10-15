@@ -215,8 +215,9 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   } = useApplicationSubmit<FilmLoanApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {
-          const app = {
-            fullName:form.fullName, mobile:form.mobile, email:form.email,
+      const app = {
+        product:"film" as const,
+        fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
             residenceStatus:form.residenceStatus===OTHER_OPTION?OTHER_OPTION:form.residenceStatus,

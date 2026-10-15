@@ -37,20 +37,20 @@ export interface EducationLoanApplication {
   updatedAt?: string;
 }
 
-export type EducationLoanPayload = Omit<EducationLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type EducationLoanPayload = Omit<EducationLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "education" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit EducationLoan application.
- * POST /education-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyEducationLoan = async (
   payload: EducationLoanPayload
 ): Promise<ApplyResponse<EducationLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<EducationLoanApplication>>(
-    "/education-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -58,12 +58,13 @@ export const applyEducationLoan = async (
 
 /**
  * Fetch all EducationLoan applications for the logged-in user.
- * GET /education-loan/applications
+ * GET /customer/loan-apply?product=education
  * Requires: Authorization: Bearer <token>
  */
 export const fetchEducationLoanApplications = async (): Promise<ApplicationsResponse<EducationLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<EducationLoanApplication>>(
-    "/education-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "education" } }
   );
   return response.data;
 };

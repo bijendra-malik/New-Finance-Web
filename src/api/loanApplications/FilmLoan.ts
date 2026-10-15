@@ -31,20 +31,20 @@ export interface FilmLoanApplication {
   updatedAt?: string;
 }
 
-export type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "film" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit FilmLoan application.
- * POST /film-funding/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyFilmLoan = async (
   payload: FilmLoanPayload
 ): Promise<ApplyResponse<FilmLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<FilmLoanApplication>>(
-    "/film-funding/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -52,12 +52,13 @@ export const applyFilmLoan = async (
 
 /**
  * Fetch all FilmLoan applications for the logged-in user.
- * GET /film-funding/applications
+ * GET /customer/loan-apply?product=film
  * Requires: Authorization: Bearer <token>
  */
 export const fetchFilmLoanApplications = async (): Promise<ApplicationsResponse<FilmLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<FilmLoanApplication>>(
-    "/film-funding/applications"
+    "/customer/loan-apply",
+    { params: { product: "film" } }
   );
   return response.data;
 };

@@ -32,20 +32,20 @@ export interface ProjectLoanApplication {
   updatedAt?: string;
 }
 
-export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "project" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit ProjectLoan application.
- * POST /project-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyProjectLoan = async (
   payload: ProjectLoanPayload
 ): Promise<ApplyResponse<ProjectLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<ProjectLoanApplication>>(
-    "/project-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -53,12 +53,13 @@ export const applyProjectLoan = async (
 
 /**
  * Fetch all ProjectLoan applications for the logged-in user.
- * GET /project-loan/applications
+ * GET /customer/loan-apply?product=project
  * Requires: Authorization: Bearer <token>
  */
 export const fetchProjectLoanApplications = async (): Promise<ApplicationsResponse<ProjectLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<ProjectLoanApplication>>(
-    "/project-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "project" } }
   );
   return response.data;
 };

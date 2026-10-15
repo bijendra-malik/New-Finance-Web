@@ -31,20 +31,20 @@ export interface BalanceTransferApplication {
   updatedAt?: string;
 }
 
-export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "balance-transfer" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit BalanceTransfer application.
- * POST /balance-transfer/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyBalanceTransfer = async (
   payload: BalanceTransferPayload
 ): Promise<ApplyResponse<BalanceTransferApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<BalanceTransferApplication>>(
-    "/balance-transfer/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -52,12 +52,13 @@ export const applyBalanceTransfer = async (
 
 /**
  * Fetch all BalanceTransfer applications for the logged-in user.
- * GET /balance-transfer/applications
+ * GET /customer/loan-apply?product=balance-transfer
  * Requires: Authorization: Bearer <token>
  */
 export const fetchBalanceTransferApplications = async (): Promise<ApplicationsResponse<BalanceTransferApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<BalanceTransferApplication>>(
-    "/balance-transfer/applications"
+    "/customer/loan-apply",
+    { params: { product: "balance-transfer" } }
   );
   return response.data;
 };

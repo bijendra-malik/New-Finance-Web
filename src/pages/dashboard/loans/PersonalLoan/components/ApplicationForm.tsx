@@ -123,6 +123,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
         await Promise.allSettled(form.existingBanksOther.map(b => addCustomBankName(b)));
       }
       const res = await applyPersonalLoan({
+        product: "personal",
         fullName: form.fullName, mobile: form.mobile, email: form.email,
         dob: new Date(form.dob).toISOString(), panNumber: form.panNumber.toUpperCase(),
         state: form.state, city: form.city, pincode: form.pincode,
@@ -139,7 +140,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
           ? (form.salaryBankName === OTHER_OPTION ? (form.salaryBankNameOther.trim() || undefined) : undefined)
           : undefined,
         loanAmount: form.loanAmount,
-        loanTenure: (form.loanTenureYears === MORE_THAN_TENURE_OPTION ? form.loanTenureYearsCustom : form.loanTenureYears) * 12,
+        loanTenure: form.loanTenureYears === MORE_THAN_TENURE_OPTION ? form.loanTenureYearsCustom : form.loanTenureYears,
         existingEMI: parseInt(form.existingEMI) || 0, existingLoanAmount: parseInt(form.existingLoanAmount) || 0,
         existingBanks: stripOther(form.existingBanks), otherBankList: form.existingBanksOther,
         existingLoanTypes: stripOther(form.existingLoanTypes), otherLoanList: form.existingLoanTypesOther,

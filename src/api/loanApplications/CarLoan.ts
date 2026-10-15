@@ -31,20 +31,20 @@ export interface CarLoanApplication {
   updatedAt?: string;
 }
 
-export type CarLoanPayload = Omit<CarLoanApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type CarLoanPayload = Omit<CarLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "car" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit CarLoan application.
- * POST /car-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyCarLoan = async (
   payload: CarLoanPayload
 ): Promise<ApplyResponse<CarLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<CarLoanApplication>>(
-    "/car-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -52,12 +52,13 @@ export const applyCarLoan = async (
 
 /**
  * Fetch all CarLoan applications for the logged-in user.
- * GET /car-loan/applications
+ * GET /customer/loan-apply?product=car
  * Requires: Authorization: Bearer <token>
  */
 export const fetchCarLoanApplications = async (): Promise<ApplicationsResponse<CarLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<CarLoanApplication>>(
-    "/car-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "car" } }
   );
   return response.data;
 };

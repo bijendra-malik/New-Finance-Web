@@ -4,6 +4,7 @@ import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from 
 // ── Business Loan ─────────────────────────────────────────────────────────────
 
 export interface BusinessLoanPayload {
+  product: "business";
   loanAmount: number;
   loanTenure: number; // months
   employmentType: string;
@@ -111,14 +112,14 @@ export interface BusinessLoanApplication {
 
 /**
  * Submit business loan application.
- * POST /business-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyBusinessLoan = async (
   payload: BusinessLoanPayload
 ): Promise<ApplyResponse<BusinessLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<BusinessLoanApplication>>(
-    "/business-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -126,12 +127,13 @@ export const applyBusinessLoan = async (
 
 /**
  * Fetch all business loan applications for the logged-in user.
- * GET /business-loan/applications
+ * GET /customer/loan-apply?product=business
  * Requires: Authorization: Bearer <token>
  */
 export const fetchBusinessLoanApplications = async (): Promise<ApplicationsResponse<BusinessLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<BusinessLoanApplication>>(
-    "/business-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "business" } }
   );
   return response.data;
 };

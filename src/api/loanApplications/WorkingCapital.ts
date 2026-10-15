@@ -32,20 +32,20 @@ export interface WorkingCapitalApplication {
   updatedAt?: string;
 }
 
-export type WorkingCapitalPayload = Omit<WorkingCapitalApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type WorkingCapitalPayload = Omit<WorkingCapitalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "working-capital" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit WorkingCapital application.
- * POST /working-capital/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyWorkingCapital = async (
   payload: WorkingCapitalPayload
 ): Promise<ApplyResponse<WorkingCapitalApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<WorkingCapitalApplication>>(
-    "/working-capital/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -53,12 +53,13 @@ export const applyWorkingCapital = async (
 
 /**
  * Fetch all WorkingCapital applications for the logged-in user.
- * GET /working-capital/applications
+ * GET /customer/loan-apply?product=working-capital
  * Requires: Authorization: Bearer <token>
  */
 export const fetchWorkingCapitalApplications = async (): Promise<ApplicationsResponse<WorkingCapitalApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<WorkingCapitalApplication>>(
-    "/working-capital/applications"
+    "/customer/loan-apply",
+    { params: { product: "working-capital" } }
   );
   return response.data;
 };

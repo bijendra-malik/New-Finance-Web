@@ -252,6 +252,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
             }
             const res = await applyHomeLoan({
+            product:"home" as const,
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,

@@ -16,8 +16,8 @@ import type { AccountProfile, Role } from "../utils/accountProfile";
 import { consumePendingProduct, emitAccountReady, onSignUpRequested } from "../utils/signInGate";
 import { getApiErrorMessage } from "../utils/apiError";
 import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX } from "../utils/validation";
-import { loginUser, registerUser, verifyOTP } from "../api/auth";
-import type { RegisterPayload } from "../api/auth";
+import { register, verifyOTP } from "../api/auth";
+import type { RegistrationPayload } from "../api/auth";
 import Button from "./ui/Button";
 
 export type { AccountProfile, Role };
@@ -46,20 +46,6 @@ const initialsOf = (name: string): string =>
 
 // Indian mobile numbers are a fixed 10 digits, so the stored value is capped there.
 const digitsOf = (value: string) => value.replace(/\D/g, "").slice(0, 10);
-
-const isUnregisteredMobileError = (error: unknown): boolean => {
-  const value = error as {
-    code?: string;
-    message?: string;
-    response?: { data?: { code?: string; message?: string } };
-  };
-  const rawCode = value?.response?.data?.code ?? value?.code;
-  const rawMessage = value?.response?.data?.message ?? value?.message;
-  const code = typeof rawCode === "string" ? rawCode.toLowerCase() : "";
-  const message = typeof rawMessage === "string" ? rawMessage.toLowerCase() : "";
-  return /user_not_found|account_not_found|mobile_not_registered|phone_not_registered/.test(code)
-    || /not registered|no (user|account)|((user|account|mobile|phone).*(not found|does not exist|doesn't exist))/.test(message);
-};
 
 const normalizeRole = (role?: string): Role | null => {
   const value = typeof role === "string" ? role.trim().toLowerCase() : "";
@@ -138,40 +124,35 @@ const AccountMenu = () => {
 
   // Sign-up form state
   const [form, setForm] = useState({
-    role: "Customer" as Role | "",
     continent: "",
     country: "",
     countryIso: "",
     name: "",
     phone: "",
     email: "",
+    dob: "",
+    panNumber: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Sign-in and registration state
-  const [mode, setMode] = useState<"signup" | "signin">("signup");
-  const [signin, setSignin] = useState({ phone: "" });
-  const [signinError, setSigninError] = useState("");
-  const [signinNotice, setSigninNotice] = useState("");
+  // Registration state
   const [signupError, setSignupError] = useState("");
 
   // OTP verification — this is where the JWT for the apply flow is produced (both after Sign Up, whose register call sends the OTP, and after Sign In).
   const [signupBusy, setSignupBusy] = useState(false);
-  const [signinBusy, setSigninBusy] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [otpMobile, setOtpMobile] = useState("");
   const [otpValue, setOtpValue] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
-  const [resending, setResending] = useState(false);
-  const [resendMsg, setResendMsg] = useState("");
   const [pendingProfile, setPendingProfile] = useState<AccountProfile | null>(null);
+  const [resendMsg, setResendMsg] = useState("");
+  const [resending, setResending] = useState(false);
 
   const resetOtp = () => {
     setOtpOpen(false);
     setOtpValue("");
     setOtpError("");
-    setResendMsg("");
     setPendingProfile(null);
   };
 
@@ -282,12 +263,6 @@ const AccountMenu = () => {
     });
   };
 
-  const openLogin = (role: Role) => {
-    setForm((current) => ({ ...current, role }));
-    setMode("signin");
-    setPanelOpen(true);
-  };
-
   const validate = (): boolean => {
     const next: Record<string, string> = {};
     if (!form.continent) next.continent = "Select a continent";
@@ -297,6 +272,8 @@ const AccountMenu = () => {
     else if (!NAME_REGEX.test(name)) next.name = "Name must be at least 2 characters and use only letters, spaces, dots or hyphens";
     if (!MOBILE_REGEX.test(digitsOf(form.phone))) next.phone = "Enter a valid 10-digit mobile number";
     if (!EMAIL_REGEX.test(form.email.trim())) next.email = "Enter a valid email address";
+    if (!form.dob) next.dob = "Enter your date of birth";
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(form.panNumber.trim().toUpperCase())) next.panNumber = "Enter a valid PAN number";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -307,17 +284,18 @@ const AccountMenu = () => {
     const mobile = digitsOf(form.phone);
     const saved: AccountProfile = {
       name: form.name.trim(),
-      role: form.role as Role,
+      role: "Customer",
       country: form.country,
       countryIso: form.countryIso,
       phone: mobile,
       email: form.email.trim(),
     };
-    const payload: RegisterPayload = {
+    const payload: RegistrationPayload = {
       name: saved.name,
       mobile,
       email: saved.email,
-      role: saved.role,
+      dob: form.dob,
+      panNumber: form.panNumber.trim().toUpperCase(),
       continent: form.continent,
       country: saved.country,
     };
@@ -325,7 +303,7 @@ const AccountMenu = () => {
     setSignupBusy(true);
     setSignupError("");
     try {
-      const response = await registerUser(payload);
+      const response = await register(payload);
       if (!response.success) {
         setSignupError(response.message || "Could not complete the registration. Please try again.");
         return;
@@ -340,13 +318,9 @@ const AccountMenu = () => {
     // Registration sent the OTP. Hold the profile for verification and open
     // that step directly so the user does not request a duplicate OTP.
     setPendingProfile(saved);
-    setSignin({ phone: mobile });
-    setSigninError("");
-    setSigninNotice("");
     setOtpMobile(mobile);
     setOtpValue("");
     setOtpError("");
-    setResendMsg("");
     setOtpOpen(true);
   };
 
@@ -665,7 +639,7 @@ const AccountMenu = () => {
         Customer Login
       </button>
       <button type="button" onClick={() => openLogin("Franchise")} className="rounded-xl border border-(--brand-teal) bg-(--brand-teal) px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) cursor-pointer whitespace-nowrap">
-        Franchise Login
+        Franchisee Login
       </button>
       {panelOpen &&
         createPortal(

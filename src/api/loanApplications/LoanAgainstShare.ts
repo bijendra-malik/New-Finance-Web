@@ -30,20 +30,20 @@ export interface LoanAgainstShareApplication {
   updatedAt?: string;
 }
 
-export type LoanAgainstSharePayload = Omit<LoanAgainstShareApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type LoanAgainstSharePayload = Omit<LoanAgainstShareApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "loan-against-share" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit LoanAgainstShare application.
- * POST /loan-against-share/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyLoanAgainstShare = async (
   payload: LoanAgainstSharePayload
 ): Promise<ApplyResponse<LoanAgainstShareApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<LoanAgainstShareApplication>>(
-    "/loan-against-share/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -51,12 +51,13 @@ export const applyLoanAgainstShare = async (
 
 /**
  * Fetch all LoanAgainstShare applications for the logged-in user.
- * GET /loan-against-share/applications
+ * GET /customer/loan-apply?product=loan-against-share
  * Requires: Authorization: Bearer <token>
  */
 export const fetchLoanAgainstShareApplications = async (): Promise<ApplicationsResponse<LoanAgainstShareApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<LoanAgainstShareApplication>>(
-    "/loan-against-share/applications"
+    "/customer/loan-apply",
+    { params: { product: "loan-against-share" } }
   );
   return response.data;
 };

@@ -29,20 +29,20 @@ export interface CreditCardApplication {
   updatedAt?: string;
 }
 
-export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt">;
+export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "credit-card" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
  * Submit CreditCard application.
- * POST /credit-card/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyCreditCard = async (
   payload: CreditCardPayload
 ): Promise<ApplyResponse<CreditCardApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<CreditCardApplication>>(
-    "/credit-card/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -50,12 +50,13 @@ export const applyCreditCard = async (
 
 /**
  * Fetch all CreditCard applications for the logged-in user.
- * GET /credit-card/applications
+ * GET /customer/loan-apply?product=credit-card
  * Requires: Authorization: Bearer <token>
  */
 export const fetchCreditCardApplications = async (): Promise<ApplicationsResponse<CreditCardApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<CreditCardApplication>>(
-    "/credit-card/applications"
+    "/customer/loan-apply",
+    { params: { product: "credit-card" } }
   );
   return response.data;
 };

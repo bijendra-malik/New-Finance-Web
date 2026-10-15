@@ -204,6 +204,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               await Promise.allSettled(form.existingBanksOther.map(b=>addCustomBankName(b)));
             }
             const res = await applyBusinessLoan({
+            product:"business" as const,
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,

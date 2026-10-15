@@ -9,6 +9,7 @@ export interface HomeLoanTransactionBank {
 }
 
 export interface HomeLoanPayload {
+  product: "home";
   loanAmount: number;
   loanTenure: number;
   buyingPropertyType?: string;
@@ -83,14 +84,14 @@ export interface HomeLoanApplication extends HomeLoanPayload {
 
 /**
  * Submit home loan application.
- * POST /home-loan/apply
+ * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
 export const applyHomeLoan = async (
   payload: HomeLoanPayload
 ): Promise<ApplyResponse<HomeLoanApplication>> => {
   const response = await axiosInstance.post<ApplyResponse<HomeLoanApplication>>(
-    "/home-loan/apply",
+    "/customer/loan-apply",
     payload
   );
   return response.data;
@@ -98,12 +99,13 @@ export const applyHomeLoan = async (
 
 /**
  * Fetch all home loan applications for the logged-in user.
- * GET /home-loan/applications
+ * GET /customer/loan-apply?product=home
  * Requires: Authorization: Bearer <token>
  */
 export const fetchHomeLoanApplications = async (): Promise<ApplicationsResponse<HomeLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<HomeLoanApplication>>(
-    "/home-loan/applications"
+    "/customer/loan-apply",
+    { params: { product: "home" } }
   );
   return response.data;
 };
