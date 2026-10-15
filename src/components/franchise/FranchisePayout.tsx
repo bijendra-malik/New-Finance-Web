@@ -1,11 +1,7 @@
 import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import PayoutShareViz from "./PayoutShareViz";
-import {
-  EARNING_DEPENDENCIES,
-  MAX_PAYOUTS,
-  PAYOUT_DISCLAIMER,
-} from "./franchiseData";
+import {MAX_PAYOUTS} from "./franchiseData";
 
 /**
  * Everything money-related, in one section, each fact stated once:
@@ -78,32 +74,6 @@ const FranchisePayout = () => (
         </h3>
         <PayoutShareViz />
       </div>
-    </div>
-
-    {/* What it depends on — one panel, not four scattered caveats */}
-    <div
-      className="mt-10 overflow-hidden rounded-3xl p-6 md:p-9"
-      style={{ background: "linear-gradient(120deg,#0e1e3c 0%,#1b6ca8 100%)" }}
-    >
-      <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-yellow)">
-        Before You Pay Any Fee
-      </span>
-      <h3 className="mt-2 text-xl font-extrabold leading-snug text-white md:text-2xl">
-        What a payout actually depends on
-      </h3>
-
-      <ul className="mt-7 grid gap-6 md:grid-cols-2">
-        {EARNING_DEPENDENCIES.map((item) => (
-          <li key={item.title} className="border-l-2 border-(--brand-teal) pl-4">
-            <h4 className="text-[14px] font-bold text-white">{item.title}</h4>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/70">{item.desc}</p>
-          </li>
-        ))}
-      </ul>
-
-      <p className="mt-7 max-w-3xl border-t border-white/15 pt-5 text-[11.5px] leading-relaxed text-white/55">
-        {PAYOUT_DISCLAIMER}
-      </p>
     </div>
   </SectionShell>
 );

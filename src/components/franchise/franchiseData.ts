@@ -9,17 +9,13 @@ export const FRANCHISE_EMAIL = "contactus@indexiafinance.com";
 export const PARTNER_SHARE = 80;
 export const INDEXIA_SHARE = 20;
 
-/** Single disclaimer reused wherever a payout figure appears. */
-export const PAYOUT_DISCLAIMER =
-  "Payouts are subject to successful disbursement and applicable product, lender, and regulatory terms.";
-
 /** Maximum payout rates — deliberately framed as ceilings, never as guarantees. */
 export const MAX_PAYOUTS = [
   {
     id: "unsecured",
     icon: "unsecured",
     title: "Unsecured Loans",
-    rate: "Up to 4%",
+    rate: "Up to 4.5%",
     caption: "payout",
     desc: "Personal, business, professional and other unsecured facilities placed with partner banks and NBFCs.",
   },
@@ -27,7 +23,7 @@ export const MAX_PAYOUTS = [
     id: "secured",
     icon: "secured",
     title: "Secured Loans",
-    rate: "Up to 2.4%",
+    rate: "Up to 2.5%",
     caption: "payout",
     desc: "Home, loan against property, gold, vehicle and other secured facilities placed with partner lenders.",
   },
@@ -89,21 +85,6 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     desc: "The payout released on that case is shared with you as the franchise partner, on the terms set out below.",
   },
 ];
-
-/**
- * What a payout actually depends on. Stated once, as one panel, because the
- * page previously repeated the same caveat in four separate sections.
- */
-export const EARNING_DEPENDENCIES = [
-  {
-    title: "No leads means no payout",
-    desc: "Revenue flows only from customer business that disburses. The franchise fee buys access to the franchise, products and payout structure — it is not a fixed-return investment.",
-  },
-  {
-    title: "Verification is individual",
-    desc: "Each applicant is reviewed individually and may be asked for additional documentation before an agreement is issued.",
-  },
-] as const;
 
 /** Franchise plans, cheapest last so the 3-year plan reads first. */
 export interface FranchisePlan {
@@ -169,7 +150,7 @@ export const BENEFITS = [
 export const FRANCHISE_FAQS = [
   {
     q: "Is the \u20B930,000 + GST agreement fee refundable?",
-    a: "The agreement fee is adjustable against payout under the monthly plan, subject to applicable terms. It is not presented as a refundable deposit.",
+    a: "The Franchisee Agreement fee is non-refundable and is valid for three years. It is adjustable against payout under the monthly plan, subject to applicable terms.",
   },
   {
     q: "Can I choose a monthly plan?",

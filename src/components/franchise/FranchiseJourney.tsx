@@ -17,7 +17,7 @@ const FranchiseJourney = () => (
     id="how-it-works"
     eyebrow="The Model"
     title="How the Franchise Model Works"
-    subtitle="Six steps from application to payout. Steps 4 and 5 depend on the customer and the lender, not on the franchise partner."
+    subtitle="Six steps from application to payout. Steps 4 and 5 depend on the customer and the lender, not on the Franchisee."
   >
     <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {JOURNEY_STEPS.map((step) => (
