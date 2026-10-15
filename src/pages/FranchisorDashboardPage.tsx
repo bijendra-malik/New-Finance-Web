@@ -260,7 +260,7 @@ const FranchisorDashboardPage = () => {
                   className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
                   style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
                 >
-                  Go to Franchisor Login
+                  Go to Franchisee Login
                 </Link>
                 <Link
                   to="/franchise"

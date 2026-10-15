@@ -3,7 +3,7 @@ import { isFranchiseSignedIn } from "../utils/franchiseSession";
 import useFranchiseStatus from "./useFranchiseStatus";
 
 /**
- * Gate for every "Franchisor Login" entry point (header nav, franchise page
+ * Gate for every "Franchisee Login" entry point (header nav, franchise page
  * CTAs, form success screens).
  *
  * A signed-out visitor sees them greyed out and non-clickable with a sign-in

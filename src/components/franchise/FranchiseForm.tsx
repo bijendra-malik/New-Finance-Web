@@ -333,7 +333,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
             className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:shadow-lg"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
           >
-            Go to Franchisor Login →
+            Go to Franchisee Login →
           </Link>
           ) : (
           <span
@@ -342,7 +342,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
             className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white/60"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
           >
-            Go to Franchisor Login →
+            Go to Franchisee Login →
           </span>
           )
         )}
@@ -392,16 +392,16 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
             className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all duration-200 hover:shadow-lg"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
           >
-            Go to Franchisor Login →
+            Go to Franchisee Login →
           </Link>
           ) : (
           <span
             aria-disabled="true"
-            title="Sign in to access the franchisor portal"
+            title="Sign in to access the franchisee portal"
             className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white/60"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
           >
-            Go to Franchisor Login →
+            Go to Franchisee Login →
           </span>
           )}
         </div>

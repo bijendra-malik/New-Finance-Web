@@ -13,8 +13,8 @@ interface FranchiseCTAProps {
  * and payout sections above already state them.
  */
 const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
-  // Franchisor login is disabled (greyed out) for signed-out visitors.
-  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  // Franchisee login is disabled (greyed out) for signed-out visitors.
+  const franchiseeLoginEnabled = useFranchisorLoginAccess();
   return (
   <section
     id="become-a-franchisor"
@@ -64,12 +64,12 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
       {/* The return path for partners who already hold an agreement. */}
       <p className="mx-auto mt-8 text-[12.5px] text-white/60">
         Already a franchise partner?{" "}
-        {franchisorLoginEnabled ? (
+        {franchiseeLoginEnabled ? (
           <Link
             to="/franchise-login"
             className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
           >
-            Franchisor Login →
+            Franchisee Login →
           </Link>
         ) : (
           <span
@@ -77,7 +77,7 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
             title="Sign in to access the franchisor portal"
             className="cursor-not-allowed font-bold text-white/45"
           >
-            Franchisor Login — sign in first
+            Franchisee Login — sign in first
           </span>
         )}
       </p>

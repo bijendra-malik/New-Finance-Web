@@ -31,9 +31,9 @@ const DEFAULT_NOTICE: Notice = {
 
 const FranchiseLoginPage = () => {
   useSEO({
-    title: "Franchisor Login",
+    title: "Franchisee Login",
     description:
-      "Franchisor login for the Indexia Finance franchise partner portal. New here? Apply for a franchise or submit a franchisor enquiry.",
+      "Franchisee login for the Indexia Finance franchise partner portal. New here? Apply for a franchise or submit a franchise enquiry.",
     path: "/franchise-login",
   });
 
@@ -75,7 +75,7 @@ const FranchiseLoginPage = () => {
         clearFranchiseSession();
         setNotice({
           tone: "error",
-          title: "Franchisor login is locked",
+          title: "Franchisee login is locked",
           body: `Your franchise application was not approved. Contact ${FRANCHISE_EMAIL} if you would like to discuss your application.`,
         });
         return;
@@ -89,7 +89,7 @@ const FranchiseLoginPage = () => {
         res.token,
       );
 
-      navigate("/franchisor-dashboard");
+      navigate("/franchisee-dashboard");
     } catch (error) {
       const rejected = (error as { response?: unknown })?.response !== undefined;
       setNotice({
@@ -107,8 +107,8 @@ const FranchiseLoginPage = () => {
   return (
     <>
       <PageBanner
-        breadcrumb="Franchisor Login"
-        title="Franchisor"
+        breadcrumb="Franchisee Login"
+        title="Franchisee"
         highlight="Login"
         tagline="Partner portal access for Indexia Finance franchisees"
       />
@@ -171,7 +171,7 @@ const FranchiseLoginPage = () => {
                     <FranchiseIcon name="lock" filled className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Franchisor Login</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Franchisee Login</h2>
                     <p className="text-[12.5px] text-slate-500">For registered franchise partners only</p>
                   </div>
                 </div>
