@@ -1,0 +1,47 @@
+export const LOAN_SLUGS: Readonly<Record<string, string>> = {
+  // Home-page / product-grid ids
+  personal: "personal-loan",
+  business: "business-loan",
+  home: "home-loan",
+  lap: "loan-against-property",
+  balanceTransfer: "balance-transfer",
+  vehicleLoan: "vehicle-loan",
+  creditCard: "credit-card",
+  educationLoan: "education-loan",
+  projectLoan: "project-loan",
+  commercialPurchase: "commercial-purchase",
+  leaseRentalDiscounting: "lease-rental-discounting",
+  workingCapital: "working-capital",
+  filmFunding: "film-funding",
+  odCcLimit: "od-cc-limit",
+  loanAgainstShare: "loan-against-share",
+  goldLoan: "gold-loan",
+  fdiLoan: "fdi",
+  npaLoan: "npa",
+
+  // Product display names
+  "Personal Loan": "personal-loan",
+  "Business Loan": "business-loan",
+  "Home Loan": "home-loan",
+  "Loan Against Property": "loan-against-property",
+  "Balance Transfer": "balance-transfer",
+  "Vehicle Loan": "vehicle-loan",
+  "Education Loan": "education-loan",
+  "Credit Card": "credit-card",
+  "Premium Credit Cards": "credit-card",
+  "Project Loan": "project-loan",
+  "Commercial Purchase": "commercial-purchase",
+  "Commercial Purchase Loan": "commercial-purchase",
+  "Working Capital": "working-capital",
+  "Working Capital Loan": "working-capital",
+  "Lease Rental Discounting": "lease-rental-discounting",
+  "Film Funding": "film-funding",
+  "OD CC Limit": "od-cc-limit",
+  "Loan Against Share": "loan-against-share",
+  "Gold Loan": "gold-loan",
+  FDI: "fdi",
+  NPA: "npa",
+};
+
+export const loanSlugFor = (productKey: string): string | null =>
+  LOAN_SLUGS[productKey] ?? null;

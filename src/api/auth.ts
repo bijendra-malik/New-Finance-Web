@@ -56,6 +56,27 @@ export interface ProfileResponse {
   user: ApiUser;
 }
 
+/**
+ * Start a loan application for one product: register the applicant's identity and
+ * send the one-time password to their mobile. POST /auth/{loanSlug}
+ *
+ * The last path segment follows the loan's own name — /auth/personal-loan,
+ * /auth/business-loan, /auth/home-loan and so on (see LOAN_SLUGS). The OTP it
+ * sends is confirmed with /auth/verify-otp, whose token authorises the
+ * POST /customer/loan-apply that follows it.
+ */
+export const requestLoanApplyOTP = async (
+  loanSlug: string,
+  payload: RegistrationPayload,
+): Promise<AuthActionResponse> => {
+  const response = await axiosInstance.post<AuthActionResponse>(
+    `/auth/${loanSlug}`,
+    payload,
+    { withCredentials: true },
+  );
+  return response.data;
+};
+
 /** Register a new customer account and send its verification OTP. POST /auth/register */
 export const register = async (
   payload: RegistrationPayload,
