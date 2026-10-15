@@ -59,7 +59,7 @@ const BeAFranchisorPage = () => {
   return (
     <div className="bg-white">
       <FranchiseHero onApply={openApplication} />
-      <FranchiseSubNav onApply={openApplication} />
+      <FranchiseSubNav />
       <FranchiseJourney onOpenModal={() => setHowItWorksOpen(true)} />
       <FranchisePayout />
       <FranchisePlans
