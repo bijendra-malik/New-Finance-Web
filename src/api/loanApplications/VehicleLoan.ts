@@ -1,10 +1,7 @@
 import axiosInstance from "../axiosInstance";
 import type { ApplyResponse, ApplicationsResponse } from "./shared";
-
-// ── Types (aligned with the backend's CarLoan document) ──────────────────────────────
-
-export interface CarLoanApplication {
-
+// ── Types (aligned with the backend's VehicleLoan document) ──────────────────────────────
+export interface VehicleLoanApplication {
   _id: string;
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string; residenceStatus: string;
@@ -30,20 +27,19 @@ export interface CarLoanApplication {
   createdAt: string;
   updatedAt?: string;
 }
-
-export type CarLoanPayload = Omit<CarLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "car" };
+export type VehicleLoanPayload = Omit<VehicleLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "Vehicle" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
- * Submit CarLoan application.
+ * Submit VehicleLoan application.
  * POST /customer/loan-apply
  * Requires: Authorization: Bearer <token>
  */
-export const applyCarLoan = async (
-  payload: CarLoanPayload
-): Promise<ApplyResponse<CarLoanApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<CarLoanApplication>>(
+export const applyVehicleLoan = async (
+  payload: VehicleLoanPayload
+): Promise<ApplyResponse<VehicleLoanApplication>> => {
+  const response = await axiosInstance.post<ApplyResponse<VehicleLoanApplication>>(
     "/customer/loan-apply",
     payload
   );
@@ -51,14 +47,14 @@ export const applyCarLoan = async (
 };
 
 /**
- * Fetch all CarLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=car
+ * Fetch all VehicleLoan applications for the logged-in user.
+ * GET /customer/loan-apply?product=Vehicle
  * Requires: Authorization: Bearer <token>
  */
-export const fetchCarLoanApplications = async (): Promise<ApplicationsResponse<CarLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<CarLoanApplication>>(
+export const fetchVehicleLoanApplications = async (): Promise<ApplicationsResponse<VehicleLoanApplication>> => {
+  const response = await axiosInstance.get<ApplicationsResponse<VehicleLoanApplication>>(
     "/customer/loan-apply",
-    { params: { product: "car" } }
+    { params: { product: "Vehicle" } }
   );
   return response.data;
 };

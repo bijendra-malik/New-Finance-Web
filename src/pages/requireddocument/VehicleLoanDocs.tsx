@@ -1,6 +1,6 @@
 import DocPageLayout from "./DocPageLayout";
 import type { DocSection } from "./types";
-import bannerImg from "../../assets/loan-images/car-banner.png";
+import bannerImg from "../../assets/loan-images/vehicle-banner.png";
 
 const sections: DocSection[] = [
   {
@@ -46,16 +46,13 @@ const sections: DocSection[] = [
       { name: "Business Proof", note: "Shop & Establishment Certificate, VAT, Sales Tax, Service Tax, IEC" },
     ],
   },
-];
-
-const CarLoanDocs = () => (
+];const VehicleLoanDocs = () => (
   <DocPageLayout
     loanName="Vehicle Loan"
     breadcrumb="Vehicle Loan · Required Documents"
     bannerBg={bannerImg}
     sections={sections}
-    applySlug="car-loan"
+    applySlug="vehicle-loan"
   />
 );
-
-export default CarLoanDocs;
+export default VehicleLoanDocs;

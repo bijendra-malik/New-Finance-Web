@@ -1,7 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/car-banner.png";
-import carloanDetails from "../../assets/personal-loan/carloan-details.png";
+import bannerBg from "../../assets/loan-images/Vehicle-banner.png";
+import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.png";
 
 const ACCENT = "var(--brand-navy)";
 
@@ -42,7 +42,7 @@ const sections: DetailSection[] = [
           </div>
         </div>
         <div className="shrink-0 w-full lg:w-80">
-          <img loading="lazy" decoding="async" src={carloanDetails} alt="Vehicle Loan"
+          <img loading="lazy" decoding="async" src={VehicleloanDetails} alt="Vehicle Loan"
             className="w-full h-72 object-contain grayscale hover:grayscale-0 transition-all duration-500" />
         </div>
       </div>
@@ -61,7 +61,7 @@ const sections: DetailSection[] = [
   },
   {
     id: "tips",
-    heading: "Tips for Choosing the Right Car Financing",
+    heading: "Tips for Choosing the Right Vehicle Financing",
     content: (
       <div className="space-y-3">
         <p className="text-gray-600 text-sm leading-relaxed">Keep these tips in mind when financing your vehicle:</p>
@@ -119,7 +119,7 @@ const sections: DetailSection[] = [
         {[
           { num: "1", title: "Best Vehicle Loan Provider Company", desc: "Indexia Finance stands out for competitive interest rates, transparent terms, and an efficient hassle-free application process with expert guidance at every step." },
           { num: "2", title: "Best Vehicle Loan Solutions", desc: "A variety of loan solutions catering to different preferences — ensuring you find the perfect financing match for your dream vehicle." },
-          { num: "3", title: "Best Vehicle Loan Finance", desc: "Whether you need the best car loan finance or simply the best vehicle loan in India, expert guidance helps you navigate the options." },
+          { num: "3", title: "Best Vehicle Loan Finance", desc: "Whether you need the best vehicle loan finance or simply the best vehicle loan in India, expert guidance helps you navigate the options." },
           { num: "4", title: "Apply with Indexia Finance", desc: "As one of India's best vehicle loan companies, the application process is simple and fully online." },
         ].map((item) => (
           <div key={item.num} className="flex items-start gap-4">
@@ -135,27 +135,24 @@ const sections: DetailSection[] = [
   },
   {
     id: "conclusion",
-    heading: "Ready to Drive Your Dream Car?",
+    heading: "Ready to Drive Your Dream Vehicle?",
     content: (
       <p className="text-gray-600 leading-relaxed">
         Indexia Finance is your go-to for the best loan from top banks across India. Fill out the
-        application form now — it takes just a few minutes — and drive home in your dream car sooner
+        application form now — it takes just a few minutes — and drive home in your dream vehicle sooner
         than you think.
       </p>
     ),
   },
-];
-
-const CarLoanDetail = () => (
+];const VehicleLoanDetail = () => (
   <ShowDetailLayout
     loanName="Vehicle Loan"
     breadcrumb="Vehicle Loan"
-    bannerTitle="Drive Your Dream Car with the Best Vehicle Loan"
+    bannerTitle="Drive Your Dream Vehicle with the Best Vehicle Loan"
     bannerBg={bannerBg}
-    docsHref="/requireddocument/car-loan"
-    applySlug="carloan"
+    docsHref="/requireddocument/vehicle-loan"
+    applySlug="Vehicleloan"
     sections={sections}
   />
 );
-
-export default CarLoanDetail;
+export default VehicleLoanDetail;

@@ -14,16 +14,16 @@ import { formatIndianNumber } from "../../../../../utils/formatters";
 import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
-import { applyCarLoan } from "../../../../../api/loanApplications";
-import type { CarLoanApplication } from "../../../../../api/loanApplications";
+import { applyVehicleLoan } from "../../../../../api/loanApplications";
+import type { VehicleLoanApplication } from "../../../../../api/loanApplications";
 
-// Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's CarLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
-export type { CarLoanApplication } from "../../../../../api/loanApplications";
+// Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's VehicleLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
+export type { VehicleLoanApplication } from "../../../../../api/loanApplications";
 
 interface ApplicationFormProps {
   userName?: string;
   userEmail?: string;
-  onSubmit?: (id: string, app: CarLoanApplication) => void;
+  onSubmit?: (id: string, app: VehicleLoanApplication) => void;
 }
 interface FormData {
   fullName:string; mobile:string; email:string; dob:string; panNumber:string;
@@ -236,11 +236,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
     showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
-  } = useApplicationSubmit<CarLoanApplication>({
+  } = useApplicationSubmit<VehicleLoanApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {
           const app = {
-            product:"car" as const,
+            product:"Vehicle" as const,
             fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,
@@ -336,7 +336,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
             existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
           };
-          const res = await applyCarLoan(app);
+          const res = await applyVehicleLoan(app);
       return res.data;
     },
     onSubmitSuccess: onSubmit,
@@ -370,7 +370,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)" required
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.carLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.VehicleLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="vehicleType" label="Buying Vehicle Type" required
@@ -427,7 +427,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           transactionBankOptions={transactionBankOptions}
           addTransactionBank={addTransactionBank}
           removeTransactionBank={removeTransactionBank}
-          datePickerPortalId="carloan-business-established-datepicker-portal"
+          datePickerPortalId="Vehicleloan-business-established-datepicker-portal"
           loadCities={loadCities}
           onPincodeResolved={r => onPincodeResolved("business", r)}
         />

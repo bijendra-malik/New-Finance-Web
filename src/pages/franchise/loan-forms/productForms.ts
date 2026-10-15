@@ -30,7 +30,7 @@ export const PRODUCT_FORMS: Readonly<Record<string, LazyExoticComponent<ProductF
   "loan-against-property": load(() => import("../../dashboard/loans/LoanAgainstProperty/components/ApplicationForm")),
   "balance-transfer": load(() => import("../../dashboard/loans/BalanceTransfer/components/ApplicationForm")),
   "project-loan": load(() => import("../../dashboard/loans/ProjectLoan/components/ApplicationForm")),
-  "vehicle-loan": load(() => import("../../dashboard/loans/CarLoan/components/ApplicationForm")),
+  "vehicle-loan": load(() => import("../../dashboard/loans/VehicleLoan/components/ApplicationForm")),
   "education-loan": load(() => import("../../dashboard/loans/EducationLoan/components/ApplicationForm")),
   "credit-card": load(() => import("../../dashboard/loans/CreditCard/components/ApplicationForm")),
   "commercial-purchase": load(() => import("../../dashboard/loans/CommercialPurchase/components/ApplicationForm")),

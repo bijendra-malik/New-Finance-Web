@@ -31,7 +31,7 @@ const HomeLoanDashboard = lazy(() => import("./pages/dashboard/loans/HomeLoan/Ho
 const LoanAgainstPropertyDashboard = lazy(() => import("./pages/dashboard/loans/LoanAgainstProperty/LoanAgainstPropertyDashboard"));
 const BalanceTransferDashboard = lazy(() => import("./pages/dashboard/loans/BalanceTransfer/BalanceTransferDashboard"));
 const ProjectLoanDashboard = lazy(() => import("./pages/dashboard/loans/ProjectLoan/ProjectLoanDashboard"));
-const CarLoanDashboard = lazy(() => import("./pages/dashboard/loans/CarLoan/CarLoanDashboard"));
+const VehicleLoanDashboard = lazy(() => import("./pages/dashboard/loans/VehicleLoan/VehicleLoanDashboard"));
 const EducationLoanDashboard = lazy(() => import("./pages/dashboard/loans/EducationLoan/EducationLoanDashboard"));
 const CreditCardDashboard = lazy(() => import("./pages/dashboard/loans/CreditCard/CreditCardDashboard"));
 const WorkingCapitalDashboard = lazy(() => import("./pages/dashboard/loans/WorkingCapital/WorkingCapitalDashboard"));
@@ -51,7 +51,7 @@ const BusinessLoanDocs = lazy(() => import("./pages/requireddocument/BusinessLoa
 const HomeLoanDocs = lazy(() => import("./pages/requireddocument/HomeLoanDocs"));
 const LoanAgainstPropertyDocs = lazy(() => import("./pages/requireddocument/LoanAgainstPropertyDocs"));
 const BalanceTransferDocs = lazy(() => import("./pages/requireddocument/BalanceTransferDocs"));
-const CarLoanDocs = lazy(() => import("./pages/requireddocument/CarLoanDocs"));
+const VehicleLoanDocs = lazy(() => import("./pages/requireddocument/VehicleLoanDocs"));
 const CreditCardDocs = lazy(() => import("./pages/requireddocument/CreditCardDocs"));
 const EducationLoanDocs = lazy(() => import("./pages/requireddocument/EducationLoanDocs"));
 const ProjectLoanDocs = lazy(() => import("./pages/requireddocument/ProjectLoanDocs"));
@@ -71,7 +71,7 @@ const BusinessLoanDetail = lazy(() => import("./pages/showdetails/BusinessLoanDe
 const HomeLoanDetail = lazy(() => import("./pages/showdetails/HomeLoanDetail"));
 const LoanAgainstPropertyDetail = lazy(() => import("./pages/showdetails/LoanAgainstPropertyDetail"));
 const BalanceTransferDetail = lazy(() => import("./pages/showdetails/BalanceTransferDetail"));
-const CarLoanDetail = lazy(() => import("./pages/showdetails/CarLoanDetail"));
+const VehicleLoanDetail = lazy(() => import("./pages/showdetails/VehicleLoanDetail"));
 const CreditCardDetail = lazy(() => import("./pages/showdetails/CreditCardDetail"));
 const EducationLoanDetail = lazy(() => import("./pages/showdetails/EducationLoanDetail"));
 const ProjectLoanDetail = lazy(() => import("./pages/showdetails/ProjectLoanDetail"));
@@ -115,7 +115,7 @@ const dashboardRoutes: [string, React.ReactNode][] = [
   ["/dashboard/loanagainstproperty", <LoanAgainstPropertyDashboard />],
   ["/dashboard/balancetransfer", <BalanceTransferDashboard />],
   ["/dashboard/projectloan", <ProjectLoanDashboard />],
-  ["/dashboard/carloan", <CarLoanDashboard />],
+  ["/dashboard/Vehicleloan", <VehicleLoanDashboard />],
   ["/dashboard/educationloan", <EducationLoanDashboard />],
   ["/dashboard/creditcard", <CreditCardDashboard />],
   ["/dashboard/workingcapital", <WorkingCapitalDashboard />],
@@ -135,7 +135,7 @@ const requiredDocRoutes: [string, React.ReactNode][] = [
   ["/requireddocument/home-loan", <HomeLoanDocs />],
   ["/requireddocument/loan-against-property", <LoanAgainstPropertyDocs />],
   ["/requireddocument/balance-transfer", <BalanceTransferDocs />],
-  ["/requireddocument/car-loan", <CarLoanDocs />],
+  ["/requireddocument/vehicle-loan", <VehicleLoanDocs />],
   ["/requireddocument/credit-card", <CreditCardDocs />],
   ["/requireddocument/education-loan", <EducationLoanDocs />],
   ["/requireddocument/project-loan", <ProjectLoanDocs />],
@@ -156,7 +156,7 @@ const detailRoutes: [string, React.ReactNode][] = [
   ["/showdetails/home-loan", <HomeLoanDetail />],
   ["/showdetails/loanAP-loan", <LoanAgainstPropertyDetail />],
   ["/showdetails/balance-loan", <BalanceTransferDetail />],
-  ["/showdetails/car-loan", <CarLoanDetail />],
+  ["/showdetails/vehicle-loan", <VehicleLoanDetail />],
   ["/showdetails/credit-card", <CreditCardDetail />],
   ["/showdetails/education-loan", <EducationLoanDetail />],
   ["/showdetails/project-loan", <ProjectLoanDetail />],

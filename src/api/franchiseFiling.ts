@@ -34,7 +34,7 @@ const APPLY_PATHS: Readonly<Record<string, string>> = {
   "/loan-against-property/apply": "loan-against-property",
   "/balance-transfer/apply": "balance-transfer",
   "/project-loan/apply": "project-loan",
-  "/car-loan/apply": "vehicle-loan",
+  "/Vehicle-loan/apply": "vehicle-loan",
   "/education-loan/apply": "education-loan",
   "/credit-card/apply": "credit-card",
   "/commercial-purchase/apply": "commercial-purchase",

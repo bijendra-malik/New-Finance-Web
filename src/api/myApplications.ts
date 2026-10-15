@@ -6,7 +6,7 @@
 import {
   fetchBalanceTransferApplications,
   fetchBusinessLoanApplications,
-  fetchCarLoanApplications,
+  fetchVehicleLoanApplications,
   fetchCommercialPurchaseApplications,
   fetchCreditCardApplications,
   fetchEducationLoanApplications,
@@ -28,7 +28,7 @@ import type { ApplicationsResponse } from "./loanApplications/shared";
 /** Fields every product document carries; the rest is product-specific detail. */
 export interface MyApplication {
   _id: string;
-  /** Stable product key, e.g. "personal-loan". */
+  /** Stable product key, e.g. "personal". */
   productKey: string;
   /** Display name, e.g. "Personal Loan". */
   productName: string;
@@ -48,23 +48,23 @@ interface ProductSource {
 
 // Same order as the site's loan nav, so the page reads top-to-bottom like the menu.
 const SOURCES: ProductSource[] = [
-  { key: "personal-loan", name: "Personal Loan", dashboardPath: "/dashboard/personalloan", fetch: fetchPersonalLoanApplications as ProductSource["fetch"] },
-  { key: "business-loan", name: "Business Loan", dashboardPath: "/dashboard/businessloan", fetch: fetchBusinessLoanApplications as ProductSource["fetch"] },
-  { key: "home-loan", name: "Home Loan", dashboardPath: "/dashboard/homeloan", fetch: fetchHomeLoanApplications as ProductSource["fetch"] },
+  { key: "personal", name: "Personal Loan", dashboardPath: "/dashboard/personalloan", fetch: fetchPersonalLoanApplications as ProductSource["fetch"] },
+  { key: "business", name: "Business Loan", dashboardPath: "/dashboard/businessloan", fetch: fetchBusinessLoanApplications as ProductSource["fetch"] },
+  { key: "home", name: "Home Loan", dashboardPath: "/dashboard/homeloan", fetch: fetchHomeLoanApplications as ProductSource["fetch"] },
   { key: "loan-against-property", name: "Loan Against Property", dashboardPath: "/dashboard/loanagainstproperty", fetch: fetchLoanAgainstPropertyApplications as ProductSource["fetch"] },
   { key: "balance-transfer", name: "Balance Transfer", dashboardPath: "/dashboard/balancetransfer", fetch: fetchBalanceTransferApplications as ProductSource["fetch"] },
-  { key: "project-loan", name: "Project Loan", dashboardPath: "/dashboard/projectloan", fetch: fetchProjectLoanApplications as ProductSource["fetch"] },
-  { key: "vehicle-loan", name: "Vehicle Loan", dashboardPath: "/dashboard/carloan", fetch: fetchCarLoanApplications as ProductSource["fetch"] },
-  { key: "education-loan", name: "Education Loan", dashboardPath: "/dashboard/educationloan", fetch: fetchEducationLoanApplications as ProductSource["fetch"] },
+  { key: "project", name: "Project Loan", dashboardPath: "/dashboard/projectloan", fetch: fetchProjectLoanApplications as ProductSource["fetch"] },
+  { key: "Vehicle", name: "Vehicle Loan", dashboardPath: "/dashboard/Vehicleloan", fetch: fetchVehicleLoanApplications as ProductSource["fetch"] },
+  { key: "education", name: "Education Loan", dashboardPath: "/dashboard/educationloan", fetch: fetchEducationLoanApplications as ProductSource["fetch"] },
   { key: "credit-card", name: "Credit Card", dashboardPath: "/dashboard/creditcard", fetch: fetchCreditCardApplications as ProductSource["fetch"] },
   { key: "commercial-purchase", name: "Commercial Purchase", dashboardPath: "/dashboard/commercialpurchase", fetch: fetchCommercialPurchaseApplications as ProductSource["fetch"] },
   { key: "working-capital", name: "Working Capital", dashboardPath: "/dashboard/workingcapital", fetch: fetchWorkingCapitalApplications as ProductSource["fetch"] },
-  { key: "lease-rental-discounting", name: "Lease Rental Discounting", dashboardPath: "/dashboard/leaserental", fetch: fetchLeaseRentalApplications as ProductSource["fetch"] },
+  { key: "lease-rental", name: "Lease Rental Discounting", dashboardPath: "/dashboard/leaserental", fetch: fetchLeaseRentalApplications as ProductSource["fetch"] },
   { key: "od-cc-limit", name: "OD CC Limit", dashboardPath: "/dashboard/odcclimit", fetch: fetchODCCLimitApplications as ProductSource["fetch"] },
   { key: "loan-against-share", name: "Loan Against Share", dashboardPath: "/dashboard/loanagainstshare", fetch: fetchLoanAgainstShareApplications as ProductSource["fetch"] },
-  { key: "film-funding", name: "Film Funding", dashboardPath: "/dashboard/filmfunding", fetch: fetchFilmLoanApplications as ProductSource["fetch"] },
+  { key: "film", name: "Film Funding", dashboardPath: "/dashboard/filmfunding", fetch: fetchFilmLoanApplications as ProductSource["fetch"] },
   { key: "npa", name: "NPA", dashboardPath: "/dashboard/npa", fetch: fetchNPAApplications as ProductSource["fetch"] },
-  { key: "gold-loan", name: "Gold Loan", dashboardPath: "/dashboard/goldloan", fetch: fetchGoldLoanApplications as ProductSource["fetch"] },
+  { key: "gold", name: "Gold Loan", dashboardPath: "/dashboard/goldloan", fetch: fetchGoldLoanApplications as ProductSource["fetch"] },
   { key: "fdi", name: "FDI", dashboardPath: "/dashboard/fdi", fetch: fetchFDIApplications as ProductSource["fetch"] },
 ];
 

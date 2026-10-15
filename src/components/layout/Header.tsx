@@ -20,7 +20,7 @@ const Header = () => {
     loanagainstproperty:"/showdetails/loanAP-loan",
     balancetransfer:    "/showdetails/balance-loan",
     projectloan:        "/showdetails/project-loan",
-    carloan:            "/showdetails/car-loan",
+    Vehicleloan:        "/showdetails/vehicle-loan",
     educationloan:      "/showdetails/education-loan",
     creditcard:         "/showdetails/credit-card",
     commercialpurchase: "/showdetails/commercial-purchase",
@@ -43,7 +43,7 @@ const Header = () => {
     { label: "Loan Against Property",    slug: "loanagainstproperty" },
     { label: "Balance Transfer",         slug: "balancetransfer" },
     { label: "Project Loan",             slug: "projectloan" },
-    { label: "Vehicle Loan",             slug: "carloan" },
+    { label: "Vehicle Loan",             slug: "Vehicleloan" },
     { label: "Education Loan",           slug: "educationloan" },
     { label: "Credit Card",              slug: "creditcard" },
     { label: "Commercial Purchase",      slug: "commercialpurchase" },
@@ -78,7 +78,7 @@ const Header = () => {
     ];
     return all;
   })();
-  const franchisorLoginLink: NavItem = { label: "Franchisor Login", href: "/franchise-login" };
+  const franchiseeLoginLink: NavItem = { label: "Franchisee Login", href: "/franchise-login" };
   const applicationStatusLink: NavItem = { label: "Check Application Status", href: "/application-status" };
 
   const closeMobileMenu = () => {
@@ -122,11 +122,11 @@ const Header = () => {
             <div className="col-start-3 row-start-1 flex items-center gap-2 justify-self-end">
               <div className="hidden items-center gap-2 lg:flex">
                 <Link
-                  to={franchisorLoginLink.href}
-                  aria-current={isRouteActive(franchisorLoginLink.href) ? "page" : undefined}
-                  className={`header-action header-action-login${isRouteActive(franchisorLoginLink.href) ? " is-active" : ""}`}
+                  to={franchiseeLoginLink.href}
+                  aria-current={isRouteActive(franchiseeLoginLink.href) ? "page" : undefined}
+                  className={`header-action header-action-login${isRouteActive(franchiseeLoginLink.href) ? " is-active" : ""}`}
                 >
-                  Franchisor Login
+                  Franchisee Login
                 </Link>
                 <Link
                   to={applicationStatusLink.href}
@@ -263,7 +263,7 @@ const Header = () => {
         <div className="lg:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-60 overflow-y-auto shadow-2xl">
           <nav className="text-slate-600 font-medium">
             <ul className="flex flex-col divide-y divide-slate-200">
-              {[...navLinks, franchisorLoginLink, applicationStatusLink].map((link) =>
+              {[...navLinks, franchiseeLoginLink, applicationStatusLink].map((link) =>
                 link.dropdown ? (
                   <li key={link.label}>
                     <button
@@ -323,7 +323,7 @@ const Header = () => {
                     <Link
                       to={link.href}
                       className={`block px-5 py-4 text-sm uppercase font-semibold transition-colors ${
-                        link.href === franchisorLoginLink.href
+                        link.href === franchiseeLoginLink.href
                           ? "bg-(--brand-navy) text-white hover:bg-(--brand-dark)"
                           : link.href === applicationStatusLink.href
                             ? "bg-(--brand-teal-14) text-(--brand-navy) hover:bg-(--brand-teal) hover:text-white"

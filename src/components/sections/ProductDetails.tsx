@@ -192,7 +192,7 @@ const ProductDetails = () => {
                       "home-loan":        "/requireddocument/home-loan",
                       "loanAP-loan":      "/requireddocument/loan-against-property",
                       "balance-loan":     "/requireddocument/balance-transfer",
-                      "car-loan":         "/requireddocument/car-loan",
+                      "Vehicle-loan":     "/requireddocument/vehicle-loan",
                       "credit-card":      "/requireddocument/credit-card",
                       "education-loan":   "/requireddocument/education-loan",
                       "project-loan":     "/requireddocument/project-loan",

@@ -3,7 +3,7 @@ import LoanStatusShell from "../../pages/dashboard/loans/shared/LoanStatusShell"
 import type { SuccessSection } from "./successSections";
 import {
   fetchPersonalLoanApplications, fetchBusinessLoanApplications, fetchHomeLoanApplications,
-  fetchBalanceTransferApplications, fetchCarLoanApplications, fetchCommercialPurchaseApplications,
+  fetchBalanceTransferApplications, fetchVehicleLoanApplications, fetchCommercialPurchaseApplications,
   fetchCreditCardApplications, fetchEducationLoanApplications, fetchFDIApplications,
   fetchFilmLoanApplications, fetchGoldLoanApplications, fetchLeaseRentalApplications,
   fetchLoanAgainstPropertyApplications, fetchLoanAgainstShareApplications, fetchNPAApplications,
@@ -13,7 +13,7 @@ import * as personalReceipts from "../../pages/dashboard/loans/PersonalLoan/comp
 import * as businessReceipts from "../../pages/dashboard/loans/BusinessLoan/components/receiptSections";
 import * as homeReceipts from "../../pages/dashboard/loans/HomeLoan/components/receiptSections";
 import * as balanceTransferReceipts from "../../pages/dashboard/loans/BalanceTransfer/components/receiptSections";
-import * as carReceipts from "../../pages/dashboard/loans/CarLoan/components/receiptSections";
+import * as VehicleReceipts from "../../pages/dashboard/loans/VehicleLoan/components/receiptSections";
 import * as commercialPurchaseReceipts from "../../pages/dashboard/loans/CommercialPurchase/components/receiptSections";
 import * as creditCardReceipts from "../../pages/dashboard/loans/CreditCard/components/receiptSections";
 import * as educationReceipts from "../../pages/dashboard/loans/EducationLoan/components/receiptSections";
@@ -70,8 +70,8 @@ export const BalanceTransferStatus = makeLoanStatus(
   fetchBalanceTransferApplications, balanceTransferReceipts.buildProductSections,
   "Submit your balance transfer application to track its status here.",
 );
-export const CarLoanStatus = makeLoanStatus(
-  fetchCarLoanApplications, carReceipts.buildProductSections,
+export const VehicleLoanStatus = makeLoanStatus(
+  fetchVehicleLoanApplications, VehicleReceipts.buildProductSections,
   "Submit your vehicle loan application to track its status here.",
 );
 export const CommercialPurchaseStatus = makeLoanStatus(

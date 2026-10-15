@@ -17,7 +17,7 @@ const icons: Record<string, ReactElement> = {
       <path d="M10 19v-5h4v5" />
     </>
   ),
-  car: (
+  vehicle: (
     <>
       <path d="M4 16V12l2-4h12l2 4v4" />
       <path d="M4 16h16" />

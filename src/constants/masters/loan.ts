@@ -23,7 +23,7 @@ export const PROJECT_LOAN_TENURE_YEARS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 ] as const;
 
-export const CAR_LOAN_TENURE_YEARS = [1, 2, 3, 4, 5, 6, 7] as const;
+export const VEHICLE_LOAN_TENURE_YEARS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export const EDUCATION_LOAN_TENURE_YEARS = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
