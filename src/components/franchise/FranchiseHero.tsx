@@ -27,7 +27,7 @@ const FranchiseHero = () => {
       />
 
       <div className="relative mx-auto w-full">
-        <div className="mx-auto max-w-4xl px-6 md:px-8">
+        <div className="mx-auto max-w-5xl px-6 md:px-8">
           {/* Copy */}
           <div>
             <div className="flex items-center justify-center">
@@ -41,13 +41,12 @@ const FranchiseHero = () => {
             </div>
 
             <h1 className="mt-5 font-extrabold leading-[1.15] text-center text-white md:text-[44px]">
-              Build Your Own Financial Services Business with{" "}
+              Build Your Own Financial Service Business with{" "}
               <span style={{ color: "var(--brand-yellow)" }}>Indexia Finance</span>
             </h1>
 
-            <p className="mt-5 text-[15px] mx-2 text-center leading-relaxed text-white/75 md:text-base">
-              Partner with Indexia Finance and earn attractive payouts by connecting customers with banks and
-              NBFCs for secured and unsecured financial products.
+            <p className="mt-5 text-[15px] text-center leading-relaxed text-white/75 md:text-base">
+              Partner with Indexia Finance as a Franchisee and earn the highest payouts by connecting customers with Indexia Finance for various loan products, including secured and unsecured loans, as well as investment opportunities and FDI.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
