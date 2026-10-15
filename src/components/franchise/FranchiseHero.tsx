@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 import FranchiseIcon from "./FranchiseIcon";
-import FranchiseNetworkGraphic from "./FranchiseNetworkGraphic";
 
 /**
  * Hero — headline, the two paths into the section (apply, or sign in), and the
@@ -13,8 +12,7 @@ import FranchiseNetworkGraphic from "./FranchiseNetworkGraphic";
  * previewing them here was what made the page read as repeating itself.
  */
 const FranchiseHero = () => {
-  // Franchisor login is disabled (greyed out) for signed-out visitors.
-  const franchisorLoginEnabled = useFranchisorLoginAccess();
+  const franchiseeLoginEnabled = useFranchisorLoginAccess();
   return (
   <section
     className="franchise-hero relative mt-(--header-h) flex w-full items-center overflow-hidden px-6 py-12 md:px-8 md:py-14"
@@ -28,8 +26,8 @@ const FranchiseHero = () => {
       style={{ background: "linear-gradient(90deg,transparent,rgba(242,242,49,0.55),transparent)" }}
     />
 
-    <div className="relative mx-auto w-full max-w-6xl">
-      <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+    <div className="relative mx-auto w-full">
+      <div className="grid items-center">
         {/* Copy */}
         <div>
           <span
@@ -71,7 +69,7 @@ const FranchiseHero = () => {
           <p className="mt-5 flex flex-wrap items-center gap-2 text-[12.5px] text-white/55">
             <FranchiseIcon name="lock" className="h-4 w-4 shrink-0 text-white/45" />
             Already a franchise partner?{" "}
-            {franchisorLoginEnabled ? (
+            {franchiseeLoginEnabled ? (
               <Link
                 to="/franchise-login"
                 className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
@@ -81,7 +79,7 @@ const FranchiseHero = () => {
             ) : (
               <span
                 aria-disabled="true"
-                title="Sign in to access the franchisor portal"
+                title="Sign in to access the franchisee portal"
                 className="cursor-not-allowed font-bold text-white/45"
               >
                 Sign in first to reach your dashboard
@@ -89,19 +87,7 @@ const FranchiseHero = () => {
             )}
           </p>
         </div>
-
-        {/* Graphic */}
-        <div
-          className="relative mx-auto w-full max-w-140 rounded-3xl p-5 md:p-7"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.16)" }}
-        >
-          <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-[0.16em] text-white/55">
-            How a franchise partner connects the two sides
-          </p>
-          <FranchiseNetworkGraphic />
-        </div>
       </div>
-
     </div>
   </section>
   );
