@@ -9,6 +9,7 @@ import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { loanSlugFor } from "../../constants/loanSlugs";
+import { markApplySessionPending } from "../../utils/applySession";
 import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -181,6 +182,9 @@ const ApplicationModal = ({
   const [resending, setResending] = useState(false);
   // Where to land once the mobile is verified.
   const [pendingDashboard, setPendingDashboard] = useState("");
+  // Whether a session already existed when this application started. A session
+  // the applicant already had is never dropped when they abandon the form.
+  const [sessionWasSignedIn, setSessionWasSignedIn] = useState(true);
 
   const resetAll = () => {
     setFullName("");
@@ -202,6 +206,7 @@ const ApplicationModal = ({
     setResendNotice("");
     setResending(false);
     setPendingDashboard("");
+    setSessionWasSignedIn(true);
   };
 
   const handleClose = () => {
@@ -325,13 +330,10 @@ const ApplicationModal = ({
       return;
     }
 
-    // A live session already authorises POST /customer/loan-apply, so the OTP gate
-    // only runs when there is no token to submit the form with.
-    if (isLoggedIn) {
-      openApplicationForm(dashboardPath);
-      return;
-    }
-
+    // Every application is authorised by its own OTP: re-applying — for another
+    // product, or after abandoning one — requests a fresh code and replaces the
+    // token with the new one, so a stale session can never file the application.
+    setSessionWasSignedIn(isLoggedIn);
     setDetailsBusy(true);
     try {
       const response = await requestOtp(loanSlug);
@@ -368,6 +370,9 @@ const ApplicationModal = ({
       }
       // The token from this call is what lets POST /customer/loan-apply be accepted.
       login(response.token, response.user);
+      // A token issued to a previously signed-out visitor belongs to this one
+      // application: it is dropped if they leave without submitting.
+      if (!sessionWasSignedIn) markApplySessionPending();
       openApplicationForm(pendingDashboard);
     } catch (err) {
       setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
