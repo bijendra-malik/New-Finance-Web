@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { useAuth } from "../../context/authContext";
@@ -49,6 +49,43 @@ const EMPTY: FranchiseFormValues = {
 type FieldKey = keyof FranchiseFormValues;
 type Variant = "franchisee" | "franchisor";
 
+/**
+ * How the application is laid out:
+ * - `stacked`   — the classic two-column form (franchisor enquiry).
+ * - `horizontal` — every field on one screen in a wide three-column grid, so
+ *                  desktop applicants never scroll.
+ * - `stepped`   — one short step at a time, for phones and narrow tablets.
+ */
+export type FranchiseFormPresentation = "stacked" | "horizontal" | "stepped";
+
+interface FranchiseeStep {
+  id: string;
+  label: string;
+  hint: string;
+  fields: FieldKey[];
+}
+
+/** The stepped (small-screen) grouping of the franchisee application. */
+const FRANCHISEE_STEPS: FranchiseeStep[] = [
+  { id: "personal", label: "Personal", hint: "Name, contact and PAN", fields: ["fullName", "mobile", "email", "pan"] },
+  {
+    id: "business",
+    label: "Business",
+    hint: "Business and GST details",
+    fields: ["businessName", "businessType", "businessTypeOther", "gstNumber", "yearsInBusiness"],
+  },
+  { id: "location", label: "Location", hint: "Where you operate", fields: ["pincode", "state", "city", "address"] },
+  { id: "plan", label: "Plan", hint: "Choose your package", fields: ["packageId"] },
+];
+
+/** Field order for the single-screen (stacked / horizontal) layouts. */
+const FRANCHISEE_FIELD_ORDER: FieldKey[] = [
+  "fullName", "mobile", "email", "pan", "gstNumber",
+  "pincode", "state", "city",
+  "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address",
+  "packageId",
+];
+
 /** Location master response for a verified pincode. */
 interface VerifiedLocation {
   pincode: string;
@@ -63,22 +100,29 @@ interface FranchiseFormProps {
   /** Franchisee only — controlled by the page so the plan cards can pre-select. */
   packageId?: string;
   onPackageChange?: (planId: string) => void;
+  /** Layout of the franchisee application. Defaults to the stacked form. */
+  presentation?: FranchiseFormPresentation;
 }
 
 /**
  * Shared franchisee/franchisor form.
  *
- * The franchisee variant is the "Be a Franchisor" application: it is gated on a
+ * The franchisee variant is the franchisee application: it is gated on a
  * registered account, carries that account's name, mobile and email in as locked
  * fields, resolves state and city from the pincode via the location master,
  * collects the business details POST /franchise/apply expects, and posts the
  * application to the backend. On success the applicant is told they will be
- * issued a franchise ID and password, and pointed at /franchise-login.
+ * issued a franchisee code (user ID and password) and pointed at /franchise-login.
  *
  * The franchisor variant is a lightweight enquiry and still hands the details to
  * the visitor's mail client addressed to the franchise team.
  */
-const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: FranchiseFormProps) => {
+const FranchiseForm = ({
+  variant,
+  packageId: packageIdProp,
+  onPackageChange,
+  presentation = "stacked",
+}: FranchiseFormProps) => {
   const isFranchisee = variant === "franchisee";
   const { masters, loadCities } = useMasters();
   const { user } = useAuth();
@@ -96,8 +140,9 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   const [popup, setPopup] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [mailtoHref, setMailtoHref] = useState("");
 
-  // for the chosen state arrives. Once the user types, it stays free text so their input
-  // is never swapped out from under them mid-entry.
+  // Stepped layout only — which step of the application is on screen.
+  const [step, setStep] = useState(0);
+
   // Pincode → location master resolution state.
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
@@ -133,8 +178,6 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
-
-  // city returned by the pincode lookup), or the dropdown would blank out the resolved value.
 
   const set = (key: FieldKey, value: string) => {
     setValues((p) => ({ ...p, [key]: value }));
@@ -184,7 +227,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
     };
   }, [values.pincode, isFranchisee]);
 
-  const validate = (vals: FranchiseFormValues) => {
+  const buildErrors = (vals: FranchiseFormValues) => {
     const e: Partial<Record<FieldKey, string>> = {};
     if (!vals.fullName.trim()) e.fullName = "Full name is required";
     if (!vals.pan.trim()) e.pan = "PAN number is required";
@@ -211,8 +254,14 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
       if (!vals.address.trim()) e.address = "Address is required";
       if (!packageId) e.packageId = "Select the package duration you are interested in";
     }
+    return e;
+  };
+
+  /** Validates the fields on one step of the stepped layout. */
+  const validateStep = (vals: FranchiseFormValues, index: number) => {
+    const e = buildErrors(vals);
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return !FRANCHISEE_STEPS[index].fields.some((key) => e[key]);
   };
 
   /** Franchisor enquiry — unchanged mail-client hand-off. */
@@ -225,7 +274,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
       { label: "State", value: vals.state },
       { label: "City", value: vals.city },
     ];
-    const href = buildMailtoUrl(FRANCHISE_EMAIL, `Franchisor Enquiry — ${vals.fullName}`, rows);
+    const href = buildMailtoUrl(FRANCHISE_EMAIL, `Franchise Enquiry — ${vals.fullName}`, rows);
     setMailtoHref(href);
     window.location.href = href;
     setSubmitted(true);
@@ -261,7 +310,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         tone: "success",
         message:
           res.message ||
-          "Your application has been received. Our team will issue your franchise ID and password so you can sign in to the franchisor dashboard.",
+          "Your application has been received. Our team will review your details and issue your franchisee code, user ID and password so you can sign in to the franchisee dashboard.",
       });
       setSubmitted(true);
     } catch (err) {
@@ -277,7 +326,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
   const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
 
-
+    // If the pincode resolved to a location and the applicant then typed
     // away from it, correct them back before validating or sending.
     let current = values;
     if (
@@ -289,7 +338,17 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
       setValues(current);
     }
 
-    if (!validate(current)) return;
+    const e = buildErrors(current);
+    setErrors(e);
+    if (Object.keys(e).length > 0) {
+      // On the stepped layout an error can be on a step that is not on screen,
+      // so jump back to the first offending step instead of failing silently.
+      if (isFranchisee && presentation === "stepped") {
+        const index = FRANCHISEE_STEPS.findIndex((s) => s.fields.some((key) => e[key]));
+        if (index >= 0) setStep(index);
+      }
+      return;
+    }
 
     if (!isFranchisee) {
       submitEnquiry(current);
@@ -338,7 +397,7 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
           ) : (
           <span
             aria-disabled="true"
-            title="Sign in to access the franchisor portal"
+            title="Sign in to access the franchisee portal"
             className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white/60"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
           >
@@ -366,8 +425,8 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
         <h3 className="mb-2 text-xl font-bold text-slate-800">Application submitted</h3>
         <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
           Your franchise application has been received. Our team will verify your details and issue
-          your <strong>franchise ID and password</strong>. Use them to sign in to the franchisor
-          dashboard.
+          your <strong>franchisee code, user ID and password</strong>. Use them to sign in to the
+          franchisee dashboard.
         </p>
 
         <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
@@ -475,77 +534,105 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
     ].join(" ");
   }
 
-  return (
-    <>
-    <form onSubmit={handleSubmit} noValidate className="space-y-5">
-      {isFranchisee && hasIdentity && (
-        <p className="rounded-lg border border-(--brand-teal-20) bg-(--brand-teal-14) px-3 py-2 text-[11.5px] leading-relaxed text-slate-600">
-          🔒 Name, mobile and email were filled from your registered account and are locked. They must
-          match your PAN card — contact support to correct them.
-        </p>
-      )}
+  const isHorizontal = presentation === "horizontal";
+  const isStepped = presentation === "stepped";
+  const lastStep = FRANCHISEE_STEPS.length - 1;
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Field
-          id={fid("name")}
-          label={isFranchisee ? "Full Name / Applicant Name" : "Full Name"}
-          required
-          error={errors.fullName}
-          hint={isFranchisee ? "Enter exactly as printed on your PAN card" : undefined}
-          full={isFranchisee}
-        >
-          <input
+  const gridClass = isHorizontal
+    ? "grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3"
+    : isStepped
+      ? "grid grid-cols-1 gap-4"
+      : "grid grid-cols-1 gap-5 sm:grid-cols-2";
+
+  // Full-width spans only make sense where the grid actually has the extra columns.
+  const spanFull = isHorizontal ? "sm:col-span-2 lg:col-span-3" : isStepped ? "" : "sm:col-span-2";
+  const lockedClass = (key: "fullName" | "mobile" | "email") =>
+    isLocked(key) ? "cursor-not-allowed bg-slate-100 text-slate-500" : "";
+
+  const handleLocationSet = (key: "state" | "city", v: string) => {
+    if (key === "state") {
+      setValues((p) => ({ ...p, state: v, city: "" }));
+      setErrors((p) => ({ ...p, state: undefined, city: undefined }));
+    } else {
+      set("city", v);
+    }
+  };
+
+  const renderField = (key: FieldKey): React.ReactNode => {
+    switch (key) {
+      case "fullName":
+        return (
+          <Field
             id={fid("name")}
-            className={`${inputClass(!!errors.fullName)} ${isLocked("fullName") ? "cursor-not-allowed bg-slate-100 text-slate-500" : ""}`}
-            value={values.fullName}
-            onChange={(e) => set("fullName", e.target.value)}
-            placeholder="Your full name"
-            autoComplete="name"
-            readOnly={isLocked("fullName")}
-          />
-        </Field>
+            label={isFranchisee ? "Full Name / Applicant Name" : "Full Name"}
+            required
+            error={errors.fullName}
+            hint={isFranchisee ? "Enter exactly as printed on your PAN card" : undefined}
+            full={isFranchisee && presentation === "stacked"}
+          >
+            <input
+              id={fid("name")}
+              className={`${inputClass(!!errors.fullName)} ${lockedClass("fullName")}`}
+              value={values.fullName}
+              onChange={(e) => set("fullName", e.target.value)}
+              placeholder="Your full name"
+              autoComplete="name"
+              readOnly={isLocked("fullName")}
+            />
+          </Field>
+        );
 
-        <Field id={fid("mobile")} label="Mobile Number" required error={errors.mobile}>
-          <input
-            id={fid("mobile")}
-            type="tel"
-            inputMode="numeric"
-            className={`${inputClass(!!errors.mobile)} ${isLocked("mobile") ? "cursor-not-allowed bg-slate-100 text-slate-500" : ""}`}
-            value={values.mobile}
-            onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
-            placeholder="10-digit mobile number"
-            maxLength={10}
-            autoComplete="tel"
-            readOnly={isLocked("mobile")}
-          />
-        </Field>
+      case "mobile":
+        return (
+          <Field id={fid("mobile")} label="Mobile Number" required error={errors.mobile}>
+            <input
+              id={fid("mobile")}
+              type="tel"
+              inputMode="numeric"
+              className={`${inputClass(!!errors.mobile)} ${lockedClass("mobile")}`}
+              value={values.mobile}
+              onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
+              placeholder="10-digit mobile number"
+              maxLength={10}
+              autoComplete="tel"
+              readOnly={isLocked("mobile")}
+            />
+          </Field>
+        );
 
-        <Field id={fid("email")} label="Email Address" required error={errors.email}>
-          <input
-            id={fid("email")}
-            type="email"
-            className={`${inputClass(!!errors.email)} ${isLocked("email") ? "cursor-not-allowed bg-slate-100 text-slate-500" : ""}`}
-            value={values.email}
-            onChange={(e) => set("email", e.target.value)}
-            placeholder="your@email.com"
-            autoComplete="email"
-            readOnly={isLocked("email")}
-          />
-        </Field>
+      case "email":
+        return (
+          <Field id={fid("email")} label="Email Address" required error={errors.email}>
+            <input
+              id={fid("email")}
+              type="email"
+              className={`${inputClass(!!errors.email)} ${lockedClass("email")}`}
+              value={values.email}
+              onChange={(e) => set("email", e.target.value)}
+              placeholder="your@email.com"
+              autoComplete="email"
+              readOnly={isLocked("email")}
+            />
+          </Field>
+        );
 
-        <Field id={fid("pan")} label="PAN Number" required error={errors.pan}>
-          <input
-            id={fid("pan")}
-            className={`${inputClass(!!errors.pan)} uppercase tracking-wider`}
-            value={values.pan}
-            onChange={(e) => set("pan", formatPAN(e.target.value))}
-            placeholder="ABCDE1234F"
-            maxLength={10}
-            autoComplete="off"
-          />
-        </Field>
+      case "pan":
+        return (
+          <Field id={fid("pan")} label="PAN Number" required error={errors.pan}>
+            <input
+              id={fid("pan")}
+              className={`${inputClass(!!errors.pan)} uppercase tracking-wider`}
+              value={values.pan}
+              onChange={(e) => set("pan", formatPAN(e.target.value))}
+              placeholder="ABCDE1234F"
+              maxLength={10}
+              autoComplete="off"
+            />
+          </Field>
+        );
 
-        {isFranchisee && (
+      case "gstNumber":
+        return (
           <Field
             id={fid("gst")}
             label="GST Number"
@@ -562,20 +649,115 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
               autoComplete="off"
             />
           </Field>
-        )}
+        );
 
-        {isFranchisee && (
+      case "yearsInBusiness":
+        return (
+          <Field id={fid("years")} label="Years in Business" required error={errors.yearsInBusiness}>
+            <input
+              id={fid("years")}
+              inputMode="numeric"
+              className={inputClass(!!errors.yearsInBusiness)}
+              value={values.yearsInBusiness}
+              onChange={(e) => set("yearsInBusiness", e.target.value.replace(/\D/g, "").slice(0, 2))}
+              placeholder="e.g. 3"
+              maxLength={2}
+            />
+          </Field>
+        );
+
+      case "businessName":
+        return (
+          <Field id={fid("businessName")} label="Business Name" required error={errors.businessName}>
+            <input
+              id={fid("businessName")}
+              className={inputClass(!!errors.businessName)}
+              value={values.businessName}
+              onChange={(e) => set("businessName", e.target.value)}
+              placeholder="Your business / firm name"
+              autoComplete="organization"
+            />
+          </Field>
+        );
+
+      case "businessType":
+        return (
+          <Field id={fid("businessType")} label="Business Type" required error={errors.businessType}>
+            <select
+              id={fid("businessType")}
+              className={inputClass(!!errors.businessType)}
+              value={values.businessType}
+              onChange={(e) => {
+                set("businessType", e.target.value);
+                if (e.target.value !== OTHER_OPTION) set("businessTypeOther", "");
+              }}
+            >
+              <option value="">Select business type</option>
+              {businessTypeOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </Field>
+        );
+
+      case "businessTypeOther":
+        if (values.businessType !== OTHER_OPTION) return null;
+        return (
+          <Field id={fid("businessTypeOther")} label="Mention Business Type" required error={errors.businessTypeOther}>
+            <input
+              id={fid("businessTypeOther")}
+              className={inputClass(!!errors.businessTypeOther)}
+              value={values.businessTypeOther}
+              onChange={(e) => set("businessTypeOther", e.target.value)}
+              placeholder="Enter business type"
+            />
+          </Field>
+        );
+
+      case "address":
+        return (
+          <div className={spanFull}>
+            <Field id={fid("address")} label="Address" required error={errors.address}>
+              <textarea
+                id={fid("address")}
+                rows={isHorizontal ? 2 : 3}
+                className={`${inputClass(!!errors.address)} resize-y`}
+                value={values.address}
+                onChange={(e) => set("address", e.target.value)}
+                placeholder="Full postal address as per your official documents"
+              />
+            </Field>
+          </div>
+        );
+
+      case "packageId":
+        return (
+          <div className={spanFull}>
+            <PackageSelector
+              id={fid("package")}
+              value={packageId}
+              onChange={setPackage}
+              error={errors.packageId}
+              required
+            />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  /** Renders a key list, collapsing pincode/state/city into the shared location block. */
+  const renderFields = (keys: FieldKey[]): React.ReactNode =>
+    keys.map((key) => {
+      if (key === "pincode") {
+        return (
           <LocationFields
+            key="location"
             slice={{ state: values.state, city: values.city }}
             pincode={values.pincode}
-            set={(key, v) => {
-              if (key === "state") {
-                setValues((p) => ({ ...p, state: v, city: "" }));
-                setErrors((p) => ({ ...p, state: undefined, city: undefined }));
-              } else {
-                set("city", v);
-              }
-            }}
+            set={handleLocationSet}
             errors={{ state: errors.state, city: errors.city }}
             states={stateOptions}
             loadCities={loadCities}
@@ -590,111 +772,140 @@ const FranchiseForm = ({ variant, packageId: packageIdProp, onPackageChange }: F
             pincodeStatus={pincodeStatus}
             verifiedLocation={verifiedLocation}
           />
-        )}
+        );
+      }
+      if (key === "state" || key === "city") return null; // rendered by LocationFields
+      return <Fragment key={key}>{renderField(key)}</Fragment>;
+    });
 
-        {isFranchisee && (
+  const planSummaryBlock = (
+    <div
+      className={isHorizontal ? "rounded-xl px-4 py-2.5" : "rounded-2xl p-4"}
+      style={{ background: "var(--brand-navy-14)", border: "1px dashed var(--brand-navy-44)" }}
+    >
+      <PlanSummary plan={selectedPlan} compact={isHorizontal} />
+    </div>
+  );
+
+  const consentText = isHorizontal
+    ? "All details must match your PAN card / official documents. Submitting is an application, not a confirmation of allotment, and you consent to being contacted about the franchise programme."
+    : isFranchisee
+      ? "All details must be entered as per PAN card / official documents. Submitting this form is an application, not a confirmation of franchise allotment. By submitting, you consent to being contacted by Indexia Finance about the franchise programme."
+      : "All details must be entered as per official documents. Our team reviews every enquiry before getting in touch. By submitting, you consent to being contacted by Indexia Finance about the franchise programme.";
+
+  return (
+    <>
+    <form onSubmit={handleSubmit} noValidate className={isHorizontal ? "space-y-4" : "space-y-5"}>
+      {isFranchisee && hasIdentity && (
+        <p className="rounded-lg border border-(--brand-teal-20) bg-(--brand-teal-14) px-3 py-2 text-[11.5px] leading-relaxed text-slate-600">
+          🔒 Name, mobile and email were filled from your registered account and are locked. They must
+          match your PAN card — contact support to correct them.
+        </p>
+      )}
+
+      {/* Stepped layout — progress + which step is on screen */}
+      {isStepped && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            {FRANCHISEE_STEPS.map((s, i) => (
+              <span
+                key={s.id}
+                className="h-1.5 flex-1 rounded-full transition-colors"
+                style={{ background: i <= step ? "var(--brand-teal)" : "#e2e8f0" }}
+              />
+            ))}
+          </div>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <span className="text-[12px] font-extrabold uppercase tracking-wider text-(--brand-navy)">
+              Step {step + 1} of {FRANCHISEE_STEPS.length} · {FRANCHISEE_STEPS[step].label}
+            </span>
+            <span className="text-[11.5px] text-slate-500">{FRANCHISEE_STEPS[step].hint}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Plan summary sits with the plan step in the stepped layout, under the grid otherwise. */}
+      {isFranchisee && isStepped && FRANCHISEE_STEPS[step].id === "plan" && planSummaryBlock}
+
+      <div className={gridClass}>
+        {isFranchisee ? (
+          renderFields(isStepped ? FRANCHISEE_STEPS[step].fields : FRANCHISEE_FIELD_ORDER)
+        ) : (
           <>
-            <Field id={fid("years")} label="Years in Business" required error={errors.yearsInBusiness}>
+            {renderField("fullName")}
+            {renderField("mobile")}
+            {renderField("email")}
+            {renderField("pan")}
+            <Field id={fid("state")} label="State" required error={errors.state}>
               <input
-                id={fid("years")}
-                inputMode="numeric"
-                className={inputClass(!!errors.yearsInBusiness)}
-                value={values.yearsInBusiness}
-                onChange={(e) => set("yearsInBusiness", e.target.value.replace(/\D/g, "").slice(0, 2))}
-                placeholder="e.g. 3"
-                maxLength={2}
+                id={fid("state")}
+                className={inputClass(!!errors.state)}
+                value={values.state}
+                onChange={(e) => set("state", e.target.value)}
+                placeholder="Your state"
+                autoComplete="address-level1"
               />
             </Field>
-
-            <Field id={fid("businessName")} label="Business Name" required error={errors.businessName}>
+            <Field id={fid("city")} label="City" required error={errors.city}>
               <input
-                id={fid("businessName")}
-                className={inputClass(!!errors.businessName)}
-                value={values.businessName}
-                onChange={(e) => set("businessName", e.target.value)}
-                placeholder="Your business / firm name"
-                autoComplete="organization"
+                id={fid("city")}
+                className={inputClass(!!errors.city)}
+                value={values.city}
+                onChange={(e) => set("city", e.target.value)}
+                placeholder="Your city"
+                autoComplete="address-level2"
               />
             </Field>
-
-            <Field id={fid("businessType")} label="Business Type" required error={errors.businessType}>
-              <select
-                id={fid("businessType")}
-                className={inputClass(!!errors.businessType)}
-                value={values.businessType}
-                onChange={(e) => {
-                  set("businessType", e.target.value);
-                  if (e.target.value !== OTHER_OPTION) set("businessTypeOther", "");
-                }}
-              >
-                <option value="">Select business type</option>
-                {businessTypeOptions.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </Field>
-
-            {values.businessType === OTHER_OPTION && (
-              <Field id={fid("businessTypeOther")} label="Mention Business Type" required error={errors.businessTypeOther}>
-                <input
-                  id={fid("businessTypeOther")}
-                  className={inputClass(!!errors.businessTypeOther)}
-                  value={values.businessTypeOther}
-                  onChange={(e) => set("businessTypeOther", e.target.value)}
-                  placeholder="Enter business type"
-                />
-              </Field>
-            )}
-
-            <Field id={fid("address")} label="Address" required error={errors.address} full>
-              <textarea
-                id={fid("address")}
-                rows={3}
-                className={`${inputClass(!!errors.address)} resize-y`}
-                value={values.address}
-                onChange={(e) => set("address", e.target.value)}
-                placeholder="Full postal address as per your official documents"
-              />
-            </Field>
-
-            <PackageSelector
-              id={fid("package")}
-              value={packageId}
-              onChange={setPackage}
-              error={errors.packageId}
-              required
-              full
-            />
           </>
         )}
       </div>
 
       {/* Selected plan summary — franchisee only, rendered from the shared PlanSummary module. */}
-      {isFranchisee && (
-        <div
-          className="rounded-2xl p-4"
-          style={{ background: "var(--brand-navy-14)", border: "1px dashed var(--brand-navy-44)" }}
-        >
-          <PlanSummary plan={selectedPlan} />
+      {isFranchisee && !isStepped && planSummaryBlock}
+
+      <p className="text-[11.5px] leading-relaxed text-slate-500">{consentText}</p>
+
+      {/* Footer — stepped pages with Continue, everyone else submits from here. */}
+      {isFranchisee && isStepped ? (
+        <div className="flex items-center gap-3">
+          {step > 0 && (
+            <Button variant="outline" size="lg" onClick={() => setStep((s) => Math.max(s - 1, 0))}>
+              Back
+            </Button>
+          )}
+          {step < lastStep ? (
+            <Button
+              size="lg"
+              fullWidth
+              onClick={() => {
+                if (validateStep(values, step)) setStep((s) => Math.min(s + 1, lastStep));
+              }}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              loading={submitting}
+              style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-teal) 100%)" }}
+            >
+              {submitting ? "Submitting…" : "Apply for Franchise"}
+            </Button>
+          )}
         </div>
+      ) : (
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          loading={isFranchisee && submitting}
+          style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-teal) 100%)" }}
+        >
+          {isFranchisee ? (submitting ? "Submitting…" : "Apply for Franchise") : "Submit Details"}
+        </Button>
       )}
-
-      <p className="text-[11.5px] leading-relaxed text-slate-500">
-        {isFranchisee
-          ? "All details must be entered as per PAN card / official documents. Submitting this form is an application, not a confirmation of franchise allotment."
-          : "All details must be entered as per official documents. Our team reviews every enquiry before getting in touch."}{" "}
-        By submitting, you consent to being contacted by Indexia Finance about the franchise programme.
-      </p>
-
-      <Button
-        type="submit"
-        size="lg"
-        fullWidth
-        loading={isFranchisee && submitting}
-        style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-teal) 100%)" }}
-      >
-        {isFranchisee ? (submitting ? "Submitting…" : "Apply for Franchise") : "Submit Details"}
-      </Button>
     </form>
     {popupNode}
     </>

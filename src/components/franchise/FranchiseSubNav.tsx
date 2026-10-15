@@ -6,11 +6,15 @@ const FRANCHISE_SECTIONS = [
   { id: "payouts", label: "Payouts" },
   { id: "plans", label: "Plans & fees" },
   { id: "benefits", label: "Why partner" },
-  { id: "franchisee-application", label: "Apply" },
   { id: "faqs", label: "FAQs" },
 ] as const;
 
-const FranchiseSubNav = () => {
+interface FranchiseSubNavProps {
+  /** Opens the franchisee application popup — the form no longer lives on the page. */
+  onApply: () => void;
+}
+
+const FranchiseSubNav = ({ onApply }: FranchiseSubNavProps) => {
   const [active, setActive] = useState<string>(FRANCHISE_SECTIONS[0].id);
   const [stuck, setStuck] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);

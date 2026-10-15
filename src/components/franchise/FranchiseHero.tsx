@@ -11,7 +11,12 @@ import FranchiseIcon from "./FranchiseIcon";
  * plans and payout facts each have their own section further down the page, and
  * previewing them here was what made the page read as repeating itself.
  */
-const FranchiseHero = () => {
+interface FranchiseHeroProps {
+  /** Opens the franchisee application popup. */
+  onApply: () => void;
+}
+
+const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
   const franchiseeLoginEnabled = useFranchisorLoginAccess();
   return (
     <section
@@ -50,14 +55,14 @@ const FranchiseHero = () => {
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-              <Button
-                size="lg"
-                onClick={() => document.getElementById("franchisee-application")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="shadow-lg"
-                style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
-              >
-                Apply for a Franchise
-              </Button>
+            <Button
+              size="lg"
+              onClick={onApply}
+              className="shadow-lg"
+              style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
+            >
+              Apply for a Franchise
+            </Button>
               <Link
                 to="/contact"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 px-6 py-3 text-base font-bold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
@@ -69,7 +74,7 @@ const FranchiseHero = () => {
             {/* The second page in this flow, linked where a returning partner lands. */}
             <p className="mt-5 flex flex-wrap items-center justify-center gap-2 text-[12.5px] text-white/55">
               <FranchiseIcon name="lock" className="h-4 w-4 shrink-0 text-white/45" />
-              Already a franchise partner?{" "}
+              Already a Franchisee?{" "}
               {franchiseeLoginEnabled ? (
                 <Link
                   to="/franchise-login"

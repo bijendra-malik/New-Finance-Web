@@ -114,9 +114,9 @@ const PORTAL_SECTIONS: { id: string; label: string; icon: "user-plus" | "layers"
 
 const FranchisorDashboardPage = () => {
   useSEO({
-    title: "Franchisor Dashboard",
+    title: "Franchisee Dashboard",
     description:
-      "Franchisor dashboard for Indexia Finance franchise partners — agreement status, registered details and payout structure in one place.",
+      "Franchisee dashboard for Indexia Finance franchise partners — agreement status, registered details and payout structure in one place.",
     path: "/franchisor-dashboard",
   });
 
@@ -222,8 +222,8 @@ const FranchisorDashboardPage = () => {
     return (
       <>
         <PageBanner
-          breadcrumb="Franchisor Dashboard"
-          title="Franchisor"
+          breadcrumb="Franchisee Dashboard"
+          title="Franchisee"
           highlight="Dashboard"
           tagline="Partner portal access for Indexia Finance franchisees"
         />
@@ -241,7 +241,7 @@ const FranchisorDashboardPage = () => {
               </span>
               <h1 className="mt-4 text-xl font-bold text-slate-800">Sign in to open your dashboard</h1>
               <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
-                The franchisor dashboard shows your agreement status, registered franchise details and payout
+                The franchisee dashboard shows your agreement status, registered franchise details and payout
                 structure. It is available to franchise partners with portal credentials issued with their agreement.
               </p>
 
@@ -304,7 +304,7 @@ const FranchisorDashboardPage = () => {
               </span>
               <div className="min-w-0">
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "var(--brand-yellow)" }}>
-                  Franchisor Portal
+                  Franchisee Portal
                 </p>
                 <h1 className="truncate text-xl font-bold text-white md:text-2xl">
                   {name ?? "Franchise partner"}
@@ -378,7 +378,7 @@ const FranchisorDashboardPage = () => {
               </p>
               <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{error}</p>
               <a
-                href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent(`Franchisor portal — account ${session.franchiseId}`)}`}
+                href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent(`Franchisee portal — account ${session.franchiseId}`)}`}
                 className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
               >
                 <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
@@ -421,7 +421,7 @@ const FranchisorDashboardPage = () => {
 
           {/* Main panel content */}
           <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-lg font-extrabold text-slate-800">Franchisor Portal</h2>
+            <h2 className="text-lg font-extrabold text-slate-800">Franchisee Portal</h2>
             <p className="mt-1 text-[13px] text-slate-500">
               The portal is where the day-to-day work happens — it has two sections, both live against the franchise
               service.

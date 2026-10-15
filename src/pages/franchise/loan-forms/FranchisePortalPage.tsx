@@ -46,7 +46,7 @@ const isPortalSection = (value: string | null): value is PortalSection =>
   value === "customers" || value === "products";
 
 /**
- * The franchisor portal.
+ * The franchisee portal.
  *
  * The left panel lists the portal's sections — customer registration and loan
  * products — and the panel beside it shows the selected one. Both sections work
@@ -56,9 +56,9 @@ const isPortalSection = (value: string | null): value is PortalSection =>
  */
 const FranchisePortalPage = () => {
   useSEO({
-    title: "Franchisor Portal — Customers & Loan Products",
+    title: "Franchisee Portal — Customers & Loan Products",
     description:
-      "The franchisor portal for Indexia Finance franchise partners — register clients and submit any loan application on their behalf, filed under your franchise ID.",
+      "The franchisee portal for Indexia Finance franchise partners — register clients and submit any loan application on their behalf, filed under your franchise ID.",
     path: "/franchise/loan-forms",
   });
 
@@ -174,8 +174,8 @@ const FranchisePortalPage = () => {
     return (
       <>
         <PageBanner
-          breadcrumb="Franchisor Portal"
-          title="Franchisor"
+          breadcrumb="Franchisee Portal"
+          title="Franchisee"
           highlight="Portal"
           tagline="Customers and loan applications, filed under your franchise ID"
         />
@@ -191,7 +191,7 @@ const FranchisePortalPage = () => {
               >
                 <FranchiseIcon name="lock" filled className="h-6 w-6" />
               </span>
-              <h1 className="mt-4 text-xl font-bold text-slate-800">Sign in to open the franchisor portal</h1>
+              <h1 className="mt-4 text-xl font-bold text-slate-800">Sign in to open the franchisee portal</h1>
               <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
                 The portal is where you register your clients and file any Indexia Finance loan application on their
                 behalf. Every application is submitted under your franchise ID. Portal credentials issued with your
@@ -249,7 +249,7 @@ const FranchisePortalPage = () => {
               </span>
               <div className="min-w-0">
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "var(--brand-yellow)" }}>
-                  Franchisor Portal
+                  Franchisee Portal
                 </p>
                 <h1 className="truncate text-xl font-bold text-white md:text-2xl">
                   {name}
@@ -327,7 +327,7 @@ const FranchisePortalPage = () => {
               </p>
               <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{error}</p>
               <a
-                href={`mailto:contactus@indexiafinance.com?subject=${encodeURIComponent(`Franchisor portal — account ${session.franchiseId}`)}`}
+                href={`mailto:contactus@indexiafinance.com?subject=${encodeURIComponent(`Franchisee portal — account ${session.franchiseId}`)}`}
                 className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
               >
                 <FranchiseIcon name="mail" className="h-3.5 w-3.5" />

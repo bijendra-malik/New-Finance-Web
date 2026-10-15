@@ -3,16 +3,18 @@ import FranchiseIcon from "./FranchiseIcon";
 import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 
 interface FranchiseCTAProps {
-  /** Opens the franchisor-arrangement enquiry modal. */
-  onBecomeFranchisor: () => void;
+  /** Opens the franchisee application popup. */
+  onApply: () => void;
+  /** Opens the franchise enquiry modal. */
+  onEnquire: () => void;
 }
 
 /**
- * Closing band — the two ways to start: apply, or open a franchisor-arrangement
- * enquiry. It carries no figures and no disclaimer of its own, since the plans
- * and payout sections above already state them.
+ * Closing band — the two ways to start: apply, or send a franchise enquiry. It
+ * carries no figures and no disclaimer of its own, since the plans and payout
+ * sections above already state them.
  */
-const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
+const FranchiseCTA = ({ onApply, onEnquire }: FranchiseCTAProps) => {
   // Franchisee login is disabled (greyed out) for signed-out visitors.
   const franchiseeLoginEnabled = useFranchisorLoginAccess();
   return (
@@ -44,9 +46,7 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
       <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={() =>
-            document.getElementById("franchisee-application")?.scrollIntoView({ behavior: "smooth", block: "start" })
-          }
+          onClick={onApply}
           className="cursor-pointer rounded-xl px-7 py-3.5 text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/50"
           style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
         >
@@ -54,16 +54,16 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
         </button>
         <button
           type="button"
-          onClick={onBecomeFranchisor}
+          onClick={onEnquire}
           className="cursor-pointer rounded-xl border border-white/35 px-7 py-3.5 text-base font-bold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
         >
-          Explore a franchisor arrangement
+          Send a Franchise Enquiry
         </button>
       </div>
 
       {/* The return path for partners who already hold an agreement. */}
       <p className="mx-auto mt-8 text-[12.5px] text-white/60">
-        Already a franchise partner?{" "}
+        Already a Franchisee?{" "}
         {franchiseeLoginEnabled ? (
           <Link
             to="/franchise-login"
@@ -74,7 +74,7 @@ const FranchiseCTA = ({ onBecomeFranchisor }: FranchiseCTAProps) => {
         ) : (
           <span
             aria-disabled="true"
-            title="Sign in to access the franchisor portal"
+            title="Sign in to access the franchisee portal"
             className="cursor-not-allowed font-bold text-white/45"
           >
             Franchisee Login — sign in first

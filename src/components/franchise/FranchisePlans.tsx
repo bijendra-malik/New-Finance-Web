@@ -13,7 +13,7 @@ interface FranchisePlansProps {
 }
 
 const Check = () => (
-  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center">
+  <span className="flex h-4 w-4 shrink-0 items-center justify-center">
     <FranchiseIcon name="check" className="h-3.5 w-3.5" strokeWidth={2.8} />
   </span>
 );
@@ -41,7 +41,7 @@ const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) =
         return (
           <div
             key={plan.id}
-            className="relative flex flex-col rounded-2xl bg-white p-5 transition-all duration-300 hover:-translate-y-1"
+            className="relative flex flex-col items-center rounded-2xl bg-white p-5 text-center transition-all duration-300 hover:-translate-y-1"
             style={{
               border: accent ? "2px solid var(--brand-teal)" : "1px solid rgba(6,106,156,0.14)",
               boxShadow: accent ? "0 10px 28px rgba(38,174,144,0.18)" : "0 2px 14px rgba(6,106,156,0.07)",
@@ -58,7 +58,7 @@ const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) =
 
             <div className={plan.badge ? "pt-4" : ""}>
               <h3 className="text-[15px] font-extrabold text-slate-800">{plan.name}</h3>
-              <div className="mt-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-(--brand-navy)">
+              <div className="mt-1 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-(--brand-navy)">
                 <FranchiseIcon name="clock" className="h-3.5 w-3.5" strokeWidth={2.2} />
                 {plan.duration}
               </div>
@@ -73,12 +73,12 @@ const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) =
 
             {/* Plan-specific facts only. Payout terms apply to every plan, so they are
                 stated once in the payouts section rather than repeated on each card. */}
-            <ul className="mt-5 space-y-2 border-t border-dashed border-slate-200 pt-4 text-[12.5px] text-slate-600">
-              <li className="flex items-start gap-2">
+            <ul className="mt-5 w-full flex-1 space-y-2 border-t border-dashed border-slate-200 pt-4 text-[12.5px] text-slate-600">
+              <li className="flex items-center justify-center gap-2">
                 <Check />
                 <span>Franchise access for {plan.duration.toLowerCase()}</span>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-center justify-center gap-2">
                 <Check />
                 <span>Renewal: {plan.renewal}</span>
               </li>

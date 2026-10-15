@@ -2,18 +2,35 @@
 
 import { FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
 import { AGREEMENT_FEE } from "./franchiseData";
-import { Field, SelectField } from "../ui/FieldRenderer";
+import { Field } from "../ui/FieldRenderer";
 
 interface PlanSummaryProps {
   /** Currently selected plan, or undefined when nothing is chosen. */
   plan?: FranchisePlan;
   className?: string;
+  /** Single-line read-out, for layouts that must stay within one screen. */
+  compact?: boolean;
 }
 
 
-export const PlanSummary = ({ plan, className = "" }: PlanSummaryProps) => (
+export const PlanSummary = ({ plan, className = "", compact = false }: PlanSummaryProps) => (
   <div className={className}>
-    {plan ? (
+    {plan && compact ? (
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[12px] text-slate-600">
+        {[
+          ["Plan", plan.name],
+          ["Duration", plan.duration],
+          ["Fee", plan.fee],
+          ["Renewal", plan.renewal],
+          ["Agreement fee", AGREEMENT_FEE],
+        ].map(([k, v]) => (
+          <span key={k}>
+            <span className="font-bold uppercase tracking-wider text-slate-500">{k}</span>{" "}
+            <span className="font-bold text-(--brand-navy)">{v}</span>
+          </span>
+        ))}
+      </div>
+    ) : plan ? (
       <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
         {[
           ["Selected plan", plan.name],
@@ -42,8 +59,9 @@ export const PlanSummary = ({ plan, className = "" }: PlanSummaryProps) => (
 );
 
 interface PackageSelectorProps {
+  /** Selected plan id (not the display label) — matches FRANCHISE_PLANS[].id. */
   value: string;
-  onChange: (id: string) => void;
+  onChange: (planId: string) => void;
   error?: string;
   required?: boolean;
   full?: boolean;
@@ -66,13 +84,21 @@ export const PackageSelector = ({
     error={error}
     full={full}
   >
-    <SelectField
+    <select
+      id={id}
       value={value}
-      onChange={onChange}
-      options={FRANCHISE_PLANS.map((p) => `${p.duration} — ${p.fee}`)}
-      placeholder="Select a package duration"
-      error={error}
-    />
+      onChange={(e) => onChange(e.target.value)}
+      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
+        error ? "border-red-400 bg-red-50/40" : "border-slate-300"
+      }`}
+    >
+      <option value="">Select a package duration</option>
+      {FRANCHISE_PLANS.map((plan) => (
+        <option key={plan.id} value={plan.id}>
+          {plan.duration} — {plan.fee}
+        </option>
+      ))}
+    </select>
   </Field>
 );
 
@@ -80,7 +106,7 @@ interface PlanSelectorProps {
   /** The currently selected plan used for the summary read-out. */
   plan?: FranchisePlan;
   value: string;
-  onChange: (id: string) => void;
+  onChange: (planId: string) => void;
   error?: string;
   required?: boolean;
   full?: boolean;

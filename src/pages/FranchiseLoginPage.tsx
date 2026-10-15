@@ -116,10 +116,10 @@ const FranchiseLoginPage = () => {
       <div className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 md:px-8">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:items-start">
-            {/* Left — an overview of the franchisor portal */}
+            {/* Left — an overview of the franchisee portal */}
             <div className="lg:col-span-2">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
-                Franchisor Portal
+                Franchisee Portal
               </span>
               <h2 className="mt-2 text-2xl font-bold text-slate-800">One desk for your franchise business</h2>
               <div
@@ -193,7 +193,7 @@ const FranchiseLoginPage = () => {
                     <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{notice.body}</p>
                     {notice.tone !== "info" && (
                       <a
-                        href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisor portal access request")}`}
+                        href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisee portal access request")}`}
                         className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
                       >
                         <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
@@ -288,7 +288,7 @@ const FranchiseLoginPage = () => {
                     to="/franchise#become-a-franchisor"
                     className="cursor-pointer text-[12.5px] font-semibold text-(--brand-navy) hover:underline rounded focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44)"
                   >
-                    Become a Franchisor →
+                    Become a Franchisee →
                   </Link>
                 </div>
               </div>

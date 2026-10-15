@@ -4,7 +4,7 @@ import RecipientContact from "./RecipientContact";
 import { FRANCHISE_EMAIL } from "./franchiseData";
 import FranchiseIcon from "./FranchiseIcon";
 
-/** Modal wrapper around the franchisor variant of the shared franchise form. */
+/** Modal wrapper around the lightweight enquiry variant of the shared franchise form. */
 const FranchisorFormModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
   <Modal open={open} onClose={onClose} labelledBy="franchisor-modal-title" maxWidth="max-w-2xl">
     {/* Header */}
@@ -20,7 +20,7 @@ const FranchisorFormModal = ({ open, onClose }: { open: boolean; onClose: () => 
           </span>
           <div>
             <h2 id="franchisor-modal-title" className="text-lg font-extrabold text-white">
-              Become a Franchisor
+              Franchise Enquiry
             </h2>
             <p className="mt-0.5 max-w-sm text-[12.5px] leading-relaxed text-white/70">
               Share your details and our team will review them and get in touch with you.
