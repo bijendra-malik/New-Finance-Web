@@ -1,16 +1,5 @@
 import axiosInstance from "./axiosInstance";
-import { registerUser } from "./auth";
-import type { RegisterPayload, RegisterResponse, RegisteredAccount } from "./auth";
 
-export type RegisterFranchisePayload = RegisterPayload & { role: "Franchise" };
-export type RegisterFranchiseResponse = RegisterResponse;
-
-/**
- * The franchise account record returned by the franchise endpoints.
- *
- * The backend profile call wraps the account under `user`, so the response shape
- * stays explicit here instead of being inferred from the auth module's account type.
- */
 export interface FranchiseAccount {
   _id?: string;
   name?: string;
@@ -20,17 +9,27 @@ export interface FranchiseAccount {
   role?: string;
   continent?: string;
   country?: string;
-  isActive?: boolean;
-  lastLogin?: string;
-  franchiseStatus?: string;
-  panNumber?: string;
   state?: string;
   city?: string;
   pincode?: string;
+  franchiseStatus?: string;
+  panNumber?: string;
+  dob?: string;
   package?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  franchiseId?: string;
+  plan?: {
+    plan?: string;
+    code?: string;
+    name?: string;
+    durationMonths?: number;
+    fee?: number;
+    currency?: string;
+    gstPercent?: number;
+    gstAmount?: number;
+    totalWithGst?: number;
+    renewalFee?: number;
+    renewalNote?: string;
+    snapshotAt?: string;
+  },
   businessDetails?: {
     businessName?: string;
     businessType?: string;
@@ -38,82 +37,128 @@ export interface FranchiseAccount {
     address?: string;
     yearsInBusiness?: string;
   };
+  franchiseId?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLogin?: string;
 }
+
+// POST /franchise/entry
+export interface FranchiseEntryPayload {
+  name?: string;
+  email?: string;
+  mobile?: string;
+  dob?: string;
+  panNumber?: string;
+  continent?: string;
+  country?: string;
+  planCode?: string;
+  businessName?: string;
+  businessType?: string;
+  gstNumber?: string;
+  address?: string;
+  yearsInBusiness?: string;
+}
+
+// POST /franchise/entry response
+export interface FranchiseEntryResponse {
+  success: boolean;
+  message: string;
+  mobileMasked?: string;
+}
+
+// POST /franchise/entry/verify
+export interface FranchiseVerifyOTPPayload {
+  mobile: string;
+  otp: string;
+}
+
+// POST /franchise/entry/verify response
+export interface FranchiseVerifyOTPResponse {
+  success: boolean;
+  message: string;
+  token: string;
+  franchiseId?: string;
+  plan: {
+    code?: string;
+    name?: string;
+    fee?: number;
+  };
+  user: FranchiseAccount;
+}
+
+// GET /franchise/status response
+export interface FranchiseStatusResponse {
+  success: boolean;
+  message: string;
+  franchiseStatus?: string;
+  canLogin?: boolean;
+}
+
+// GET /franchise/profile response
 export interface FranchiseProfileResponse {
   success: boolean;
-  message?: string;
-  user?: FranchiseAccount;
-}
-export interface ApplyFranchisePayload {
-  panNumber: string;
-  state: string;
-  city: string;
-  package: string;
-  pincode: string;
-  businessName: string;
-  businessType: string;
-  gstNumber: string;
-  address: string;
-  yearsInBusiness: string;
-}
-export interface ApplyFranchiseResponse {
-  success: boolean;
-  message: string;
-  franchiseStatus: string;
-  franchise?: RegisteredAccount;
-}
-export interface FranchiseLoginPayload {
-  franchiseId: string;
-  password: string;
-}
-export interface FranchiseLoginResponse {
-  success: boolean;
-  message: string;
-  franchiseId?: string;
-  token?: string;
-  /** Agreement status when the backend reports it on a successful sign-in. */
   franchiseStatus?: string;
-  /** Verification flag when the backend reports it on a successful sign-in. */
-  isVerified?: boolean;
+  franchise: FranchiseAccount;
+}
+
+// GET /franchise/plans
+export interface FranchisePlansResponse {
+  success: boolean;
+  bestValueCode?: string;
+  bestValueIsPinned?: boolean;
+  selectedPlanCode?: string;
+  plans: {
+    _id?: string;
+    code?: string;
+    currency?: string;
+    durationMonths?: number;
+    features?: string[];
+    fee?: number;
+    gstPercent?: number;
+    isActive?: boolean;
+    isBestValue?: boolean;
+    name?: string;
+    renewalFee?: number;
+    renewalNote?: string;
+    sortOrder?: number;
+    validityLabel?: string;
+  }[];
 }
 
 // ── API calls ───────────────────────────────────────────────────────────────────
 
-/** This is the shared POST /auth/register endpoint, called through auth.ts — the franchise difference is the `role` field, not a second endpoint. */
 export const registerFranchise = async (
-  payload: RegisterFranchisePayload,
-): Promise<RegisterFranchiseResponse> => registerUser(payload);
+  payload: FranchiseEntryPayload,
+): Promise<FranchiseEntryResponse> => {
+  const response = await axiosInstance.post<FranchiseEntryResponse>(
+    "/franchise/entry",
+    payload,
+  );
+  return response.data;
+};
 
-/** Fetch the authenticated franchise profile (requires the user token in the request). GET /auth/franchise/profile */
+export const verifyFranchiseOTP = async (
+  payload: FranchiseVerifyOTPPayload,
+): Promise<FranchiseVerifyOTPResponse> => {
+  const response = await axiosInstance.post<FranchiseVerifyOTPResponse>(
+    "/franchise/entry/verify",
+    payload,
+  );
+  return response.data;
+};
+
+export const fetchFranchiseStatus = async (): Promise<FranchiseStatusResponse> => {
+  const response = await axiosInstance.get<FranchiseStatusResponse>(
+    "/franchise/status",
+  );
+  return response.data;
+};
+
 export const fetchFranchiseProfile = async (): Promise<FranchiseProfileResponse> => {
   const response = await axiosInstance.get<FranchiseProfileResponse>(
-    "/auth/franchise/profile",
-  );
-  return response.data;
-};
-
-/** Submit a franchise application. POST /franchise/apply */
-export const applyFranchise = async (
-  payload: ApplyFranchisePayload,
-): Promise<ApplyFranchiseResponse> => {
-  const response = await axiosInstance.post<ApplyFranchiseResponse>(
-    "/franchise/apply",
-    payload,
-  );
-  return response.data;
-};
-
-/**
- * Login a franchise user with the issued franchise ID and password.
- * POST /franchise/login
- */
-export const loginFranchise = async (
-  payload: FranchiseLoginPayload,
-): Promise<FranchiseLoginResponse> => {
-  const response = await axiosInstance.post<FranchiseLoginResponse>(
-    "/franchise/login",
-    payload,
-    { withCredentials: true },
+    "/franchise/profile",
   );
   return response.data;
 };
