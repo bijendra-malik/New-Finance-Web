@@ -9,7 +9,10 @@ import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { loanSlugFor } from "../../constants/loanSlugs";
-import { markApplySessionPending } from "../../utils/applySession";
+import {
+  markApplySessionPending,
+  saveApplyEntryIdentity,
+} from "../../utils/applySession";
 import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -299,6 +302,10 @@ const ApplicationModal = ({
         panNumber: pan,
       },
       note: "Your details are carried into the application form. You can review them there.",
+      // What the account registered at loan entry holds — not this typed copy —
+      // is what the backend compares a submission against, so these values may
+      // only fill the fields the account leaves blank.
+      authoritative: false,
     });
     resetAll();
     onClose();
@@ -341,6 +348,16 @@ const ApplicationModal = ({
         setApiError(response.message || "We could not send the OTP just now. Please try again.");
         return;
       }
+      // Loan entry succeeded: remember exactly which identity the backend now
+      // holds, so POST /customer/loan-apply can never submit a different email
+      // (a later re-registration overwrites this — and the token — together).
+      saveApplyEntryIdentity({
+        mobile,
+        fullName: fullName.trim(),
+        email: email.trim(),
+        dob,
+        panNumber: pan,
+      });
       setPendingDashboard(dashboardPath);
       setOtp("");
       setOtpError("");

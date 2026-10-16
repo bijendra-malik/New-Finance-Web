@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ApiUser } from "../api/auth";
-import { fetchProfile } from "../api/auth";
-import type { ProfileResponse } from "../api/auth";
 import { AuthContext } from "./authContext";
 import type { AuthVisibility } from "./authContext";
 
@@ -33,24 +31,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return "signed-out";
   }, [user]);
 
-  // On mount — if token exists, re-validate by fetching profile
+  // On mount — the provider no longer re-fetches the profile.
+  // The signed‑in user record is the authoritative source for every loan‑apply submission.
   useEffect(() => {
-    if (token && !user) {
-      fetchProfile()
-        .then((res: ProfileResponse) => {
-          setUser(res.user);
-          localStorage.setItem("user", JSON.stringify(res.user));
-        })
-        .catch(() => {
-          // Token is invalid or expired — clear everything
-          setToken(null);
-          setUser(null);
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-        });
-    }
-    // Runs once on mount; login/logout below always use the latest state setters.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // nothing more to do; profile is kept in localStorage from the initial sign-in
   }, []);
 
   const login = (newToken: string, newUser: ApiUser) => {
@@ -67,27 +51,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("user");
   };
 
-  /**
-   * Refresh the cached profile from the API — only for a signed-in session.
-   * Signing out drops the cached copy so no profile API data survives the
-   * session; an expired token is cleaned up by the axios 401 interceptor.
-   */
-  const refreshProfile = async () => {
-    if (!token) {
-      setUser(null);
-      localStorage.removeItem("user");
-      return;
-    }
-    const res: ProfileResponse = await fetchProfile();
-    setUser(res.user);
-    localStorage.setItem("user", JSON.stringify(res.user));
-  };
-
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoggedIn: !!token, authVisibility, login, logout, refreshProfile }}
+      value={{ user, token, isLoggedIn: !!token, authVisibility, login, logout }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+

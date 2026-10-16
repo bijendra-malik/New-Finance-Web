@@ -112,3 +112,30 @@ export const accountFieldDefaults = (
     return acc;
   }, {});
 };
+
+/**
+ * The signed-in customer record the backend itself validates against
+ * (`verify-otp` / `GET /auth/customer/profile`).
+ *
+ * This is the authoritative source for a loan application's identity fields:
+ * `POST /customer/loan-apply` rejects the submission when the email does not
+ * match the account on file, so the form must send what the account holds —
+ * not what was typed into the eligibility popup. The API returns `dob` as an
+ * ISO timestamp, which is trimmed to the `YYYY-MM-DD` the date field wants.
+ */
+export const apiUserFieldDefaults = (
+  user: { name?: string; mobile?: string; email?: string; dob?: string; panNumber?: string } | null,
+): Partial<Record<LockableField, string>> => {
+  if (!user) return {};
+  const candidates: [LockableField, string][] = [
+    ["fullName", user.name?.trim() ?? ""],
+    ["mobile", (user.mobile ?? "").replace(/\D/g, "").slice(-10)],
+    ["email", user.email?.trim() ?? ""],
+    ["dob", (user.dob ?? "").trim().slice(0, 10)],
+    ["panNumber", (user.panNumber ?? "").replace(/\s/g, "").toUpperCase()],
+  ];
+  return candidates.reduce<Partial<Record<LockableField, string>>>((acc, [key, value]) => {
+    if (value) acc[key] = value;
+    return acc;
+  }, {});
+};

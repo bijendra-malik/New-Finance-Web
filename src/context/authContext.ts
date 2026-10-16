@@ -18,7 +18,6 @@ export interface AuthContextType {
   authVisibility: AuthVisibility;
   login: (token: string, user: ApiUser) => void;
   logout: () => void;
-  refreshProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

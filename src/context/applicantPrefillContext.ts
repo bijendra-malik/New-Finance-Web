@@ -17,6 +17,16 @@ export interface ApplicantPrefill {
   identity: Partial<Record<LockableField, string>>;
   /** Banner copy shown above the identity fields while the lock is active. */
   note: string;
+  /**
+   * Whether this identity replaces the signed-in account's own record.
+   *
+   * The franchisor portal's client record does (the default). The customer
+   * eligibility popup also carries an identity over, but that is only what the
+   * visitor typed there — the backend validates a submission against the details
+   * registered at loan entry, so the popup's copy may only fill the fields the
+   * account leaves blank.
+   */
+  authoritative?: boolean;
 }
 
 export const ApplicantPrefillContext = createContext<ApplicantPrefill | null>(null);
