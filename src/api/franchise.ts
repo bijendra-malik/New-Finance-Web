@@ -6,7 +6,6 @@ export interface FranchiseAccount {
   mobile?: string;
   email?: string;
   isVerified?: boolean;
-  role?: string;
   continent?: string;
   country?: string;
   state?: string;

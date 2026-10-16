@@ -83,7 +83,7 @@ const FranchisePortalPage = () => {
 
   const sessionId = session?.franchiseId;
 
-  const applyProfile = (user: NonNullable<Awaited<ReturnType<typeof fetchFranchiseProfile>>["user"]>) => {
+  const applyProfile = (user: NonNullable<Awaited<ReturnType<typeof fetchFranchiseProfile>>["franchise"]>) => {
     setProfile({
       name: user.name,
       mobile: user.mobile,
@@ -112,8 +112,8 @@ const FranchisePortalPage = () => {
       try {
         const res = await fetchFranchiseProfile();
         if (!active) return;
-        if (res.success && res.user) {
-          applyProfile(res.user);
+        if (res.success && res.franchise) {
+          applyProfile(res.franchise);
           setError(null);
         } else {
           setProfile(null);
@@ -135,8 +135,8 @@ const FranchisePortalPage = () => {
     setError(null);
     try {
       const res = await fetchFranchiseProfile();
-      if (res.success && res.user) {
-        applyProfile(res.user);
+      if (res.success && res.franchise) {
+        applyProfile(res.franchise);
       } else {
         setProfile(null);
         setError(res.success ? "The franchise service returned an empty profile response." : "The franchise service reported no record for this session.");

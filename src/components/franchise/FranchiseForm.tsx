@@ -10,8 +10,8 @@ import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
-import { applyFranchise } from "../../api/franchise";
-import type { ApplyFranchisePayload } from "../../api/franchise";
+import { registerFranchise } from "../../api/franchise";
+import type { FranchiseEntryPayload } from "../../api/franchise";
 import { FRANCHISE_EMAIL, FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
 import { PlanSummary, PackageSelector } from "./PlanSelector";
 import { LocationFields } from "../form/LocationFields";
@@ -24,6 +24,9 @@ import { Field } from "../ui/FieldRenderer";
  * the enquiry identity fields.
  */
 export interface FranchiseFormValues {
+  continent: string;
+  country: string;
+  dob: string;
   fullName: string;
   pan: string;
   mobile: string;
@@ -44,6 +47,9 @@ const EMPTY: FranchiseFormValues = {
   fullName: "", pan: "", mobile: "", email: "", state: "", city: "",
   pincode: "", businessName: "", businessType: "", businessTypeOther: "",
   gstNumber: "", yearsInBusiness: "", address: "", packageId: "",
+  continent: "",
+  country: "",
+  dob: ""
 };
 
 type FieldKey = keyof FranchiseFormValues;
@@ -276,23 +282,33 @@ const FranchiseForm = ({
       { label: "PAN Number", value: vals.pan },
       { label: "Mobile Number", value: vals.mobile },
       { label: "Email Address", value: vals.email },
-      { label: "State", value: vals.state },
-      { label: "City", value: vals.city },
+      { label: "Date of Birth", value: vals.dob },
+      { label: "Continent", value: vals.continent },
+      { label: "Country", value: vals.country },
+      { label: "Business Name", value: vals.businessName },
+      { label: "Business Type", value: vals.businessType === OTHER_OPTION ? vals.businessTypeOther : vals.businessType },
+      { label: "GST Number", value: vals.gstNumber },
+      { label: "Years in Business", value: vals.yearsInBusiness },
+      { label: "Address", value: vals.address },
     ];
+
     const href = buildMailtoUrl(FRANCHISE_EMAIL, `Franchise Enquiry — ${vals.fullName}`, rows);
     setMailtoHref(href);
     window.location.href = href;
     setSubmitted(true);
   };
 
-  /** Franchisee application — POST /franchise/apply. */
+  /** Franchisee application — POST /franchise/entry. */
   const submitApplication = async (vals: FranchiseFormValues) => {
-    const payload: ApplyFranchisePayload = {
+    const payload: FranchiseEntryPayload = {
+      name: vals.fullName.trim(),
+      email: vals.email.trim(),
+      mobile: vals.mobile.replace(/\D/g, "").slice(-10),
       panNumber: vals.pan.trim().toUpperCase(),
-      state: vals.state.trim(),
-      city: vals.city.trim(),
-      package: selectedPlan?.name ?? packageId,
-      pincode: vals.pincode.trim(),
+      dob: vals.dob,
+      continent: vals.continent,
+      country: vals.country,
+      planCode: packageId,
       businessName: vals.businessName.trim(),
       businessType:
         vals.businessType === OTHER_OPTION ? vals.businessTypeOther.trim() : vals.businessType,
@@ -303,7 +319,7 @@ const FranchiseForm = ({
 
     setSubmitting(true);
     try {
-      const res = await applyFranchise(payload);
+      const res = await registerFranchise(payload);
       if (!res.success) {
         setPopup({
           tone: "error",
@@ -315,7 +331,7 @@ const FranchiseForm = ({
         tone: "success",
         message:
           res.message ||
-          "Your application has been received. Our team will review your details and issue your franchisee code, user ID and password so you can sign in to the franchisee dashboard.",
+          "Your application has been received. Use the OTP sent to your registered mobile number to verify your franchisee access.",
       });
       setSubmitted(true);
     } catch (err) {
@@ -327,7 +343,6 @@ const FranchiseForm = ({
       setSubmitting(false);
     }
   };
-
   const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
 

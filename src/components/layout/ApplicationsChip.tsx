@@ -9,11 +9,10 @@ import { formatTimestamp } from "../../utils/formatters";
  * application; the caption names the most recent one's status and date.
  */
 const ApplicationsChip = () => {
-  const { user } = useAuth();
-  const isCustomer = user?.role?.trim().toLowerCase() === "customer";
-  const { applications, loading } = useMyApplications(isCustomer);
+  const { isLoggedIn } = useAuth();
+  const { applications, loading } = useMyApplications(isLoggedIn);
 
-  if (!isCustomer || loading || applications.length === 0) return null;
+  if (!isLoggedIn || loading || applications.length === 0) return null;
 
   const latest = applications[0];
 

@@ -11,7 +11,7 @@ import {
   clearFranchiseSession,
   mergeFranchiseProfile,
   readFranchiseSession,
-  readFranchiseToken,
+  isFranchiseSignedIn,
 } from "../utils/franchiseSession";
 import type { FranchiseSession } from "../utils/franchiseSession";
 
@@ -122,13 +122,13 @@ const FranchisorDashboardPage = () => {
 
   const navigate = useNavigate();
   const [session, setSession] = useState<FranchiseSession | null>(() => readFranchiseSession());
-  const [hasToken, setHasToken] = useState(() => Boolean(readFranchiseToken()));
-  const [profile, setProfile] = useState<FranchiseProfileResponse["user"] | null>(null);
+  const [hasToken, setHasToken] = useState(isFranchiseSignedIn);
+  const [profile, setProfile] = useState<FranchiseProfileResponse["franchise"] | null>(null);
   const [loading, setLoading] = useState(() => Boolean(readFranchiseSession()));
   const [error, setError] = useState<string | null>(null);
 
   type ProfileResult =
-    | { ok: true; account: NonNullable<FranchiseProfileResponse["user"]> }
+    | { ok: true; account: NonNullable<FranchiseProfileResponse["franchise"]> }
     | { ok: false; message: string };
 
   const applyProfileResult = useCallback((result: ProfileResult) => {
@@ -160,8 +160,8 @@ const FranchisorDashboardPage = () => {
   }, []);
 
   const readResult = (res: FranchiseProfileResponse): ProfileResult =>
-    res.success && res.user
-      ? { ok: true, account: res.user }
+    res.success && res.franchise
+      ? { ok: true, account: res.franchise }
       : {
           ok: false,
           message: res.success

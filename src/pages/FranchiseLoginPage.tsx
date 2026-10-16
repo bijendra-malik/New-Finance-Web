@@ -4,13 +4,14 @@ import PageBanner from "../components/common/PageBanner";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
-import { loginFranchise } from "../api/franchise";
+import { verifyFranchiseOTP } from "../api/franchise";
 import {
   saveFranchiseSession,
   clearFranchiseSession,
 } from "../utils/franchiseSession";
 import { getApiErrorMessage } from "../utils/apiError";
 import useSEO from "../hooks/useSEO";
+import { useAuth } from "../context/authContext";
 
 type Notice = { tone: "info" | "warn" | "error"; title: string; body: string } | null;
 
@@ -38,30 +39,45 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({});
+  const { login } = useAuth();
+  const [franchiseId, setFranchiseId] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpVisible, setOtpVisible] = useState(false);
+  const [errors, setErrors] = useState<{ franchiseId?: string; mobile?: string; otp?: string }>({});
   const [notice, setNotice] = useState<Notice>(DEFAULT_NOTICE);
   const [submitting, setSubmitting] = useState(false);
   const handleSubmit = async (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
-    const e: { identifier?: string; password?: string } = {};
-    const franchiseId = identifier.trim().toUpperCase();
+    const e: { franchiseId?: string; mobile?: string; otp?: string } = {};
+    const normalizedFranchiseId = franchiseId.trim().toUpperCase();
+    const normalizedMobile = mobile.replace(/\D/g, "").slice(-10);
 
-    if (!franchiseId) e.identifier = "Enter the franchisee ID issued with your agreement";
-    else if (!/^FRN\d{6}$/.test(franchiseId)) {
-      e.identifier = "Franchisee IDs look like FRN000003 — check your agreement";
-    }
-    if (!password) e.password = "Enter your password";
+    if (!/^FRN\d{6}$/.test(normalizedFranchiseId)) e.franchiseId = "Enter the franchisee ID from your agreement (e.g. FRN000003)";
+    if (!/^\d{10}$/.test(normalizedMobile)) e.mobile = "Enter your registered 10-digit mobile number";
 
     setErrors(e);
     if (Object.keys(e).length > 0) return;
 
+    if (!otpVisible) {
+      setOtpVisible(true);
+      setNotice({
+        tone: "info",
+        title: "Enter your OTP",
+        body: "Enter the OTP sent to your registered mobile number to continue.",
+      });
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      setErrors({ otp: "Enter the 6-digit OTP sent to your mobile" });
+      return;
+    }
+
     setSubmitting(true);
     setNotice(null);
     try {
-      const res = await loginFranchise({ franchiseId, password });
+      const res = await verifyFranchiseOTP({ mobile: normalizedMobile, otp });
       if (!res.success || !res.token) {
         setNotice({
           tone: "warn",
@@ -70,7 +86,7 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
-      const status = (res.franchiseStatus ?? "").trim().toLowerCase();
+      const status = (res.user?.franchiseStatus ?? "").trim().toLowerCase();
       if (status === "rejected") {
         clearFranchiseSession();
         setNotice({
@@ -80,16 +96,46 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
+      const responseFranchiseId = res.franchiseId ?? res.user?.franchiseId;
+      if (!responseFranchiseId) {
+        setNotice({
+          tone: "warn",
+          title: "Verification incomplete",
+          body: "Your account was verified but no franchisee ID was returned. Please contact the franchise team.",
+        });
+        return;
+      }
+      if (responseFranchiseId.trim().toUpperCase() !== normalizedFranchiseId) {
+        setNotice({
+          tone: "warn",
+          title: "Sign-in failed",
+          body: "The franchisee ID does not match this mobile number. Check both details and try again.",
+        });
+        return;
+      }
       saveFranchiseSession(
         {
-          franchiseId: res.franchiseId ?? franchiseId,
-          franchiseStatus: res.franchiseStatus,
-          isVerified: res.isVerified,
+          franchiseId: responseFranchiseId,
+          franchiseStatus: res.user?.franchiseStatus,
+          isVerified: res.user?.isVerified,
         },
         res.token,
       );
+      login(res.token, {
+        _id: res.user?._id ?? responseFranchiseId,
+        name: res.user?.name ?? "",
+        mobile: res.user?.mobile ?? normalizedMobile,
+        email: res.user?.email ?? "",
+        isVerified: res.user?.isVerified ?? true,
+        isActive: res.user?.isActive ?? true,
+        continent: res.user?.continent,
+        country: res.user?.country,
+        lastLogin: res.user?.lastLogin ?? "",
+        createdAt: res.user?.createdAt ?? "",
+        updatedAt: res.user?.updatedAt ?? "",
+      });
 
-      navigate("/franchisee-dashboard");
+      navigate("/franchisor-dashboard");
     } catch (error) {
       const rejected = (error as { response?: unknown })?.response !== undefined;
       setNotice({
@@ -171,7 +217,7 @@ const FranchiseLoginPage = () => {
                     <FranchiseIcon name="lock" filled className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Franchisee Login</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Franchisee Verification</h2>
                     <p className="text-[12.5px] text-slate-500">For registered franchise partners only</p>
                   </div>
                 </div>
@@ -205,59 +251,72 @@ const FranchiseLoginPage = () => {
 
                 <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
                   <div>
-                    <label htmlFor="franchisor-id" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                    <label htmlFor="franchise-id" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
                       Franchisee ID <span className="text-red-500">*</span>
                     </label>
                     <input
-                      id="franchisor-id"
-                      value={identifier}
+                      id="franchise-id"
+                      value={franchiseId}
                       onChange={(e) => {
-                        setIdentifier(e.target.value);
-                        setErrors((p) => ({ ...p, identifier: undefined }));
+                        setFranchiseId(e.target.value.toUpperCase());
+                        setErrors((p) => ({ ...p, franchiseId: undefined }));
                       }}
                       placeholder="FRN000003"
                       autoComplete="username"
-                      aria-describedby="franchisor-id-hint"
                       className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-                        errors.identifier ? "border-red-400 bg-red-50/40" : "border-slate-300"
+                        errors.franchiseId ? "border-red-400 bg-red-50/40" : "border-slate-300"
                       }`}
                     />
-                    {errors.identifier && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.identifier}</p>}
-                    <p id="franchisor-id-hint" className="mt-1 text-[11px] text-slate-400">
-                      The franchisee ID is printed on your franchise agreement.
-                    </p>
+                    {errors.franchiseId && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.franchiseId}</p>}
                   </div>
 
                   <div>
-                    <label htmlFor="franchisor-pw" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
-                      Password <span className="text-red-500">*</span>
+                    <label htmlFor="franchise-mobile" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                      Registered mobile number <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
-                      <input
-                        id="franchisor-pw"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          setErrors((p) => ({ ...p, password: undefined }));
-                        }}
-                        placeholder="Your portal password"
-                        autoComplete="current-password"
-                        className={`w-full rounded-lg border px-3.5 py-2.5 pr-20 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-                          errors.password ? "border-red-400 bg-red-50/40" : "border-slate-300"
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-md px-2.5 py-1.5 text-[11px] font-bold text-(--brand-navy) transition hover:bg-(--brand-navy-14) focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44)"
-                        aria-pressed={showPassword}
-                      >
-                        {showPassword ? "Hide" : "Show"}
-                      </button>
-                    </div>
-                    {errors.password && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.password}</p>}
+                    <input
+                      id="franchise-mobile"
+                      type="tel"
+                      inputMode="numeric"
+                      value={mobile}
+                      onChange={(e) => {
+                        setMobile(e.target.value.replace(/\D/g, "").slice(0, 10));
+                        setErrors((p) => ({ ...p, mobile: undefined }));
+                      }}
+                      placeholder="10-digit mobile number"
+                      autoComplete="tel"
+                      aria-describedby="franchise-mobile-hint"
+                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
+                        errors.mobile ? "border-red-400 bg-red-50/40" : "border-slate-300"
+                      }`}
+                    />
+                    {errors.mobile && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.mobile}</p>}
+                    <p id="franchise-mobile-hint" className="mt-1 text-[11px] text-slate-400">
+                      Use the mobile number provided in your franchise application.
+                    </p>
                   </div>
+
+                  {otpVisible && <div>
+                    <label htmlFor="franchise-otp" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                      OTP <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="franchise-otp"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => {
+                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                        setErrors((p) => ({ ...p, otp: undefined }));
+                      }}
+                      placeholder="6-digit OTP"
+                      autoComplete="one-time-code"
+                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
+                        errors.otp ? "border-red-400 bg-red-50/40" : "border-slate-300"
+                      }`}
+                    />
+                    {errors.otp && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.otp}</p>}
+                  </div>}
 
                   <Button
                     type="submit"
@@ -266,7 +325,7 @@ const FranchiseLoginPage = () => {
                     loading={submitting}
                     style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
                   >
-                    {submitting ? "Signing in…" : "Login"}
+                    {submitting ? "Verifying…" : otpVisible ? "Verify & continue" : "Continue"}
                   </Button>
                 </form>
 

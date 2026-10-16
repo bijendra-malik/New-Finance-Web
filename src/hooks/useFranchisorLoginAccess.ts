@@ -16,11 +16,11 @@ import useFranchiseStatus from "./useFranchiseStatus";
  * (`None`), `pending`, or `rejected` are prevented from opening the login page.
  */
 export const useFranchisorLoginAccess = (): boolean => {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const franchiseSignedIn = isFranchiseSignedIn();
   const statusResult = useFranchiseStatus(isLoggedIn || franchiseSignedIn);
   if (!isLoggedIn && !franchiseSignedIn) return false;
-  const status = (statusResult.reported ? statusResult.status : user?.franchiseStatus ?? "")
+  const status = (statusResult.reported ? statusResult.status : "")
     .trim()
     .toLowerCase();
   if (statusResult.loading) return false;

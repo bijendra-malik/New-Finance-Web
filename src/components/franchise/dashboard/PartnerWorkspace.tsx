@@ -455,7 +455,6 @@ const PartnerWorkspace = ({ session, profile, status, loading, onRefresh }: Part
               <dl className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
                 <Field label="Franchisee ID" value={profile?.franchiseId ?? session.franchiseId} />
                 <Field label="Partner name" value={name} />
-                <Field label="Role" value={profile?.role ?? "Franchise"} />
                 <Field label="Status" value={profile?.franchiseStatus ?? status.label} />
                 <Field
                   label="Account active"
