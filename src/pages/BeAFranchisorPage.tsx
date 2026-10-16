@@ -10,9 +10,7 @@ import FranchisePlans from "../components/franchise/FranchisePlans";
 import FranchiseBenefits from "../components/franchise/FranchiseBenefits";
 import FranchiseFAQ from "../components/franchise/FranchiseFAQ";
 import FranchiseCTA from "../components/franchise/FranchiseCTA";
-import FranchisorFormModal from "../components/franchise/FranchisorFormModal";
 import FranchiseeApplicationModal from "../components/franchise/FranchiseeApplicationModal";
-import HowItWorksModal from "../components/franchise/HowItWorksModal";
 
 /**
  * Be a Franchisee — the franchise page: what the business is, what it pays, what
@@ -28,7 +26,8 @@ import HowItWorksModal from "../components/franchise/HowItWorksModal";
  *
  * The application itself is a popup: the hero, the sticky sub-nav, a plan card
  * and the closing band all open the same form, so there is no second copy of it
- * on the page.
+ * on the page. The whole journey is already stated in the "How it works"
+ * section, so there is no separate modal copy of it.
  */
 const BeAFranchisorPage = () => {
   useSEO({
@@ -42,8 +41,6 @@ const BeAFranchisorPage = () => {
     FRANCHISE_PLANS.find((p) => p.recommended)?.id ?? FRANCHISE_PLANS[0].id,
   );
   const [applicationOpen, setApplicationOpen] = useState(false);
-  const [enquiryOpen, setEnquiryOpen] = useState(false);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
 
   // Deep links such as /franchise#become-a-franchisor must scroll to the anchor —
   // pushState navigation does not scroll to the hash on its own.
@@ -60,7 +57,7 @@ const BeAFranchisorPage = () => {
     <div className="bg-white">
       <FranchiseHero onApply={openApplication} />
       <FranchiseSubNav />
-      <FranchiseJourney onOpenModal={() => setHowItWorksOpen(true)} />
+      <FranchiseJourney />
       <FranchisePayout />
       <FranchisePlans
         selectedPlanId={selectedPlanId}
@@ -73,7 +70,7 @@ const BeAFranchisorPage = () => {
       />
       <FranchiseBenefits />
       <FranchiseFAQ />
-      <FranchiseCTA onApply={openApplication} onEnquire={() => setEnquiryOpen(true)} />
+      <FranchiseCTA onApply={openApplication} />
 
       <FranchiseeApplicationModal
         open={applicationOpen}
@@ -81,8 +78,6 @@ const BeAFranchisorPage = () => {
         packageId={selectedPlanId}
         onPackageChange={setSelectedPlanId}
       />
-      <FranchisorFormModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} />
-      <HowItWorksModal open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
     </div>
   );
 };

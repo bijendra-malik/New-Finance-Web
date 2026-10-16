@@ -5,16 +5,14 @@ import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 interface FranchiseCTAProps {
   /** Opens the franchisee application popup. */
   onApply: () => void;
-  /** Opens the franchise enquiry modal. */
-  onEnquire: () => void;
 }
 
 /**
- * Closing band — the two ways to start: apply, or send a franchise enquiry. It
- * carries no figures and no disclaimer of its own, since the plans and payout
- * sections above already state them.
+ * Closing band — the way to start: apply. It carries no figures and no
+ * disclaimer of its own, since the plans and payout sections above already
+ * state them.
  */
-const FranchiseCTA = ({ onApply, onEnquire }: FranchiseCTAProps) => {
+const FranchiseCTA = ({ onApply }: FranchiseCTAProps) => {
   // Franchisee login is disabled (greyed out) for signed-out visitors.
   const franchiseeLoginEnabled = useFranchisorLoginAccess();
   return (
@@ -51,13 +49,6 @@ const FranchiseCTA = ({ onApply, onEnquire }: FranchiseCTAProps) => {
           style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
         >
           Apply for a Franchise
-        </button>
-        <button
-          type="button"
-          onClick={onEnquire}
-          className="cursor-pointer rounded-xl border border-white/35 px-7 py-3.5 text-base font-bold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
-        >
-          Send a Franchise Enquiry
         </button>
       </div>
 

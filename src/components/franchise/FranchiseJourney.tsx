@@ -2,11 +2,6 @@ import FranchiseIcon from "./FranchiseIcon";
 import SectionShell from "./SectionShell";
 import { JOURNEY_STEPS } from "./franchiseData";
 
-interface FranchiseJourneyProps {
-  /** Opens the How It Works modal (same seven steps, in a focused popup). */
-  onOpenModal: () => void;
-}
-
 /**
  * One journey, told once: application through to the payout landing with the
  * franchisee.
@@ -17,7 +12,7 @@ interface FranchiseJourneyProps {
  * outcome is not in the franchisee's hands are marked, so approval and
  * disbursement are not read as things the franchise controls.
  */
-const FranchiseJourney = ({ onOpenModal }: FranchiseJourneyProps) => (
+const FranchiseJourney = () => (
   <SectionShell
     id="how-it-works"
     eyebrow="The Model"
@@ -60,50 +55,39 @@ const FranchiseJourney = ({ onOpenModal }: FranchiseJourneyProps) => (
           )}
         </li>
       ))}
+
+      {/* The two routes into the business, stated once instead of in three places. */}
+      <div className="grid gap-4 sm:col-span-2">
+        {[
+          {
+            title: "You build the customer side",
+            desc: "Your market, your customer relationships and the leads you submit.",
+          },
+          {
+            title: "Indexia runs the lender side",
+            desc: "Product fit, lender coordination, documentation and processing through partner banks and NBFCs.",
+          },
+        ].map((lane, i) => (
+          <div
+            key={lane.title}
+            className="flex items-start gap-3.5 rounded-2xl px-5 py-4"
+            style={{ background: "var(--brand-navy-14)" }}
+          >
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white"
+              style={{ background: "linear-gradient(135deg,#26ae90,var(--brand-navy))" }}
+            >
+              <FranchiseIcon name={i === 0 ? "user" : "network"} filled className="h-4.5 w-4.5" />
+            </span>
+            <div>
+              <h3 className="text-[13.5px] font-bold text-slate-800">{lane.title}</h3>
+              <p className="mt-1 text-[12.5px] leading-relaxed text-slate-600">{lane.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </ol>
 
-    <div className="mt-7 flex justify-center">
-      <button
-        type="button"
-        onClick={onOpenModal}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-bold transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-        style={{ background: "var(--brand-teal-14)", color: "var(--brand-navy)" }}
-      >
-        <FranchiseIcon name="process" className="h-4 w-4" />
-        View How It Works
-      </button>
-    </div>
-
-    {/* The two routes into the business, stated once instead of in three places. */}
-    <div className="mt-8 grid gap-4 sm:grid-cols-2">
-      {[
-        {
-          title: "You build the customer side",
-          desc: "Your market, your customer relationships and the leads you submit.",
-        },
-        {
-          title: "Indexia runs the lender side",
-          desc: "Product fit, lender coordination, documentation and processing through partner banks and NBFCs.",
-        },
-      ].map((lane, i) => (
-        <div
-          key={lane.title}
-          className="flex items-start gap-3.5 rounded-2xl px-5 py-4"
-          style={{ background: "var(--brand-navy-14)" }}
-        >
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white"
-            style={{ background: "linear-gradient(135deg,#26ae90,var(--brand-navy))" }}
-          >
-            <FranchiseIcon name={i === 0 ? "user" : "network"} filled className="h-4.5 w-4.5" />
-          </span>
-          <div>
-            <h3 className="text-[13.5px] font-bold text-slate-800">{lane.title}</h3>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-slate-600">{lane.desc}</p>
-          </div>
-        </div>
-      ))}
-    </div>
   </SectionShell>
 );
 

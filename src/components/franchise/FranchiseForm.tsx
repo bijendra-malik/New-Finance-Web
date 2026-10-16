@@ -114,8 +114,10 @@ interface FranchiseFormProps {
  * application to the backend. On success the applicant is told they will be
  * issued a franchisee code (user ID and password) and pointed at /franchise-login.
  *
- * The franchisor variant is a lightweight enquiry and still hands the details to
- * the visitor's mail client addressed to the franchise team.
+ * The franchisor variant is a lightweight enquiry that hands the details to the
+ * visitor's mail client addressed to the franchise team. The franchise page no
+ * longer opens it (the enquiry popup was removed); the variant is kept so a
+ * host can still mount it.
  */
 const FranchiseForm = ({
   variant,
@@ -136,6 +138,9 @@ const FranchiseForm = ({
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Consent declaration — its own gate, so the form cannot be submitted until it is accepted.
+  const [agreed, setAgreed] = useState(false);
+  const [consentError, setConsentError] = useState("");
   // Backend responses (both the success confirmation and API errors) surface as a popup.
   const [popup, setPopup] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [mailtoHref, setMailtoHref] = useState("");
@@ -325,6 +330,16 @@ const FranchiseForm = ({
 
   const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
+
+    // The declaration is checked first and on its own: everything below depends
+    // on it being accepted, and a rejection must land on the step that carries
+    // the checkbox rather than fail silently.
+    if (!agreed) {
+      setConsentError("Please accept the declaration above to continue.");
+      if (isFranchisee && presentation === "stepped") setStep(FRANCHISEE_STEPS.length - 1);
+      return;
+    }
+    setConsentError("");
 
     // If the pincode resolved to a location and the applicant then typed
     // away from it, correct them back before validating or sending.
@@ -863,7 +878,38 @@ const FranchiseForm = ({
       {/* Selected plan summary — franchisee only, rendered from the shared PlanSummary module. */}
       {isFranchisee && !isStepped && planSummaryBlock}
 
-      <p className="text-[11.5px] leading-relaxed text-slate-500">{consentText}</p>
+      {/* Consent declaration — a required checkbox, shown with the submit control. */}
+      {(!isStepped || step === lastStep) && (
+        <div>
+          <label
+            className={`flex cursor-pointer select-none items-start gap-2.5 rounded-xl border px-3.5 py-3 transition-colors ${
+              consentError
+                ? "border-red-300 bg-red-50"
+                : "border-(--brand-navy-14) bg-(--brand-navy-14)"
+            }`}
+          >
+            <input
+              id={fid("consent")}
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                if (e.target.checked) setConsentError("");
+              }}
+              aria-invalid={!!consentError}
+              aria-describedby={consentError ? fid("consent-error") : undefined}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded"
+              style={{ accentColor: "var(--brand-teal)" }}
+            />
+            <span className="text-[11.5px] leading-relaxed text-slate-600">{consentText}</span>
+          </label>
+          {consentError && (
+            <p id={fid("consent-error")} role="alert" className="mt-1.5 text-[11.5px] font-medium text-red-500">
+              {consentError}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Footer — stepped pages with Continue, everyone else submits from here. */}
       {isFranchisee && isStepped ? (

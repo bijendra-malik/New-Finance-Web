@@ -2,7 +2,7 @@
 
 import type { FranchiseIconName } from "./FranchiseIcon";
 
-/** Email every franchisor enquiry and franchisee application is routed to. */
+/** Email every franchisee application and franchise question is routed to. */
 export const FRANCHISE_EMAIL = "contactus@indexiafinance.com";
 
 /** Payout sharing between the franchise partner and Indexia Finance. */
@@ -180,6 +180,6 @@ export const FRANCHISE_FAQS = [
   },
   {
     q: "How do I become a Franchisee?",
-    a: "Use the \u201CApply for a Franchise\u201D form with your name, mobile number, email address, PAN number, state and city. Our team reviews the details and issues your franchisee code, user ID and password. Prefer to talk first? Send a franchise enquiry and our team will get in touch.",
+    a: "Use the \u201CApply for a Franchise\u201D form with your name, mobile number, email address, PAN number, state and city. Our team reviews the details and issues your franchisee code, user ID and password.",
   },
 ];
