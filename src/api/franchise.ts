@@ -6,6 +6,7 @@ export interface FranchiseAccount {
   mobile?: string;
   email?: string;
   isVerified?: boolean;
+  role?: string;
   continent?: string;
   country?: string;
   state?: string;
@@ -27,7 +28,6 @@ export interface FranchiseAccount {
     totalWithGst?: number;
     renewalFee?: number;
     renewalNote?: string;
-    snapshotAt?: string;
   },
   businessDetails?: {
     businessName?: string;
@@ -37,10 +37,29 @@ export interface FranchiseAccount {
     yearsInBusiness?: string;
   };
   franchiseId?: string;
+  franchiseAppliedAt?: string;
+  franchiseApprovedAt?: string;
+  franchiseRejectedAt?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
   lastLogin?: string;
+}
+
+export interface FranchiseCustomer {
+  _id?: string;
+  franchise?: string;
+  franchiseCode?: string;
+  fullName?: string;
+  mobile?: string;
+  panNumber?: string;
+  dob?: string;
+  email?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
+  isVerified?: boolean;
+  verifiedAt?: string | null;
 }
 
 // POST /franchise/entry
@@ -125,6 +144,48 @@ export interface FranchisePlansResponse {
     validityLabel?: string;
   }[];
 }
+// POST /franchise/login
+export interface FranchiseLoginPayload {
+  franchiseId: string;
+  password: string;
+}
+
+export interface FranchiseLoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  franchise?: FranchiseAccount;
+}
+
+// POST /franchise/customer/register
+export interface FranchiseCustomerRegisterPayload {
+  fullName: string;
+  mobile: string;
+  panNumber: string;
+  dob: string;
+  email: string;
+  state: string;
+  city: string;
+  pincode: string;
+}
+
+export interface FranchiseCustomerRegisterResponse {
+  success: boolean;
+  message: string;
+  data?: FranchiseCustomer;
+}
+
+// POST /franchise/customer/verify-otp
+export interface FranchiseCustomerVerifyOTPPayload {
+  franchiseCustomerId: string;
+  otp: string;
+}
+
+export interface FranchiseCustomerVerifyOTPResponse {
+  success: boolean;
+  message: string;
+  customer?: FranchiseCustomer;
+}
 
 // ── API calls ───────────────────────────────────────────────────────────────────
 
@@ -158,6 +219,43 @@ export const fetchFranchiseStatus = async (): Promise<FranchiseStatusResponse> =
 export const fetchFranchiseProfile = async (): Promise<FranchiseProfileResponse> => {
   const response = await axiosInstance.get<FranchiseProfileResponse>(
     "/franchise/profile",
+  );
+  return response.data;
+};
+
+export const fetchFranchisePlans = async (): Promise<FranchisePlansResponse> => {
+  const response = await axiosInstance.get<FranchisePlansResponse>(
+    "/franchise/plans",
+  );
+  return response.data;
+}
+
+export const loginFranchise = async (
+  payload: FranchiseLoginPayload,
+): Promise<FranchiseLoginResponse> => {
+  const response = await axiosInstance.post<FranchiseLoginResponse>(
+    "/franchise/login",
+    payload,
+  );
+  return response.data;
+};
+
+export const registerFranchiseCustomer = async (
+  payload: FranchiseCustomerRegisterPayload,
+): Promise<FranchiseCustomerRegisterResponse> => {
+  const response = await axiosInstance.post<FranchiseCustomerRegisterResponse>(
+    "/franchise/customer/register",
+    payload,
+  );
+  return response.data;
+};
+
+export const verifyFranchiseCustomerOTP = async (
+  payload: FranchiseCustomerVerifyOTPPayload,
+): Promise<FranchiseCustomerVerifyOTPResponse> => {
+  const response = await axiosInstance.post<FranchiseCustomerVerifyOTPResponse>(
+    "/franchise/customer/verify-otp",
+    payload,
   );
   return response.data;
 };
