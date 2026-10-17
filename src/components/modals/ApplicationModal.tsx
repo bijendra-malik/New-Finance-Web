@@ -351,13 +351,7 @@ const ApplicationModal = ({
       // Loan entry succeeded: remember exactly which identity the backend now
       // holds, so POST /customer/loan-apply can never submit a different email
       // (a later re-registration overwrites this — and the token — together).
-      saveApplyEntryIdentity({
-        mobile,
-        fullName: fullName.trim(),
-        email: email.trim(),
-        dob,
-        panNumber: pan,
-      });
+      saveApplyEntryIdentity();
       setPendingDashboard(dashboardPath);
       setOtp("");
       setOtpError("");

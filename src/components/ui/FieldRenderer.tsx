@@ -22,7 +22,7 @@ export const Field = memo(({ id, label, required, error, hint, full, children }:
     </label>
     {children}
     {error ? (
-      <p className="mt-1 text-xs font-medium text-red-500">{error}</p>
+      <p id={`${id}-error`} className="mt-1 text-xs font-medium text-red-500">{error}</p>
     ) : hint ? (
       <p className="mt-1 text-xs text-slate-400">{hint}</p>
     ) : null}
@@ -33,6 +33,7 @@ Field.displayName = "Field";
 
 export const TextField = memo(
   ({
+    id,
     value,
     onChange,
     placeholder,
@@ -42,6 +43,7 @@ export const TextField = memo(
     inputMode,
     extraCls,
   }: {
+    id?: string;
     value: string;
     onChange: (v: string) => void;
     placeholder: string;
@@ -52,6 +54,9 @@ export const TextField = memo(
     extraCls?: string;
   }) => (
     <input
+      id={id}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error && id ? `${id}-error` : undefined}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}

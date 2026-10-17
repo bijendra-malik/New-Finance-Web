@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
+import FranchiseStatusCheck from "../components/franchise/FranchiseStatusCheck";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
@@ -39,7 +40,14 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (!hash) return;
+    const target = document.getElementById(hash.slice(1));
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [hash]);
   const [franchiseId, setFranchiseId] = useState("");
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -359,6 +367,8 @@ const FranchiseLoginPage = () => {
                 </Link>
                 .
               </p>
+
+              <FranchiseStatusCheck />
             </div>
           </div>
         </div>
