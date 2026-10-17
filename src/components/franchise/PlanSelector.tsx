@@ -1,6 +1,6 @@
 // Plan summary card + package dropdown shared by FranchisePlans and FranchiseForm.
 
-import { FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
+import type { FranchisePlan } from "./franchiseData";
 import { AGREEMENT_FEE } from "./franchiseData";
 import { Field } from "../ui/FieldRenderer";
 
@@ -11,7 +11,6 @@ interface PlanSummaryProps {
   /** Single-line read-out, for layouts that must stay within one screen. */
   compact?: boolean;
 }
-
 
 export const PlanSummary = ({ plan, className = "", compact = false }: PlanSummaryProps) => (
   <div className={className}>
@@ -59,15 +58,16 @@ export const PlanSummary = ({ plan, className = "", compact = false }: PlanSumma
 );
 
 interface PackageSelectorProps {
-  /** Selected plan id (not the display label) — matches FRANCHISE_PLANS[].id. */
+  /** Selected plan id (not the display label) — matches plan.id. */
   value: string;
   onChange: (planId: string) => void;
   error?: string;
   required?: boolean;
   full?: boolean;
   id?: string;
+  plans: FranchisePlan[];
+  disabled?: boolean;
 }
-
 
 export const PackageSelector = ({
   value,
@@ -76,70 +76,46 @@ export const PackageSelector = ({
   required,
   full,
   id = "package",
-}: PackageSelectorProps) => (
-  <Field
-    id={id}
-    label="Interested Package Duration"
-    required={required}
-    error={error}
-    full={full}
-  >
-    <select
+  plans,
+  disabled = false,
+}: PackageSelectorProps) => {
+  const describedBy =
+    [error ? `${id}-error` : "", disabled ? `${id}-hint` : ""].filter(Boolean).join(" ") || undefined;
+
+  return (
+    <Field
       id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-        error ? "border-red-400 bg-red-50/40" : "border-slate-300"
-      }`}
+      label="Interested Package Duration"
+      required={required}
+      error={error}
+      full={full}
     >
-      <option value="">Select a package duration</option>
-      {FRANCHISE_PLANS.map((plan) => (
-        <option key={plan.id} value={plan.id}>
-          {plan.duration} — {plan.fee}
-        </option>
-      ))}
-    </select>
-  </Field>
-);
-
-interface PlanSelectorProps {
-  /** The currently selected plan used for the summary read-out. */
-  plan?: FranchisePlan;
-  value: string;
-  onChange: (planId: string) => void;
-  error?: string;
-  required?: boolean;
-  full?: boolean;
-  id?: string;
-  summaryClassName?: string;
-  className?: string;
-}
-
-
-export const PlanSelector = ({
-  plan,
-  value,
-  onChange,
-  error,
-  required,
-  full,
-  id = "package",
-  summaryClassName = "",
-  className = "",
-}: PlanSelectorProps) => (
-  <div className={className}>
-    <PlanSummary plan={plan} className={summaryClassName} />
-    <div className="mt-4">
-      <PackageSelector
-        value={value}
-        onChange={onChange}
-        error={error}
-        required={required}
-        full={full}
+      <select
         id={id}
-      />
-    </div>
-  </div>
-);
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        aria-describedby={describedBy}
+        aria-invalid={!!error}
+        className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
+          error ? "border-red-400 bg-red-50/40" : "border-slate-300"
+        } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+      >
+        <option value="">Select a package duration</option>
+        {plans.map((plan) => (
+          <option key={plan.id} value={plan.id}>
+            {plan.duration} — {plan.fee}
+          </option>
+        ))}
+      </select>
+      {disabled && (
+        <p id={`${id}-hint`} className="mt-1.5 text-[11px] text-slate-400">
+          Packages could not be loaded — retry to see the current plans.
+        </p>
+      )}
+      {error && <p id={`${id}-error`} role="alert" className="mt-1.5 text-[11px] text-red-500">{error}</p>}
+    </Field>
+  );
+};
 
-export default PlanSelector;
+export default PackageSelector;
