@@ -1,15 +1,10 @@
-// Content for the franchise pages. Kept free of JSX so the icon set can live in its own component module.
-
 import type { FranchiseIconName } from "./FranchiseIcon";
 
-/** Email every franchisee application and franchise question is routed to. */
 export const FRANCHISE_EMAIL = "contactus@indexiafinance.com";
 
-/** Payout sharing between the franchise partner and Indexia Finance. */
 export const PARTNER_SHARE = 80;
 export const INDEXIA_SHARE = 20;
 
-/** Maximum payout rates — deliberately framed as ceilings, never as guarantees. */
 export const MAX_PAYOUTS = [
   {
     id: "unsecured",
@@ -29,19 +24,11 @@ export const MAX_PAYOUTS = [
   },
 ] as const;
 
-/**
- * The single end-to-end journey, from application to payout.
- *
- * This replaces the three separate step lists the page used to carry (the model's
- * four steps, the post-application timeline and the lead-dependency chain), which
- * all described overlapping parts of the same sequence.
- */
 export interface JourneyStep {
   id: string;
   icon: FranchiseIconName;
   title: string;
   desc: string;
-  /** Marks the steps where the outcome is not in the franchise partner's hands. */
   external?: boolean;
 }
 
@@ -92,50 +79,22 @@ export const JOURNEY_STEPS: JourneyStep[] = [
   },
 ];
 
-/** Franchise plans, cheapest last so the 3-year plan reads first. */
 export interface FranchisePlan {
   id: string;
   name: string;
-  /** Short label used in the comparison table columns. */
   shortName: string;
   duration: string;
-  /** Fee as shown on the plan card, in lakh/thousand shorthand. */
   fee: string;
-  /** Fee for the comparison table. */
   feeShort: string;
   renewal: string;
-  /** Whole months of validity — used for the per-month view. */
   months: number;
   recommended?: boolean;
   badge?: string;
 }
 
-export const FRANCHISE_PLANS: FranchisePlan[] = [
-  {
-    id: "3-year",
-    name: "3-Year Plan",
-    shortName: "3 Year",
-    duration: "3 Years",
-    fee: "\u20B92.49 Lakh + GST",
-    feeShort: "\u20B92.49L + GST",
-    renewal: "\u20B93,900",
-    months: 36,
-    recommended: true,
-    badge: "Best Value",
-  },
-  { id: "annual", name: "Annual Plan", shortName: "Annual", duration: "1 Year", fee: "\u20B91.19 Lakh + GST", feeShort: "\u20B91.19L + GST", renewal: "As applicable", months: 12 },
-  { id: "6-month", name: "6-Month Plan", shortName: "6 Month", duration: "6 Months", fee: "\u20B989,000 + GST", feeShort: "\u20B989K + GST", renewal: "As applicable", months: 6 },
-  { id: "quarterly", name: "Quarterly Plan", shortName: "Quarterly", duration: "3 Months", fee: "\u20B959,000 + GST", feeShort: "\u20B959K + GST", renewal: "As applicable", months: 3 },
-  { id: "monthly", name: "Monthly Plan", shortName: "Monthly", duration: "1 Month", fee: "\u20B924,000 + GST", feeShort: "\u20B924K + GST", renewal: "As applicable", months: 1 },
-];
-
-/** Mandatory one-time agreement fee, shown separately so it is never buried. */
 export const AGREEMENT_FEE = "\u20B930,000 + GST";
 export const AGREEMENT_FEE_NOTE =
   "\u20B930,000 + GST franchisee agreement fee is adjustable against payout under the monthly plan, subject to applicable terms.";
-
-/** Options for the franchisee application form's package dropdown. */
-export const PLAN_OPTIONS = FRANCHISE_PLANS.map((p) => `${p.duration} \u2014 ${p.feeShort}`);
 
 export const BENEFITS = [
   { icon: "network", title: "Access to Banks & NBFCs", desc: "Place eligible customer cases with a wide panel of partner banks and NBFCs from a single desk." },
@@ -148,11 +107,6 @@ export const BENEFITS = [
   { icon: "scale", title: "Scalable Business Model", desc: "Start with a shorter plan and move to a longer tenure as your customer base grows." },
 ] as const;
 
-/**
- * Only questions whose answers are not already stated in the sections above.
- * Anything the journey, payout or plans sections explain in their own words is
- * deliberately left out here, so the page never answers the same question twice.
- */
 export const FRANCHISE_FAQS = [
   {
     q: "Is the \u20B930,000 + GST agreement fee refundable?",
@@ -160,7 +114,7 @@ export const FRANCHISE_FAQS = [
   },
   {
     q: "Can I choose a monthly plan?",
-    a: "Yes. A monthly plan (\u20B924,000 + GST, 1 month validity) is available alongside the 6-month, quarterly, annual and 3-year plans.",
+    a: "Yes. A monthly plan is available alongside the 6-month, quarterly, annual and 3-year plans, and it can be picked in the application form. The current fee and validity are shown with the plans above.",
   },
   {
     q: "What happens when my franchise plan expires?",
