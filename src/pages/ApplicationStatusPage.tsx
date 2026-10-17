@@ -1,26 +1,15 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
-import ApplicationNumberLookup from "../components/status/ApplicationNumberLookup";
 import CustomerStatusLookup from "../components/status/CustomerStatusLookup";
 import useSEO from "../hooks/useSEO";
-
-type LookupMode = "customer" | "application";
-
-const TABS: { id: LookupMode; label: string }[] = [
-  { id: "customer", label: "Customer ID + OTP" },
-  { id: "application", label: "Application number" },
-];
 
 const ApplicationStatusPage = () => {
   useSEO({
     title: "Check Application Status",
     description:
-      "Check your Indexia Finance application status with your customer ID, PAN and mobile number, verified by OTP — or with your application number.",
+      "Check your Indexia Finance application status with your customer ID, PAN and registered mobile number, verified by OTP.",
     path: "/application-status",
   });
-
-  const [mode, setMode] = useState<LookupMode>("customer");
 
   return (
     <>
@@ -42,8 +31,7 @@ const ApplicationStatusPage = () => {
               that mobile first, so the application details are only shown to you.
             </p>
             <div className="mt-7 border-l-2 border-(--brand-teal) pl-4 text-sm leading-6 text-slate-500">
-              Your customer ID was issued with your application (for example CUST000001). If you only
-              have the application number, use the second option.
+              Your customer ID was issued with your application (for example CUST000001).
             </div>
             <p className="mt-6 text-sm leading-6 text-slate-500">
               Applying for a franchise instead?{" "}
@@ -57,32 +45,7 @@ const ApplicationStatusPage = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <div
-              role="group"
-              aria-label="Choose how to look up your application"
-              className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1"
-            >
-              {TABS.map((tab) => {
-                const active = mode === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setMode(tab.id)}
-                    className={`cursor-pointer rounded-lg px-3 py-2 text-[12.5px] font-bold transition focus:outline-none focus:ring-2 focus:ring-(--brand-teal)/40 ${
-                      active
-                        ? "bg-white text-(--brand-navy) shadow-sm"
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {mode === "customer" ? <CustomerStatusLookup /> : <ApplicationNumberLookup />}
+            <CustomerStatusLookup />
           </div>
         </div>
       </section>
