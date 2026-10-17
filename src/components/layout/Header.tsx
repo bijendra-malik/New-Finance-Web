@@ -179,6 +179,14 @@ const Header = () => {
                         aria-haspopup="true"
                         aria-expanded={openDropdown === link.dropdown}
                         onClick={(e) => e.preventDefault()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setOpenDropdown(openDropdown === link.dropdown ? null : link.dropdown!);
+                          } else if (e.key === "Escape") {
+                            setOpenDropdown(null);
+                          }
+                        }}
                         aria-current={isRouteActive(link.href, link.match) ? "page" : undefined}
                         className={`nav-link flex items-center gap-1 select-none${
                           isRouteActive(link.href, link.match) ? " is-active" : ""
