@@ -92,6 +92,18 @@ const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
                 </span>
               )}
             </p>
+
+            {/* Applicants awaiting approval need the status lookup, not a login. */}
+            <p className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[12.5px] text-white/55">
+              <FranchiseIcon name="search" className="h-4 w-4 shrink-0 text-white/45" />
+              Waiting for approval?{" "}
+              <Link
+                to="/franchise-login#application-status"
+                className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
+              >
+                Check your franchise application status
+              </Link>
+            </p>
           </div>
         </div>
       </div>
