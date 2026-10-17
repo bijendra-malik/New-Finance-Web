@@ -10,7 +10,7 @@ import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
-import { registerFranchise } from "../../api/franchise";
+import { registerFranchise, verifyFranchiseOTP } from "../../api/franchise";
 import type { FranchiseEntryPayload } from "../../api/franchise";
 import { useFranchisePlans } from "../../hooks/useFranchisePlans";
 import { FRANCHISE_EMAIL } from "./franchiseData";
@@ -18,6 +18,7 @@ import type { FranchisePlan } from "./franchiseData";
 import { PlanSummary, PackageSelector } from "./PlanSelector";
 import { LocationFields } from "../form/LocationFields";
 import { Field } from "../ui/FieldRenderer";
+import OtpEntryPanel from "../status/OtpEntryPanel";
 
 export interface FranchiseFormValues {
   continent: string;
@@ -126,6 +127,18 @@ const FranchiseForm = ({
   const [step, setStep] = useState(0);
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
+  // OTP stage after POST /franchise/entry — the applicant confirms the mobile
+  // number via POST /franchise/entry/verify before the application is final.
+  const [otpStage, setOtpStage] = useState(false);
+  const [entryMobile, setEntryMobile] = useState("");
+  const [maskedMobile, setMaskedMobile] = useState("");
+  const [lastPayload, setLastPayload] = useState<FranchiseEntryPayload | null>(null);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpApiError, setOtpApiError] = useState("");
+  const [otpNotice, setOtpNotice] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const identity = useMemo(
     () => ({
@@ -288,13 +301,16 @@ const FranchiseForm = ({
         });
         return;
       }
-      setPopup({
-        tone: "success",
-        message:
-          res.message ||
-          "Your application has been received. Use the OTP sent to your registered mobile number to verify your franchisee access.",
-      });
-      setSubmitted(true);
+      // Entry accepted — the backend has sent an OTP to the applicant's mobile,
+      // so move to the verification step instead of finishing immediately.
+      setLastPayload(payload);
+      setEntryMobile(payload.mobile ?? "");
+      setMaskedMobile(res.mobileMasked?.trim() || "");
+      setOtp("");
+      setOtpError("");
+      setOtpApiError("");
+      setOtpNotice(res.message || "An OTP has been sent to your registered mobile number.");
+      setOtpStage(true);
     } catch (err) {
       setPopup({
         tone: "error",
@@ -339,6 +355,59 @@ const FranchiseForm = ({
       return;
     }
     void submitApplication(current);
+  };
+
+  // ── OTP verification for the franchisee application ──────────────────────
+  const verifyEntryOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(otp)) {
+      setOtpError("Enter the 6-digit OTP sent to your mobile");
+      return;
+    }
+    setVerifying(true);
+    setOtpApiError("");
+    setOtpNotice("");
+    try {
+      const res = await verifyFranchiseOTP({ mobile: entryMobile, otp });
+      if (!res.success) {
+        setOtpApiError(res.message || "The OTP was not accepted. Check it and try again.");
+        return;
+      }
+      setOtpStage(false);
+      setSubmitted(true);
+    } catch (err) {
+      setOtpApiError(getApiErrorMessage(err, "We could not verify that OTP. Request a new one and try again."));
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const resendEntryOtp = async () => {
+    if (!lastPayload) return;
+    setResending(true);
+    setOtpApiError("");
+    try {
+      // Re-sending goes through the same entry endpoint that issues the OTP.
+      const res = await registerFranchise(lastPayload);
+      if (!res.success) {
+        setOtpApiError(res.message || "We could not resend the OTP. Try again in a moment.");
+        return;
+      }
+      setMaskedMobile((prev) => res.mobileMasked?.trim() || prev);
+      setOtpNotice(res.message || "A new OTP has been sent.");
+    } catch (err) {
+      setOtpApiError(getApiErrorMessage(err, "We could not resend the OTP. Check your connection and try again."));
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const backToForm = () => {
+    setOtpStage(false);
+    setOtp("");
+    setOtpError("");
+    setOtpApiError("");
+    setOtpNotice("");
   };
 
   const popupNode = (
@@ -407,9 +476,9 @@ const FranchiseForm = ({
         </div>
         <h3 className="mb-2 text-xl font-bold text-slate-800">Application submitted</h3>
         <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
-          Your franchise application has been received. Our team will verify your details and issue
-          your <strong>franchisee code, user ID and password</strong>. Use them to sign in to the
-          franchisee dashboard.
+          Your mobile number is verified and your franchise application has been received. Our team
+          will review your details — once approved, sign in with your{" "}
+          <strong>franchisee ID and the PAN number from this application</strong>.
         </p>
 
         <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
@@ -503,6 +572,40 @@ const FranchiseForm = ({
           >
             Submit another enquiry
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── OTP stage — shown after the entry call accepts the application ──────
+  if (isFranchisee && otpStage) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-7 sm:px-7">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--brand-teal)">Verify your mobile</p>
+        <h3 className="mt-2 text-xl font-extrabold text-(--brand-navy)">One step left — confirm your OTP</h3>
+        <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
+          Your application has been received. Enter the OTP sent to your registered mobile number to
+          verify your franchisee access.
+        </p>
+        <div className="mt-5">
+          <OtpEntryPanel
+            idPrefix="ff-apply"
+            maskedMobile={maskedMobile}
+            otp={otp}
+            onOtpChange={(value) => {
+              setOtp(value);
+              setOtpError("");
+            }}
+            otpError={otpError}
+            apiError={otpApiError}
+            notice={otpNotice}
+            busy={verifying}
+            resending={resending}
+            onVerify={verifyEntryOtp}
+            onResend={() => void resendEntryOtp()}
+            onChangeDetails={backToForm}
+            verifyLabel="Verify application"
+          />
         </div>
       </div>
     );

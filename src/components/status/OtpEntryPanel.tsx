@@ -13,6 +13,7 @@ interface OtpEntryPanelProps {
   onVerify: (event: React.FormEvent<HTMLFormElement>) => void;
   onResend: () => void;
   onChangeDetails: () => void;
+  verifyLabel?: string;
 }
 
 const OtpEntryPanel = ({
@@ -28,6 +29,7 @@ const OtpEntryPanel = ({
   onVerify,
   onResend,
   onChangeDetails,
+  verifyLabel = "Verify & view status",
 }: OtpEntryPanelProps) => {
   const otpId = `${idPrefix}-otp`;
   const otpErrorId = `${otpId}-error`;
@@ -81,7 +83,7 @@ const OtpEntryPanel = ({
       )}
 
       <Button type="submit" size="lg" fullWidth loading={busy}>
-        {busy ? "Verifying…" : "Verify & view status"}
+        {busy ? "Verifying…" : verifyLabel}
       </Button>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-[12.5px]">
