@@ -10,7 +10,6 @@ import { PAN_REGEX } from "../utils/validation";
 import { formatPAN } from "../utils/formatters";
 import {
   saveFranchiseSession,
-  clearFranchiseSession,
 } from "../utils/franchiseSession";
 import { getApiErrorMessage } from "../utils/apiError";
 import useSEO from "../hooks/useSEO";
@@ -83,7 +82,6 @@ const FranchiseLoginPage = () => {
       }
       const status = (res.franchise?.franchiseStatus ?? "").trim().toLowerCase();
       if (status === "rejected") {
-        clearFranchiseSession();
         setNotice({
           tone: "error",
           title: "Franchisee login is locked",

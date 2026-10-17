@@ -6,7 +6,6 @@ import FranchiseIcon from "../../../components/franchise/FranchiseIcon";
 import {
   readFranchiseSession,
   mergeFranchiseProfile,
-  clearFranchiseSession,
   type FranchiseSession,
 } from "../../../utils/franchiseSession";
 import { fetchFranchiseProfile } from "../../../api/franchise";
@@ -150,7 +149,6 @@ const FranchisePortalPage = () => {
   };
 
   const handleSignOut = () => {
-    clearFranchiseSession();
     setSession(null);
     setHasToken(false);
     setProfile(null);
