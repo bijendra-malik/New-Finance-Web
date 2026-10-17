@@ -6,18 +6,15 @@ import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./context/authContext";
 import ApplicantPrefillProvider from "./context/ApplicantPrefillProvider";
 import Home from "./pages/Home";
-import Login from "./pages/auth/Login";
-
-// Static pages (small, always needed)
-import ContactPage from "./pages/ContactPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import FranchiseLoginPage from "./pages/FranchiseLoginPage";
-import MyApplicationsPage from "./pages/MyApplicationsPage";
-import ApplicationStatusPage from "./pages/ApplicationStatusPage";
-import EligibilityCalculatorPage from "./pages/EligibilityCalculatorPage";
-import EMICalculatorPage from "./pages/EMICalculatorPage";
 
-// Large marketing pages, split out of the initial bundle
+const Login = lazy(() => import("./pages/auth/Login"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const FranchiseLoginPage = lazy(() => import("./pages/FranchiseLoginPage"));
+const MyApplicationsPage = lazy(() => import("./pages/MyApplicationsPage"));
+const ApplicationStatusPage = lazy(() => import("./pages/ApplicationStatusPage"));
+const EligibilityCalculatorPage = lazy(() => import("./pages/EligibilityCalculatorPage"));
+const EMICalculatorPage = lazy(() => import("./pages/EMICalculatorPage"));
 const BeAFranchisorPage = lazy(() => import("./pages/BeAFranchisorPage"));
 
 // ── Franchisor partner portal ────────────────────────────────────────────────
