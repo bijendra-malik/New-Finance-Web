@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
+import Modal from "../components/ui/Modal";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
@@ -41,12 +42,21 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { setLoggedIn } = useAuth();
+
   const [franchiseId, setFranchiseId] = useState("");
   const [panNumber, setPanNumber] = useState("");
   const [errors, setErrors] = useState<{ franchiseId?: string; panNumber?: string }>({});
   const [notice, setNotice] = useState<Notice>(DEFAULT_NOTICE);
   const [submitting, setSubmitting] = useState(false);
+  const [welcome, setWelcome] = useState<{ name?: string } | null>(null);
+
+  useEffect(() => {
+    if (!welcome) return;
+    const timer = setTimeout(() => navigate("/franchisor-dashboard"), 2000);
+    return () => clearTimeout(timer);
+  }, [welcome, navigate]);
+
   const handleSubmit = async (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
     const e: { franchiseId?: string; panNumber?: string } = {};
@@ -97,8 +107,7 @@ const FranchiseLoginPage = () => {
           body: "The franchisee ID does not match the PAN on this account. Check both details and try again.",
         });
         return;
-      }
-      saveFranchiseSession(
+      }      saveFranchiseSession(
         {
           franchiseId: responseFranchiseId,
           franchiseStatus: res.franchise?.franchiseStatus,
@@ -106,7 +115,9 @@ const FranchiseLoginPage = () => {
         },
         res.token,
       );
-      login(res.token, {
+      
+      setWelcome({ name: res.franchise?.name?.trim() || undefined });
+      setLoggedIn({
         _id: res.franchise?._id ?? responseFranchiseId,
         name: res.franchise?.name ?? "",
         mobile: res.franchise?.mobile ?? "",
@@ -119,8 +130,6 @@ const FranchiseLoginPage = () => {
         createdAt: res.franchise?.createdAt ?? "",
         updatedAt: res.franchise?.updatedAt ?? "",
       });
-
-      navigate("/franchisor-dashboard");
     } catch (error) {
       const rejected = (error as { response?: unknown })?.response !== undefined;
       setNotice({
@@ -319,7 +328,8 @@ const FranchiseLoginPage = () => {
                 <Link to="/franchise" className="font-semibold text-(--brand-navy) hover:underline">
                   Go to the franchisee application
                 </Link>
-                . Waiting for approval?{" "}
+                . <br />
+                Waiting for approval?{" "}
                 <Link
                   to="/franchise-application-status"
                   className="font-semibold text-(--brand-navy) hover:underline"
@@ -332,6 +342,40 @@ const FranchiseLoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Success confirmation — shown right after sign-in, before the dashboard opens. */}
+      <Modal
+        open={!!welcome}
+        onClose={() => navigate("/franchisor-dashboard")}
+        labelledBy="franchise-login-success"
+        maxWidth="max-w-md"
+      >
+        <div className="flex items-start gap-3 px-5 pt-5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <h2 id="franchise-login-success" className="text-[15px] font-extrabold text-slate-800">
+              Signed in successfully
+            </h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
+              {welcome?.name ? `Welcome back, ${welcome.name}. ` : "Welcome back. "}
+              Your franchisee dashboard is opening now — you can also continue to it right away.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end border-t border-slate-100 px-5 py-4">
+          <Button
+            size="md"
+            onClick={() => navigate("/franchisor-dashboard")}
+            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
+          >
+            Go to dashboard →
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 };

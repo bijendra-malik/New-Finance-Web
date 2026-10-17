@@ -13,6 +13,7 @@ import {
   readFranchiseSession,
   isFranchiseSignedIn,
 } from "../utils/franchiseSession";
+import { useAuth } from "../context/authContext";
 import type { FranchiseSession } from "../utils/franchiseSession";
 
 // ── Status presentation ──────────────────────────────────────────────────────
@@ -121,6 +122,7 @@ const FranchisorDashboardPage = () => {
   });
 
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [session, setSession] = useState<FranchiseSession | null>(() => readFranchiseSession());
   const [hasToken, setHasToken] = useState(isFranchiseSignedIn);
   const [profile, setProfile] = useState<FranchiseProfileResponse["franchise"] | null>(null);
@@ -176,7 +178,7 @@ const FranchisorDashboardPage = () => {
   const sessionId = session?.franchiseId;
 
   useEffect(() => {
-    if (!sessionId || !hasToken) return;
+    if (!sessionId || !isLoggedIn) return;
     let active = true;
     (async () => {
       try {
@@ -218,7 +220,7 @@ const FranchisorDashboardPage = () => {
     navigate("/franchise-login");
   };
 
-  if (!session || !hasToken) {
+  if (!session || !isLoggedIn) {
     return (
       <>
         <PageBanner

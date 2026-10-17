@@ -7,6 +7,7 @@ export interface AuthContextType {
   isLoggedIn: boolean;
   login: (token: string, user: ApiUser) => void;
   logout: () => void;
+  setLoggedIn: (user: ApiUser) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

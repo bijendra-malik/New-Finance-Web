@@ -14,6 +14,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(newUser);
   };
 
+  const setLoggedIn = (newUser: ApiUser) => {
+    setUser(newUser);
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -21,9 +25,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoggedIn: !!token, login, logout }}
+      value={{ user, token, isLoggedIn: !!token || !!user, login, logout, setLoggedIn }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+};
