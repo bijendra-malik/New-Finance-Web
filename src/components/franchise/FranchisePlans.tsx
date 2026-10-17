@@ -3,11 +3,16 @@ import SectionShell from "./SectionShell";
 import {
   AGREEMENT_FEE,
   AGREEMENT_FEE_NOTE,
-  FRANCHISE_PLANS,
   type FranchisePlan,
 } from "./franchiseData";
 
 interface FranchisePlansProps {
+  /** Plans published by GET /franchise/plans. */
+  plans: FranchisePlan[];
+  loading?: boolean;
+  /** User-facing message when the plans could not be loaded. */
+  error?: string;
+  onRetry?: () => void;
   selectedPlanId: string | null;
   onSelectPlan: (plan: FranchisePlan) => void;
 }
@@ -26,15 +31,57 @@ const Check = () => (
  * a separate mobile card list, which showed the same five plans — duration, fee and
  * renewal — three times over.
  */
-const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) => (
+const FranchisePlans = ({
+  plans,
+  loading = false,
+  error = "",
+  onRetry,
+  selectedPlanId,
+  onSelectPlan,
+}: FranchisePlansProps) => (
   <SectionShell
     id="plans"
     eyebrow="Franchise Investment"
     title="Choose a Plan That Fits Your Business"
-    subtitle="Every plan is published with its fee, validity period and renewal terms. The 3-year plan carries the lowest effective monthly cost; prices are exclusive of GST."
+    subtitle="Every plan is published with its fee, validity period and renewal terms. The longest tenure carries the lowest effective monthly cost; prices are exclusive of GST."
   >
+    {loading && (
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" aria-busy="true" aria-label="Loading franchise plans">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div
+            key={index}
+            className="flex min-h-62.5 flex-col rounded-2xl border border-slate-200 bg-white p-5"
+          >
+            <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+            <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-slate-100" />
+            <div className="mt-6 h-7 w-3/5 animate-pulse rounded bg-slate-100" />
+            <div className="mt-6 space-y-2 border-t border-dashed border-slate-200 pt-4">
+              <div className="h-3 w-4/5 animate-pulse rounded bg-slate-100" />
+              <div className="h-3 w-3/5 animate-pulse rounded bg-slate-100" />
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {!loading && error && plans.length === 0 && (
+      <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-5 py-6 text-center">
+        <p className="text-sm font-semibold text-red-600">{error}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-3 cursor-pointer rounded-lg bg-(--brand-navy) px-4 py-2 text-[12.5px] font-bold text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
+          >
+            Retry
+          </button>
+        )}
+      </div>
+    )}
+
+    {!loading && plans.length > 0 && (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-      {FRANCHISE_PLANS.map((plan) => {
+      {plans.map((plan) => {
         const selected = selectedPlanId === plan.id;
         const accent = plan.recommended || selected;
 
@@ -52,7 +99,7 @@ const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) =
                 className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white"
                 style={{ background: "linear-gradient(135deg,#26ae90,var(--brand-navy))" }}
               >
-                Best Value — 3 Years
+                {plan.badge} — {plan.duration}
               </span>
             )}
 
@@ -102,6 +149,7 @@ const FranchisePlans = ({ selectedPlanId, onSelectPlan }: FranchisePlansProps) =
         );
       })}
     </div>
+    )}
 
     <p className="mt-6 max-w-3xl text-[12.5px] leading-relaxed text-slate-500">
       All fees are exclusive of GST. Renewal charges for the shorter plans are as communicated at the time of
