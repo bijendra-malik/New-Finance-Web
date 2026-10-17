@@ -3,6 +3,8 @@ Allow: /
 
 # Auth-gated areas — nothing here is useful to crawlers.
 Disallow: /dashboard/
+Disallow: /applications
 Disallow: /franchisor-dashboard
+Disallow: /franchise/loan-forms
 
 Sitemap: https://indexiafinance.com/sitemap.xml
