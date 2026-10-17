@@ -124,9 +124,10 @@ export interface FranchiseProfileResponse {
 // GET /franchise/plans
 export interface FranchisePlansResponse {
   success: boolean;
-  bestValueCode?: string;
+  message?: string;
+  bestValueCode?: string | null;
   bestValueIsPinned?: boolean;
-  selectedPlanCode?: string;
+  selectedPlanCode?: string | null;
   plans: {
     _id?: string;
     code?: string;
@@ -137,11 +138,11 @@ export interface FranchisePlansResponse {
     gstPercent?: number;
     isActive?: boolean;
     isBestValue?: boolean;
-    name?: string;
-    renewalFee?: number;
-    renewalNote?: string;
+    name?: string | null;
+    renewalFee?: number | null;
+    renewalNote?: string | null;
     sortOrder?: number;
-    validityLabel?: string;
+    validityLabel?: string | null;
   }[];
 }
 // POST /franchise/login
