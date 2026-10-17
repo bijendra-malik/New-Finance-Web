@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
-import FranchiseStatusCheck from "../components/franchise/FranchiseStatusCheck";
 import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
-import { verifyFranchiseOTP } from "../api/franchise";
+import { loginFranchise } from "../api/franchise";
+import { PAN_REGEX } from "../utils/validation";
+import { formatPAN } from "../utils/formatters";
 import {
   saveFranchiseSession,
   clearFranchiseSession,
@@ -27,7 +28,7 @@ const DEFAULT_NOTICE: Notice = {
   tone: "info",
   title: "Portal access is invitation-based",
   body:
-    "Portal credentials are issued with your franchise agreement and plan. " +
+    "Sign in with your franchisee ID and the PAN number from your franchise application. " +
     "Write to the franchise team if you need access.",
 };
 
@@ -40,52 +41,28 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
-  const { hash } = useLocation();
   const { login } = useAuth();
-
-  useEffect(() => {
-    if (!hash) return;
-    const target = document.getElementById(hash.slice(1));
-    if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
-  }, [hash]);
   const [franchiseId, setFranchiseId] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpVisible, setOtpVisible] = useState(false);
-  const [errors, setErrors] = useState<{ franchiseId?: string; mobile?: string; otp?: string }>({});
+  const [panNumber, setPanNumber] = useState("");
+  const [errors, setErrors] = useState<{ franchiseId?: string; panNumber?: string }>({});
   const [notice, setNotice] = useState<Notice>(DEFAULT_NOTICE);
   const [submitting, setSubmitting] = useState(false);
   const handleSubmit = async (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
-    const e: { franchiseId?: string; mobile?: string; otp?: string } = {};
+    const e: { franchiseId?: string; panNumber?: string } = {};
     const normalizedFranchiseId = franchiseId.trim().toUpperCase();
-    const normalizedMobile = mobile.replace(/\D/g, "").slice(-10);
+    const normalizedPan = panNumber.trim().toUpperCase();
 
     if (!/^FRN\d{6}$/.test(normalizedFranchiseId)) e.franchiseId = "Enter the franchisee ID from your agreement (e.g. FRN000003)";
-    if (!/^\d{10}$/.test(normalizedMobile)) e.mobile = "Enter your registered 10-digit mobile number";
+    if (!PAN_REGEX.test(normalizedPan)) e.panNumber = "Enter the PAN number from your franchise application";
 
     setErrors(e);
     if (Object.keys(e).length > 0) return;
 
-    if (!otpVisible) {
-      setOtpVisible(true);
-      setNotice({
-        tone: "info",
-        title: "Enter your OTP",
-        body: "Enter the OTP sent to your registered mobile number to continue.",
-      });
-      return;
-    }
-
-    if (!/^\d{6}$/.test(otp)) {
-      setErrors({ otp: "Enter the 6-digit OTP sent to your mobile" });
-      return;
-    }
-
     setSubmitting(true);
     setNotice(null);
     try {
-      const res = await verifyFranchiseOTP({ mobile: normalizedMobile, otp });
+      const res = await loginFranchise({ franchiseId: normalizedFranchiseId, password: normalizedPan });
       if (!res.success || !res.token) {
         setNotice({
           tone: "warn",
@@ -94,7 +71,7 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
-      const status = (res.user?.franchiseStatus ?? "").trim().toLowerCase();
+      const status = (res.franchise?.franchiseStatus ?? "").trim().toLowerCase();
       if (status === "rejected") {
         clearFranchiseSession();
         setNotice({
@@ -104,7 +81,7 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
-      const responseFranchiseId = res.franchiseId ?? res.user?.franchiseId;
+      const responseFranchiseId = res.franchise?.franchiseId;
       if (!responseFranchiseId) {
         setNotice({
           tone: "warn",
@@ -117,30 +94,30 @@ const FranchiseLoginPage = () => {
         setNotice({
           tone: "warn",
           title: "Sign-in failed",
-          body: "The franchisee ID does not match this mobile number. Check both details and try again.",
+          body: "The franchisee ID does not match the PAN on this account. Check both details and try again.",
         });
         return;
       }
       saveFranchiseSession(
         {
           franchiseId: responseFranchiseId,
-          franchiseStatus: res.user?.franchiseStatus,
-          isVerified: res.user?.isVerified,
+          franchiseStatus: res.franchise?.franchiseStatus,
+          isVerified: res.franchise?.isVerified,
         },
         res.token,
       );
       login(res.token, {
-        _id: res.user?._id ?? responseFranchiseId,
-        name: res.user?.name ?? "",
-        mobile: res.user?.mobile ?? normalizedMobile,
-        email: res.user?.email ?? "",
-        isVerified: res.user?.isVerified ?? true,
-        isActive: res.user?.isActive ?? true,
-        continent: res.user?.continent,
-        country: res.user?.country,
-        lastLogin: res.user?.lastLogin ?? "",
-        createdAt: res.user?.createdAt ?? "",
-        updatedAt: res.user?.updatedAt ?? "",
+        _id: res.franchise?._id ?? responseFranchiseId,
+        name: res.franchise?.name ?? "",
+        mobile: res.franchise?.mobile ?? "",
+        email: res.franchise?.email ?? "",
+        isVerified: res.franchise?.isVerified ?? true,
+        isActive: res.franchise?.isActive ?? true,
+        continent: res.franchise?.continent,
+        country: res.franchise?.country,
+        lastLogin: res.franchise?.lastLogin ?? "",
+        createdAt: res.franchise?.createdAt ?? "",
+        updatedAt: res.franchise?.updatedAt ?? "",
       });
 
       navigate("/franchisor-dashboard");
@@ -279,52 +256,29 @@ const FranchiseLoginPage = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="franchise-mobile" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
-                      Registered mobile number <span className="text-red-500">*</span>
+                    <label htmlFor="franchise-pan" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                      PAN number (your password) <span className="text-red-500">*</span>
                     </label>
                     <input
-                      id="franchise-mobile"
-                      type="tel"
-                      inputMode="numeric"
-                      value={mobile}
+                      id="franchise-pan"
+                      value={panNumber}
                       onChange={(e) => {
-                        setMobile(e.target.value.replace(/\D/g, "").slice(0, 10));
-                        setErrors((p) => ({ ...p, mobile: undefined }));
+                        setPanNumber(formatPAN(e.target.value));
+                        setErrors((p) => ({ ...p, panNumber: undefined }));
                       }}
-                      placeholder="10-digit mobile number"
-                      autoComplete="tel"
-                      aria-describedby="franchise-mobile-hint"
-                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-                        errors.mobile ? "border-red-400 bg-red-50/40" : "border-slate-300"
+                      placeholder="ABCDE1234F"
+                      autoComplete="off"
+                      maxLength={10}
+                      aria-describedby="franchise-pan-hint"
+                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm uppercase tracking-wider text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
+                        errors.panNumber ? "border-red-400 bg-red-50/40" : "border-slate-300"
                       }`}
                     />
-                    {errors.mobile && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.mobile}</p>}
-                    <p id="franchise-mobile-hint" className="mt-1 text-[11px] text-slate-400">
-                      Use the mobile number provided in your franchise application.
+                    {errors.panNumber && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.panNumber}</p>}
+                    <p id="franchise-pan-hint" className="mt-1 text-[11px] text-slate-400">
+                      Your password is the PAN number used in your franchise application.
                     </p>
                   </div>
-
-                  {otpVisible && <div>
-                    <label htmlFor="franchise-otp" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
-                      OTP <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="franchise-otp"
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => {
-                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
-                        setErrors((p) => ({ ...p, otp: undefined }));
-                      }}
-                      placeholder="6-digit OTP"
-                      autoComplete="one-time-code"
-                      className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
-                        errors.otp ? "border-red-400 bg-red-50/40" : "border-slate-300"
-                      }`}
-                    />
-                    {errors.otp && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.otp}</p>}
-                  </div>}
 
                   <Button
                     type="submit"
@@ -333,7 +287,7 @@ const FranchiseLoginPage = () => {
                     loading={submitting}
                     style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
                   >
-                    {submitting ? "Verifying…" : otpVisible ? "Verify & continue" : "Continue"}
+                    {submitting ? "Verifying…" : "Sign in"}
                   </Button>
                 </form>
 
@@ -344,7 +298,7 @@ const FranchiseLoginPage = () => {
                       setNotice({
                         tone: "info",
                         title: "Password reset",
-                        body: `Password resets are handled by the franchise team while the portal is being rolled out. Write to ${FRANCHISE_EMAIL} with your registered email or mobile number.`,
+                        body: `Your password is the PAN number from your franchise application. Write to ${FRANCHISE_EMAIL} if it needs to be re-issued.`,
                       })
                     }
                     className="cursor-pointer text-[12.5px] font-semibold text-(--brand-navy) hover:underline focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44) rounded"
@@ -365,10 +319,15 @@ const FranchiseLoginPage = () => {
                 <Link to="/franchise" className="font-semibold text-(--brand-navy) hover:underline">
                   Go to the franchisee application
                 </Link>
+                . Waiting for approval?{" "}
+                <Link
+                  to="/franchise-application-status"
+                  className="font-semibold text-(--brand-navy) hover:underline"
+                >
+                  Check your franchise application status
+                </Link>
                 .
               </p>
-
-              <FranchiseStatusCheck />
             </div>
           </div>
         </div>
