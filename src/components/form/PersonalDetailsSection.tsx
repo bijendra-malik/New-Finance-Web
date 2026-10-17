@@ -7,9 +7,8 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { THEME as C } from "../../constants/theme";
 import { FORM } from "../../constants/formStyles";
 import { formatPAN } from "../../utils/formatters";
-import { accountFieldDefaults, apiUserFieldDefaults, readStoredProfile } from "../../utils/accountProfile";
+import { accountFieldDefaults, apiUserFieldDefaults } from "../../utils/accountProfile";
 import { useApplicantPrefill } from "../../context/applicantPrefillContext";
-import { useAuth } from "../../context/authContext";
 
 export type PersonalDetailsField =
   | "fullName" | "mobile" | "email" | "dob" | "panNumber"
@@ -42,44 +41,24 @@ export const PersonalDetailsSection = ({
     [form.state, loadCities]
   );
 
-  // Two prefill sources, with different authority:
-  //
-  // - The franchisor portal files for a *registered client*, so its identity is
-  //   the applicant and replaces the signed-in account outright.
-  // - The eligibility popup carries over what the visitor typed there, which is
-  //   not necessarily the account's own record: POST /customer/loan-apply
-  //   rejects a submission whose email or date of birth differs from the details
-  //   registered at loan entry, and for an existing customer the backend keeps
-  //   the original ones. The popup's copy may therefore only fill fields the
-  //   verified account leaves blank — it must never overwrite them.
   const prefill = useApplicantPrefill();
-  const { user } = useAuth();
-  const verified = useMemo(() => apiUserFieldDefaults(user), [user]);
+  const verified = useMemo(() => apiUserFieldDefaults(), []);
 
   const portalIdentity = prefill && prefill.authoritative !== false ? prefill.identity : null;
   const popupIdentity = prefill && prefill.authoritative === false ? prefill.identity : null;
 
-  // Verified sources must replace — not merely fill — the form's own seed, so a
-  // stale email sitting in the field can never be submitted.
   const authoritative = useMemo(
     () => portalIdentity ?? (Object.keys(verified).length ? verified : null),
     [portalIdentity, verified]
   );
 
-  // The account record wins every field it supplies; the popup's typed copy only
-  // covers what it does not.
   const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(() => {
     if (portalIdentity) return portalIdentity;
     const merged = { ...(popupIdentity ?? {}), ...verified };
     if (Object.keys(merged).length) return merged;
-    return accountFieldDefaults(readStoredProfile());
+    return accountFieldDefaults();
   }, [portalIdentity, popupIdentity, verified]);
 
-  // Applied whenever the identity itself changes — not just once. The account
-  // record arrives asynchronously and the cached copy can still be stale at
-  // first paint, so the locked fields must be brought up to date when the fresh
-  // record lands. Keying the guard on the identity's value keeps this from
-  // looping, since `set` is a fresh closure on every render.
   const appliedIdentity = useRef("");
   useEffect(() => {
     const signature = JSON.stringify({ locked, authoritative: !!authoritative });
@@ -89,8 +68,6 @@ export const PersonalDetailsSection = ({
     (Object.keys(locked) as PersonalDetailsField[]).forEach(key => {
       const value = locked[key];
       if (!value) return;
-      // A locked field always ends up holding the locked value; the legacy
-      // stored-account fallback only fills what the form left blank.
       if (!firstPass || authoritative || !form[key]) set(key, value as string);
     });
   }, [locked, form, set, authoritative]);
