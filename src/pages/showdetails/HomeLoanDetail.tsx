@@ -161,7 +161,7 @@ const HomeLoanDetail = () => (
     bannerTagline="Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/home-loan"
-    applySlug="homeloan"
+    applySlug="home-loan"
     sections={sections}
   />
 );

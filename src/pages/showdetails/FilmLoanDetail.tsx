@@ -274,7 +274,7 @@ const FilmLoanDetail = () => (
     bannerTagline="Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/film-funding"
-    applySlug="filmfunding"
+    applySlug="film-funding"
     sections={sections}
   />
 );

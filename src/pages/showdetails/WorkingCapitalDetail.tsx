@@ -145,7 +145,7 @@ const WorkingCapitalDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/working-capital"
-    applySlug="workingcapital"
+    applySlug="working-capital"
     sections={sections}
   />
 );

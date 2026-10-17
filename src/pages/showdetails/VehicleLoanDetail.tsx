@@ -151,7 +151,7 @@ const sections: DetailSection[] = [
     bannerTitle="Drive Your Dream Vehicle with the Best Vehicle Loan"
     bannerBg={bannerBg}
     docsHref="/requireddocument/vehicle-loan"
-    applySlug="Vehicleloan"
+    applySlug="vehicle-loan"
     sections={sections}
   />
 );

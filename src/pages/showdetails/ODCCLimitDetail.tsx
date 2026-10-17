@@ -227,7 +227,7 @@ const ODCCLimitDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/od-cc-limit"
-    applySlug="odcclimit"
+    applySlug="od-cc-limit"
     sections={sections}
   />
 );

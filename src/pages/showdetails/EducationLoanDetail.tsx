@@ -147,7 +147,7 @@ const EducationLoanDetail = () => (
     bannerTitle="Education Loan"
     bannerBg={bannerBg}
     docsHref="/requireddocument/education-loan"
-    applySlug="educationloan"
+    applySlug="education-loan"
     sections={sections}
   />
 );

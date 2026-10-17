@@ -126,7 +126,7 @@ const LeaseRentalDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/lease-rental"
-    applySlug="leaserental"
+    applySlug="lease-rental"
     sections={sections}
   />
 );

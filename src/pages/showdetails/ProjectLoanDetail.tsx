@@ -110,7 +110,7 @@ const ProjectLoanDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/project-loan"
-    applySlug="projectloan"
+    applySlug="project-loan"
     sections={sections}
   />
 );

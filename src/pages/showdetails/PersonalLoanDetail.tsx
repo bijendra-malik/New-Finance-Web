@@ -299,7 +299,7 @@ const PersonalLoanDetail = () => (
     bannerTitle="Personal Loan"
     bannerBg={bannerBg}
     docsHref="/requireddocument/personal-loan"
-    applySlug="personalloan"
+    applySlug="personal-loan"
     sections={sections}
   />
 );

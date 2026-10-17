@@ -261,7 +261,7 @@ const GoldLoanDetail = () => (
     bannerTitle="Gold Loan"
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
-    applySlug="goldloan"
+    applySlug="gold-loan"
     docsHref="/requireddocument/gold-loan"
     sections={sections}
   />

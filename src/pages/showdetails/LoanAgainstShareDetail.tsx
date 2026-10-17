@@ -264,7 +264,7 @@ const LoanAgainstShareDetail = () => (
     bannerTagline="Now, Right Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/loan-against-share"
-    applySlug="loanagainstshare"
+    applySlug="loan-against-share"
     sections={sections}
   />
 );

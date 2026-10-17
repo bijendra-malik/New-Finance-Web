@@ -153,7 +153,7 @@ const LoanAgainstPropertyDetail = () => (
     bannerTitle="Loan Against Property"
     bannerBg={bannerBg}
     docsHref="/requireddocument/loan-against-property"
-    applySlug="loanagainstproperty"
+    applySlug="loanAP-loan"
     sections={sections}
   />
 );
