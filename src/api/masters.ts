@@ -81,30 +81,6 @@ export const fetchContinents = (): Promise<Continent[]> => {
   return continentsPromise;
 };
 
-let allCountriesPromise: Promise<Country[]> | null = null;
-// GET /masters/location/countries (unfiltered) → every country, incl. the ISO code the flag icons use.
-export const fetchCountries = (): Promise<Country[]> => {
-  if (!allCountriesPromise) {
-    allCountriesPromise = axiosInstance
-      .get<LocationMasterResponse>("/masters/location/countries")
-      .then((res) => res.data.data as Country[])
-      .catch((err) => {
-        allCountriesPromise = null;
-        throw err;
-      });
-  }
-  return allCountriesPromise;
-};
-
-/** Country name → flag ISO code (lowercased); "" when unknown or masters are unreachable. */
-export const resolveCountryIso = (name: string): Promise<string> => {
-  const needle = name.trim().toLowerCase();
-  if (!needle) return Promise.resolve("");
-  return fetchCountries()
-    .then((list) => list.find((c) => c.name.toLowerCase() === needle)?.isoCode?.toLowerCase() ?? "")
-    .catch(() => "");
-};
-
 const countriesByContinentPromises = new Map<string, Promise<Country[]>>();
 export const fetchCountriesByContinent = (continentId: string): Promise<Country[]> => {
   let promise = countriesByContinentPromises.get(continentId);
@@ -263,11 +239,6 @@ export const verifyPincode = (pincode: string): Promise<PincodeVerification> => 
     pincodePromises.set(key, promise);
   }
   return promise;
-};
-
-export const clearPincodeCache = (pincode?: string): void => {
-  if (pincode) pincodePromises.delete(pincode.trim());
-  else pincodePromises.clear();
 };
 
 // GET /employment-types/{loanType} → employment types registered for that loan.
