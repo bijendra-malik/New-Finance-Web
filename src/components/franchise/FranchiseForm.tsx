@@ -12,17 +12,13 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
 import { registerFranchise } from "../../api/franchise";
 import type { FranchiseEntryPayload } from "../../api/franchise";
-import { FRANCHISE_EMAIL, FRANCHISE_PLANS, type FranchisePlan } from "./franchiseData";
+import { useFranchisePlans } from "../../hooks/useFranchisePlans";
+import { FRANCHISE_EMAIL } from "./franchiseData";
+import type { FranchisePlan } from "./franchiseData";
 import { PlanSummary, PackageSelector } from "./PlanSelector";
 import { LocationFields } from "../form/LocationFields";
 import { Field } from "../ui/FieldRenderer";
 
-/**
- * Application fields, plus the identity fields carried over from the account the
- * visitor registered. The franchisee variant collects the business fields the
- * POST /franchise/apply contract requires; the franchisor variant only collects
- * the enquiry identity fields.
- */
 export interface FranchiseFormValues {
   continent: string;
   country: string;
@@ -55,13 +51,6 @@ const EMPTY: FranchiseFormValues = {
 type FieldKey = keyof FranchiseFormValues;
 type Variant = "franchisee" | "franchisor";
 
-/**
- * How the application is laid out:
- * - `stacked`   — the classic two-column form (franchisor enquiry).
- * - `horizontal` — every field on one screen in a wide three-column grid, so
- *                  desktop applicants never scroll.
- * - `stepped`   — one short step at a time, for phones and narrow tablets.
- */
 export type FranchiseFormPresentation = "stacked" | "horizontal" | "stepped";
 
 interface FranchiseeStep {
@@ -71,9 +60,8 @@ interface FranchiseeStep {
   fields: FieldKey[];
 }
 
-/** The stepped (small-screen) grouping of the franchisee application. */
 const FRANCHISEE_STEPS: FranchiseeStep[] = [
-  { id: "personal", label: "Personal", hint: "Name, contact and PAN", fields: ["fullName", "mobile", "email", "pan"] },
+  { id: "personal", label: "Personal", hint: "Name, contact and PAN", fields: ["fullName", "mobile", "email", "dob", "pan"] },
   {
     id: "business",
     label: "Business",
@@ -84,15 +72,13 @@ const FRANCHISEE_STEPS: FranchiseeStep[] = [
   { id: "plan", label: "Plan", hint: "Choose your package", fields: ["packageId"] },
 ];
 
-/** Field order for the single-screen (stacked / horizontal) layouts. */
 const FRANCHISEE_FIELD_ORDER: FieldKey[] = [
-  "fullName", "mobile", "email", "pan", "gstNumber",
+  "fullName", "mobile", "email", "dob", "pan", "gstNumber",
   "pincode", "state", "city",
   "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address",
   "packageId",
 ];
 
-/** Location master response for a verified pincode. */
 interface VerifiedLocation {
   pincode: string;
   state: string;
@@ -103,28 +89,11 @@ const PINCODE_DEBOUNCE_MS = 500;
 
 interface FranchiseFormProps {
   variant: Variant;
-  /** Franchisee only — controlled by the page so the plan cards can pre-select. */
   packageId?: string;
   onPackageChange?: (planId: string) => void;
-  /** Layout of the franchisee application. Defaults to the stacked form. */
   presentation?: FranchiseFormPresentation;
 }
 
-/**
- * Shared franchisee/franchisor form.
- *
- * The franchisee variant is the franchisee application: it is gated on a
- * registered account, carries that account's name, mobile and email in as locked
- * fields, resolves state and city from the pincode via the location master,
- * collects the business details POST /franchise/apply expects, and posts the
- * application to the backend. On success the applicant is told they will be
- * issued a franchisee code (user ID and password) and pointed at /franchise-login.
- *
- * The franchisor variant is a lightweight enquiry that hands the details to the
- * visitor's mail client addressed to the franchise team. The franchise page no
- * longer opens it (the enquiry popup was removed); the variant is kept so a
- * host can still mount it.
- */
 const FranchiseForm = ({
   variant,
   packageId: packageIdProp,
@@ -136,30 +105,28 @@ const FranchiseForm = ({
   const { user } = useAuth();
   const franchisorLoginEnabled = true;
 
-  // Both variants can be mounted at once (the franchisor form opens in a modal over the page),
-  // so every field id is namespaced per variant to keep the DOM ids unique.
   const fid = (name: string) => `${isFranchisee ? "ff" : "fx"}-${name}`;
+
+  const {
+    plans,
+    loading: plansLoading,
+    error: plansError,
+    selectedPlanCode,
+    reload: reloadPlans,
+  } = useFranchisePlans();
 
   const [values, setValues] = useState<FranchiseFormValues>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  // Consent declaration — its own gate, so the form cannot be submitted until it is accepted.
   const [agreed, setAgreed] = useState(false);
   const [consentError, setConsentError] = useState("");
-  // Backend responses (both the success confirmation and API errors) surface as a popup.
   const [popup, setPopup] = useState<{ tone: "success" | "error"; message: string } | null>(null);
   const [mailtoHref, setMailtoHref] = useState("");
-
-  // Stepped layout only — which step of the application is on screen.
   const [step, setStep] = useState(0);
-
-  // Pincode → location master resolution state.
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
 
-  // Identity captured at registration — carried into the form and locked, so the
-  // applicant cannot accidentally submit details that don't match their account.
   const identity = useMemo(
     () => ({
       fullName: user?.name?.trim() ?? "",
@@ -169,8 +136,8 @@ const FranchiseForm = ({
     [user],
   );
   const hasIdentity = Boolean(identity.fullName || identity.mobile || identity.email);
-  const isLocked = (key: "fullName" | "mobile" | "email") =>
-    isFranchisee && Boolean(identity[key]);
+  const isLocked = (key: "fullName" | "mobile" | "email" | "dob") =>
+    key === "dob" ? false : isFranchisee && Boolean(identity[key]);
 
   const prefilled = useRef(false);
   useEffect(() => {
@@ -184,8 +151,8 @@ const FranchiseForm = ({
     }));
   }, [hasIdentity, identity]);
 
-  const packageId = packageIdProp ?? values.packageId;
-  const selectedPlan: FranchisePlan | undefined = FRANCHISE_PLANS.find((p) => p.id === packageId);
+  const packageId = packageIdProp || values.packageId || selectedPlanCode;
+  const selectedPlan: FranchisePlan | undefined = plans.find((p) => p.id === packageId);
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
@@ -201,13 +168,10 @@ const FranchiseForm = ({
     onPackageChange?.(id);
   };
 
-  // Resolve state and city from the pincode (location master), debounced so typing does not
-  // fire a lookup per keystroke. Re-resolving on a changed pincode always overwrites the
-  // city, so a city left over from a previous pincode is corrected rather than kept.
   useEffect(() => {
     if (!isFranchisee) return;
     const pincode = values.pincode;
-    if (!PINCODE_REGEX.test(pincode)) return; // the field's onChange has already reset it
+    if (!PINCODE_REGEX.test(pincode)) return;
     let cancelled = false;
     const timer = setTimeout(() => {
       if (cancelled) return;
@@ -268,14 +232,12 @@ const FranchiseForm = ({
     return e;
   };
 
-  /** Validates the fields on one step of the stepped layout. */
   const validateStep = (vals: FranchiseFormValues, index: number) => {
     const e = buildErrors(vals);
     setErrors(e);
     return !FRANCHISEE_STEPS[index].fields.some((key) => e[key]);
   };
 
-  /** Franchisor enquiry — unchanged mail-client hand-off. */
   const submitEnquiry = (vals: FranchiseFormValues) => {
     const rows = [
       { label: "Full Name", value: vals.fullName },
@@ -298,7 +260,6 @@ const FranchiseForm = ({
     setSubmitted(true);
   };
 
-  /** Franchisee application — POST /franchise/entry. */
   const submitApplication = async (vals: FranchiseFormValues) => {
     const payload: FranchiseEntryPayload = {
       name: vals.fullName.trim(),
@@ -346,9 +307,6 @@ const FranchiseForm = ({
   const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
 
-    // The declaration is checked first and on its own: everything below depends
-    // on it being accepted, and a rejection must land on the step that carries
-    // the checkbox rather than fail silently.
     if (!agreed) {
       setConsentError("Please accept the declaration above to continue.");
       if (isFranchisee && presentation === "stepped") setStep(FRANCHISEE_STEPS.length - 1);
@@ -356,8 +314,6 @@ const FranchiseForm = ({
     }
     setConsentError("");
 
-    // If the pincode resolved to a location and the applicant then typed
-    // away from it, correct them back before validating or sending.
     let current = values;
     if (
       isFranchisee &&
@@ -371,8 +327,6 @@ const FranchiseForm = ({
     const e = buildErrors(current);
     setErrors(e);
     if (Object.keys(e).length > 0) {
-      // On the stepped layout an error can be on a step that is not on screen,
-      // so jump back to the first offending step instead of failing silently.
       if (isFranchisee && presentation === "stepped") {
         const index = FRANCHISEE_STEPS.findIndex((s) => s.fields.some((key) => e[key]));
         if (index >= 0) setStep(index);
@@ -387,7 +341,6 @@ const FranchiseForm = ({
     void submitApplication(current);
   };
 
-  // Backend response popup — the API's own message, shown over whichever state the form is in.
   const popupNode = (
     <Modal open={!!popup} onClose={() => setPopup(null)} labelledBy="franchise-api-message" maxWidth="max-w-md">
       <div className="flex items-start gap-3 px-5 pt-5">
@@ -576,7 +529,7 @@ const FranchiseForm = ({
 
   // Full-width spans only make sense where the grid actually has the extra columns.
   const spanFull = isHorizontal ? "sm:col-span-2 lg:col-span-3" : isStepped ? "" : "sm:col-span-2";
-  const lockedClass = (key: "fullName" | "mobile" | "email") =>
+  const lockedClass = (key: "fullName" | "mobile" | "email" | "dob") =>
     isLocked(key) ? "cursor-not-allowed bg-slate-100 text-slate-500" : "";
 
   const handleLocationSet = (key: "state" | "city", v: string) => {
@@ -642,6 +595,20 @@ const FranchiseForm = ({
               placeholder="your@email.com"
               autoComplete="email"
               readOnly={isLocked("email")}
+            />
+          </Field>
+        );
+
+      case "dob":
+        return (
+          <Field id={fid("dob")} label="Date of Birth" required error={errors.dob}>
+            <input
+              id={fid("dob")}
+              type="date"
+              className={`${inputClass(!!errors.dob)} ${lockedClass("dob")}`}
+              value={values.dob}
+              onChange={(e) => set("dob", e.target.value)}
+              placeholder="YYYY-MM-DD"
             />
           </Field>
         );
@@ -761,14 +728,46 @@ const FranchiseForm = ({
         );
 
       case "packageId":
+        if (plansLoading) {
+          return (
+            <div className={spanFull}>
+              <Field id={fid("package")} label="Package Duration">
+                <div className="flex items-center gap-3 text-sm text-slate-400">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                  </svg>
+                  Loading packages…
+                </div>
+              </Field>
+            </div>
+          );
+        }
         return (
           <div className={spanFull}>
+            {plansError && (
+              <div
+                role="alert"
+                className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-600"
+              >
+                <span>{plansError}</span>
+                <button
+                  type="button"
+                  onClick={reloadPlans}
+                  className="cursor-pointer font-bold underline underline-offset-2 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             <PackageSelector
               id={fid("package")}
               value={packageId}
               onChange={setPackage}
               error={errors.packageId}
               required
+              plans={plans}
+              disabled={plans.length === 0}
             />
           </div>
         );
@@ -812,8 +811,20 @@ const FranchiseForm = ({
     <div
       className={isHorizontal ? "rounded-xl px-4 py-2.5" : "rounded-2xl p-4"}
       style={{ background: "var(--brand-navy-14)", border: "1px dashed var(--brand-navy-44)" }}
+      role="region"
+      aria-label="Selected plan summary"
     >
-      <PlanSummary plan={selectedPlan} compact={isHorizontal} />
+      {plansLoading ? (
+        <div className="flex items-center gap-3 text-sm text-slate-400">
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+          </svg>
+          Loading plan details…
+        </div>
+      ) : selectedPlan ? (
+        <PlanSummary plan={selectedPlan} compact={isHorizontal} />
+      ) : null}
     </div>
   );
 
