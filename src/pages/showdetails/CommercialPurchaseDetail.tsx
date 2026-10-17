@@ -138,7 +138,7 @@ const CommercialPurchaseDetail = () => (
     bannerTitle="Commercial Purchase Loan"
     bannerBg={bannerBg}
     docsHref="/requireddocument/commercial-purchase"
-    applySlug="commercialpurchase"
+    applySlug="commercial-purchase"
     sections={sections}
   />
 );

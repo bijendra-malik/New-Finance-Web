@@ -162,7 +162,7 @@ const BalanceTransferDetail = () => (
     bannerTagline="Bank will come to your doorstep"
     bannerBg={bannerBg}
     docsHref="/requireddocument/balance-transfer"
-    applySlug="balancetransfer"
+    applySlug="balance-loan"
     sections={sections}
   />
 );

@@ -179,7 +179,7 @@ const BusinessLoanDetail = () => (
     bannerTitle="Do You Require A Loan for Your Business?"
     bannerBg={bannerBg}
     docsHref="/requireddocument/business-loan"
-    applySlug="businessloan"
+    applySlug="business-loan"
     sections={sections}
   />
 );
