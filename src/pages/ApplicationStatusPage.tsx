@@ -48,7 +48,7 @@ const ApplicationStatusPage = () => {
             <p className="mt-6 text-sm leading-6 text-slate-500">
               Applying for a franchise instead?{" "}
               <Link
-                to="/franchise-login#application-status"
+                to="/franchise-application-status"
                 className="font-semibold text-(--brand-navy) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-(--brand-teal)/40 rounded"
               >
                 Check your franchise application status →

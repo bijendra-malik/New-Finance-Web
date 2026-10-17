@@ -98,7 +98,7 @@ const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
               <FranchiseIcon name="search" className="h-4 w-4 shrink-0 text-white/45" />
               Waiting for approval?{" "}
               <Link
-                to="/franchise-login#application-status"
+                to="/franchise-application-status"
                 className="font-bold text-(--brand-yellow) underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/40"
               >
                 Check your franchise application status
