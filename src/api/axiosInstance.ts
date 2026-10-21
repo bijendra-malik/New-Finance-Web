@@ -5,6 +5,7 @@ import {
   franchiseApplyResponseInterceptor,
 } from "./franchiseFiling";
 import { emitAuthCleared } from "../utils/authEvents";
+import { getDraftId } from "../utils/applySession";
 
 const axiosInstance = axios.create({
   baseURL:
@@ -15,17 +16,30 @@ const axiosInstance = axios.create({
   },
 });
 
-// Franchise filings: while the franchisor portal has a product form open for a
-// registered client, the form's own apply POST is rewritten to the franchise
-// endpoint (and labelled) here. Inert whenever no filing is in progress.
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const isApplyPost =
+      (config.method ?? "get").toLowerCase() === "post" &&
+      (config.url ?? "").endsWith("/customer/loan-apply");
+    if (!isApplyPost) return config;
+    const body =
+      config.data && typeof config.data === "object" && !Array.isArray(config.data)
+        ? (config.data as Record<string, unknown>)
+        : null;
+    if (!body || body.draftId) return config;
+    const draftId =
+      typeof body.product === "string" ? getDraftId(body.product) : null;
+    if (draftId) config.data = { ...body, draftId };
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 axiosInstance.interceptors.request.use(
   franchiseApplyRequestInterceptor,
   (error) => Promise.reject(error)
 );
 
-// Attach the user bearer token to every request if available.
-// Franchise portal endpoints now authenticate with the same user token, so
-// there is no separate franchise token path anymore.
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -37,8 +51,6 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 globally — clear the customer session, and tell the auth provider
-// so the UI stops rendering a signed-in state that can no longer request.
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -51,8 +63,6 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Franchise filings: keep the returned receipt coherent and surface franchise
-// failure messages through the form's own error surface.
 axiosInstance.interceptors.response.use(
   franchiseApplyResponseInterceptor,
   franchiseApplyErrorInterceptor
