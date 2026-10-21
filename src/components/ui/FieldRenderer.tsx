@@ -41,6 +41,7 @@ export const TextField = memo(
     maxLength,
     disabled,
     inputMode,
+    autoComplete,
     extraCls,
   }: {
     id?: string;
@@ -51,6 +52,7 @@ export const TextField = memo(
     maxLength?: number;
     disabled?: boolean;
     inputMode?: "text" | "tel" | "numeric" | "email";
+    autoComplete?: string;
     extraCls?: string;
   }) => (
     <input
@@ -63,6 +65,7 @@ export const TextField = memo(
       maxLength={maxLength}
       disabled={disabled}
       inputMode={inputMode}
+      autoComplete={autoComplete}
       className={cx(
         "w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy)",
         error ? "border-red-400 bg-red-50/40" : "border-slate-300",
