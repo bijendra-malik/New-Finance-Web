@@ -13,6 +13,8 @@ export interface RegistrationPayload {
 export interface AuthActionResponse {
   success: boolean;
   message: string;
+  draftId?: string;
+  data?: { draftId?: string } | null;
 }
 
 export interface VerifyOTPPayload {
@@ -46,11 +48,11 @@ export interface ProfileResponse {
 }
 
 export const requestLoanApplyOTP = async (
-  loanSlug: string,
+  loanKey: string,
   payload: RegistrationPayload,
 ): Promise<AuthActionResponse> => {
   const response = await axiosInstance.post<AuthActionResponse>(
-    `/auth/${loanSlug}`,
+    `/auth/${loanKey}`,
     payload,
     { withCredentials: true },
   );
@@ -79,6 +81,44 @@ export const verifyOTP = async (
     { withCredentials: true },
   );
   return response.data;
+};
+
+// ── Login (POST /auth/login/…) ─────────────────────────────────────────────
+
+export interface LoginPayload {
+  mobile: string;
+}
+
+/** POST /auth/login/request-otp — sign-in OTP; no registration payload. */
+export const requestLoginOTP = async (
+  payload: LoginPayload,
+): Promise<AuthActionResponse> => {
+  const response = await axiosInstance.post<AuthActionResponse>(
+    "/auth/login/request-otp",
+    payload,
+    { withCredentials: true },
+  );
+  return response.data;
+};
+
+/** POST /auth/login/verify-otp — completes the sign-in, returns the session. */
+export const verifyLoginOTP = async (
+  payload: VerifyOTPPayload,
+): Promise<VerifyOTPResponse> => {
+  const response = await axiosInstance.post<VerifyOTPResponse>(
+    "/auth/login/verify-otp",
+    payload,
+    { withCredentials: true },
+  );
+  return response.data;
+};
+
+/** The draft id a register response carries, normalised to a non-empty string. */
+export const draftIdFromRegister = (
+  response: AuthActionResponse,
+): string | null => {
+  const id = response.draftId ?? response.data?.draftId;
+  return typeof id === "string" && id.trim() ? id.trim() : null;
 };
 
 export const fetchProfile = async (): Promise<ProfileResponse> => {
