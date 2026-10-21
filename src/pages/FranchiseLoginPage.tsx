@@ -41,7 +41,7 @@ const FranchiseLoginPage = () => {
   });
 
   const navigate = useNavigate();
-  const { setLoggedIn } = useAuth();
+  const { login } = useAuth();
 
   const [franchiseId, setFranchiseId] = useState("");
   const [panNumber, setPanNumber] = useState("");
@@ -105,7 +105,8 @@ const FranchiseLoginPage = () => {
           body: "The franchisee ID does not match the PAN on this account. Check both details and try again.",
         });
         return;
-      }      saveFranchiseSession(
+      }
+      saveFranchiseSession(
         {
           franchiseId: responseFranchiseId,
           franchiseStatus: res.franchise?.franchiseStatus,
@@ -113,9 +114,10 @@ const FranchiseLoginPage = () => {
         },
         res.token,
       );
-      
       setWelcome({ name: res.franchise?.name?.trim() || undefined });
-      setLoggedIn({
+      // Franchise endpoints authenticate with the same user token, so this also
+      // stores the bearer token that every later request reads.
+      login(res.token, {
         _id: res.franchise?._id ?? responseFranchiseId,
         name: res.franchise?.name ?? "",
         mobile: res.franchise?.mobile ?? "",
