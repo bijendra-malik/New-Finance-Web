@@ -9,10 +9,7 @@ import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { loanSlugFor } from "../../constants/loanSlugs";
-import {
-  markApplySessionPending,
-  saveApplyEntryIdentity,
-} from "../../utils/applySession";
+import { markApplySessionPending } from "../../utils/applySession";
 import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -348,10 +345,6 @@ const ApplicationModal = ({
         setApiError(response.message || "We could not send the OTP just now. Please try again.");
         return;
       }
-      // Loan entry succeeded: remember exactly which identity the backend now
-      // holds, so POST /customer/loan-apply can never submit a different email
-      // (a later re-registration overwrites this — and the token — together).
-      saveApplyEntryIdentity();
       setPendingDashboard(dashboardPath);
       setOtp("");
       setOtpError("");
