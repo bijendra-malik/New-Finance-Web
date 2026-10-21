@@ -62,6 +62,11 @@ export const useApplicationSubmit = <TApplication extends { _id: string }>({
     setIsSubmitting(true); setApiError("");
     try {
       const app = await submitRef.current();
+      if (!app || typeof app._id !== "string" || !app._id.trim()) {
+        throw new Error(
+          "Your application has not been submitted yet. It is currently saved as a draft; please try submitting again.",
+        );
+      }
       setSubmittedApp(app); setSubmitted(true);
       successRef.current?.(app._id, app);
       // The header chip and /applications pick the new one up immediately.
