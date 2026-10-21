@@ -1,6 +1,7 @@
 import type { SuccessSection } from "./successSections";
 import SubmissionSuccess from "./SubmissionSuccess";
 import { SubmittedReceiptBanner } from "./SubmitSection";
+import CreditScoreGate from "../loan-eligibility/CreditScoreGate";
 
 interface SubmittedReceiptViewProps<TApplication> {
   app: TApplication;
@@ -24,6 +25,9 @@ const SubmittedReceiptView = <TApplication extends { _id: string; createdAt: str
       email={app.email}
       sections={buildSections(app)}
     />
+    {/* The customer is verified and signed in at this point, so the score check
+        can run as the next step after a submitted application. */}
+    <CreditScoreGate product={productName} />
   </div>
 );
 
