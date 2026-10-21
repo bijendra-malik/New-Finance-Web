@@ -4,6 +4,7 @@ import {
   franchiseApplyRequestInterceptor,
   franchiseApplyResponseInterceptor,
 } from "./franchiseFiling";
+import { emitAuthCleared } from "../utils/authEvents";
 
 const axiosInstance = axios.create({
   baseURL:
@@ -36,13 +37,15 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 globally — clear the customer session.
+// Handle 401 globally — clear the customer session, and tell the auth provider
+// so the UI stops rendering a signed-in state that can no longer request.
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      emitAuthCleared();
     }
     return Promise.reject(error);
   }
