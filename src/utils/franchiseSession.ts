@@ -9,10 +9,37 @@ export interface FranchiseSession {
   country?: string;
 }
 
-export const readFranchiseSession = (): FranchiseSession | null => {
+const SESSION_KEY = "indexia_franchise_session";
+const FRANCHISE_TOKEN_KEY = "indexia_franchise_token";
+
+const readValue = (key: string): string | null => {
   try {
-    const raw = localStorage.getItem("indexia_franchise_session");
-    if (!raw) return null;
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeValue = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore storage errors so a full browser does not break the sign-in flow
+  }
+};
+
+const removeValue = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore storage errors so a full browser does not break the sign-in flow
+  }
+};
+
+export const readFranchiseSession = (): FranchiseSession | null => {
+  const raw = readValue(SESSION_KEY);
+  if (!raw) return null;
+  try {
     const parsed = JSON.parse(raw) as FranchiseSession;
     return parsed?.franchiseId ? parsed : null;
   } catch {
@@ -20,25 +47,29 @@ export const readFranchiseSession = (): FranchiseSession | null => {
   }
 };
 
-export const readFranchiseToken = (): string | null =>
-  localStorage.getItem("indexia_franchise_token");
+export const readFranchiseToken = (): string | null => readValue(FRANCHISE_TOKEN_KEY);
 
 export const isFranchiseSignedIn = (): boolean =>
-  Boolean(readFranchiseSession() && localStorage.getItem("token"));
+  Boolean(readFranchiseSession() && readValue("token"));
 
-export const saveFranchiseSession = (
-  session: FranchiseSession,
-  _token: string, // eslint-disable-line @typescript-eslint/no-unused-vars
-): void => {
-  (void session, _token);
+export const saveFranchiseSession = (session: FranchiseSession, token: string): void => {
+  writeValue(SESSION_KEY, JSON.stringify(session));
+  writeValue(FRANCHISE_TOKEN_KEY, token);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const _franchiseSessionModuleUsed = {} as FranchiseSession;
+/**
+ * Merge fresh profile details from the backend into the stored session and
+ * write the result back, so the portal keeps showing the latest agreement
+ * status after a refresh.
+ */
+export const mergeFranchiseProfile = (details: Partial<FranchiseSession>): FranchiseSession => {
+  const merged = { ...readFranchiseSession(), ...details } as FranchiseSession;
+  writeValue(SESSION_KEY, JSON.stringify(merged));
+  return merged;
+};
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions
-export const _franchiseSessionUsedInModule = _franchiseSessionModuleUsed;
-
-export const mergeFranchiseProfile = (
-  details: Partial<FranchiseSession>,
-): FranchiseSession => details as FranchiseSession;
+/** Sign out of the franchise portal: forget both the session and its token. */
+export const clearStoredFranchiseSession = (): void => {
+  removeValue(SESSION_KEY);
+  removeValue(FRANCHISE_TOKEN_KEY);
+};
