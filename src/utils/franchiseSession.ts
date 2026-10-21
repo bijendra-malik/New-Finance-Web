@@ -47,8 +47,6 @@ export const readFranchiseSession = (): FranchiseSession | null => {
   }
 };
 
-export const readFranchiseToken = (): string | null => readValue(FRANCHISE_TOKEN_KEY);
-
 export const isFranchiseSignedIn = (): boolean =>
   Boolean(readFranchiseSession() && readValue("token"));
 
