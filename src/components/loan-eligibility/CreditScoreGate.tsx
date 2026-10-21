@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchCreditScore } from "../../api/customer";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { loanKeyFor } from "../../constants/loanSlugs";
+import { getDraftId } from "../../utils/applySession";
 import CreditScoreGauge from "./CreditScoreGauge";
 import {
   BAND_META,
@@ -76,7 +78,13 @@ const CreditScoreGate = ({ product }: { product?: string }) => {
     setFetchingBureau(true);
     setBureauNote(null);
     try {
-      const data = await fetchCreditScore();
+      // POST /customer/credit-score is sent with the draftId the register call
+      // opened. The product arrives here as a display label, so an unrecognised
+      // one falls back to the most recently registered draft — which belongs to
+      // the flow that just submitted.
+      const draftId =
+        (product ? getDraftId(loanKeyFor(product)) : null) ?? getDraftId();
+      const data = await fetchCreditScore(draftId);
       const band = normalizeBand(data.band);
       if (data.score != null && isValidScore(Math.round(data.score))) {
         const score = Math.round(data.score);
