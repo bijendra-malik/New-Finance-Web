@@ -1,5 +1,10 @@
-export const LOAN_SLUGS: Readonly<Record<string, string>> = {
-  // Home-page / product-grid ids
+/**
+ * Product identifiers used by the UI mapped to their public URL slug.
+ *
+ * The OTP API receives the object key (for example, `educationLoan`) at
+ * POST /auth/:loanKey. URL slugs are retained for links and display routing.
+ */
+export const LOAN_SLUGS = {
   personal: "personal-loan",
   business: "business-loan",
   home: "home-loan",
@@ -18,30 +23,36 @@ export const LOAN_SLUGS: Readonly<Record<string, string>> = {
   goldLoan: "gold-loan",
   fdiLoan: "fdi",
   npaLoan: "npa",
+} as const;
 
-  // Product display names
-  "Personal Loan": "personal-loan",
-  "Business Loan": "business-loan",
-  "Home Loan": "home-loan",
-  "Loan Against Property": "loan-against-property",
-  "Balance Transfer": "balance-transfer",
-  "Vehicle Loan": "vehicle-loan",
-  "Education Loan": "education-loan",
-  "Credit Card": "credit-card",
-  "Premium Credit Cards": "credit-card",
-  "Project Loan": "project-loan",
-  "Commercial Purchase": "commercial-purchase",
-  "Commercial Purchase Loan": "commercial-purchase",
-  "Working Capital": "working-capital",
-  "Working Capital Loan": "working-capital",
-  "Lease Rental Discounting": "lease-rental-discounting",
-  "Film Funding": "film-funding",
-  "OD CC Limit": "od-cc-limit",
-  "Loan Against Share": "loan-against-share",
-  "Gold Loan": "gold-loan",
-  FDI: "fdi",
-  NPA: "npa",
+export type LoanKey = keyof typeof LOAN_SLUGS;
+
+const LOAN_KEY_ALIASES: Readonly<Record<string, LoanKey>> = {
+  "Personal Loan": "personal",
+  "Business Loan": "business",
+  "Home Loan": "home",
+  "Loan Against Property": "lap",
+  "Balance Transfer": "balanceTransfer",
+  "Vehicle Loan": "vehicleLoan",
+  "Education Loan": "educationLoan",
+  "Credit Card": "creditCard",
+  "Premium Credit Cards": "creditCard",
+  "Project Loan": "projectLoan",
+  "Commercial Purchase": "commercialPurchase",
+  "Commercial Purchase Loan": "commercialPurchase",
+  "Working Capital": "workingCapital",
+  "Working Capital Loan": "workingCapital",
+  "Lease Rental Discounting": "leaseRentalDiscounting",
+  "Film Funding": "filmFunding",
+  "OD CC Limit": "odCcLimit",
+  "Loan Against Share": "loanAgainstShare",
+  "Gold Loan": "goldLoan",
+  FDI: "fdiLoan",
+  NPA: "npaLoan",
 };
 
-export const loanSlugFor = (productKey: string): string | null =>
-  LOAN_SLUGS[productKey] ?? null;
+/** Returns the canonical LOAN_SLUGS key to send to the OTP API. */
+export const loanKeyFor = (product: string): LoanKey | null =>
+  product in LOAN_SLUGS
+    ? (product as LoanKey)
+    : LOAN_KEY_ALIASES[product] ?? null;
