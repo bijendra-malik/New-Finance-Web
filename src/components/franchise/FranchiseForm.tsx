@@ -8,6 +8,7 @@ import { verifyPincode } from "../../api/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { readCredentials, saveCredentials } from "../../utils/credentialStorage";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
 import { registerFranchise, verifyFranchiseOTP } from "../../api/franchise";
@@ -116,7 +117,19 @@ const FranchiseForm = ({
     reload: reloadPlans,
   } = useFranchisePlans();
 
-  const [values, setValues] = useState<FranchiseFormValues>(EMPTY);
+  // Details already verified for this form on this device are seeded straight
+  // into state, so the effect below only has to fill what is still blank.
+  const [values, setValues] = useState<FranchiseFormValues>(() => {
+    const stored = readCredentials("franchisee-verification");
+    if (!stored) return EMPTY;
+    return {
+      ...EMPTY,
+      fullName: stored.fullName ?? "",
+      mobile: stored.mobile ?? "",
+      email: stored.email ?? "",
+      pan: stored.pan ?? "",
+    };
+  });
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -156,11 +169,12 @@ const FranchiseForm = ({
   useEffect(() => {
     if (prefilled.current || !hasIdentity) return;
     prefilled.current = true;
+    // Previously verified details stay as they are; the account only fills blanks.
     setValues((prev) => ({
       ...prev,
-      fullName: identity.fullName || prev.fullName,
-      mobile: identity.mobile || prev.mobile,
-      email: identity.email || prev.email,
+      fullName: prev.fullName || identity.fullName,
+      mobile: prev.mobile || identity.mobile,
+      email: prev.email || identity.email,
     }));
   }, [hasIdentity, identity]);
 
@@ -375,6 +389,14 @@ const FranchiseForm = ({
       }
       setOtpStage(false);
       setSubmitted(true);
+      if (lastPayload) {
+        saveCredentials("franchisee-verification", {
+          fullName: lastPayload.name,
+          mobile: lastPayload.mobile,
+          email: lastPayload.email,
+          pan: lastPayload.panNumber,
+        });
+      }
     } catch (err) {
       setOtpApiError(getApiErrorMessage(err, "We could not verify that OTP. Request a new one and try again."));
     } finally {

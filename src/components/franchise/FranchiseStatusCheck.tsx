@@ -6,6 +6,7 @@ import {
   type FranchiseStatusLookupResponse,
 } from "../../api/statusTracking";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { clearCredentials, readCredentials, saveCredentials } from "../../utils/credentialStorage";
 import { formatTimestamp, formatPAN } from "../../utils/formatters";
 import { MOBILE_REGEX, PAN_REGEX } from "../../utils/validation";
 import Button from "../ui/Button";
@@ -22,8 +23,11 @@ const maskMobile = (mobile: string) =>
 
 const FranchiseStatusCheck = () => {
   const [stage, setStage] = useState<Stage>("details");
-  const [mobile, setMobile] = useState("");
-  const [panNumber, setPanNumber] = useState("");
+  // Details verified for this flow earlier on this device, so they do not have
+  // to be retyped. The OTP is still required every time.
+  const [stored] = useState(() => readCredentials("franchise-status"));
+  const [mobile, setMobile] = useState(() => stored?.mobile ?? "");
+  const [panNumber, setPanNumber] = useState(() => stored?.pan ?? "");
   const [otp, setOtp] = useState("");
   const [maskedMobile, setMaskedMobile] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,6 +61,7 @@ const FranchiseStatusCheck = () => {
         setApiError(response.message || "We could not send the OTP for those details. Check them and try again.");
         return;
       }
+      saveCredentials("franchise-status", { mobile, pan: panNumber.trim().toUpperCase() });
       setMaskedMobile(response.mobileMasked?.trim() || maskMobile(mobile));
       setOtp("");
       setStage("otp");
@@ -112,6 +117,7 @@ const FranchiseStatusCheck = () => {
   };
 
   const startOver = () => {
+    clearCredentials("franchise-status");
     setMobile("");
     setPanNumber("");
     setOtp("");
