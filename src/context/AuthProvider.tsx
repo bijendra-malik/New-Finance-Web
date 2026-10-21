@@ -1,27 +1,72 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ApiUser } from "../api/auth";
 import { AuthContext } from "./authContext";
+import { onAuthCleared } from "../utils/authEvents";
 
-// ── Provider ─────────────────────────────────────────────────────────────────
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
+
+const readStoredToken = (): string | null => {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const readStoredUser = (): ApiUser | null => {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ApiUser;
+    return parsed?._id ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStorage = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore storage errors so a full browser does not break the session
+  }
+};
+
+const removeStorage = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore storage errors so a full browser does not break the session
+  }
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<ApiUser | null>(null);
+  const [user, setUser] = useState<ApiUser | null>(readStoredUser);
+  const [token, setToken] = useState<string | null>(readStoredToken);
 
-  const [token, setToken] = useState<string | null>(null);
-
-  const login = (newToken: string, newUser: ApiUser) => {
+  const login = useCallback((newToken: string, newUser: ApiUser) => {
     setToken(newToken);
     setUser(newUser);
-  };
+    writeStorage(TOKEN_KEY, newToken);
+    writeStorage(USER_KEY, JSON.stringify(newUser));
+  }, []);
 
-  const setLoggedIn = (newUser: ApiUser) => {
+  const setLoggedIn = useCallback((newUser: ApiUser) => {
     setUser(newUser);
-  };
+    writeStorage(USER_KEY, JSON.stringify(newUser));
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-  };
+    removeStorage(TOKEN_KEY);
+    removeStorage(USER_KEY);
+  }, []);
+
+  // A 401 means the token is no longer trusted and the axios interceptor has
+  // already cleared the stored copy, so drop it from state as well.
+  useEffect(() => onAuthCleared(logout), [logout]);
 
   return (
     <AuthContext.Provider
