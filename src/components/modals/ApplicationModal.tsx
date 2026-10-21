@@ -4,12 +4,19 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
 import { useAuth } from "../../context/authContext";
-import { requestLoanApplyOTP, verifyOTP } from "../../api/auth";
+import {
+  draftIdFromRegister,
+  requestLoanApplyOTP,
+  requestLoginOTP,
+  verifyLoginOTP,
+  verifyOTP,
+  type AuthActionResponse,
+} from "../../api/auth";
 import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { loanSlugFor } from "../../constants/loanSlugs";
-import { markApplySessionPending } from "../../utils/applySession";
+import { loanKeyFor } from "../../constants/loanSlugs";
+import { markApplySessionPending, rememberDraftId } from "../../utils/applySession";
 import Button from "../ui/Button";
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
@@ -38,6 +45,9 @@ const dashboardRoutes: Readonly<Record<string, string>> = {
   "Gold Loan": "/dashboard/goldloan",
   "FDI": "/dashboard/fdi",
 };
+
+// Where a plain sign-in lands: the customer's own applications list.
+const LOGIN_LANDING = "/applications";
 
 // Homepage globe IDs do not always match the dashboard route slug.
 const productIdRoutes: Readonly<Record<string, string>> = {
@@ -258,13 +268,28 @@ const ApplicationModal = ({
 
   if (!isOpen) return null;
 
+  const productKey = activeProduct?.id ?? productName;
+  // The canonical LOAN_SLUGS key names the OTP endpoint (/auth/{loanKey}).
+  const loanKey = loanKeyFor(productKey);
+  // The /login page opens this modal as a sign-in panel: there is no product to
+  // register for, so the flow talks to /auth/login/* and asks only for a mobile
+  // number (API contract — LOGIN row).
+  const isLoginMode = ["log in", "login", "sign in"].includes(
+    productKey.trim().toLowerCase(),
+  );
+
   // ── Validate eligibility fields ───────────────────────────────────────────
 
   const validateDetails = () => {
     const e: Record<string, string> = {};
+    if (!MOBILE_REGEX.test(mobile)) e.mobile = "Enter a valid 10-digit mobile number";
+    // Signing in needs nothing but the registered mobile number.
+    if (isLoginMode) {
+      setFieldErrors(e);
+      return Object.keys(e).length === 0;
+    }
     if (!fullName.trim()) e.fullName = "Full name is required";
     else if (!NAME_REGEX.test(fullName.trim())) e.fullName = "Enter a valid full name";
-    if (!MOBILE_REGEX.test(mobile)) e.mobile = "Enter a valid 10-digit mobile number";
     if (!EMAIL_REGEX.test(email)) e.email = "Enter a valid email address";
     if (!dob) e.dob = "Date of birth is required";
     else if (!isAtLeastAge(dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
@@ -274,11 +299,6 @@ const ApplicationModal = ({
     setFieldErrors(e);
     return Object.keys(e).length === 0;
   };
-
-  const productKey = activeProduct?.id ?? productName;
-  // The product's own slug names both the OTP endpoint (/auth/{slug}) and the
-  // product on the loan-apply endpoints.
-  const loanSlug = loanSlugFor(productKey);
 
   const validatePan = (name: "pan", value: string, e: Record<string, string>) => {
     if (!value.trim()) { e[name] = "PAN is required"; return; }
@@ -319,8 +339,18 @@ const ApplicationModal = ({
     country,
   });
 
-  /** The identity the OTP is requested with, so a resend matches the first request. */
-  const requestOtp = (slug: string) => requestLoanApplyOTP(slug, applyIdentity());
+  /**
+   * Asks for the OTP: the apply flow registers the product
+   * (POST /auth/{loanKey}); the sign-in flow hits POST /auth/login/request-otp.
+   * A resend goes through the same call so it matches the first request.
+   */
+  const requestOtp = (): Promise<AuthActionResponse> => {
+    if (isLoginMode) return requestLoginOTP({ mobile });
+    if (!loanKey) {
+      return Promise.reject(new Error("This product cannot be applied for yet."));
+    }
+    return requestLoanApplyOTP(loanKey, applyIdentity());
+  };
 
   /** Step 1 — save the details and send the apply-flow OTP. */
   const handleDetailsSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
@@ -328,8 +358,10 @@ const ApplicationModal = ({
     if (!validateDetails()) return;
 
     setApiError("");
-    const dashboardPath = productIdRoutes[productKey] ?? dashboardRoutes[productKey];
-    if (!dashboardPath || !loanSlug) {
+    const dashboardPath = isLoginMode
+      ? LOGIN_LANDING
+      : productIdRoutes[productKey] ?? dashboardRoutes[productKey];
+    if (!dashboardPath || (!isLoginMode && !loanKey)) {
       setApiError("Application form is not available for this product yet.");
       return;
     }
@@ -340,10 +372,16 @@ const ApplicationModal = ({
     setSessionWasSignedIn(isLoggedIn);
     setDetailsBusy(true);
     try {
-      const response = await requestOtp(loanSlug);
+      const response = await requestOtp();
       if (!response.success) {
         setApiError(response.message || "We could not send the OTP just now. Please try again.");
         return;
+      }
+      // The register response opens the draft application: remember its id so
+      // loan-apply and credit-score can be sent against the same draft.
+      if (!isLoginMode && loanKey) {
+        const draftId = draftIdFromRegister(response);
+        if (draftId) rememberDraftId(loanKey, draftId);
       }
       setPendingDashboard(dashboardPath);
       setOtp("");
@@ -367,13 +405,23 @@ const ApplicationModal = ({
     setOtpBusy(true);
     setOtpError("");
     try {
-      const response = await verifyOTP({ mobile, otp: code });
+      const response = isLoginMode
+        ? await verifyLoginOTP({ mobile, otp: code })
+        : await verifyOTP({ mobile, otp: code });
       if (!response.success || !response.token || !response.user) {
         setOtpError("The verification response was incomplete. Check the code and try again.");
         return;
       }
-      // The token from this call is what lets POST /customer/loan-apply be accepted.
       login(response.token, response.user);
+      if (isLoginMode) {
+        // A sign-in ends here — no application is being filed, so no apply
+        // session is opened and no applicant prefill is carried anywhere.
+        resetAll();
+        onClose();
+        navigate(pendingDashboard || LOGIN_LANDING);
+        return;
+      }
+      // The token from this call is what lets POST /customer/loan-apply be accepted.
       // A token issued to a previously signed-out visitor belongs to this one
       // application: it is dropped if they leave without submitting.
       if (!sessionWasSignedIn) markApplySessionPending();
@@ -386,7 +434,7 @@ const ApplicationModal = ({
   };
 
   const handleOtpResend = async () => {
-    if (!loanSlug) {
+    if (!isLoginMode && !loanKey) {
       setOtpError("Could not resend the OTP. Please try again.");
       return;
     }
@@ -394,7 +442,7 @@ const ApplicationModal = ({
     setOtpError("");
     setResendNotice("");
     try {
-      const response = await requestOtp(loanSlug);
+      const response = await requestOtp();
       if (!response.success) {
         setOtpError(response.message || "Could not resend the OTP. Please try again.");
         return;
@@ -444,7 +492,9 @@ const ApplicationModal = ({
                     {productName}
                   </h2>
                   <p className="mt-0.5 text-xs sm:text-sm text-white/70">
-                    Add your contact and identity details to start the application.
+                    {isLoginMode
+                      ? "Sign in with the mobile number registered with us."
+                      : "Add your contact and identity details to start the application."}
                   </p>
                 </div>
                 <button
@@ -461,9 +511,9 @@ const ApplicationModal = ({
               <ol className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
 
                 {[
-                  { label: "Your details", state: step === "otp" ? "done" : "active" },
+                  { label: isLoginMode ? "Your number" : "Your details", state: step === "otp" ? "done" : "active" },
                   { label: "Verify mobile", state: step === "otp" ? "active" : "todo" },
-                  { label: "Application form", state: "todo" },
+                  { label: isLoginMode ? "Sign in" : "Application form", state: "todo" },
                 ].map((s, i, arr) => (
                   <li key={s.label} className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
@@ -506,76 +556,85 @@ const ApplicationModal = ({
               {/* Capture applicant identity before opening the loan form. */}
               {step === "details" && (
                 <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
-                  {/* Product selected on the home page. */}
-                  <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
-                    <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-slate-800">
-                      <svg className="h-4 w-4 shrink-0 text-(--brand-teal)" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {productName}
-                    </p>
-                  </div>
+                  {/* Product selected on the home page — a sign-in has none. */}
+                  {!isLoginMode && (
+                    <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
+                      <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-slate-800">
+                        <svg className="h-4 w-4 shrink-0 text-(--brand-teal)" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {productName}
+                      </p>
+                    </div>
+                  )}
 
-                  {/* Applicant details */}
+                  {/* Applicant details — only the mobile number in login mode */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                    <Field
-                      label="Full Name" type="text" name="fullName"
-                      value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
-                      placeholder="As shown on your PAN card" error={fieldErrors.fullName}
-                    />
+                    {!isLoginMode && (
+                      <Field
+                        label="Full Name" type="text" name="fullName"
+                        value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
+                        placeholder="As shown on your PAN card" error={fieldErrors.fullName}
+                      />
+                    )}
                     <Field
                       label="Mobile Number" type="tel" name="mobile"
                       value={mobile} onChange={(v) => { setMobile(v.replace(/\D/g, "").slice(0, 10)); setFieldErrors((p) => ({ ...p, mobile: "" })); }}
                       placeholder="10-digit mobile number" error={fieldErrors.mobile} maxLength={10}
+                      extraCls={isLoginMode ? "sm:col-span-2" : ""}
                     />
-                    <Field
-                      label="Email Address" type="email" name="email"
-                      value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
-                      placeholder="you@example.com" error={fieldErrors.email}
-                    />
-                    <Field
-                      label="Date of Birth" type="date" name="dob"
-                      value={dob}
-                      max={latestDobForAge(21)}
-                      onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
-                      error={fieldErrors.dob}
-                    />
-                    <Field
-                      label="PAN Number" type="text" name="pan"
-                      value={pan}
-                      maxLength={10}
-                      onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
-                      placeholder="ABCDE1234F"
-                      error={fieldErrors.pan}
-                      extraCls="uppercase tracking-wider"
-                    />
-                    <Select
-                      label="Continent" name="continent"
-                      value={continent}
-                      options={continentOptions.map((c) => c.name)}
-                      placeholder={continentsLoading ? "Loading…" : "Select continent"}
-                      disabled={continentsLoading}
-                      onChange={(v) => {
-                        setContinent(v);
-                        setCountry("");
-                        setCountryOptions([]);
-                        setCountriesLoading(true);
-                        setFieldErrors((p) => ({ ...p, continent: "", country: "" }));
-                      }}
-                      error={fieldErrors.continent}
-                    />
-                    <Select
-                      label="Country" name="country"
-                      value={country}
-                      options={countryOptions.map((c) => c.name)}
-                      placeholder={
-                        !continent ? "Select a continent first" : countriesLoading ? "Loading…" : "Select country"
-                      }
-                      disabled={!continent || countriesLoading}
-                      onChange={(v) => { setCountry(v); setFieldErrors((p) => ({ ...p, country: "" })); }}
-                      error={fieldErrors.country}
-                    />
+                    {!isLoginMode && (
+                      <>
+                        <Field
+                          label="Email Address" type="email" name="email"
+                          value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
+                          placeholder="you@example.com" error={fieldErrors.email}
+                        />
+                        <Field
+                          label="Date of Birth" type="date" name="dob"
+                          value={dob}
+                          max={latestDobForAge(21)}
+                          onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
+                          error={fieldErrors.dob}
+                        />
+                        <Field
+                          label="PAN Number" type="text" name="pan"
+                          value={pan}
+                          maxLength={10}
+                          onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
+                          placeholder="ABCDE1234F"
+                          error={fieldErrors.pan}
+                          extraCls="uppercase tracking-wider"
+                        />
+                        <Select
+                          label="Continent" name="continent"
+                          value={continent}
+                          options={continentOptions.map((c) => c.name)}
+                          placeholder={continentsLoading ? "Loading…" : "Select continent"}
+                          disabled={continentsLoading}
+                          onChange={(v) => {
+                            setContinent(v);
+                            setCountry("");
+                            setCountryOptions([]);
+                            setCountriesLoading(true);
+                            setFieldErrors((p) => ({ ...p, continent: "", country: "" }));
+                          }}
+                          error={fieldErrors.continent}
+                        />
+                        <Select
+                          label="Country" name="country"
+                          value={country}
+                          options={countryOptions.map((c) => c.name)}
+                          placeholder={
+                            !continent ? "Select a continent first" : countriesLoading ? "Loading…" : "Select country"
+                          }
+                          disabled={!continent || countriesLoading}
+                          onChange={(v) => { setCountry(v); setFieldErrors((p) => ({ ...p, country: "" })); }}
+                          error={fieldErrors.country}
+                        />
+                      </>
+                    )}
                   </div>
 
                   {/* Buttons */}
@@ -591,13 +650,16 @@ const ApplicationModal = ({
                 </form>
               )}
 
-              {/* Step 2 — the OTP sent by POST /auth/personal-loan */}
+              {/* Step 2 — the OTP from POST /auth/{loanKey} (apply) or
+                  POST /auth/login/request-otp (sign-in) */}
               {step === "otp" && (
                 <form onSubmit={handleOtpVerify} className="space-y-3.5" noValidate>
-                  <div className="rounded-xl border border-(--brand-navy-22) bg-(--brand-navy-14) px-4 py-2.5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
-                    <p className="mt-0.5 text-sm font-bold text-slate-800">{productName}</p>
-                  </div>
+                  {!isLoginMode && (
+                    <div className="rounded-xl border border-(--brand-navy-22) bg-(--brand-navy-14) px-4 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product</p>
+                      <p className="mt-0.5 text-sm font-bold text-slate-800">{productName}</p>
+                    </div>
+                  )}
 
                   <div className="text-center pt-1">
                     <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-(--brand-navy-22) bg-(--brand-navy-14)">
@@ -639,7 +701,11 @@ const ApplicationModal = ({
                       ← Back
                     </Button>
                     <Button type="submit" className="flex-1 rounded-lg font-semibold" loading={otpBusy}>
-                      {otpBusy ? "Verifying…" : "Verify & Continue →"}
+                      {otpBusy
+                        ? "Verifying…"
+                        : isLoginMode
+                          ? "Verify & Sign In →"
+                          : "Verify & Continue →"}
                     </Button>
                   </div>
 
