@@ -1,6 +1,5 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/Vehicle-banner.png";
 import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.png";
 
 const ACCENT = "var(--brand-navy)";
@@ -149,10 +148,8 @@ const sections: DetailSection[] = [
     loanName="Vehicle Loan"
     breadcrumb="Vehicle Loan"
     bannerTitle="Drive Your Dream Vehicle with the Best Vehicle Loan"
-    bannerBg={bannerBg}
     docsHref="/requireddocument/vehicle-loan"
     applySlug="vehicle-loan"
-    sections={sections}
-  />
+    sections={sections} bannerBg={""}  />
 );
 export default VehicleLoanDetail;
