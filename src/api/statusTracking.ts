@@ -36,6 +36,7 @@ export interface CustomerStatusApplication {
   submittedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+  statusUpdatedAt?: string;
   message?: string;
 }
 
