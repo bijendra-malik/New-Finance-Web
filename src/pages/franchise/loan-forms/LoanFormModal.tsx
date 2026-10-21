@@ -6,7 +6,6 @@ import { PRODUCT_FORMS } from "./productForms";
 import ApplicantPrefillProvider from "../../../context/ApplicantPrefillProvider";
 import type { ApplicantPrefill } from "../../../context/applicantPrefillContext";
 import { beginFranchiseFiling, endFranchiseFiling } from "../../../api/franchiseFiling";
-import { productSlug } from "../../../api/franchiseCustomers";
 import type { FranchiseCustomer } from "../../../api/franchiseCustomers";
 import type { LockableField } from "../../../utils/accountProfile";
 
@@ -70,7 +69,7 @@ const LoanFormFiling = ({
     beginFranchiseFiling({
       customerId: customer._id,
       productKey,
-      slug: productSlug(productKey),
+      slug: productKey,
       identity: {
         fullName: identity.fullName,
         mobile: identity.mobile,

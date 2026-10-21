@@ -32,7 +32,7 @@ export interface ODCCLimitApplication {
   updatedAt?: string;
 }
 
-export type ODCCLimitPayload = Omit<ODCCLimitApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "od-cc-limit" };
+export type ODCCLimitPayload = Omit<ODCCLimitApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "odCcLimit" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyODCCLimit = async (
 
 /**
  * Fetch all ODCCLimit applications for the logged-in user.
- * GET /customer/loan-apply?product=od-cc-limit
+ * GET /customer/loan-apply?product=odCcLimit
  * Requires: Authorization: Bearer <token>
  */
 export const fetchODCCLimitApplications = async (): Promise<ApplicationsResponse<ODCCLimitApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<ODCCLimitApplication>>(
     "/customer/loan-apply",
-    { params: { product: "od-cc-limit" } }
+    { params: { product: "odCcLimit" } }
   );
   return response.data;
 };

@@ -32,7 +32,7 @@ export interface LeaseRentalApplication {
   updatedAt?: string;
 }
 
-export type LeaseRentalPayload = Omit<LeaseRentalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "lease-rental" };
+export type LeaseRentalPayload = Omit<LeaseRentalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "leaseRentalDiscounting" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyLeaseRental = async (
 
 /**
  * Fetch all LeaseRentalDiscounting applications for the logged-in user.
- * GET /customer/loan-apply?product=lease-rental
+ * GET /customer/loan-apply?product=leaseRentalDiscounting
  * Requires: Authorization: Bearer <token>
  */
 export const fetchLeaseRentalApplications = async (): Promise<ApplicationsResponse<LeaseRentalApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<LeaseRentalApplication>>(
     "/customer/loan-apply",
-    { params: { product: "lease-rental" } }
+    { params: { product: "leaseRentalDiscounting" } }
   );
   return response.data;
 };

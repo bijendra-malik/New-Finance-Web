@@ -32,7 +32,7 @@ export interface FDIApplication {
   updatedAt?: string;
 }
 
-export type FDIPayload = Omit<FDIApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "fdi" };
+export type FDIPayload = Omit<FDIApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "fdiLoan" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyFDI = async (
 
 /**
  * Fetch all FDI applications for the logged-in user.
- * GET /customer/loan-apply?product=fdi
+ * GET /customer/loan-apply?product=fdiLoan
  * Requires: Authorization: Bearer <token>
  */
 export const fetchFDIApplications = async (): Promise<ApplicationsResponse<FDIApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<FDIApplication>>(
     "/customer/loan-apply",
-    { params: { product: "fdi" } }
+    { params: { product: "fdiLoan" } }
   );
   return response.data;
 };

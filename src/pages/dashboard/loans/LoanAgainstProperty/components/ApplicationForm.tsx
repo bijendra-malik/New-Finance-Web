@@ -228,7 +228,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   } = useApplicationSubmit<LoanAgainstPropertyApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {      const app = {
-      product:"loan-against-property" as const,
+      product:"lap" as const,
       fullName:form.fullName, mobile:form.mobile, email:form.email,
             dob:new Date(form.dob).toISOString(), panNumber:form.panNumber.toUpperCase(),
             state:form.state, city:form.city, pincode:form.pincode,

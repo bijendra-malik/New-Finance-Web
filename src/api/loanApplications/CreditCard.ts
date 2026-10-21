@@ -29,7 +29,7 @@ export interface CreditCardApplication {
   updatedAt?: string;
 }
 
-export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "credit-card" };
+export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "creditCard" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -50,13 +50,13 @@ export const applyCreditCard = async (
 
 /**
  * Fetch all CreditCard applications for the logged-in user.
- * GET /customer/loan-apply?product=credit-card
+ * GET /customer/loan-apply?product=creditCard
  * Requires: Authorization: Bearer <token>
  */
 export const fetchCreditCardApplications = async (): Promise<ApplicationsResponse<CreditCardApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<CreditCardApplication>>(
     "/customer/loan-apply",
-    { params: { product: "credit-card" } }
+    { params: { product: "creditCard" } }
   );
   return response.data;
 };

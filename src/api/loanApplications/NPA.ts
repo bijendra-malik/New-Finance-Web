@@ -36,7 +36,7 @@ export interface NPAApplication {
   updatedAt?: string;
 }
 
-export type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "npa" };
+export type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "npaLoan" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -57,13 +57,13 @@ export const applyNPA = async (
 
 /**
  * Fetch all NPA applications for the logged-in user.
- * GET /customer/loan-apply?product=npa
+ * GET /customer/loan-apply?product=npaLoan
  * Requires: Authorization: Bearer <token>
  */
 export const fetchNPAApplications = async (): Promise<ApplicationsResponse<NPAApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<NPAApplication>>(
     "/customer/loan-apply",
-    { params: { product: "npa" } }
+    { params: { product: "npaLoan" } }
   );
   return response.data;
 };

@@ -73,35 +73,6 @@ export interface FranchiseStatusResponse {
   franchiseStatus?: string;
 }
 
-/**
- * Backend path segment for each portal product key. The personal-loan slug is
- * confirmed ("personal"); the rest follow the same one-word pattern and are
- * mapped here so a mismatch is a one-line fix.
- */
-const PRODUCT_SLUGS: Record<string, string> = {
-  "personal-loan": "personal",
-  "business-loan": "business",
-  "home-loan": "home",
-  "loan-against-property": "lap",
-  "balance-transfer": "balance-transfer",
-  "project-loan": "project",
-  "vehicle-loan": "vehicle",
-  "education-loan": "education",
-  "credit-card": "credit-card",
-  "commercial-purchase": "commercial-purchase",
-  "working-capital": "working-capital",
-  "lease-rental-discounting": "lrd",
-  "od-cc-limit": "od-cc-limit",
-  "loan-against-share": "las",
-  "film-funding": "film-funding",
-  npa: "npa",
-  "gold-loan": "gold",
-  fdi: "fdi",
-};
-
-export const productSlug = (productKey: string): string =>
-  PRODUCT_SLUGS[productKey] ?? productKey;
-
 // ── Shared response unwrap ───────────────────────────────────────────────────
 
 type DataEnvelope = { success: boolean; message?: string; data?: unknown };
@@ -203,7 +174,7 @@ export const applyFranchiseCustomerLoan = async <TPayload extends object>(
 ): Promise<{ ok: true; data: FranchiseCustomerLoan } | { ok: false; message: string }> => {
   try {
     const res = await axiosInstance.post<{ success: boolean; message?: string; data?: FranchiseCustomerLoan }>(
-      `/franchise/customer/${productSlug(productKey)}/applyloan`,
+      `/franchise/customer/${productKey}/applyloan`,
       payload,
     );
     const unwrapped = unwrap<FranchiseCustomerLoan>(res, "Submission failed.");

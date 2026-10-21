@@ -32,7 +32,7 @@ export interface CommercialPurchaseApplication {
   updatedAt?: string;
 }
 
-export type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "commercial-purchase" };
+export type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "commercialPurchase" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyCommercialPurchase = async (
 
 /**
  * Fetch all CommercialPurchase applications for the logged-in user.
- * GET /customer/loan-apply?product=commercial-purchase
+ * GET /customer/loan-apply?product=commercialPurchase
  * Requires: Authorization: Bearer <token>
  */
 export const fetchCommercialPurchaseApplications = async (): Promise<ApplicationsResponse<CommercialPurchaseApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<CommercialPurchaseApplication>>(
     "/customer/loan-apply",
-    { params: { product: "commercial-purchase" } }
+    { params: { product: "commercialPurchase" } }
   );
   return response.data;
 };

@@ -34,7 +34,7 @@ export interface GoldLoanApplication {
   updatedAt?: string;
 }
 
-export type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "gold" };
+export type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "goldLoan" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -55,13 +55,13 @@ export const applyGoldLoan = async (
 
 /**
  * Fetch all GoldLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=gold
+ * GET /customer/loan-apply?product=goldLoan
  * Requires: Authorization: Bearer <token>
  */
 export const fetchGoldLoanApplications = async (): Promise<ApplicationsResponse<GoldLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<GoldLoanApplication>>(
     "/customer/loan-apply",
-    { params: { product: "gold" } }
+    { params: { product: "goldLoan" } }
   );
   return response.data;
 };

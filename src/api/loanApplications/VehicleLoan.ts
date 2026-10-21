@@ -27,7 +27,7 @@ export interface VehicleLoanApplication {
   createdAt: string;
   updatedAt?: string;
 }
-export type VehicleLoanPayload = Omit<VehicleLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "Vehicle" };
+export type VehicleLoanPayload = Omit<VehicleLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "vehicleLoan" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -48,13 +48,13 @@ export const applyVehicleLoan = async (
 
 /**
  * Fetch all VehicleLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=Vehicle
+ * GET /customer/loan-apply?product=vehicleLoan
  * Requires: Authorization: Bearer <token>
  */
 export const fetchVehicleLoanApplications = async (): Promise<ApplicationsResponse<VehicleLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<VehicleLoanApplication>>(
     "/customer/loan-apply",
-    { params: { product: "Vehicle" } }
+    { params: { product: "vehicleLoan" } }
   );
   return response.data;
 };

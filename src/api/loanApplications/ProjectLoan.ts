@@ -32,7 +32,7 @@ export interface ProjectLoanApplication {
   updatedAt?: string;
 }
 
-export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "project" };
+export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "projectLoan" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyProjectLoan = async (
 
 /**
  * Fetch all ProjectLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=project
+ * GET /customer/loan-apply?product=projectLoan
  * Requires: Authorization: Bearer <token>
  */
 export const fetchProjectLoanApplications = async (): Promise<ApplicationsResponse<ProjectLoanApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<ProjectLoanApplication>>(
     "/customer/loan-apply",
-    { params: { product: "project" } }
+    { params: { product: "projectLoan" } }
   );
   return response.data;
 };

@@ -31,7 +31,7 @@ export interface BalanceTransferApplication {
   updatedAt?: string;
 }
 
-export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "balance-transfer" };
+export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "balanceTransfer" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -52,13 +52,13 @@ export const applyBalanceTransfer = async (
 
 /**
  * Fetch all BalanceTransfer applications for the logged-in user.
- * GET /customer/loan-apply?product=balance-transfer
+ * GET /customer/loan-apply?product=balanceTransfer
  * Requires: Authorization: Bearer <token>
  */
 export const fetchBalanceTransferApplications = async (): Promise<ApplicationsResponse<BalanceTransferApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<BalanceTransferApplication>>(
     "/customer/loan-apply",
-    { params: { product: "balance-transfer" } }
+    { params: { product: "balanceTransfer" } }
   );
   return response.data;
 };

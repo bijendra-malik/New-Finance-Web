@@ -32,7 +32,7 @@ export interface LoanAgainstPropertyApplication {
   updatedAt?: string;
 }
 
-export type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "loan-against-property" };
+export type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "lap" };
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ export const applyLoanAgainstProperty = async (
 
 /**
  * Fetch all LoanAgainstProperty applications for the logged-in user.
- * GET /customer/loan-apply?product=loan-against-property
+ * GET /customer/loan-apply?product=lap
  * Requires: Authorization: Bearer <token>
  */
 export const fetchLoanAgainstPropertyApplications = async (): Promise<ApplicationsResponse<LoanAgainstPropertyApplication>> => {
   const response = await axiosInstance.get<ApplicationsResponse<LoanAgainstPropertyApplication>>(
     "/customer/loan-apply",
-    { params: { product: "loan-against-property" } }
+    { params: { product: "lap" } }
   );
   return response.data;
 };
