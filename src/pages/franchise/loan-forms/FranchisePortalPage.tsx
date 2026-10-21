@@ -4,6 +4,7 @@ import PageBanner from "../../../components/common/PageBanner";
 import Button from "../../../components/ui/Button";
 import FranchiseIcon from "../../../components/franchise/FranchiseIcon";
 import {
+  clearStoredFranchiseSession,
   readFranchiseSession,
   mergeFranchiseProfile,
   type FranchiseSession,
@@ -152,6 +153,7 @@ const FranchisePortalPage = () => {
     setSession(null);
     setHasToken(false);
     setProfile(null);
+    clearStoredFranchiseSession();
     navigate("/franchise-login");
   };
 

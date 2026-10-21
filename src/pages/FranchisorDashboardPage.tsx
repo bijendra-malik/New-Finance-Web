@@ -8,6 +8,7 @@ import { fetchFranchiseProfile } from "../api/franchise";
 import type { FranchiseProfileResponse } from "../api/franchise";
 import useSEO from "../hooks/useSEO";
 import {
+  clearStoredFranchiseSession,
   mergeFranchiseProfile,
   readFranchiseSession,
   isFranchiseSignedIn,
@@ -215,6 +216,7 @@ const FranchisorDashboardPage = () => {
     setSession(null);
     setHasToken(false);
     setProfile(null);
+    clearStoredFranchiseSession();
     navigate("/franchise-login");
   };
 
