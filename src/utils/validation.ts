@@ -71,8 +71,9 @@ export const validatePersonalDetails = (
   else if(!PAN_REGEX.test(draft.panNumber.toUpperCase())) e.panNumber=panExample?"Invalid PAN format. Example: ABCDE1234F":"Invalid PAN format";
   if(!draft.state) e.state="State is required";
   if(!draft.city) e.city="City is required";
-  if(!draft.pincode) e.pincode="Pincode is required";
-  else if(!PINCODE_REGEX.test(draft.pincode)) e.pincode="Enter valid 6-digit pincode";
+  const rawPincode = draft.pincode?.replace(/\D/g, "") ?? "";
+  if(!rawPincode) e.pincode="Pincode is required";
+  else if(!PINCODE_REGEX.test(rawPincode)) e.pincode="Enter a valid 6-digit pincode";
   if(!draft.residenceStatus) e.residenceStatus="Residence status is required";
   else if(draft.residenceStatus===OTHER_OPTION&&!draft.residenceStatusOther.trim()) e.residenceStatusOther="Please mention residence status type";
 };
