@@ -2,17 +2,20 @@
 //
 // Endpoints (all authenticated with the user bearer token):
 //   POST /franchise/customer/register          — register a new client
-//   GET  /franchise/customers                  — every client under this franchise
+//   GET  /franchise/customer                   — every client under this franchise
+//   GET  /franchise/customer/:id               — one client's registered details
 //   POST /franchise/customer/:slug/applyloan   — apply on a client's behalf
 //                                                 (slug e.g. "personal")
-//   GET  /franchise/customer/:id/loans         — a client's loans
+//   POST /franchise/customer/:id/loans         — a client's loans
 //   GET  /franchise/customer/:id/loans/:applicationNo — one loan's status
+//   GET  /franchise/loans                      — every loan filed by this franchise
 //   GET  /franchise/status                     — this franchise's agreement status
 //
 // If the backend changes a path or payload shape, change only this module.
 
 import axios from "axios";
 import axiosInstance from "./axiosInstance";
+import { getApiFieldErrors, type ApiFieldErrors } from "../utils/apiError";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +35,8 @@ export interface FranchiseCustomerPayload {
 export interface FranchiseCustomer extends FranchiseCustomerPayload {
   _id: string;
   franchiseId?: string;
+  isVerified?: boolean;
+  verifiedAt?: string | null;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -40,7 +45,8 @@ export interface FranchiseCustomer extends FranchiseCustomerPayload {
 export interface FranchiseCustomersResponse {
   success: boolean;
   message?: string;
-  data?: FranchiseCustomer[];
+  data?: FranchiseCustomer[] | { customers?: FranchiseCustomer[] };
+  customers?: FranchiseCustomer[];
 }
 
 export interface RegisterCustomerResponse {
@@ -63,7 +69,33 @@ export interface FranchiseCustomerLoan {
 export interface CustomerLoansResponse {
   success: boolean;
   message?: string;
-  data?: FranchiseCustomerLoan[];
+  data?: FranchiseCustomerLoan[] |
+  {
+    applications?: FranchiseCustomerLoan[];
+    loans?: FranchiseCustomerLoan[]
+  };
+}
+
+export interface FranchiseLoanListResponse {
+  success: boolean;
+  message?: string;
+  data?: FranchiseCustomerLoan[] |
+  {
+    applications?: FranchiseCustomerLoan[];
+    loans?: FranchiseCustomerLoan[]
+  };
+  loans?: FranchiseCustomerLoan[];
+  applications?: FranchiseCustomerLoan[];
+}
+
+export interface FranchiseCustomerDetailsResponse {
+  success: boolean;
+  message?: string;
+  data?: FranchiseCustomer |
+  {
+    customer?: FranchiseCustomer
+  };
+  customer?: FranchiseCustomer;
 }
 
 export interface FranchiseStatusResponse {
@@ -89,30 +121,53 @@ const unwrap = <T>(
   return { ok: false, message: body.message || fallback };
 };
 
-/**
- * Read a list out of an endpoint's `data` payload.
- *
- * The franchise service wraps collections under their own key — the client's loans
- * arrive as `data.applications` — so the named key is preferred and a bare array is
- * still accepted, which keeps the portal working if a list endpoint is flattened.
- */
 const unwrapList = <T>(
-  res: { data?: DataEnvelope },
+  res: { data?: unknown },
   keys: readonly string[],
   fallback: string,
 ): { ok: true; items: T[] } | { ok: false; message: string } => {
-  const unwrapped = unwrap<unknown>(res, fallback);
-  if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-  const payload = unwrapped.data;
-  if (Array.isArray(payload)) return { ok: true, items: payload as T[] };
-  if (payload && typeof payload === "object") {
-    const record = payload as Record<string, unknown>;
-    for (const key of keys) {
-      const value = record[key];
-      if (Array.isArray(value)) return { ok: true, items: value as T[] };
+  const body = res.data as Record<string, unknown> | undefined;
+  if (!body) return { ok: false, message: fallback };
+
+  const candidates: unknown[] = [body, body.data];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return { ok: true, items: candidate as T[] };
+    if (candidate && typeof candidate === "object") {
+      const record = candidate as Record<string, unknown>;
+      for (const key of keys) {
+        const value = record[key];
+        if (Array.isArray(value)) return { ok: true, items: value as T[] };
+      }
     }
   }
-  return { ok: false, message: fallback };
+
+  const message = typeof body.message === "string" && body.message.trim() ? body.message : fallback;
+  return { ok: false, message };
+};
+
+const unwrapObject = <T>(
+  res: { data?: unknown },
+  keys: readonly string[],
+  fallback: string,
+): { ok: true; item: T } | { ok: false; message: string } => {
+  const body = res.data as Record<string, unknown> | undefined;
+  if (!body) return { ok: false, message: fallback };
+
+  const data =
+    body.data && typeof body.data === "object" && !Array.isArray(body.data)
+      ? (body.data as Record<string, unknown>)
+      : undefined;
+  const candidates: unknown[] = [data?.customer, body.customer, data, body];
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    const record = candidate as Record<string, unknown>;
+    if (keys.some((key) => record[key] !== undefined && record[key] !== null)) {
+      return { ok: true, item: candidate as T };
+    }
+  }
+
+  const message = typeof body.message === "string" && body.message.trim() ? body.message : fallback;
+  return { ok: false, message };
 };
 
 // ── API calls ────────────────────────────────────────────────────────────────
@@ -123,7 +178,10 @@ const unwrapList = <T>(
  */
 export const registerFranchiseCustomer = async (
   payload: FranchiseCustomerPayload,
-): Promise<{ ok: true; customer: FranchiseCustomer | null; message: string } | { ok: false; message: string }> => {
+): Promise<
+  | { ok: true; customer: FranchiseCustomer | null; message: string }
+  | { ok: false; message: string; fieldErrors: ApiFieldErrors }
+> => {
   try {
     const res = await axiosInstance.post<RegisterCustomerResponse>(
       "/franchise/customer/register",
@@ -133,34 +191,59 @@ export const registerFranchiseCustomer = async (
       res,
       "The customer was registered.",
     );
-    if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
+    if (!unwrapped.ok) return { ok: false, message: unwrapped.message, fieldErrors: {} };
     const registered = unwrapped.data;
-    // The registered record may arrive directly or wrapped under `customer`; its
-    // `_id` is what every later call files against (franchiseCustomerId, :ID).
     const customer =
       registered && typeof registered === "object" && "_id" in registered
         ? (registered as FranchiseCustomer)
         : ((registered as { customer?: FranchiseCustomer } | undefined)?.customer ?? null);
     return { ok: true, customer, message: res.data?.message || "Customer registered." };
   } catch (err) {
-    return { ok: false, message: franchisePortalError(err, "Could not register the customer.") };
+    return {
+      ok: false,
+      message: franchisePortalError(err, "Could not register the customer."),
+      fieldErrors: getApiFieldErrors(err),
+    };
   }
 };
 
 /**
  * Every client registered under this franchise.
- * GET /franchise/customers
+ * GET /franchise/customer
  */
 export const fetchFranchiseCustomers = async (): Promise<
   { ok: true; customers: FranchiseCustomer[] } | { ok: false; message: string }
 > => {
   try {
-    const res = await axiosInstance.get<FranchiseCustomersResponse>("/franchise/customers");
+    const res = await axiosInstance.get<FranchiseCustomersResponse>("/franchise/customer");
     const unwrapped = unwrapList<FranchiseCustomer>(res, ["customers"], "No customers were returned.");
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
     return { ok: true, customers: unwrapped.items };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load your customers.") };
+  }
+};
+
+/**
+ * One client's registered details.
+ * GET /franchise/customer/:id
+ */
+export const fetchFranchiseCustomer = async (
+  customerId: string,
+): Promise<{ ok: true; customer: FranchiseCustomer } | { ok: false; message: string }> => {
+  try {
+    const res = await axiosInstance.get<FranchiseCustomerDetailsResponse>(
+      `/franchise/customer/${encodeURIComponent(customerId)}`,
+    );
+    const unwrapped = unwrapObject<FranchiseCustomer>(
+      res,
+      ["fullName", "mobile", "panNumber", "_id"],
+      "The customer details were not returned.",
+    );
+    if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
+    return { ok: true, customer: unwrapped.item };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not load this customer's details.") };
   }
 };
 
@@ -190,14 +273,16 @@ export const applyFranchiseCustomerLoan = async <TPayload extends object>(
  * sent as `franchiseCustomerId` when filing), and each row's `applicationNo` is
  * what the status endpoint takes back.
  *
- * GET /franchise/customer/:id/loans — the rows arrive under `data.applications`.
+ * POST /franchise/customer/:id/loans — the rows arrive under `data.applications`
+ * or `data.loans`.
  */
 export const fetchCustomerLoans = async (
   customerId: string,
 ): Promise<{ ok: true; loans: FranchiseCustomerLoan[] } | { ok: false; message: string }> => {
   try {
-    const res = await axiosInstance.get<CustomerLoansResponse>(
+    const res = await axiosInstance.post<CustomerLoansResponse>(
       `/franchise/customer/${encodeURIComponent(customerId)}/loans`,
+      {},
     );
     const unwrapped = unwrapList<FranchiseCustomerLoan>(
       res,
@@ -208,6 +293,27 @@ export const fetchCustomerLoans = async (
     return { ok: true, loans: unwrapped.items };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load this client's loans.") };
+  }
+};
+
+/**
+ * Every loan filed by this franchise, across all of its clients.
+ * GET /franchise/loans
+ */
+export const fetchFranchiseLoans = async (): Promise<
+  { ok: true; loans: FranchiseCustomerLoan[] } | { ok: false; message: string }
+> => {
+  try {
+    const res = await axiosInstance.get<FranchiseLoanListResponse>("/franchise/loans");
+    const unwrapped = unwrapList<FranchiseCustomerLoan>(
+      res,
+      ["loans", "applications"],
+      "No loans were returned.",
+    );
+    if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
+    return { ok: true, loans: unwrapped.items };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not load your franchise's loans.") };
   }
 };
 
