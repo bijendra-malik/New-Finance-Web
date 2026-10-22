@@ -7,10 +7,10 @@ import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
 import { buildMailtoUrl } from "../../utils/mailto";
-import { getApiErrorMessage } from "../../utils/apiError";
+import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
 import { readCredentials, saveCredentials } from "../../utils/credentialStorage";
 import { OTHER_OPTION } from "../../constants/masters";
-import { EMAIL_REGEX, GSTIN_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX } from "../../utils/validation";
+import { EMAIL_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX, isAtLeastAge } from "../../utils/validation";
 import { registerFranchise, verifyFranchiseOTP } from "../../api/franchise";
 import type { FranchiseEntryPayload } from "../../api/franchise";
 import { useFranchisePlans } from "../../hooks/useFranchisePlans";
@@ -81,6 +81,15 @@ const FRANCHISEE_FIELD_ORDER: FieldKey[] = [
   "packageId",
 ];
 
+const API_FIELD_TO_FORM: Readonly<Record<string, FieldKey>> = {
+  name: "fullName",
+  mobile: "mobile",
+  email: "email",
+  dob: "dob",
+  panNumber: "pan",
+  planCode: "packageId",
+};
+
 interface VerifiedLocation {
   pincode: string;
   state: string;
@@ -117,8 +126,6 @@ const FranchiseForm = ({
     reload: reloadPlans,
   } = useFranchisePlans();
 
-  // Details already verified for this form on this device are seeded straight
-  // into state, so the effect below only has to fill what is still blank.
   const [values, setValues] = useState<FranchiseFormValues>(() => {
     const stored = readCredentials("franchisee-verification");
     if (!stored) return EMPTY;
@@ -140,8 +147,6 @@ const FranchiseForm = ({
   const [step, setStep] = useState(0);
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
-  // OTP stage after POST /franchise/entry — the applicant confirms the mobile
-  // number via POST /franchise/entry/verify before the application is final.
   const [otpStage, setOtpStage] = useState(false);
   const [entryMobile, setEntryMobile] = useState("");
   const [maskedMobile, setMaskedMobile] = useState("");
@@ -169,7 +174,6 @@ const FranchiseForm = ({
   useEffect(() => {
     if (prefilled.current || !hasIdentity) return;
     prefilled.current = true;
-    // Previously verified details stay as they are; the account only fills blanks.
     setValues((prev) => ({
       ...prev,
       fullName: prev.fullName || identity.fullName,
@@ -231,31 +235,32 @@ const FranchiseForm = ({
 
   const buildErrors = (vals: FranchiseFormValues) => {
     const e: Partial<Record<FieldKey, string>> = {};
-    if (!vals.fullName.trim()) e.fullName = "Full name is required";
-    if (!vals.pan.trim()) e.pan = "PAN number is required";
-    else if (!PAN_REGEX.test(vals.pan)) e.pan = "Enter a valid 10-character PAN (e.g. ABCDE1234F)";
+
+    if (!vals.fullName.trim()) e.fullName = "Name is required";
+
     if (!vals.mobile.trim()) e.mobile = "Mobile number is required";
     else if (!MOBILE_REGEX.test(vals.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
+
     if (!vals.email.trim()) e.email = "Email address is required";
-    else if (!EMAIL_REGEX.test(vals.email)) e.email = "Enter a valid email address";
-    if (!vals.state.trim()) e.state = "State is required";
-    if (!vals.city.trim()) e.city = "City is required";
+    else if (!EMAIL_REGEX.test(vals.email.trim())) e.email = "Enter a valid email address";
+
+    if (!vals.dob) e.dob = "Date of birth is required";
+    else if (!/^\d{4}-\d{2}-\d{2}$/.test(vals.dob))
+      e.dob = "Enter a valid date of birth (YYYY-MM-DD)";
+    else if (!isAtLeastAge(vals.dob, 21))
+      e.dob = "Applicant must be at least 21 years old to apply";
+
+    if (!vals.pan.trim()) e.pan = "PAN number is required";
+    else if (!PAN_REGEX.test(vals.pan.trim().toUpperCase()))
+      e.pan = "Enter a valid PAN number (e.g. ABCDE1234F)";
+
     if (isFranchisee) {
-      if (!vals.pincode.trim()) e.pincode = "Pincode is required";
-      else if (!PINCODE_REGEX.test(vals.pincode)) e.pincode = "Enter a valid 6-digit pincode";
-      else if (pincodeStatus === "notFound") e.pincode = "This pincode could not be found — check and re-enter";
-      if (!vals.businessName.trim()) e.businessName = "Business name is required";
-      if (!vals.businessType) e.businessType = "Business type is required";
-      else if (vals.businessType === OTHER_OPTION && !vals.businessTypeOther.trim())
-        e.businessTypeOther = "Please mention the business type";
-      if (vals.gstNumber.trim() && !GSTIN_REGEX.test(vals.gstNumber.toUpperCase()))
-        e.gstNumber = "Enter a valid GST number (15-character GSTIN)";
-      if (!vals.yearsInBusiness.trim()) e.yearsInBusiness = "Years in business is required";
-      else if (!/^\d{1,2}$/.test(vals.yearsInBusiness.trim()))
-        e.yearsInBusiness = "Enter years as a number (0–99)";
-      if (!vals.address.trim()) e.address = "Address is required";
-      if (!packageId) e.packageId = "Select the package duration you are interested in";
+      if (!packageId) e.packageId = "Select the plan you are interested in";
+    } else {
+      if (!vals.state.trim()) e.state = "State is required";
+      if (!vals.city.trim()) e.city = "City is required";
     }
+
     return e;
   };
 
@@ -315,8 +320,6 @@ const FranchiseForm = ({
         });
         return;
       }
-      // Entry accepted — the backend has sent an OTP to the applicant's mobile,
-      // so move to the verification step instead of finishing immediately.
       setLastPayload(payload);
       setEntryMobile(payload.mobile ?? "");
       setMaskedMobile(res.mobileMasked?.trim() || "");
@@ -326,6 +329,21 @@ const FranchiseForm = ({
       setOtpNotice(res.message || "An OTP has been sent to your registered mobile number.");
       setOtpStage(true);
     } catch (err) {
+      const fromApi = Object.entries(getApiFieldErrors(err)).reduce<Partial<Record<FieldKey, string>>>(
+        (acc, [path, message]) => {
+          const key = API_FIELD_TO_FORM[path];
+          if (key) acc[key] = message;
+          return acc;
+        },
+        {},
+      );
+      if (Object.keys(fromApi).length > 0) {
+        setErrors(fromApi);
+        if (isFranchisee && presentation === "stepped") {
+          const index = FRANCHISEE_STEPS.findIndex((s) => s.fields.some((key) => fromApi[key]));
+          if (index >= 0) setStep(index);
+        }
+      }
       setPopup({
         tone: "error",
         message: getApiErrorMessage(err, "We could not submit your application just now. Please try again."),
