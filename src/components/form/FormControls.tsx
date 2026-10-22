@@ -307,11 +307,11 @@ interface SelectWithOtherProps {
   value: string; onChange: (v: string) => void; options: readonly string[];
   placeholder?: string; disabled?: boolean; err?: string;
   otherId: string; otherLabel: string; otherValue: string; onOtherChange: (v: string) => void;
-  otherPlaceholder: string; otherErr?: string;
+  otherPlaceholder: string; otherErr?: string; otherDisabled?: boolean;
 }
 export const SelectWithOther = memo(({
   id, label, required, value, onChange, options, placeholder = "Select", disabled = false, err,
-  otherId, otherLabel, otherValue, onOtherChange, otherPlaceholder, otherErr,
+  otherId, otherLabel, otherValue, onOtherChange, otherPlaceholder, otherErr, otherDisabled = false,
 }: SelectWithOtherProps) => {
   return (
     <div id={id}>
@@ -320,7 +320,7 @@ export const SelectWithOther = memo(({
       {value === OTHER_OPTION && (
         <div id={otherId} className="mt-3">
           <FieldLabel label={otherLabel} required />
-          <TextField value={otherValue} onChange={v => onOtherChange(v.slice(0, 100))} placeholder={otherPlaceholder} err={otherErr} maxLength={100} />
+          <TextField value={otherValue} onChange={v => onOtherChange(v.slice(0, 100))} placeholder={otherPlaceholder} err={otherErr} maxLength={100} disabled={otherDisabled} />
         </div>
       )}
     </div>
