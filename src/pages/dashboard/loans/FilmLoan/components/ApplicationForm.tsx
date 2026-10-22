@@ -277,7 +277,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             starCastNames:form.starCastNames,
             totalProjectCost:form.totalProjectCost, ownInvestmentAmount:form.ownInvestmentAmount,
             loanAmount:form.loanAmount,
-            loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
+            loanTenure:form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
             existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
             existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,

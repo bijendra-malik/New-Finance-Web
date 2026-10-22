@@ -131,7 +131,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     const e:Partial<Record<keyof FormData,string>> = {};
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<1000000000) e.loanAmount="Minimum ₹100 Cr";
-    else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
+    else if(draft.loanAmount>500000000000) e.loanAmount="Maximum loan amount is ₹500,00,00,00,000";
     if(!draft.loanTenureYears) e.loanTenureYears="Select fund tenure";
     else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
 
@@ -305,7 +305,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               ?(form.businessPlaceStatus===OTHER_OPTION?(form.businessPlaceStatusOther.trim()||undefined):undefined)
               :undefined,
             loanAmount:form.loanAmount,
-            loanTenure:(form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears)*12,
+            loanTenure:form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
             existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
             existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
