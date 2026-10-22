@@ -4,11 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { THEME as C } from "../../../../constants/theme";
 import { FORM } from "../../../../constants/formStyles";
 import { useAuth } from "../../../../context/authContext";
-import {
-  clearApplySessionPending,
-  dropApplySession,
-  isApplySessionPending,
-} from "../../../../utils/applySession";
+import { clearApplySessionPending, dropApplySession, isApplySessionPending } from "../../../../utils/applySession";
 
 type Tab = "application" | "status";
 
@@ -39,7 +35,7 @@ const DashboardShell = <T,>({
   const { pathname } = useLocation();
 
   const [activeTab,     setActiveTab]     = useState<Tab>("application");
-  const [isSubmitted,   setIsSubmitted]   = useState(false);
+  const isSubmitted = false;
   const [applicationId, setApplicationId] = useState("");
   const [submittedApp,  setSubmittedApp]  = useState<T | null>(null);
   const [profileOpen,   setProfileOpen]   = useState(false);
@@ -78,12 +74,12 @@ const DashboardShell = <T,>({
   }, []);
 
   const handleApplicationSubmit = (id: string, app: T) => {
-    // The session has now filed an application, so it stops being disposable.
+    // loan-apply saves a draft. The credit-score page needs the current signed-in
+    // session to complete that draft, so this handoff must not trigger the
+    // dashboard's disposable-session cleanup.
     clearApplySessionPending();
     setApplicationId(id); setSubmittedApp(app);
-    setIsSubmitted(true); setActiveTab("status");
-    // The score check is the next step after a filed application. The product
-    // label lets the gate evaluate against this loan's cut-offs.
+    // The score check is the next step after the draft is saved.
     navigate("/credit-score", {
       state: { product: productName, from: pathname },
       replace: true,
