@@ -79,7 +79,7 @@ export const PersonalDetailsSection = ({
         {Object.keys(locked).length > 0 && (
           <p className="mb-4 rounded-lg px-3 py-2 text-xs"
             style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
-            {portalIdentity ? prefill?.note : `🔒 Name, mobile, email${locked.dob ? ", date of birth" : ""}${locked.panNumber ? ", PAN" : ""} and address were filled from your account and are locked. They must match your PAN card — contact support to correct them.`}
+            {portalIdentity ? prefill?.note : "🔒 Details available from your account have been filled and locked. Contact support to correct them."}
           </p>
         )}
         <div className={FORM.grid}>
