@@ -45,8 +45,8 @@ const CreditScorePage = () => {
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-6" style={{ color: C.gray }}>
             {productLabel
-              ? `Your ${productLabel} application is submitted. Check the score that decides how lenders see it.`
-              : "Check the score that decides how lenders see your application."}
+              ? `Your ${productLabel} details are saved. Enter your credit score to check eligibility and submit the application.`
+              : "Enter your credit score to check eligibility and submit your application."}
           </p>
         </header>
 
