@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import WebsiteLayout from "./components/layout/WebsiteLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./context/AuthProvider";
@@ -21,7 +21,6 @@ const CreditScorePage = lazy(() => import("./pages/CreditScorePage"));
 
 // ── Franchisor partner portal ────────────────────────────────────────────────
 const FranchisorDashboardPage = lazy(() => import("./pages/FranchisorDashboardPage"));
-const FranchisePortalPage = lazy(() => import("./pages/franchise/loan-forms/FranchisePortalPage"));
 
 // ── Loan dashboards ──────────────────────────────────────────────────────────
 const PersonalLoanDashboard = lazy(() => import("./pages/dashboard/loans/PersonalLoan/PersonalLoanDashboard"));
@@ -92,6 +91,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
+}
+
+function FranchisePortalRedirect() {
+  const [searchParams] = useSearchParams();
+  const section = searchParams.get("section");
+  return (
+    <Navigate
+      to={section ? `/franchisor-dashboard?section=${encodeURIComponent(section)}` : "/franchisor-dashboard"}
+      replace
+    />
+  );
 }
 
 function RouteFallback() {
@@ -197,7 +207,7 @@ function App() {
               <Route path="/be-a-franchisor" element={<Navigate to="/franchise" replace />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
-              <Route path="/franchise/loan-forms" element={<FranchisePortalPage />} />
+              <Route path="/franchise/loan-forms" element={<FranchisePortalRedirect />} />
               <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="/application-status" element={<ApplicationStatusPage />} />
               <Route path="/franchise-application-status" element={<FranchiseApplicationStatusPage />} />
