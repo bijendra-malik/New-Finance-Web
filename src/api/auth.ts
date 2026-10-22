@@ -101,12 +101,14 @@ export const requestLoginOTP = async (
   return response.data;
 };
 
-/** POST /auth/login/verify-otp — completes the sign-in, returns the session. */
+/**
+ * POST /auth/login/{loan-name}/verify-otp — completes the sign-in and returns the session. */
 export const verifyLoginOTP = async (
+  loanName: string,
   payload: VerifyOTPPayload,
 ): Promise<VerifyOTPResponse> => {
   const response = await axiosInstance.post<VerifyOTPResponse>(
-    "/auth/login/verify-otp",
+    `/auth/login/${encodeURIComponent(loanName)}/verify-otp`,
     payload,
     { withCredentials: true },
   );
