@@ -20,6 +20,8 @@ import { formatPAN } from "../../../utils/formatters";
 import {
   franchisePortalError,
   registerFranchiseCustomer,
+  requestFranchiseCustomerVerifyOtp,
+  verifyFranchiseCustomerOtp,
   type FranchiseCustomer,
 } from "../../../api/franchiseCustomers";
 
@@ -58,6 +60,10 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [step, setStep] = useState<"details" | "otp">("details");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [registeredCustomer, setRegisteredCustomer] = useState<FranchiseCustomer | null>(null);
 
   const cityOptions = loadCities(form.state);
   const citySelectOptions =
@@ -74,6 +80,22 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
     setForm((p) => ({ ...p, state: r.state, city: r.city }));
     setErrors((p) => ({ ...p, state: undefined, city: undefined }));
     loadCities(r.state);
+  };
+
+  const resetModal = () => {
+    setForm(EMPTY);
+    setErrors({});
+    setFormError(null);
+    setStep("details");
+    setOtp("");
+    setOtpError(null);
+    setRegisteredCustomer(null);
+    setBusy(false);
+  };
+
+  const handleClose = () => {
+    resetModal();
+    onClose();
   };
 
   const validate = (): boolean => {
@@ -100,7 +122,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
     if (!form.city) e.city = "City is required";
 
     if (!form.pincode.trim()) e.pincode = "Pincode is required";
-    else if (!PINCODE_REGEX.test(form.pincode.trim())) e.pincode = "Enter a valid 6-digit pincode";
+    else if (!PINCODE_REGEX.test(form.pincode.trim().replace(/\D/g, ""))) e.pincode = "Enter a valid 6-digit pincode";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -109,6 +131,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
   const submit = async (ev: React.SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault();
     setFormError(null);
+    setOtpError(null);
     if (!validate()) return;
     setBusy(true);
     try {
@@ -129,8 +152,12 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
         setFormError(hasFieldErrors ? null : res.message);
         return;
       }
-      setForm(EMPTY);
-      onRegistered(res.customer);
+      setRegisteredCustomer(res.customer);
+      setStep("otp");
+      setOtp("");
+      // Attempt to trigger OTP delivery via the verify-otp endpoint too,
+      // which some backends use both to send and to confirm the code.
+      void requestFranchiseCustomerVerifyOtp({ mobile: form.mobile.replace(/\D/g, "").slice(-10) });
     } catch (err) {
       setFormError(franchisePortalError(err, "Could not register the customer."));
     } finally {
@@ -138,20 +165,50 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
     }
   };
 
+  const handleVerifyOtp = async (ev: React.SyntheticEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    setOtpError(null);
+    if (!otp.trim()) {
+      setOtpError("Please enter the OTP");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await verifyFranchiseCustomerOtp({
+        mobile: form.mobile.replace(/\D/g, "").slice(-10),
+        otp: otp.trim(),
+      });
+      if (!res.ok) {
+        setOtpError(res.message);
+        return;
+      }
+      const customer = res.customer || registeredCustomer;
+      setForm(EMPTY);
+      resetModal();
+      onRegistered(customer);
+    } catch (err) {
+      setOtpError(franchisePortalError(err, "Invalid OTP."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <Modal open={open} onClose={onClose} labelledBy="customer-register-title" maxWidth="max-w-2xl">
+    <Modal open={open} onClose={handleClose} labelledBy="customer-register-title" maxWidth="max-w-2xl">
       <div className="flex items-center justify-between border-b border-slate-100 px-6 pt-6 pb-3">
         <div>
           <h2 id="customer-register-title" className="text-lg font-extrabold text-slate-800">
-            Register a new customer
+            {step === "details" ? "Register a new customer" : "Verify OTP"}
           </h2>
           <p className="mt-0.5 text-[12.5px] text-slate-500">
-            These details are stored under your franchise ID and used for every loan you file for this customer.
+            {step === "details"
+              ? "These details are stored under your franchise ID and used for every loan you file for this customer."
+              : `Enter the OTP sent to +91 ${form.mobile.replace(/\D/g, "").slice(-10)}`}
           </p>
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close"
           className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
         >
@@ -161,77 +218,113 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
         </button>
       </div>
 
-      <form onSubmit={submit} noValidate className="overflow-y-auto px-6 py-5" style={{ maxHeight: "calc(92vh - 8rem)" }}>
-        {formError && (
-          <p
-            role="alert"
-            className="mb-4 rounded-xl px-4 py-3 text-[12.5px] font-semibold"
-            style={{
-              background: "var(--form-error-bg, #fef2f2)",
-              border: "1px solid var(--form-error-border, #fecaca)",
-              color: "var(--form-error-text, #b91c1c)",
-            }}
-          >
-            {formError}
-          </p>
-        )}
+      {step === "details" ? (
+        <form onSubmit={submit} noValidate className="overflow-y-auto px-6 py-5" style={{ maxHeight: "calc(92vh - 8rem)" }}>
+          {formError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl px-4 py-3 text-[12.5px] font-semibold"
+              style={{
+                background: "var(--form-error-bg, #fef2f2)",
+                border: "1px solid var(--form-error-border, #fecaca)",
+                color: "var(--form-error-text, #b91c1c)",
+              }}
+            >
+              {formError}
+            </p>
+          )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <FieldLabel label="Full name" required />
-            <TextField value={form.fullName} onChange={(v) => set("fullName", v.slice(0, 100))} maxLength={100} placeholder="As per PAN card" err={errors.fullName} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <FieldLabel label="Full name" required />
+              <TextField value={form.fullName} onChange={(v) => set("fullName", v.slice(0, 100))} maxLength={100} placeholder="As per PAN card" err={errors.fullName} />
+            </div>
+            <div>
+              <FieldLabel label="Mobile" required />
+              <TextField value={form.mobile} onChange={(v) => set("mobile", v.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit mobile" err={errors.mobile} inputMode="tel" />
+            </div>
+            <div>
+              <FieldLabel label="Email address" required />
+              <TextField type="email" value={form.email} onChange={(v) => set("email", v)} placeholder="customer@example.com" err={errors.email} />
+            </div>
+            <div>
+              <FieldLabel label="PAN number" required />
+              <TextField value={form.panNumber} onChange={(v) => set("panNumber", formatPAN(v))} maxLength={10} placeholder="ABCDE1234F" err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal" />
+            </div>
+            <div>
+              <FieldLabel label="Date of birth" required />
+              <DateOfBirthPicker value={form.dob} onChange={(v) => set("dob", v)} err={errors.dob} />
+            </div>
+            <PincodeInputField
+              id="customer-pincode"
+              label="Pincode"
+              required
+              value={form.pincode}
+              onChange={(v) => set("pincode", v)}
+              onResolved={handlePincodeResolved}
+              err={errors.pincode}
+            />
+            <div>
+              <FieldLabel label="State" required />
+              <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={stateSelectOptions} placeholder="Select state" err={errors.state} />
+            </div>
+            <div>
+              <FieldLabel label="City" required />
+              <SelectField
+                value={form.city}
+                onChange={(v) => set("city", v)}
+                options={citySelectOptions}
+                placeholder={form.state ? "Select city" : "Select state first"}
+                err={errors.city}
+                disabled={!form.state}
+              />
+            </div>
           </div>
-          <div>
-            <FieldLabel label="Mobile" required />
-            <TextField value={form.mobile} onChange={(v) => set("mobile", v.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit mobile" err={errors.mobile} inputMode="tel" />
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" size="md" onClick={handleClose} disabled={busy}>
+              Cancel
+            </Button>
+            <Button type="submit" size="md" loading={busy}>
+              Continue
+            </Button>
           </div>
+        </form>
+      ) : (
+        <form onSubmit={handleVerifyOtp} noValidate className="overflow-y-auto px-6 py-5" style={{ maxHeight: "calc(92vh - 8rem)" }}>
+          {otpError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl px-4 py-3 text-[12.5px] font-semibold"
+              style={{
+                background: "var(--form-error-bg, #fef2f2)",
+                border: "1px solid var(--form-error-border, #fecaca)",
+                color: "var(--form-error-text, #b91c1c)",
+              }}
+            >
+              {otpError}
+            </p>
+          )}
           <div>
-            <FieldLabel label="Email address" required />
-            <TextField type="email" value={form.email} onChange={(v) => set("email", v)} placeholder="customer@example.com" err={errors.email} />
-          </div>
-          <div>
-            <FieldLabel label="PAN number" required />
-            <TextField value={form.panNumber} onChange={(v) => set("panNumber", formatPAN(v))} maxLength={10} placeholder="ABCDE1234F" err={errors.panNumber} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal" />
-          </div>
-          <div>
-            <FieldLabel label="Date of birth" required />
-            <DateOfBirthPicker value={form.dob} onChange={(v) => set("dob", v)} err={errors.dob} />
-          </div>
-          <PincodeInputField
-            id="customer-pincode"
-            label="Pincode"
-            required
-            value={form.pincode}
-            onChange={(v) => set("pincode", v)}
-            onResolved={handlePincodeResolved}
-            err={errors.pincode}
-          />
-          <div>
-            <FieldLabel label="State" required />
-            <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={stateSelectOptions} placeholder="Select state" err={errors.state} />
-          </div>
-          <div>
-            <FieldLabel label="City" required />
-            <SelectField
-              value={form.city}
-              onChange={(v) => set("city", v)}
-              options={citySelectOptions}
-              placeholder={form.state ? "Select city" : "Select state first"}
-              err={errors.city}
-              disabled={!form.state}
+            <FieldLabel label="Enter OTP" required />
+            <TextField
+              value={otp}
+              onChange={(v) => setOtp(v.replace(/\D/g, "").slice(0, 6))}
+              placeholder="Enter 6-digit OTP"
+              inputMode="numeric"
+              maxLength={6}
             />
           </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <Button type="button" variant="outline" size="md" onClick={onClose} disabled={busy}>
-            Cancel
-          </Button>
-          <Button type="submit" size="md" loading={busy}>
-            Register customer
-          </Button>
-        </div>
-      </form>
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <Button type="button" variant="outline" size="md" onClick={() => setStep("details")} disabled={busy}>
+              Back
+            </Button>
+            <Button type="submit" size="md" loading={busy}>
+              Verify & Register
+            </Button>
+          </div>
+        </form>
+      )}
     </Modal>
   );
 };
