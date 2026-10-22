@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { THEME as C } from "../../../../constants/theme";
 import { FORM } from "../../../../constants/formStyles";
 import { useAuth } from "../../../../context/authContext";
@@ -36,6 +36,7 @@ const DashboardShell = <T,>({
 }: DashboardShellProps<T>) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [activeTab,     setActiveTab]     = useState<Tab>("application");
   const [isSubmitted,   setIsSubmitted]   = useState(false);
@@ -81,7 +82,12 @@ const DashboardShell = <T,>({
     clearApplySessionPending();
     setApplicationId(id); setSubmittedApp(app);
     setIsSubmitted(true); setActiveTab("status");
-    document.getElementById("loan-dashboard-main")?.scrollTo({ top: 0, behavior: "smooth" });
+    // The score check is the next step after a filed application. The product
+    // label lets the gate evaluate against this loan's cut-offs.
+    navigate("/credit-score", {
+      state: { product: productName, from: pathname },
+      replace: true,
+    });
   };
 
   // ── 3-column layout ────────────────────────────────────────────────────────
