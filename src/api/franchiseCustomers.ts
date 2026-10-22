@@ -207,6 +207,85 @@ export const registerFranchiseCustomer = async (
   }
 };
 
+export interface FranchiseCustomerOtpRequestPayload {
+  mobile: string;
+}
+
+export interface FranchiseCustomerOtpVerifyPayload {
+  mobile: string;
+  otp: string;
+}
+
+/**
+ * Request OTP for franchise customer registration/verification.
+ * POST /franchise/customer/request-otp
+ */
+export const requestFranchiseCustomerOtp = async (
+  payload: FranchiseCustomerOtpRequestPayload,
+): Promise<{ ok: true; message: string } | { ok: false; message: string }> => {
+  try {
+    const res = await axiosInstance.post<{ success?: boolean; message?: string }>(
+      "/franchise/customer/request-otp",
+      payload,
+    );
+    const body = res.data;
+    if (body?.success !== false) {
+      return { ok: true, message: body?.message || "OTP sent successfully." };
+    }
+    return { ok: false, message: body?.message || "Could not send OTP." };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not send OTP.") };
+  }
+};
+
+export const requestFranchiseCustomerVerifyOtp = async (
+  payload: FranchiseCustomerOtpRequestPayload,
+): Promise<{ ok: true; message: string } | { ok: false; message: string }> => {
+  try {
+    const res = await axiosInstance.post<{ success?: boolean; message?: string }>(
+      "/franchise/customer/verify-otp",
+      payload,
+    );
+    const body = res.data;
+    if (body?.success !== false) {
+      return { ok: true, message: body?.message || "OTP sent successfully." };
+    }
+    return { ok: false, message: body?.message || "Could not send OTP." };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not send OTP.") };
+  }
+};
+
+/**
+ * Verify OTP for franchise customer.
+ * POST /franchise/customer/verify-otp
+ */
+export const verifyFranchiseCustomerOtp = async (
+  payload: FranchiseCustomerOtpVerifyPayload,
+): Promise<
+  | { ok: true; customer?: FranchiseCustomer | null; message: string }
+  | { ok: false; message: string }
+> => {
+  try {
+    const res = await axiosInstance.post<{ success?: boolean; message?: string; data?: FranchiseCustomer | { customer?: FranchiseCustomer } }>(
+      "/franchise/customer/verify-otp",
+      payload,
+    );
+    const body = res.data;
+    if (body?.success !== false) {
+      const data = body?.data;
+      const customer =
+        data && typeof data === "object" && "_id" in data
+          ? (data as FranchiseCustomer)
+          : ((data as { customer?: FranchiseCustomer } | undefined)?.customer ?? null);
+      return { ok: true, customer, message: body?.message || "OTP verified successfully." };
+    }
+    return { ok: false, message: body?.message || "Invalid OTP." };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Invalid OTP.") };
+  }
+};
+
 /**
  * Every client registered under this franchise.
  * GET /franchise/customer
