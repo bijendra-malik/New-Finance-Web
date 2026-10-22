@@ -4,6 +4,7 @@ import Button from "../../../components/ui/Button";
 import {
   DateOfBirthPicker,
   FieldLabel,
+  PincodeInputField,
   SelectField,
   TextField,
 } from "../../../components/form/FormControls";
@@ -11,9 +12,9 @@ import { useMasters } from "../../../hooks/useMasters";
 import {
   EMAIL_REGEX,
   MOBILE_REGEX,
-  NAME_REGEX,
   PAN_REGEX,
   PINCODE_REGEX,
+  isAtLeastAge,
 } from "../../../utils/validation";
 import { formatPAN } from "../../../utils/formatters";
 import {
@@ -51,11 +52,6 @@ const EMPTY: FormState = {
   pincode: "",
 };
 
-/**
- * Register a new client for the franchise — the eight fields
- * POST /franchise/customer/register requires, validated the same way the
- * customer portal validates them.
- */
 const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegisterModalProps) => {
   const { masters, loadCities } = useMasters();
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -64,40 +60,48 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
   const [formError, setFormError] = useState<string | null>(null);
 
   const cityOptions = loadCities(form.state);
+  const citySelectOptions =
+    form.city && !cityOptions.includes(form.city) ? [...cityOptions, form.city] : cityOptions;
+  const stateSelectOptions =
+    form.state && !masters.states.includes(form.state) ? [...masters.states, form.state] : masters.states;
 
   const set = (key: keyof FormState, value: string) => {
     setForm((p) => ({ ...p, [key]: value }));
     setErrors((p) => ({ ...p, [key]: undefined }));
   };
+  const handlePincodeResolved = (r: { pincode: string; state: string; city: string }) => {
+    if (!r.state || !r.city) return;
+    setForm((p) => ({ ...p, state: r.state, city: r.city }));
+    setErrors((p) => ({ ...p, state: undefined, city: undefined }));
+    loadCities(r.state);
+  };
 
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormState, string>> = {};
-    if (!form.fullName.trim()) e.fullName = "Full name is required";
-    else if (!NAME_REGEX.test(form.fullName.trim()))
-      e.fullName = "Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+
+    if (!form.fullName.trim()) e.fullName = "Name is required";
+
     if (!form.mobile.trim()) e.mobile = "Mobile number is required";
-    else if (!MOBILE_REGEX.test(form.mobile.replace(/\D/g, "")))
-      e.mobile = "Enter a valid 10-digit mobile number";
-    if (!form.email.trim()) e.email = "Email is required";
+    else if (!MOBILE_REGEX.test(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
+
+    if (!form.email.trim()) e.email = "Email address is required";
     else if (!EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
+
     if (!form.dob) e.dob = "Date of birth is required";
-    else {
-      const dobDate = new Date(`${form.dob}T00:00:00`);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (dobDate > today) e.dob = "Date of birth cannot be in the future";
-      else {
-        const minAgeDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
-        if (dobDate < minAgeDate) e.dob = "Customer must be at least 21 years old";
-      }
-    }
-    if (!form.panNumber.trim()) e.panNumber = "PAN is required";
+    else if (!/^\d{4}-\d{2}-\d{2}$/.test(form.dob))
+      e.dob = "Enter a valid date of birth (YYYY-MM-DD)";
+    else if (!isAtLeastAge(form.dob, 21)) e.dob = "Customer must be at least 21 years old";
+
+    if (!form.panNumber.trim()) e.panNumber = "PAN number is required";
     else if (!PAN_REGEX.test(form.panNumber.trim().toUpperCase()))
-      e.panNumber = "Invalid PAN format. Example: ABCDE1234F";
+      e.panNumber = "Enter a valid PAN number (e.g. ABCDE1234F)";
+
     if (!form.state) e.state = "State is required";
     if (!form.city) e.city = "City is required";
+
     if (!form.pincode.trim()) e.pincode = "Pincode is required";
     else if (!PINCODE_REGEX.test(form.pincode.trim())) e.pincode = "Enter a valid 6-digit pincode";
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -119,7 +123,10 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
         pincode: form.pincode.trim(),
       });
       if (!res.ok) {
-        setFormError(res.message);
+        const fromApi = res.fieldErrors as Partial<Record<keyof FormState, string>>;
+        const hasFieldErrors = Object.keys(fromApi ?? {}).length > 0;
+        if (hasFieldErrors) setErrors(fromApi);
+        setFormError(hasFieldErrors ? null : res.message);
         return;
       }
       setForm(EMPTY);
@@ -190,26 +197,25 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
             <FieldLabel label="Date of birth" required />
             <DateOfBirthPicker value={form.dob} onChange={(v) => set("dob", v)} err={errors.dob} />
           </div>
-          <div>
-            <FieldLabel label="Pincode" required />
-            <TextField
-              value={form.pincode}
-              onChange={(v) => set("pincode", v.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6-digit pincode"
-              err={errors.pincode}
-              inputMode="numeric"
-            />
-          </div>
+          <PincodeInputField
+            id="customer-pincode"
+            label="Pincode"
+            required
+            value={form.pincode}
+            onChange={(v) => set("pincode", v)}
+            onResolved={handlePincodeResolved}
+            err={errors.pincode}
+          />
           <div>
             <FieldLabel label="State" required />
-            <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={masters.states} placeholder="Select state" err={errors.state} />
+            <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={stateSelectOptions} placeholder="Select state" err={errors.state} />
           </div>
           <div>
             <FieldLabel label="City" required />
             <SelectField
               value={form.city}
               onChange={(v) => set("city", v)}
-              options={cityOptions}
+              options={citySelectOptions}
               placeholder={form.state ? "Select city" : "Select state first"}
               err={errors.city}
               disabled={!form.state}
