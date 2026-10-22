@@ -6,8 +6,6 @@ import Button from "../components/ui/Button";
 import FranchiseIcon from "../components/franchise/FranchiseIcon";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
 import { loginFranchise } from "../api/franchise";
-import { PAN_REGEX } from "../utils/validation";
-import { formatPAN } from "../utils/formatters";
 import {
   saveFranchiseSession,
 } from "../utils/franchiseSession";
@@ -62,8 +60,8 @@ const FranchiseLoginPage = () => {
     const normalizedFranchiseId = franchiseId.trim().toUpperCase();
     const normalizedPan = panNumber.trim().toUpperCase();
 
-    if (!/^FRN\d{6}$/.test(normalizedFranchiseId)) e.franchiseId = "Enter the franchisee ID from your agreement (e.g. FRN000003)";
-    if (!PAN_REGEX.test(normalizedPan)) e.panNumber = "Enter the PAN number from your franchise application";
+    if (!normalizedFranchiseId) e.franchiseId = "Franchisee ID is required";
+    if (!normalizedPan) e.panNumber = "PAN number is required";
 
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -115,8 +113,6 @@ const FranchiseLoginPage = () => {
         res.token,
       );
       setWelcome({ name: res.franchise?.name?.trim() || undefined });
-      // Franchise endpoints authenticate with the same user token, so this also
-      // stores the bearer token that every later request reads.
       login(res.token, {
         _id: res.franchise?._id ?? responseFranchiseId,
         name: res.franchise?.name ?? "",
@@ -272,12 +268,11 @@ const FranchiseLoginPage = () => {
                       id="franchise-pan"
                       value={panNumber}
                       onChange={(e) => {
-                        setPanNumber(formatPAN(e.target.value));
+                        setPanNumber(e.target.value.toUpperCase());
                         setErrors((p) => ({ ...p, panNumber: undefined }));
                       }}
                       placeholder="ABCDE1234F"
                       autoComplete="off"
-                      maxLength={10}
                       aria-describedby="franchise-pan-hint"
                       className={`w-full rounded-lg border px-3.5 py-2.5 text-sm uppercase tracking-wider text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
                         errors.panNumber ? "border-red-400 bg-red-50/40" : "border-slate-300"
