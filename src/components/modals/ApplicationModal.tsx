@@ -46,9 +46,6 @@ const dashboardRoutes: Readonly<Record<string, string>> = {
   "FDI": "/dashboard/fdi",
 };
 
-// Where a plain sign-in lands: the customer's own applications list.
-const LOGIN_LANDING = "/applications";
-
 // Homepage globe IDs do not always match the dashboard route slug.
 const productIdRoutes: Readonly<Record<string, string>> = {
   personal: "/dashboard/personalloan",
@@ -83,12 +80,12 @@ interface ApplicationModalProps {
 // ── Reusable Field ─────────────────────────────────────────────────────────────
 
 const Field = ({
-  label, type, name, value, onChange, placeholder, error, disabled, maxLength, max, extraCls = "", required = true,
+  label, type, name, value, onChange, placeholder, error, disabled, maxLength, max, extraCls = "", containerCls = "", required = true,
 }: {
   label: string; type: string; name: string; value: string;
-  onChange: (v: string) => void; placeholder?: string; error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string; required?: boolean;
+  onChange: (v: string) => void; placeholder?: string; error?: string; disabled?: boolean; maxLength?: number; max?: string; extraCls?: string; containerCls?: string; required?: boolean;
 }) => (
-  <div>
+  <div className={containerCls}>
     <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
       {label} {required && <span className="text-red-500 ml-0.5">*</span>}
     </label>
@@ -151,6 +148,10 @@ const ApplicationModal = ({
   const setApplicantPrefill = useSetApplicantPrefill();
   const { login, isLoggedIn } = useAuth();
 
+  // Sign up (register for a product) vs Sign in (returning customer).
+  const openedAsLogin = productName.trim().toLowerCase() === "log in";
+  const [mode, setMode] = useState<"signup" | "signin">(openedAsLogin ? "signin" : "signup");
+
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -165,15 +166,14 @@ const ApplicationModal = ({
   const [countriesLoading, setCountriesLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // PAN-format setter (the structured "autostop" A→Z then 0-9 flush) "Autostop alphanumeric letters": while typing, keep A-Z letters until the 5-letter block is full, then only accept 0-9 digits for the next 4 slots; slot 10 accepts a letter only — the check letter from the card.
   const setPan = function (v: string) {
     const clean = v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
     let structured = "";
     for (const c of clean) {
       const pos = structured.length;
-      if (pos < 5 && /[A-Z]/.test(c)) structured += c;                 // letters autostop at 5
-      else if (pos >= 5 && pos < 9 && /[0-9]/.test(c)) structured += c; // digits autostop at 4
-      else if (pos === 9 && /[A-Z]/.test(c)) structured += c;           // check letter only
+      if (pos < 5 && /[A-Z]/.test(c)) structured += c;
+      else if (pos >= 5 && pos < 9 && /[0-9]/.test(c)) structured += c;
+      else if (pos === 9 && /[A-Z]/.test(c)) structured += c;
     }
     __setPan(structured);
     setFieldErrors((p) => ({ ...p, pan: "" }));
@@ -192,8 +192,6 @@ const ApplicationModal = ({
   const [resending, setResending] = useState(false);
   // Where to land once the mobile is verified.
   const [pendingDashboard, setPendingDashboard] = useState("");
-  // Whether a session already existed when this application started. A session
-  // the applicant already had is never dropped when they abandon the form.
   const [sessionWasSignedIn, setSessionWasSignedIn] = useState(true);
 
   const resetAll = () => {
@@ -217,11 +215,23 @@ const ApplicationModal = ({
     setResending(false);
     setPendingDashboard("");
     setSessionWasSignedIn(true);
+    setMode(openedAsLogin ? "signin" : "signup");
   };
 
   const handleClose = () => {
     resetAll();
     onClose();
+  };
+
+  const switchMode = (next: "signup" | "signin") => {
+    if (next === mode) return;
+    setMode(next);
+    setStep("details");
+    setOtp("");
+    setOtpError("");
+    setResendNotice("");
+    setApiError("");
+    setFieldErrors({});
   };
 
   // Escape closes the panel, like the backdrop and the Cancel button.
@@ -271,12 +281,7 @@ const ApplicationModal = ({
   const productKey = activeProduct?.id ?? productName;
   // The canonical LOAN_SLUGS key names the OTP endpoint (/auth/{loanKey}).
   const loanKey = loanKeyFor(productKey);
-  // The /login page opens this modal as a sign-in panel: there is no product to
-  // register for, so the flow talks to /auth/login/* and asks only for a mobile
-  // number (API contract — LOGIN row).
-  const isLoginMode = ["log in", "login", "sign in"].includes(
-    productKey.trim().toLowerCase(),
-  );
+  const isLoginMode = mode === "signin";
 
   // ── Validate eligibility fields ───────────────────────────────────────────
 
@@ -345,10 +350,10 @@ const ApplicationModal = ({
    * A resend goes through the same call so it matches the first request.
    */
   const requestOtp = (): Promise<AuthActionResponse> => {
-    if (isLoginMode) return requestLoginOTP({ mobile });
     if (!loanKey) {
       return Promise.reject(new Error("This product cannot be applied for yet."));
     }
+    if (isLoginMode) return requestLoginOTP({ mobile });
     return requestLoanApplyOTP(loanKey, applyIdentity());
   };
 
@@ -358,10 +363,11 @@ const ApplicationModal = ({
     if (!validateDetails()) return;
 
     setApiError("");
-    const dashboardPath = isLoginMode
-      ? LOGIN_LANDING
-      : productIdRoutes[productKey] ?? dashboardRoutes[productKey];
-    if (!dashboardPath || (!isLoginMode && !loanKey)) {
+    const productDashboardPath = productIdRoutes[productKey] ?? dashboardRoutes[productKey];
+    // Each sign-in remains tied to the product that opened the modal; do not
+    // guess a fallback product when that context is missing.
+    const dashboardPath = productDashboardPath;
+    if (!dashboardPath || !loanKey) {
       setApiError("Application form is not available for this product yet.");
       return;
     }
@@ -401,12 +407,13 @@ const ApplicationModal = ({
     const code = otp.trim();
     if (!code) { setOtpError("Please enter the OTP"); return; }
     if (!/^\d{4,8}$/.test(code)) { setOtpError("Enter a valid OTP"); return; }
+    if (!loanKey) { setOtpError("Please start sign-in from the loan product you want to apply for."); return; }
 
     setOtpBusy(true);
     setOtpError("");
     try {
       const response = isLoginMode
-        ? await verifyLoginOTP({ mobile, otp: code })
+        ? await verifyLoginOTP(loanKey, { mobile, otp: code })
         : await verifyOTP({ mobile, otp: code });
       if (!response.success || !response.token || !response.user) {
         setOtpError("The verification response was incomplete. Check the code and try again.");
@@ -414,11 +421,11 @@ const ApplicationModal = ({
       }
       login(response.token, response.user);
       if (isLoginMode) {
-        // A sign-in ends here — no application is being filed, so no apply
-        // session is opened and no applicant prefill is carried anywhere.
+        // Sign-in opens the requested product's form. It does not load the
+        // all-products applications page or create a disposable apply session.
         resetAll();
         onClose();
-        navigate(pendingDashboard || LOGIN_LANDING);
+        navigate(pendingDashboard);
         return;
       }
       // The token from this call is what lets POST /customer/loan-apply be accepted.
@@ -434,7 +441,7 @@ const ApplicationModal = ({
   };
 
   const handleOtpResend = async () => {
-    if (!isLoginMode && !loanKey) {
+    if (!loanKey) {
       setOtpError("Could not resend the OTP. Please try again.");
       return;
     }
@@ -475,26 +482,37 @@ const ApplicationModal = ({
           className="w-full max-w-xl min-w-0 flex flex-col shadow-2xl rounded-2xl overflow-hidden bg-white max-h-[92vh]"
         >
 
-          {/* ── Header band — navy, single column: this is the eligibility
-              gateway, not a login panel ── */}
+          {/* ── Header band — navy, single column: the Sign up / Sign in panel ── */}
           <div className="relative shrink-0 overflow-hidden bg-linear-to-br from-(--brand-navy) via-(--brand-dark) to-(--brand-navy-deep) text-white">
             <div className="h-1 w-full bg-(--brand-teal)" />
             <div className="px-5 py-3.5 sm:px-6 sm:py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                    text-[10px] font-bold uppercase tracking-wider bg-(--brand-yellow) text-(--brand-dark)
-                    shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                    Eligibility check
-                  </span>
+                  {/* Sign up / Sign in — the panel's mode switch. */}
+                  <div role="tablist" aria-label="Sign up or sign in"
+                    className="inline-flex rounded-full bg-white/10 p-1">
+                    {([["signup", "Sign up"], ["signin", "Sign in"]] as const).map(([m, label]) => (
+                      <button
+                        key={m}
+                        type="button"
+                        role="tab"
+                        aria-selected={mode === m}
+                        onClick={() => switchMode(m)}
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/70 ${
+                          mode === m ? "bg-(--brand-teal) text-white" : "text-white/70 hover:text-white"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                   <h2 id="apply-modal-title" className="mt-1.5 text-lg sm:text-xl font-extrabold tracking-tight">
-                    {productName}
+                    {mode === "signin" ? "Welcome back" : loanKey ? productName : "Create your account"}
                   </h2>
                   <p className="mt-0.5 text-xs sm:text-sm text-white/70">
-                    {isLoginMode
-                      ? "Sign in with the mobile number registered with us."
-                      : "Add your contact and identity details to start the application."}
+                    {mode === "signin"
+                      ? `Sign in with the mobile number registered with us. To create a new account, switch to Sign up above.`
+                      : "Add your contact and identity details to start your application."}
                   </p>
                 </div>
                 <button
@@ -582,7 +600,7 @@ const ApplicationModal = ({
                       label="Mobile Number" type="tel" name="mobile"
                       value={mobile} onChange={(v) => { setMobile(v.replace(/\D/g, "").slice(0, 10)); setFieldErrors((p) => ({ ...p, mobile: "" })); }}
                       placeholder="10-digit mobile number" error={fieldErrors.mobile} maxLength={10}
-                      extraCls={isLoginMode ? "sm:col-span-2" : ""}
+                      containerCls={isLoginMode ? "sm:col-span-2" : ""}
                     />
                     {!isLoginMode && (
                       <>

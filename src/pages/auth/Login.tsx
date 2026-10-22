@@ -31,6 +31,9 @@ const Login = () => {
         onClose={() => navigate("/")}
         productName="Log in"
       />
+      <p className="mt-2 text-[11px] text-slate-400">
+        Sign in to continue. If you don&apos;t have an account yet, use the Apply flow instead — /login is only for existing customers.
+      </p>
     </div>
   );
 };
