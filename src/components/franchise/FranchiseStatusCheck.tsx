@@ -41,8 +41,8 @@ const FranchiseStatusCheck = () => {
 
   const validateDetails = () => {
     const next: Record<string, string> = {};
-    if (!MOBILE_REGEX.test(mobile)) next.mobile = "Enter the mobile number used in your application";
-    if (!PAN_REGEX.test(panNumber.trim().toUpperCase())) next.panNumber = "Enter a valid PAN number";
+    if (!MOBILE_REGEX.test(mobile)) next.mobile = "Enter a valid 10-digit mobile number";
+    if (!PAN_REGEX.test(panNumber.trim().toUpperCase())) next.panNumber = "Enter a valid PAN number (e.g. ABCDE1234F)";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
