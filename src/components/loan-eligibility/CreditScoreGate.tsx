@@ -4,10 +4,19 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { emitApplicationSubmitted } from "../../utils/applicationEvents";
 import { loanKeyFor } from "../../constants/loanSlugs";
 import { clearApplySessionPending, getDraftId } from "../../utils/applySession";
-import CreditScoreGauge from "./CreditScoreGauge";
+import type { SuccessSection } from "../form/successSections";
+import ApplicationConfirmation from "./ApplicationConfirmation";
+import { buildApplicationSections } from "./applicationSections";
 import { BAND_META, SCORE_MAX, SCORE_MIN, bandForScore, isValidScore } from "./creditScoreEvaluation";
 
 type Result = { eligible: boolean; message: string; application: Record<string, unknown> | null };
+
+interface CreditScoreGateProps {
+  product?: string;
+  sections?: SuccessSection[];
+  dashboardPath?: string;
+  onFinalized?: () => void;
+}
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
@@ -29,17 +38,16 @@ const applicationFrom = (response: CreditScoreResponse): Record<string, unknown>
   const direct = asRecord(response.application);
   if (direct) return direct;
   const data = asRecord(response.data);
-  return asRecord(data?.application) ?? data;
-};
-
-const displayValue = (value: unknown): string | null => {
-  if (typeof value === "string" && value.trim()) return value;
-  if (typeof value === "number") return String(value);
-  return null;
+  const nested = asRecord(data?.application);
+  if (nested) return nested;
+  if (data) return data;
+  // Some responses place the finalized document alongside the verdict itself.
+  const root = asRecord(response);
+  return root && (typeof root.fullName === "string" || typeof root._id === "string") ? root : null;
 };
 
 /** Completes a saved draft; the backend owns the eligibility decision. */
-const CreditScoreGate = ({ product }: { product?: string }) => {
+const CreditScoreGate = ({ product, sections, dashboardPath, onFinalized }: CreditScoreGateProps) => {
   const productLabel = product?.trim() || "this loan";
   const [rawScore, setRawScore] = useState("");
   const [error, setError] = useState("");
@@ -75,6 +83,7 @@ const CreditScoreGate = ({ product }: { product?: string }) => {
       if (eligible) {
         clearApplySessionPending();
         emitApplicationSubmitted();
+        onFinalized?.();
       }
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "We could not check your eligibility. Please try again."));
@@ -84,42 +93,17 @@ const CreditScoreGate = ({ product }: { product?: string }) => {
   };
 
   if (result) {
-    const band = BAND_META[bandForScore(typedScore)];
     if (result.eligible) {
-      const summary = [
-        ["Applicant", result.application?.fullName],
-        ["Product", result.application?.product ?? productLabel],
-        ["Application ID", result.application?._id ?? result.application?.applicationId ?? result.application?.id],
-        ["Loan amount", result.application?.loanAmount],
-        ["Mobile", result.application?.mobile],
-        ["Email", result.application?.email],
-      ].map(([label, value]) => ({ label, value: displayValue(value) }))
-        .filter((item): item is { label: string; value: string } => Boolean(item.value));
-
       return (
-        <section aria-labelledby="application-confirmation-title" className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Application submitted</p>
-            <h2 id="application-confirmation-title" className="mt-1 text-2xl font-extrabold text-emerald-900">You’re eligible for {productLabel}</h2>
-            <p className="mt-2 text-sm leading-6 text-emerald-800">{result.message}</p>
-          </div>
-          <div className="mt-5 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
-            <div className="text-center sm:text-left">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Credit score</p>
-              <p className="mt-1 text-4xl font-extrabold" style={{ color: band.color }}>{typedScore}</p>
-              <p className="text-xs font-semibold" style={{ color: band.color }}>{band.label} band</p>
-            </div>
-            <CreditScoreGauge score={typedScore} band={bandForScore(typedScore)} />
-          </div>
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-extrabold text-(--brand-navy)">Application summary</h3>
-            {summary.length > 0 ? (
-              <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-                {summary.map(({ label, value }) => <div key={label}><dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</dt><dd className="mt-0.5 wrap-break-word font-semibold text-slate-700">{value}</dd></div>)}
-              </dl>
-            ) : <p className="mt-2 text-sm text-slate-600">Your application is submitted and our team will contact you with the next steps.</p>}
-          </div>
-        </section>
+        <ApplicationConfirmation
+          productName={productLabel}
+          application={result.application}
+          sections={sections ?? buildApplicationSections(result.application, productLabel)}
+          creditScore={typedScore}
+          band={bandForScore(typedScore)}
+          message={result.message}
+          dashboardPath={dashboardPath}
+        />
       );
     }
 
