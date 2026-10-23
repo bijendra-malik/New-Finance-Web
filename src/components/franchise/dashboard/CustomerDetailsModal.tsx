@@ -29,22 +29,29 @@ interface CustomerDetailsModalProps {
   /** The list row the modal was opened from — shown while the detail calls run. */
   customer: FranchiseCustomer | null;
   onClose: () => void;
+  /** Starts the Apply Loan flow pre-set to this customer. */
+  onApplyLoan: (customer: FranchiseCustomer) => void;
 }
 
 /** Label/value pair used across the detail panes. */
-const Detail = ({ label, value }: { label: string; value?: string | null }) => (
-  <div>
-    <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-    <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{value?.trim() || "—"}</dd>
-  </div>
-);
+const Detail = ({ label, value }: { label: string; value?: string | number | null }) => {
+  // Registry values are not guaranteed to be strings — mobile and pincode come
+  // back as numbers, and calling `.trim()` on them throws.
+  const text = value === null || value === undefined ? "" : String(value).trim();
+  return (
+    <div>
+      <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
+      <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{text || "—"}</dd>
+    </div>
+  );
+};
 
 /**
  * One registered customer: their registered details plus every loan filed for
  * them (POST /franchise/customer/:id/loans), with each application's latest
  * status fetched on demand.
  */
-const CustomerDetailsModal = ({ open, customer, onClose }: CustomerDetailsModalProps) => {
+const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: CustomerDetailsModalProps) => {
   const [details, setDetails] = useState<FranchiseCustomer | null>(null);
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [loans, setLoans] = useState<FranchiseCustomerLoan[]>([]);
@@ -156,11 +163,21 @@ const CustomerDetailsModal = ({ open, customer, onClose }: CustomerDetailsModalP
 
         {/* Registered details */}
         <section aria-labelledby="customer-details-heading">
-          <div className="flex items-center gap-2">
-            <FranchiseIcon name="doc" className="h-4 w-4 text-(--brand-navy)" />
-            <h3 id="customer-details-heading" className="text-[13px] font-extrabold uppercase tracking-wider text-slate-500">
-              Registered details
-            </h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <FranchiseIcon name="doc" className="h-4 w-4 text-(--brand-navy)" />
+              <h3 id="customer-details-heading" className="text-[13px] font-extrabold uppercase tracking-wider text-slate-500">
+                Registered details
+              </h3>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (record) onApplyLoan(record);
+              }}
+            >
+              Apply loan
+            </Button>
           </div>
           <dl className="mt-3 grid grid-cols-1 gap-4 rounded-xl border border-slate-100 bg-slate-50/70 p-4 sm:grid-cols-2 lg:grid-cols-3">
             <Detail label="Mobile" value={record?.mobile} />
