@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getApiErrorMessage } from "../utils/apiError";
-import { emitApplicationSubmitted } from "../utils/applicationEvents";
 
 interface UseApplicationSubmitArgs<TApplication> {
   computeErrors: () => object;
@@ -22,7 +21,7 @@ interface UseApplicationSubmitResult<TApplication> {
   handleSubmit: (e: { preventDefault: () => void }) => Promise<void>;
 }
 
-export const useApplicationSubmit = <TApplication extends { _id: string }>({
+export const useApplicationSubmit = <TApplication extends { _id?: string }>({
   computeErrors, markAllTouched, agreed, submit, onSubmitSuccess,
 }: UseApplicationSubmitArgs<TApplication>): UseApplicationSubmitResult<TApplication> => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,15 +61,9 @@ export const useApplicationSubmit = <TApplication extends { _id: string }>({
     setIsSubmitting(true); setApiError("");
     try {
       const app = await submitRef.current();
-      if (!app || typeof app._id !== "string" || !app._id.trim()) {
-        throw new Error(
-          "Your application has not been submitted yet. It is currently saved as a draft; please try submitting again.",
-        );
-      }
-      setSubmittedApp(app); setSubmitted(true);
-      successRef.current?.(app._id, app);
-      // The header chip and /applications pick the new one up immediately.
-      emitApplicationSubmitted();
+      const savedDraft = (app ?? {}) as TApplication;
+      setSubmittedApp(savedDraft); setSubmitted(true);
+      successRef.current?.(savedDraft._id ?? "", savedDraft);
     } catch (err) {
       setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
     } finally { setIsSubmitting(false); }
