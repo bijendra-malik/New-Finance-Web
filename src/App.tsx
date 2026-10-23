@@ -43,25 +43,8 @@ const GoldLoanDashboard = lazy(() => import("./pages/dashboard/loans/GoldLoan/Go
 const FDIDashboard = lazy(() => import("./pages/dashboard/loans/FDI/FDIDashboard"));
 
 // ── Required-documents pages ──────────────────────────────────────────────────
-const RequiredDocumentPage = lazy(() => import("./components/sections/RequiredDocumentPage"));
-const PersonalLoanDocs = lazy(() => import("./pages/requireddocument/PersonalLoanDocs"));
-const BusinessLoanDocs = lazy(() => import("./pages/requireddocument/BusinessLoanDocs"));
-const HomeLoanDocs = lazy(() => import("./pages/requireddocument/HomeLoanDocs"));
-const LoanAgainstPropertyDocs = lazy(() => import("./pages/requireddocument/LoanAgainstPropertyDocs"));
-const BalanceTransferDocs = lazy(() => import("./pages/requireddocument/BalanceTransferDocs"));
-const VehicleLoanDocs = lazy(() => import("./pages/requireddocument/VehicleLoanDocs"));
-const CreditCardDocs = lazy(() => import("./pages/requireddocument/CreditCardDocs"));
-const EducationLoanDocs = lazy(() => import("./pages/requireddocument/EducationLoanDocs"));
-const ProjectLoanDocs = lazy(() => import("./pages/requireddocument/ProjectLoanDocs"));
-const CommercialPurchaseDocs = lazy(() => import("./pages/requireddocument/CommercialPurchaseDocs"));
-const LeaseRentalDocs = lazy(() => import("./pages/requireddocument/LeaseRentalDocs"));
-const WorkingCapitalDocs = lazy(() => import("./pages/requireddocument/WorkingCapitalDocs"));
-const FilmLoanDocs = lazy(() => import("./pages/requireddocument/FilmLoanDocs"));
-const ODCCLimitDocs = lazy(() => import("./pages/requireddocument/ODCCLimitDocs"));
-const LoanAgainstShareDocs = lazy(() => import("./pages/requireddocument/LoanAgainstShareDocs"));
-const NpaDocs = lazy(() => import("./pages/requireddocument/NpaDocs"));
-const GoldLoanDocs = lazy(() => import("./pages/requireddocument/GoldLoanDocs"));
-const FdiDocs = lazy(() => import("./pages/requireddocument/FdiDocs"));
+const RequiredDocumentLandingPage = lazy(() => import("./pages/requireddocument/RequiredDocumentLandingPage"));
+const RequiredDocumentDetailPage = lazy(() => import("./pages/requireddocument/RequiredDocumentDetailPage"));
 
 // ── Loan detail pages ─────────────────────────────────────────────────────────
 const PersonalLoanDetail = lazy(() => import("./pages/showdetails/PersonalLoanDetail"));
@@ -138,27 +121,6 @@ const dashboardRoutes: [string, React.ReactNode][] = [
   ["/dashboard/fdi", <FDIDashboard />],
 ];
 
-const requiredDocRoutes: [string, React.ReactNode][] = [
-  ["/requireddocument/personal-loan", <PersonalLoanDocs />],
-  ["/requireddocument/business-loan", <BusinessLoanDocs />],
-  ["/requireddocument/home-loan", <HomeLoanDocs />],
-  ["/requireddocument/loan-against-property", <LoanAgainstPropertyDocs />],
-  ["/requireddocument/balance-transfer", <BalanceTransferDocs />],
-  ["/requireddocument/vehicle-loan", <VehicleLoanDocs />],
-  ["/requireddocument/credit-card", <CreditCardDocs />],
-  ["/requireddocument/education-loan", <EducationLoanDocs />],
-  ["/requireddocument/project-loan", <ProjectLoanDocs />],
-  ["/requireddocument/commercial-purchase", <CommercialPurchaseDocs />],
-  ["/requireddocument/lease-rental", <LeaseRentalDocs />],
-  ["/requireddocument/working-capital", <WorkingCapitalDocs />],
-  ["/requireddocument/film-funding", <FilmLoanDocs />],
-  ["/requireddocument/od-cc-limit", <ODCCLimitDocs />],
-  ["/requireddocument/loan-against-share", <LoanAgainstShareDocs />],
-  ["/requireddocument/npa", <NpaDocs />],
-  ["/requireddocument/gold-loan", <GoldLoanDocs />],
-  ["/requireddocument/fdi", <FdiDocs />],
-];
-
 const detailRoutes: [string, React.ReactNode][] = [
   ["/showdetails/personal-loan", <PersonalLoanDetail />],
   ["/showdetails/business-loan", <BusinessLoanDetail />],
@@ -193,11 +155,8 @@ function App() {
 
               <Route path="/login" element={<Login />} />
 
-              <Route path="/requireddocument" element={<RequiredDocumentPage />} />
-
-              {requiredDocRoutes.map(([path, element]) => (
-                <Route key={path} path={path} element={element} />
-              ))}
+              <Route path="/requireddocument" element={<RequiredDocumentLandingPage />} />
+              <Route path="/requireddocument/:slug" element={<RequiredDocumentDetailPage />} />
 
               {detailRoutes.map(([path, element]) => (
                 <Route key={path} path={path} element={element} />
