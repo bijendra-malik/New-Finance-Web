@@ -32,7 +32,10 @@ const maskMobile = (mobile: string) =>
   mobile.length === 10 ? `${mobile.slice(0, 2)}******${mobile.slice(-2)}` : mobile;
 
 const applicationName = (application: CustomerStatusApplication) =>
-  application.productName?.trim() || titleCase(application.product) || "Loan application";
+  application.loanType?.trim() ||
+  application.productName?.trim() ||
+  titleCase(application.product) ||
+  "Loan application";
 
 const applicationNumber = (application: CustomerStatusApplication) =>
   application.applicationNumber?.trim() || application.applicationNo?.trim() || application._id?.trim();
