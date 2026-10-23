@@ -1,9 +1,4 @@
-/**
- * Product identifiers used by the UI mapped to their public URL slug.
- *
- * The OTP API receives the object key (for example, `educationLoan`) at
- * POST /auth/:loanKey. URL slugs are retained for links and display routing.
- */
+// UI product names, canonical backend keys, URL-safe slugs
 export const LOAN_SLUGS = {
   personal: "personal-loan",
   business: "business-loan",
@@ -26,6 +21,27 @@ export const LOAN_SLUGS = {
 } as const;
 
 export type LoanKey = keyof typeof LOAN_SLUGS;
+
+const LOAN_LABELS: Readonly<Record<LoanKey, string>> = {
+  personal: "Personal Loan",
+  business: "Business Loan",
+  home: "Home Loan",
+  lap: "Loan Against Property",
+  balanceTransfer: "Balance Transfer",
+  vehicleLoan: "Vehicle Loan",
+  creditCard: "Credit Card",
+  educationLoan: "Education Loan",
+  projectLoan: "Project Loan",
+  commercialPurchase: "Commercial Purchase",
+  leaseRentalDiscounting: "Lease Rental Discounting",
+  workingCapital: "Working Capital",
+  filmFunding: "Film Funding",
+  odCcLimit: "OD CC Limit",
+  loanAgainstShare: "Loan Against Share",
+  goldLoan: "Gold Loan",
+  fdiLoan: "FDI",
+  npaLoan: "NPA",
+};
 
 const LOAN_KEY_ALIASES: Readonly<Record<string, LoanKey>> = {
   "Personal Loan": "personal",
@@ -56,3 +72,7 @@ export const loanKeyFor = (product: string): LoanKey | null =>
   product in LOAN_SLUGS
     ? (product as LoanKey)
     : LOAN_KEY_ALIASES[product] ?? null;
+
+/** Display label for a canonical loan key. */
+export const loanLabelFor = (loanKey: string | null | undefined): string | null =>
+  loanKey && loanKey in LOAN_LABELS ? LOAN_LABELS[loanKey as LoanKey] : null;
