@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ApiUser } from "../api/auth";
 import { AuthContext } from "./authContext";
 import { onAuthCleared } from "../utils/authEvents";
+import { resetSessionCaches } from "../utils/sessionReset";
 
 const TOKEN_KEY = "token";
 const USER_KEY = "user";
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(readStoredToken);
 
   const login = useCallback((newToken: string, newUser: ApiUser) => {
+    resetSessionCaches();
     setToken(newToken);
     setUser(newUser);
     writeStorage(TOKEN_KEY, newToken);
@@ -62,10 +64,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     removeStorage(TOKEN_KEY);
     removeStorage(USER_KEY);
+    resetSessionCaches();
   }, []);
 
-  // A 401 means the token is no longer trusted and the axios interceptor has
-  // already cleared the stored copy, so drop it from state as well.
   useEffect(() => onAuthCleared(logout), [logout]);
 
   return (
