@@ -359,9 +359,8 @@ export const fetchCustomerLoans = async (
   customerId: string,
 ): Promise<{ ok: true; loans: FranchiseCustomerLoan[] } | { ok: false; message: string }> => {
   try {
-    const res = await axiosInstance.post<CustomerLoansResponse>(
-      `/franchise/customer/${encodeURIComponent(customerId)}/loans`,
-      {},
+    const res = await axiosInstance.get<CustomerLoansResponse>(
+      `/franchise/customer/${encodeURIComponent(customerId)}/loans`
     );
     const unwrapped = unwrapList<FranchiseCustomerLoan>(
       res,
