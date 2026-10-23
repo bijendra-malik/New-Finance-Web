@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
 import { useAuth } from "../../context/authContext";
 import {
-  draftIdFromRegister,
   requestLoanApplyOTP,
   requestLoginOTP,
   verifyLoginOTP,
@@ -15,9 +14,44 @@ import {
 import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { loanKeyFor } from "../../constants/loanSlugs";
-import { markApplySessionPending, rememberDraftId } from "../../utils/applySession";
+import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
+import { markApplySessionPending } from "../../utils/applySession";
+import {
+  COOLDOWN_MS,
+  clearPendingCreditScoreDraft,
+  formatCooldownExpiry,
+  readPendingCreditScoreDraft,
+  readSubmittedApplicationAt,
+  remainingCreditScoreWindow,
+} from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
+
+const ALREADY_REGISTERED_SIGNALS = new Set([
+  "mobile already exists",
+  "mobile already registered",
+  "already registered",
+  "mobile number already registered",
+]);
+
+const isAlreadyRegisteredResponse = (
+  response: AuthActionResponse,
+): boolean => {
+  if (response.success) return false;
+  const message =
+    typeof response.message === "string" ? response.message.trim().toLowerCase() : "";
+  if (ALREADY_REGISTERED_SIGNALS.has(message)) return true;
+  if (message.includes("already")) {
+    if (
+      message.includes("mobile") ||
+      message.includes("number") ||
+      message.includes("registered") ||
+      message.includes("exist")
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
 
 // ── Loan type → dashboard route ───────────────────────────────────────────────
 
@@ -146,7 +180,7 @@ const ApplicationModal = ({
 }: ApplicationModalProps) => {
   const navigate = useNavigate();
   const setApplicantPrefill = useSetApplicantPrefill();
-  const { login, isLoggedIn } = useAuth();
+  const { login, isLoggedIn, user } = useAuth();
 
   // Sign up (register for a product) vs Sign in (returning customer).
   const openedAsLogin = productName.trim().toLowerCase() === "log in";
@@ -193,6 +227,7 @@ const ApplicationModal = ({
   // Where to land once the mobile is verified.
   const [pendingDashboard, setPendingDashboard] = useState("");
   const [sessionWasSignedIn, setSessionWasSignedIn] = useState(true);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   const resetAll = () => {
     setFullName("");
@@ -213,6 +248,7 @@ const ApplicationModal = ({
     setOtpBusy(false);
     setResendNotice("");
     setResending(false);
+    setAlreadyRegistered(false);
     setPendingDashboard("");
     setSessionWasSignedIn(true);
     setMode(openedAsLogin ? "signin" : "signup");
@@ -372,6 +408,14 @@ const ApplicationModal = ({
       return;
     }
 
+    if (!isLoginMode) {
+      const submittedAt = readSubmittedApplicationAt(user?._id ?? mobile, loanKey);
+      if (submittedAt && Date.parse(submittedAt) + COOLDOWN_MS > Date.now()) {
+        setApiError(`You can apply for ${productName} again on ${formatCooldownExpiry(submittedAt)}.`);
+        return;
+      }
+    }
+
     // Every application is authorised by its own OTP: re-applying — for another
     // product, or after abandoning one — requests a fresh code and replaces the
     // token with the new one, so a stale session can never file the application.
@@ -380,14 +424,13 @@ const ApplicationModal = ({
     try {
       const response = await requestOtp();
       if (!response.success) {
+        if (isAlreadyRegisteredResponse(response)) {
+          setAlreadyRegistered(true);
+          setStep("details");
+          return;
+        }
         setApiError(response.message || "We could not send the OTP just now. Please try again.");
         return;
-      }
-      // The register response opens the draft application: remember its id so
-      // loan-apply and credit-score can be sent against the same draft.
-      if (!isLoginMode && loanKey) {
-        const draftId = draftIdFromRegister(response);
-        if (draftId) rememberDraftId(loanKey, draftId);
       }
       setPendingDashboard(dashboardPath);
       setOtp("");
@@ -421,8 +464,23 @@ const ApplicationModal = ({
       }
       login(response.token, response.user);
       if (isLoginMode) {
-        // Sign-in opens the requested product's form. It does not load the
-        // all-products applications page or create a disposable apply session.
+        const pendingDraft = readPendingCreditScoreDraft(response.user._id);
+        if (pendingDraft) {
+          if (remainingCreditScoreWindow(pendingDraft.createdAt).expired) {
+            clearPendingCreditScoreDraft();
+          } else {
+            resetAll();
+            onClose();
+            navigate("/credit-score", {
+              state: {
+                product: loanLabelFor(pendingDraft.loanKey) ?? pendingDraft.loanKey,
+                requestedProduct: productName,
+              },
+            });
+            return;
+          }
+        }
+        // With no active draft, sign-in opens the requested product's form.
         resetAll();
         onClose();
         navigate(pendingDashboard);
@@ -568,6 +626,30 @@ const ApplicationModal = ({
                   text-sm text-red-600 flex gap-2.5 items-start">
                   <span className="shrink-0 text-base">⚠️</span>
                   <span>{apiError}</span>
+                </div>
+              )}
+
+              {/* Feature 1 — this mobile is already registered; sign in instead. */}
+              {alreadyRegistered && (
+                <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Already in our system</p>
+                  <p className="mt-1 text-sm text-emerald-800">
+                    This mobile number is already registered with us. To continue applying for {productName},
+                    sign in with that number instead.
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button variant="outline" className="flex-1 rounded-lg font-semibold"
+                      onClick={() => {
+                        setAlreadyRegistered(false);
+                        switchMode("signin");
+                      }}>
+                      Sign in
+                    </Button>
+                    <Button variant="ghost" className="flex-1 rounded-lg font-semibold"
+                      onClick={() => setAlreadyRegistered(false)}>
+                      Try again
+                    </Button>
+                  </div>
                 </div>
               )}
 
