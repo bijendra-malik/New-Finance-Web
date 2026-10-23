@@ -29,6 +29,7 @@ export interface CustomerStatusApplication {
   _id?: string;
   applicationNumber?: string;
   applicationNo?: string;
+  loanType?: string;
   product?: string;
   productName?: string;
   status?: string;
