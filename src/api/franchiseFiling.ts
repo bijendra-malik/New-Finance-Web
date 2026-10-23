@@ -51,6 +51,9 @@ const APPLY_PATHS: Readonly<Record<string, string>> = {
 export const productKeyForApplyPath = (url: string): string | null =>
   APPLY_PATHS[url.split("?")[0].replace(/\/+$/, "")] ?? null;
 
+const isCustomerLoanApplyPath = (url: string): boolean =>
+  url.split("?")[0].replace(/\/+$/, "") === "/customer/loan-apply";
+
 // ── Request rewrite ──────────────────────────────────────────────────────────
 
 const filingsByRequest = new WeakMap<InternalAxiosRequestConfig, FranchiseFiling>();
@@ -70,7 +73,8 @@ export const franchiseApplyRequestInterceptor = (
   if (url.startsWith("/franchise/")) return config;
 
   const productKey = productKeyForApplyPath(url);
-  if (productKey !== filing.productKey) return config;
+  if (!isCustomerLoanApplyPath(url) && productKey === null) return config;
+  if (productKey !== null && productKey !== filing.productKey) return config;
 
   const payload =
     config.data && typeof config.data === "object"

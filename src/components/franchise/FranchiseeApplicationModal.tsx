@@ -27,7 +27,13 @@ const FranchiseeApplicationModal = ({
   const isWide = useMediaQuery("(min-width: 1024px)");
 
   return (
-    <Modal open={open} onClose={onClose} labelledBy="franchisee-application-title" maxWidth="max-w-5xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      labelledBy="franchisee-application-title"
+      maxWidth="max-w-none"
+      fullScreen
+    >
       {/* Header */}
       <div
         className="relative shrink-0 overflow-hidden px-6 py-3.5"
@@ -66,7 +72,7 @@ const FranchiseeApplicationModal = ({
       </div>
 
       {/* Body */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8 lg:px-12">
         <FranchiseForm
           variant="franchisee"
           presentation={isWide ? "horizontal" : "stepped"}
