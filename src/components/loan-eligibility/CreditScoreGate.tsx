@@ -1,327 +1,161 @@
-import { useEffect, useState } from "react";
-import { fetchCreditScore } from "../../api/customer";
+import { useState } from "react";
+import { submitCreditScore, type CreditScoreResponse } from "../../api/customer";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { emitApplicationSubmitted } from "../../utils/applicationEvents";
 import { loanKeyFor } from "../../constants/loanSlugs";
-import { getDraftId } from "../../utils/applySession";
+import { clearApplySessionPending, getDraftId } from "../../utils/applySession";
 import CreditScoreGauge from "./CreditScoreGauge";
-import {
-  BAND_META,
-  SCORE_MAX,
-  SCORE_MIN,
-  VERDICT_META,
-  bandForScore,
-  evaluateCreditScore,
-  isValidScore,
-  normalizeBand,
-  type CreditScoreEvaluation,
-} from "./creditScoreEvaluation";
+import { BAND_META, SCORE_MAX, SCORE_MIN, bandForScore, isValidScore } from "./creditScoreEvaluation";
 
-type Phase = "entry" | "evaluating" | "verdict";
+type Result = { eligible: boolean; message: string; application: Record<string, unknown> | null };
 
-interface BureauNote {
-  tone: "info" | "warn" | "error";
-  message: string;
-}
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 
-const NOTE_STYLE: Record<BureauNote["tone"], { background: string; borderColor: string; color: string }> = {
-  info: { background: "var(--brand-teal-14)", borderColor: "var(--brand-teal-33)", color: "var(--brand-dark)" },
-  warn: { background: "#fffbeb", borderColor: "#fde68a", color: "#92400e" },
-  error: { background: "#fef2f2", borderColor: "#fecaca", color: "#991b1b" },
+const eligibilityFrom = (response: CreditScoreResponse): boolean | null => {
+  const candidates = [asRecord(response), asRecord(response.data), asRecord(response.application)];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (typeof candidate.eligible === "boolean") return candidate.eligible;
+    if (typeof candidate.isEligible === "boolean") return candidate.isEligible;
+    const status = typeof candidate.status === "string" ? candidate.status.toLowerCase() : "";
+    if (["eligible", "approved", "submitted"].includes(status)) return true;
+    if (["ineligible", "not eligible", "rejected", "declined"].includes(status)) return false;
+  }
+  return null;
 };
 
-/**
- * The step that follows a submitted application: the customer enters the score
- * from their credit report, we evaluate it against the lender cut-offs, and the
- * verdict is shown with the band meter. The bureau endpoint is offered as a
- * shortcut to fill the field, never as the only way in.
- */
+const applicationFrom = (response: CreditScoreResponse): Record<string, unknown> | null => {
+  const direct = asRecord(response.application);
+  if (direct) return direct;
+  const data = asRecord(response.data);
+  return asRecord(data?.application) ?? data;
+};
+
+const displayValue = (value: unknown): string | null => {
+  if (typeof value === "string" && value.trim()) return value;
+  if (typeof value === "number") return String(value);
+  return null;
+};
+
+/** Completes a saved draft; the backend owns the eligibility decision. */
 const CreditScoreGate = ({ product }: { product?: string }) => {
   const productLabel = product?.trim() || "this loan";
-  const [phase, setPhase] = useState<Phase>("entry");
   const [rawScore, setRawScore] = useState("");
   const [error, setError] = useState("");
-  const [pendingScore, setPendingScore] = useState<number | null>(null);
-  const [evaluation, setEvaluation] = useState<CreditScoreEvaluation | null>(null);
-  const [bureauNote, setBureauNote] = useState<BureauNote | null>(null);
-  const [fetchingBureau, setFetchingBureau] = useState(false);
-
-  // A short "evaluating" beat, so the verdict does not appear as if it was
-  // already decided before the customer finished typing.
-  useEffect(() => {
-    if (phase !== "evaluating" || pendingScore == null) return;
-    const timer = setTimeout(() => {
-      setEvaluation(evaluateCreditScore(pendingScore, productLabel));
-      setPhase("verdict");
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [phase, pendingScore, productLabel]);
-
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<Result | null>(null);
   const typedScore = Number(rawScore);
   const typedIsValid = rawScore.trim() !== "" && isValidScore(typedScore);
 
-  const submitScore = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitScore = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!rawScore.trim()) {
-      setError("Enter the score shown on your credit report");
-      return;
-    }
-    if (!isValidScore(typedScore)) {
-      setError(`Enter a score between ${SCORE_MIN} and ${SCORE_MAX}`);
-      return;
-    }
+    if (!rawScore.trim()) return setError("Enter the score shown on your credit report");
+    if (!isValidScore(typedScore)) return setError(`Enter a whole-number score between ${SCORE_MIN} and ${SCORE_MAX}`);
+
+    const draftId = (product ? getDraftId(loanKeyFor(product)) : null) ?? getDraftId();
+    if (!draftId) return setError("We could not find this application draft. Please start your application again.");
+
     setError("");
-    setPendingScore(typedScore);
-    setPhase("evaluating");
-  };
-
-  const fillFromBureau = async () => {
-    setFetchingBureau(true);
-    setBureauNote(null);
+    setSubmitting(true);
     try {
-      // POST /customer/credit-score is sent with the draftId the register call
-      // opened. The product arrives here as a display label, so an unrecognised
-      // one falls back to the most recently registered draft — which belongs to
-      // the flow that just submitted.
-      const draftId =
-        (product ? getDraftId(loanKeyFor(product)) : null) ?? getDraftId();
-      const data = await fetchCreditScore(draftId);
-      const band = normalizeBand(data.band);
-      if (data.score != null && isValidScore(Math.round(data.score))) {
-        const score = Math.round(data.score);
-        setRawScore(String(score));
-        setError("");
-        setBureauNote({
-          tone: "info",
-          message:
-            data.message?.trim() ||
-            `We filled in ${score} from your bureau record — you can still change it before checking.`,
-        });
-      } else {
-        setBureauNote({
-          tone: "warn",
-          message:
-            data.message?.trim() ||
-            (band
-              ? `Your bureau reported the ${BAND_META[band].label} band (${BAND_META[band].range[0]}–${BAND_META[band].range[1]}) but no numeric score. Enter the number from your credit report.`
-              : "Your bureau did not share a score. Enter the number from your credit report."),
-        });
+      const response = await submitCreditScore(draftId, typedScore);
+      const eligible = eligibilityFrom(response);
+      if (eligible == null) {
+        setError(response.message?.trim() || "We could not confirm your eligibility. Please try again.");
+        return;
       }
-    } catch (err) {
-      const signedOut = (err as { response?: { status?: number } })?.response?.status === 401;
-      setBureauNote({
-        tone: signedOut ? "warn" : "error",
-        message: signedOut
-          ? "Your session ended before we could check the bureau. Enter your score manually, or verify your mobile again and retry."
-          : getApiErrorMessage(err, "We could not reach the credit bureau. Enter your score manually."),
+      setResult({
+        eligible,
+        application: applicationFrom(response),
+        message: response.message?.trim() || (eligible
+          ? "Your application has been submitted successfully."
+          : "You are not eligible for this application at the moment."),
       });
+      if (eligible) {
+        clearApplySessionPending();
+        emitApplicationSubmitted();
+      }
+    } catch (requestError) {
+      setError(getApiErrorMessage(requestError, "We could not check your eligibility. Please try again."));
     } finally {
-      setFetchingBureau(false);
+      setSubmitting(false);
     }
   };
 
-  if (phase === "evaluating") {
-    return (
-      <section
-        aria-busy="true"
-        aria-live="polite"
-        className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8"
-      >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-teal-14)">
-          <span
-            className="h-6 w-6 animate-spin rounded-full border-2 border-(--brand-teal-33) border-t-(--brand-teal)"
-            aria-hidden="true"
-          />
-        </div>
-        <h2 className="mt-4 text-lg font-extrabold text-(--brand-navy)">Evaluating your application…</h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
-          Checking a score of {pendingScore} against the cut-offs our lenders use for {productLabel}.
-        </p>
-        <div className="mx-auto mt-5 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
-          <div className="h-full w-1/2 animate-pulse rounded-full bg-(--brand-teal)" />
-        </div>
-      </section>
-    );
-  }
+  if (result) {
+    const band = BAND_META[bandForScore(typedScore)];
+    if (result.eligible) {
+      const summary = [
+        ["Applicant", result.application?.fullName],
+        ["Product", result.application?.product ?? productLabel],
+        ["Application ID", result.application?._id ?? result.application?.applicationId ?? result.application?.id],
+        ["Loan amount", result.application?.loanAmount],
+        ["Mobile", result.application?.mobile],
+        ["Email", result.application?.email],
+      ].map(([label, value]) => ({ label, value: displayValue(value) }))
+        .filter((item): item is { label: string; value: string } => Boolean(item.value));
 
-  if (phase === "verdict" && evaluation) {
-    const verdict = VERDICT_META[evaluation.verdict];
-    const band = BAND_META[evaluation.band];
-    return (
-      <section aria-labelledby="credit-verdict-title" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div
-          role="status"
-          className="rounded-xl border p-5"
-          style={{ background: verdict.bg, borderColor: verdict.border }}
-        >
-          <div className="flex items-start gap-4">
-            <span
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg font-black text-white"
-              style={{ background: verdict.color }}
-              aria-hidden="true"
-            >
-              {verdict.icon}
-            </span>
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: verdict.color }}>
-                {verdict.label}
-              </p>
-              <h2 id="credit-verdict-title" className="mt-1 text-xl font-extrabold" style={{ color: verdict.color }}>
-                {evaluation.headline}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{evaluation.detail}</p>
+      return (
+        <section aria-labelledby="application-confirmation-title" className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Application submitted</p>
+            <h2 id="application-confirmation-title" className="mt-1 text-2xl font-extrabold text-emerald-900">You’re eligible for {productLabel}</h2>
+            <p className="mt-2 text-sm leading-6 text-emerald-800">{result.message}</p>
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+            <div className="text-center sm:text-left">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Credit score</p>
+              <p className="mt-1 text-4xl font-extrabold" style={{ color: band.color }}>{typedScore}</p>
+              <p className="text-xs font-semibold" style={{ color: band.color }}>{band.label} band</p>
             </div>
+            <CreditScoreGauge score={typedScore} band={bandForScore(typedScore)} />
           </div>
-        </div>
-
-        <div className="mt-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Your score</p>
-            <p className="text-xs font-semibold" style={{ color: band.color }}>
-              {band.label} band
-            </p>
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="text-sm font-extrabold text-(--brand-navy)">Application summary</h3>
+            {summary.length > 0 ? (
+              <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                {summary.map(({ label, value }) => <div key={label}><dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</dt><dd className="mt-0.5 wrap-break-word font-semibold text-slate-700">{value}</dd></div>)}
+              </dl>
+            ) : <p className="mt-2 text-sm text-slate-600">Your application is submitted and our team will contact you with the next steps.</p>}
           </div>
-          <p className="mt-1 flex items-end gap-2">
-            <span className="text-4xl font-extrabold leading-none" style={{ color: band.color }}>
-              {evaluation.score}
-            </span>
-            <span className="pb-0.5 text-xs font-semibold text-slate-400">/ {SCORE_MAX}</span>
-          </p>
-          <CreditScoreGauge score={evaluation.score} band={evaluation.band} />
-        </div>
+        </section>
+      );
+    }
 
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">What happens next</p>
-          <ul className="mt-2 space-y-2">
-            {evaluation.steps.map((step) => (
-              <li key={step} className="flex gap-2 text-[12.5px] leading-6 text-slate-600">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: verdict.color }} aria-hidden="true" />
-                <span>{step}</span>
-              </li>
-            ))}
-          </ul>
+    return (
+      <section aria-labelledby="eligibility-result-title" className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm sm:p-7">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-red-700">Not eligible</p>
+          <h2 id="eligibility-result-title" className="mt-1 text-2xl font-extrabold text-red-900">We can’t submit this application yet</h2>
+          <p className="mt-2 text-sm leading-6 text-red-800">{result.message}</p>
         </div>
-
-        <p className="mt-4 text-[11px] leading-5 text-slate-400">
-          This check uses the score you entered and is indicative only. Final approval, amount and rate are decided by the
-          lender after verification.
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setPhase("entry");
-              setEvaluation(null);
-              setPendingScore(null);
-            }}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
-          >
-            Change my score
-          </button>
-        </div>
+        <p className="mt-5 text-sm leading-6 text-slate-600">You can improve your score and try again later. Your application has not been submitted.</p>
+        <button type="button" onClick={() => setResult(null)} className="mt-5 rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50">Change credit score</button>
       </section>
     );
   }
 
   return (
     <section aria-labelledby="credit-score-gate-title" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex items-start gap-4">
-        <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
-          style={{ background: "linear-gradient(135deg,var(--brand-teal),var(--brand-navy))" }}
-          aria-hidden="true"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13a9 9 0 0118 0M12 13l4-3" />
-          </svg>
-        </span>
-        <div>
-          <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">
-            One last step: your credit score
-          </h2>
-          <p className="mt-1 max-w-md text-[12.5px] leading-6 text-slate-500">
-            Enter the score from your credit report so we can tell you whether {productLabel} is within reach — and what to
-            do next if it is not.
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={submitScore} noValidate className="mt-5">
-        <label htmlFor="credit-score-input" className="block text-xs font-bold uppercase tracking-wide text-slate-500">
-          Your credit score
-        </label>
+      <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">One last step: your credit score</h2>
+      <p className="mt-1 max-w-md text-[12.5px] leading-6 text-slate-500">Enter the score from your credit report and check your eligibility.</p>
+      <form onSubmit={(event) => void submitScore(event)} noValidate className="mt-5">
+        <label htmlFor="credit-score-input" className="block text-xs font-bold uppercase tracking-wide text-slate-500">Your credit score</label>
         <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:items-start">
-          <div className="sm:w-40">
-            <input
-              id="credit-score-input"
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={3}
-              value={rawScore}
-              onChange={(event) => {
-                setRawScore(event.target.value.replace(/\D/g, "").slice(0, 3));
-                setError("");
-              }}
-              placeholder="750"
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? "credit-score-error" : "credit-score-hint"}
-              className="w-full rounded-xl border px-4 py-3 text-center text-2xl font-extrabold tracking-widest text-(--brand-navy) transition focus:outline-none focus:ring-2 focus:ring-(--brand-teal-44)"
-              style={{ borderColor: error ? "#fca5a5" : "#cbd5e1", background: error ? "#fef2f2" : "#fff" }}
-            />
-          </div>
+          <input id="credit-score-input" type="text" inputMode="numeric" autoComplete="off" maxLength={3} value={rawScore}
+            onChange={(event) => { setRawScore(event.target.value.replace(/\D/g, "").slice(0, 3)); setError(""); }} placeholder="***"
+            aria-invalid={error ? true : undefined} aria-describedby={error ? "credit-score-error" : "credit-score-hint"}
+            className="w-full rounded-xl border px-4 py-3 text-center text-2xl font-extrabold tracking-widest text-(--brand-navy) sm:w-40"
+            style={{ borderColor: error ? "#fca5a5" : "#cbd5e1", background: error ? "#fef2f2" : "#fff" }} />
           <div className="min-w-0 flex-1">
-            {error ? (
-              <p id="credit-score-error" role="alert" className="text-xs font-semibold text-red-600">
-                {error}
-              </p>
-            ) : (
-              <p id="credit-score-hint" className="text-[12px] leading-5 text-slate-500">
-                Between {SCORE_MIN} and {SCORE_MAX}. Check your score for free with any bureau — it does not drop when you
-                check it yourself.
-              </p>
-            )}
-            {typedIsValid && (
-              <p className="mt-1.5 text-[12px] font-semibold" style={{ color: BAND_META[bandForScore(typedScore)].color }}>
-                That is the {BAND_META[bandForScore(typedScore)].label} band ({BAND_META[bandForScore(typedScore)].range[0]}–
-                {BAND_META[bandForScore(typedScore)].range[1]}).
-              </p>
-            )}
+            {error ? <p id="credit-score-error" role="alert" className="text-xs font-semibold text-red-600">{error}</p> : <p id="credit-score-hint" className="text-[12px] leading-5 text-slate-500">Between {SCORE_MIN} and {SCORE_MAX}.</p>}
+            {typedIsValid && <p className="mt-1.5 text-[12px] font-semibold" style={{ color: BAND_META[bandForScore(typedScore)].color }}>This is the {BAND_META[bandForScore(typedScore)].label} band.</p>}
           </div>
         </div>
-
-        {bureauNote && (
-          <p
-            className="mt-4 rounded-xl border px-4 py-3 text-[12.5px] font-semibold leading-6"
-            style={NOTE_STYLE[bureauNote.tone]}
-          >
-            {bureauNote.message}
-          </p>
-        )}
-
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button
-            type="submit"
-            className="rounded-xl px-6 py-3 text-sm font-bold text-white shadow-md transition hover:scale-[1.02] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-44)"
-            style={{ background: "linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%)" }}
-          >
-            Check my eligibility
-          </button>
-          <button
-            type="button"
-            onClick={() => void fillFromBureau()}
-            disabled={fetchingBureau}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-3 text-xs font-bold text-(--brand-navy) transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {fetchingBureau && (
-              <span
-                className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-teal-33) border-t-(--brand-teal)"
-                aria-hidden="true"
-              />
-            )}
-            {fetchingBureau ? "Checking bureau…" : "Use my bureau score"}
-          </button>
-        </div>
+        <button type="submit" disabled={submitting} className="mt-5 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-60" style={{ background: "linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%)" }}>
+          {submitting ? "Checking eligibility…" : "Check eligibility & submit"}
+        </button>
       </form>
     </section>
   );
