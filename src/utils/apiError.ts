@@ -4,7 +4,11 @@ export const getApiErrorMessage = (
   fallback = "Something went wrong. Please try again."
 ): string => {
   const anyErr = err as { response?: { data?: { message?: string } }; message?: string };
-  return anyErr?.response?.data?.message || anyErr?.message || fallback;
+  const message = anyErr?.response?.data?.message || anyErr?.message;
+  if (typeof message === "string" && /no document found.*model\s+["']otp["']/i.test(message)) {
+    return "This OTP request has expired or is no longer available. Please request a new OTP.";
+  }
+  return message || fallback;
 };
 
 export type ApiFieldErrors = Record<string, string>;
