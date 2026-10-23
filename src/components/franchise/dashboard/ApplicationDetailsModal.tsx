@@ -25,12 +25,17 @@ interface ApplicationDetailsModalProps {
   onClose: () => void;
 }
 
-const Detail = ({ label, value }: { label: string; value?: string | null }) => (
-  <div>
-    <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-    <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{value?.trim() || "—"}</dd>
-  </div>
-);
+/** Label/value pair used across the detail panes. */
+const Detail = ({ label, value }: { label: string; value?: string | number | null }) => {
+  // Loan rows carry backend-shaped values — a number must not throw here.
+  const text = value === null || value === undefined ? "" : String(value).trim();
+  return (
+    <div>
+      <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
+      <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{text || "—"}</dd>
+    </div>
+  );
+};
 
 /**
  * One application from the franchise-wide loan list. When the row carries a
