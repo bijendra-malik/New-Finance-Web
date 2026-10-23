@@ -170,7 +170,7 @@ const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {PRODUCTS.map((product) => (
           <article
             key={product.key}
@@ -201,7 +201,7 @@ const LoanFormsMenu = ({ session, canSubmit, onOpenProduct }: LoanFormsMenuProps
                   <span className="text-lg leading-none">{product.icon}</span>
                 </span>
                 <div className="min-w-0">
-                  <h3 className="truncate text-[15px] font-extrabold text-slate-800">{product.name}</h3>
+                  <h3 className="text-[15px] font-extrabold text-slate-800">{product.name}</h3>
                   <p className="mt-0.5 text-[11.5px] text-slate-500">{product.category}</p>
                 </div>
               </div>

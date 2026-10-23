@@ -7,6 +7,9 @@ import type { FranchiseIconName } from "../components/franchise/FranchiseIcon";
 import FranchiseStatusChip from "../components/franchise/dashboard/FranchiseStatusChip";
 import CustomerRegistry from "../components/franchise/dashboard/CustomerRegistry";
 import AllLoansSection from "../components/franchise/dashboard/AllLoansSection";
+import PlanPanel from "../components/franchise/dashboard/PlanPanel";
+import NotificationBell from "../components/franchise/dashboard/NotificationBell";
+import ProfilePanel from "../components/franchise/dashboard/ProfilePanel";
 import LoanFormsMenu from "./franchise/loan-forms/LoanFormsMenu";
 import LoanFormModal from "./franchise/loan-forms/LoanFormModal";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
@@ -102,18 +105,61 @@ const agreementTone = (status?: string): AgreementTone => {
 
 // ── Sections ─────────────────────────────────────────────────────────────────
 
-type Section = "overview" | "customers" | "loans" | "apply";
+type Section = "overview" | "customers" | "loans" | "apply" | "profile" | "plan";
 
-const SECTIONS: { id: Section; label: string; icon: FranchiseIconName }[] = [
-  { id: "overview", label: "Overview", icon: "scale" },
-  { id: "customers", label: "Customers", icon: "user" },
-  { id: "loans", label: "All Loans", icon: "layers" },
-  { id: "apply", label: "Apply Loan", icon: "pen-line" },
+const SECTIONS: { id: Section; label: string; icon: FranchiseIconName; description: string }[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    icon: "scale",
+    description: "Your franchise at a glance — customers, filings and agreement status.",
+  },
+  {
+    id: "customers",
+    label: "Customers",
+    icon: "user",
+    description: "Register clients once, then file any loan product for them.",
+  },
+  {
+    id: "loans",
+    label: "All Loans",
+    icon: "layers",
+    description: "Every application filed under your franchise ID, with its live status.",
+  },
+  {
+    id: "apply",
+    label: "Apply Loan",
+    icon: "pen-line",
+    description: "Pick a product and file it on behalf of a registered customer.",
+  },
+  {
+    id: "profile",
+    label: "My Details",
+    icon: "handshake",
+    description: "Your personal details and franchise account information.",
+  },
+  {
+    id: "plan",
+    label: "My Plan",
+    icon: "plans",
+    description: "Your current plan, the time left on it, and every published plan.",
+  },
 ];
 
 const resolveSection = (raw: string | null): Section => {
-  if (raw === "customers" || raw === "loans" || raw === "apply" || raw === "overview") return raw;
+  if (
+    raw === "customers" ||
+    raw === "loans" ||
+    raw === "apply" ||
+    raw === "overview" ||
+    raw === "profile" ||
+    raw === "plan"
+  ) {
+    return raw;
+  }
   if (raw === "products") return "apply";
+  if (raw === "plans") return "plan";
+  if (raw === "details") return "profile";
   return "overview";
 };
 
@@ -332,6 +378,11 @@ const FranchisorDashboardPage = () => {
   const totalLoanValue = loans.reduce((sum, loan) => sum + (loanAmount(loan) ?? 0), 0);
   const refreshing = loadingProfile || loadingCustomers || loadingLoans;
 
+  const activeSection = SECTIONS.find((item) => item.id === section) ?? SECTIONS[0];
+  const partnerMeta = [profile?.plan?.name, profile?.createdAt ? `Partner since ${formatDate(profile.createdAt)}` : null]
+    .filter(Boolean)
+    .join(" · ");
+
   // ── Signed-out guard ───────────────────────────────────────────────────────
   if (!session || !hasToken || !isLoggedIn) {
     return (
@@ -396,386 +447,396 @@ const FranchisorDashboardPage = () => {
 
   return (
     <div style={{ background: "var(--form-page-bg)", marginTop: "var(--header-h)", minHeight: "calc(100vh - var(--header-h))" }}>
-      <div className="mx-auto max-w-7xl px-4 py-7 md:px-8 md:py-9">
-        {/* Identity header */}
-        <div
-          className="overflow-hidden rounded-2xl"
-          style={{ background: "linear-gradient(120deg,var(--brand-navy-deep) 0%,var(--brand-navy) 62%,var(--brand-navy-light) 100%)" }}
-        >
-          <div className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-7">
-            <div className="flex min-w-0 items-center gap-4">
+      <div className="lg:flex lg:items-stretch">
+          {/* Left panel — identity and section navigation */}
+          <aside
+            className="text-white lg:sticky lg:top-(--header-h) lg:flex lg:h-[calc(100vh-var(--header-h))] lg:w-66 lg:shrink-0 lg:flex-col lg:overflow-y-auto"
+            style={{ background: "linear-gradient(165deg,var(--brand-navy-deep) 0%,var(--brand-navy) 58%,var(--brand-navy-light) 100%)" }}
+          >
+            <div className="flex items-center gap-3 px-4 pt-4 pb-3 lg:flex-col lg:items-start lg:gap-3 lg:px-5 lg:pt-5">
               <span
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-extrabold lg:h-12 lg:w-12 lg:text-base"
                 style={{ background: "linear-gradient(135deg,var(--brand-teal),var(--brand-yellow))", color: "var(--brand-navy-deep)" }}
                 aria-hidden="true"
               >
                 {initials}
               </span>
-              <div className="min-w-0">
-                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "var(--brand-yellow)" }}>
-                  Franchisee Dashboard
+
+              <div className="min-w-0 flex-1 lg:w-full lg:flex-none">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "var(--brand-yellow)" }}>
+                  Franchisee
                 </p>
-                <h1 className="truncate text-xl font-bold text-white md:text-2xl">{name}</h1>
-                <p className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-white/75">
-                  <span className="rounded-full px-2 py-0.5 font-bold" style={{ background: "rgba(255,255,255,0.16)" }}>
-                    ID {session.franchiseId}
-                  </span>
+                <p className="truncate text-[15px] font-bold leading-tight text-white">{name}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-semibold text-white/60">
+                  <span>ID {session.franchiseId}</span>
                   {profile?.isVerified && (
-                    <span className="rounded-full px-2 py-0.5 font-bold" style={{ background: "rgba(38,174,144,0.3)", color: "#d6fff5" }}>
+                    <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "rgba(38,174,144,0.28)", color: "#d6fff5" }}>
                       ✓ Verified
                     </span>
                   )}
-                  {profile?.plan?.name && (
-                    <span className="rounded-full px-2 py-0.5 font-bold" style={{ background: "rgba(255,255,255,0.12)" }}>
-                      {profile.plan.name}
-                    </span>
-                  )}
-                  {profile?.createdAt && (
-                    <span className="text-white/55">Partner since {formatDate(profile.createdAt)}</span>
-                  )}
                 </p>
+                {partnerMeta && (
+                  <p className="mt-1 hidden text-[11px] text-white/45 lg:block">{partnerMeta}</p>
+                )}
               </div>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
               <span
-                className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[12px] font-bold"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold whitespace-nowrap"
                 style={{ background: status.bg, border: `1px solid ${status.border}`, color: status.text }}
               >
-                <span className="h-2 w-2 rounded-full" style={{ background: status.text }} aria-hidden="true" />
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: status.text }} aria-hidden="true" />
                 {status.label}
               </span>
+            </div>
+
+            <p className="hidden px-5 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/35 lg:block">
+              Workspace
+            </p>
+
+            <nav
+              aria-label="Dashboard sections"
+              className="grid grid-cols-2 gap-1 px-2.5 pb-2.5 lg:flex lg:flex-col lg:gap-0.5 lg:px-2.5 lg:pb-2"
+            >
+              {SECTIONS.map((item) => {
+                const isActive = item.id === section;
+                const count =
+                  item.id === "customers" ? customers.length : item.id === "loans" ? loans.length : null;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => goToSection(item.id)}
+                    aria-current={isActive ? "page" : undefined}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[12.5px] font-bold whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 lg:w-full"
+                    style={
+                      isActive
+                        ? { background: "rgba(255,255,255,0.16)", color: "#fff" }
+                        : { color: "rgba(255,255,255,0.7)" }
+                    }
+                  >
+                    <FranchiseIcon name={item.icon} className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    {count !== null && (
+                      <span
+                        className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-extrabold"
+                        style={
+                          isActive
+                            ? { background: "rgba(255,255,255,0.22)", color: "#fff" }
+                            : { background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }
+                        }
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="flex items-center gap-2 border-t border-white/10 px-3 py-2.5 lg:mt-auto lg:flex-col lg:items-stretch">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => void refreshAll()}
                 loading={refreshing}
-                className="border-white/40 bg-white/10 text-white hover:bg-white/20"
+                className="flex-1 border-white/25 bg-white/10 text-white hover:bg-white/20 lg:w-full lg:flex-none"
               >
                 Refresh
               </Button>
-              <Button variant="outline" size="sm" onClick={handleSignOut} className="border-white/40 bg-white/10 text-white hover:bg-white/20">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex-1 border-white/25 bg-white/10 text-white hover:bg-white/20 lg:w-full lg:flex-none"
+              >
                 Sign out
               </Button>
             </div>
-          </div>
+          </aside>
 
-          <div className="px-5 pb-5 md:px-7 md:pb-6">
-            <p className="rounded-xl px-4 py-2.5 text-[12.5px] leading-relaxed text-white/85" style={{ background: "rgba(255,255,255,0.1)" }} role="status">
-              {status.blurb}
-            </p>
-          </div>
-        </div>
+          {/* Right panel — section content (the layout already owns the page's main landmark) */}
+          <div className="mt-5 min-w-0 px-4 py-6 md:px-6 md:py-7 lg:mt-0 lg:flex-1">
+            <header className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+                  Franchisee dashboard
+                </p>
+                <h1 id="franchise-panel-heading" className="mt-1 text-xl font-extrabold text-slate-800 md:text-[22px]">
+                  {activeSection.label}
+                </h1>
+                <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-slate-500">
+                  {activeSection.description}
+                </p>
+              </div>
 
-        {/* Feedback */}
-        <div aria-live="polite" className="mt-3 space-y-2">
-          {notice && (
-            <p
-              role="status"
-              className="rounded-xl px-4 py-2.5 text-[12.5px] font-semibold"
-              style={{ background: "#ecfdf5", border: "1px solid #b6e4c9", color: "#0f7a5f" }}
-            >
-              {notice}
-            </p>
-          )}
-          {profileError && (
-            <div className="rounded-xl px-4 py-3" style={{ background: "var(--form-error-bg)", border: "1px solid var(--form-error-border)" }}>
-              <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text)" }}>Live profile unavailable</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{profileError}</p>
-              <a
-                href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent(`Franchisee portal — account ${session.franchiseId}`)}`}
-                className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
-              >
-                <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
-                {FRANCHISE_EMAIL}
-              </a>
-            </div>
-          )}
-        </div>
+              <NotificationBell
+                loans={loans}
+                customers={customers}
+                franchiseId={session.franchiseId}
+                onOpenSection={goToSection}
+              />
+            </header>
 
-        {/* Section tabs */}
-        <div className="mt-5 overflow-x-auto">
-          <div
-            role="tablist"
-            aria-label="Dashboard sections"
-            className="inline-flex min-w-full gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 sm:min-w-0"
-          >
-            {SECTIONS.map((item) => {
-              const isActive = item.id === section;
-              const count =
-                item.id === "customers" ? customers.length : item.id === "loans" ? loans.length : null;
-              return (
-                <button
-                  key={item.id}
-                  role="tab"
-                  type="button"
-                  id={`franchise-tab-${item.id}`}
-                  aria-selected={isActive}
-                  aria-controls={`franchise-panel-${item.id}`}
-                  onClick={() => goToSection(item.id)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                  style={
-                    isActive
-                      ? {
-                          background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))",
-                          color: "#fff",
-                          boxShadow: "0 8px 20px -14px rgba(6,106,156,0.9)",
-                        }
-                      : { color: "#475569" }
-                  }
+            {/* Feedback */}
+            <div aria-live="polite" className="mt-3 space-y-2">
+              {notice && (
+                <p
+                  role="status"
+                  className="rounded-xl px-4 py-2.5 text-[12.5px] font-semibold"
+                  style={{ background: "#ecfdf5", border: "1px solid #b6e4c9", color: "#0f7a5f" }}
                 >
-                  <FranchiseIcon name={item.icon} className="h-4 w-4" />
-                  {item.label}
-                  {count !== null && (
-                    <span
-                      className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold"
-                      style={
-                        isActive
-                          ? { background: "rgba(255,255,255,0.2)", color: "#fff" }
-                          : { background: "var(--brand-navy-14)", color: "var(--brand-navy)" }
-                      }
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Panels */}
-        <div
-          role="tabpanel"
-          id={`franchise-panel-${section}`}
-          aria-labelledby={`franchise-tab-${section}`}
-          tabIndex={0}
-          className="mt-5 focus:outline-none"
-        >
-          {section === "overview" && (
-            <div className="space-y-5">
-              {/* KPIs */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                  label="Customers"
-                  value={String(customers.length)}
-                  hint="Registered under your franchise ID"
-                  icon="user"
-                  accent="linear-gradient(90deg,var(--brand-teal),var(--brand-navy))"
-                />
-                <StatCard
-                  label="Applications"
-                  value={String(loans.length)}
-                  hint={totalLoanValue > 0 ? `${formatRupeesCompact(totalLoanValue)} requested in total` : "Loans filed across all products"}
-                  icon="layers"
-                  accent="linear-gradient(90deg,var(--brand-navy),var(--brand-navy-light))"
-                />
-                <StatCard
-                  label="In progress"
-                  value={String(inProgress)}
-                  hint="Submitted, under review or processing"
-                  icon="clock"
-                  accent="linear-gradient(90deg,#e0a800,#f6c453)"
-                />
-                <StatCard
-                  label="Approved / disbursed"
-                  value={String(positive)}
-                  hint="Sanctioned, disbursed or closed"
-                  icon="check"
-                  accent="linear-gradient(90deg,#26ae90,#7bd9c4)"
-                />
-              </div>
-
-              {/* Quick actions */}
-              <section aria-labelledby="quick-actions-heading" className="rounded-2xl border border-slate-200 bg-white p-5">
-                <h2 id="quick-actions-heading" className="text-[13px] font-extrabold uppercase tracking-wider text-slate-500">
-                  Quick actions
-                </h2>
-                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <QuickAction
-                    icon="user-plus"
-                    label="Register a customer"
-                    hint="Add a client to your franchise registry"
-                    onClick={() => goToSection("customers")}
-                  />
-                  <QuickAction
-                    icon="pen-line"
-                    label="Apply for a loan"
-                    hint="File any product on a customer's behalf"
-                    onClick={() => goToSection("apply")}
-                  />
-                  <QuickAction
-                    icon="layers"
-                    label="Track applications"
-                    hint="Review every loan and its live status"
-                    onClick={() => goToSection("loans")}
-                  />
-                </div>
-              </section>
-
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.6fr_1fr]">
-                {/* Recent applications */}
-                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white" aria-labelledby="recent-loans-heading">
-                  <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                    <div>
-                      <h2 id="recent-loans-heading" className="text-[15px] font-extrabold text-slate-800">
-                        Recent applications
-                      </h2>
-                      <p className="mt-0.5 text-[11.5px] text-slate-500">The latest loans filed under your franchise.</p>
-                    </div>
-                    <Button variant="link" size="sm" onClick={() => goToSection("loans")}>
-                      View all →
-                    </Button>
-                  </div>
-
-                  {loansError ? (
-                    <div className="px-5 py-6">
-                      <p role="alert" className="text-[12.5px] font-semibold text-red-700">{loansError}</p>
-                      <Button variant="link" size="sm" onClick={() => void loadLoans()}>Try again</Button>
-                    </div>
-                  ) : loadingLoans && loans.length === 0 ? (
-                    <p className="flex items-center gap-2 px-5 py-8 text-[12.5px] font-semibold text-slate-500">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)" aria-hidden="true" />
-                      Loading applications…
-                    </p>
-                  ) : recentLoans.length === 0 ? (
-                    <div className="px-5 py-8 text-center">
-                      <p className="text-[13px] font-bold text-slate-700">No applications yet</p>
-                      <p className="mt-1 text-[12px] text-slate-500">File your first loan to see it tracked here.</p>
-                      <Button size="sm" className="mt-3" onClick={() => goToSection("apply")}>Apply for a loan</Button>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-140 text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">
-                            <th scope="col" className="px-5 py-2.5 font-bold">Product</th>
-                            <th scope="col" className="px-3 py-2.5 font-bold">Customer</th>
-                            <th scope="col" className="px-3 py-2.5 font-bold">Amount</th>
-                            <th scope="col" className="px-5 py-2.5 font-bold">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {recentLoans.map((loan, index) => (
-                            <tr key={`${loanApplicationNo(loan)}-${index}`}>
-                              <td className="px-5 py-3">
-                                <p className="text-[13px] font-bold text-slate-800">{loanProductName(loan)}</p>
-                                <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{loanApplicationNo(loan)}</p>
-                              </td>
-                              <td className="px-3 py-3 text-[12.5px] text-slate-600">{loanCustomerName(loan) || "—"}</td>
-                              <td className="px-3 py-3 text-[12.5px] font-semibold text-slate-700">{formatRupees(loanAmount(loan))}</td>
-                              <td className="px-5 py-3"><FranchiseStatusChip status={loanStatus(loan)} /></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </section>
-
-                {/* Newest customers */}
-                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white" aria-labelledby="recent-customers-heading">
-                  <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                    <div>
-                      <h2 id="recent-customers-heading" className="text-[15px] font-extrabold text-slate-800">
-                        Newest customers
-                      </h2>
-                      <p className="mt-0.5 text-[11.5px] text-slate-500">Registered most recently.</p>
-                    </div>
-                    <Button variant="link" size="sm" onClick={() => goToSection("customers")}>
-                      View all →
-                    </Button>
-                  </div>
-
-                  {customersError ? (
-                    <div className="px-5 py-6">
-                      <p role="alert" className="text-[12.5px] font-semibold text-red-700">{customersError}</p>
-                      <Button variant="link" size="sm" onClick={() => void loadCustomers()}>Try again</Button>
-                    </div>
-                  ) : loadingCustomers && customers.length === 0 ? (
-                    <p className="flex items-center gap-2 px-5 py-8 text-[12.5px] font-semibold text-slate-500">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)" aria-hidden="true" />
-                      Loading customers…
-                    </p>
-                  ) : recentCustomers.length === 0 ? (
-                    <div className="px-5 py-8 text-center">
-                      <p className="text-[13px] font-bold text-slate-700">No customers yet</p>
-                      <p className="mt-1 text-[12px] text-slate-500">Register your first client to get started.</p>
-                      <Button size="sm" className="mt-3" onClick={() => goToSection("customers")}>Register customer</Button>
-                    </div>
-                  ) : (
-                    <ul className="divide-y divide-slate-100">
-                      {recentCustomers.map((customer) => (
-                        <li key={customer._id} className="flex items-center gap-3 px-5 py-3">
-                          <span
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[10.5px] font-extrabold"
-                            style={{ background: "var(--brand-navy-14)", color: "var(--brand-navy)" }}
-                            aria-hidden="true"
-                          >
-                            {fullNameInitials(customer.fullName)}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[12.5px] font-bold text-slate-800">{customer.fullName || "Unnamed customer"}</p>
-                            <p className="mt-0.5 text-[11px] text-slate-500">{customer.mobile || "—"}</p>
-                          </div>
-                          <span className="shrink-0 text-[10.5px] font-semibold text-slate-400">{formatDate(customer.createdAt)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-              </div>
-            </div>
-          )}
-
-          {section === "customers" && (
-            <CustomerRegistry
-              customers={customers}
-              loading={loadingCustomers}
-              error={customersError}
-              onReload={() => void loadCustomers()}
-              onNotice={setNotice}
-              onApplyLoan={(customer, customerId) => {
-                setNotice(null);
-                setSearchParams({ section: "apply" }, { replace: true });
-                setApplyForCustomer(customer);
-                setOpenProduct((customerId));
-              }}
-            />
-          )}
-
-          {section === "loans" && (
-            <AllLoansSection
-              loans={loans}
-              loading={loadingLoans}
-              error={loansError}
-              onReload={() => void loadLoans()}
-            />
-          )}
-
-          {section === "apply" && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-800">Apply for a customer</h2>
-                  <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-slate-500">
-                    Pick a product, choose a registered customer, and file the application under your franchise ID.
-                    Their identity fields are filled and locked from the customer record.
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => goToSection("customers")}>
-                  Manage customers
-                </Button>
-              </div>
-              {!canSubmit && (
-                <p className="mt-4 rounded-xl px-4 py-3 text-[12.5px] font-semibold" style={{ background: "#fff8e6", border: "1px solid rgba(224,168,0,0.45)", color: "#8a5a00" }}>
-                  Filing unlocks once your franchise agreement is active. You can still review customers and loans.
+                  {notice}
                 </p>
               )}
-              <LoanFormsMenu session={session} profile={profile} canSubmit={canSubmit} onOpenProduct={setOpenProduct} />
+              {profileError && (
+                <div className="rounded-xl px-4 py-3" style={{ background: "var(--form-error-bg)", border: "1px solid var(--form-error-border)" }}>
+                  <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text)" }}>Live profile unavailable</p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{profileError}</p>
+                  <a
+                    href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent(`Franchisee portal — account ${session.franchiseId}`)}`}
+                    className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
+                  >
+                    <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
+                    {FRANCHISE_EMAIL}
+                  </a>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Panels */}
+            <section
+              id={`franchise-panel-${section}`}
+              aria-labelledby="franchise-panel-heading"
+              className="mt-5 focus:outline-none"
+            >
+              {section === "overview" && (
+                <div className="space-y-5">
+                  {/* KPIs */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard
+                      label="Customers"
+                      value={String(customers.length)}
+                      hint="Registered under your franchise ID"
+                      icon="user"
+                      accent="linear-gradient(90deg,var(--brand-teal),var(--brand-navy))"
+                    />
+                    <StatCard
+                      label="Applications"
+                      value={String(loans.length)}
+                      hint={totalLoanValue > 0 ? `${formatRupeesCompact(totalLoanValue)} requested in total` : "Loans filed across all products"}
+                      icon="layers"
+                      accent="linear-gradient(90deg,var(--brand-navy),var(--brand-navy-light))"
+                    />
+                    <StatCard
+                      label="In progress"
+                      value={String(inProgress)}
+                      hint="Submitted, under review or processing"
+                      icon="clock"
+                      accent="linear-gradient(90deg,#e0a800,#f6c453)"
+                    />
+                    <StatCard
+                      label="Approved / disbursed"
+                      value={String(positive)}
+                      hint="Sanctioned, disbursed or closed"
+                      icon="check"
+                      accent="linear-gradient(90deg,#26ae90,#7bd9c4)"
+                    />
+                  </div>
+
+                  {/* Quick actions */}
+                  <section aria-labelledby="quick-actions-heading" className="rounded-2xl border border-slate-200 bg-white p-5">
+                    <h2 id="quick-actions-heading" className="text-[13px] font-extrabold uppercase tracking-wider text-slate-500">
+                      Quick actions
+                    </h2>
+                    <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+                      <QuickAction
+                        icon="user-plus"
+                        label="Register a customer"
+                        hint="Add a client to your franchise registry"
+                        onClick={() => goToSection("customers")}
+                      />
+                      <QuickAction
+                        icon="pen-line"
+                        label="Apply for a loan"
+                        hint="File any product on a customer's behalf"
+                        onClick={() => goToSection("apply")}
+                      />
+                      <QuickAction
+                        icon="layers"
+                        label="Track applications"
+                        hint="Review every loan and its live status"
+                        onClick={() => goToSection("loans")}
+                      />
+                    </div>
+                  </section>
+
+                  <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.6fr_1fr]">
+                    {/* Recent applications */}
+                    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white" aria-labelledby="recent-loans-heading">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                        <div>
+                          <h2 id="recent-loans-heading" className="text-[15px] font-extrabold text-slate-800">
+                            Recent applications
+                          </h2>
+                          <p className="mt-0.5 text-[11.5px] text-slate-500">The latest loans filed under your franchise.</p>
+                        </div>
+                        <Button variant="link" size="sm" onClick={() => goToSection("loans")}>
+                          View all →
+                        </Button>
+                      </div>
+
+                      {loansError ? (
+                        <div className="px-5 py-6">
+                          <p role="alert" className="text-[12.5px] font-semibold text-red-700">{loansError}</p>
+                          <Button variant="link" size="sm" onClick={() => void loadLoans()}>Try again</Button>
+                        </div>
+                      ) : loadingLoans && loans.length === 0 ? (
+                        <p className="flex items-center gap-2 px-5 py-8 text-[12.5px] font-semibold text-slate-500">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)" aria-hidden="true" />
+                          Loading applications…
+                        </p>
+                      ) : recentLoans.length === 0 ? (
+                        <div className="px-5 py-8 text-center">
+                          <p className="text-[13px] font-bold text-slate-700">No applications yet</p>
+                          <p className="mt-1 text-[12px] text-slate-500">File your first loan to see it tracked here.</p>
+                          <Button size="sm" className="mt-3" onClick={() => goToSection("apply")}>Apply for a loan</Button>
+                        </div>
+                      ) : (
+                        <div className="contain-paint overflow-x-auto">
+                          <table className="w-full min-w-140 text-left text-sm">
+                            <thead>
+                              <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">
+                                <th scope="col" className="px-5 py-2.5 font-bold">Product</th>
+                                <th scope="col" className="px-3 py-2.5 font-bold">Customer</th>
+                                <th scope="col" className="px-3 py-2.5 font-bold">Amount</th>
+                                <th scope="col" className="px-5 py-2.5 font-bold">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {recentLoans.map((loan, index) => (
+                                <tr key={`${loanApplicationNo(loan)}-${index}`}>
+                                  <td className="px-5 py-3">
+                                    <p className="text-[13px] font-bold text-slate-800">{loanProductName(loan)}</p>
+                                    <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{loanApplicationNo(loan)}</p>
+                                  </td>
+                                  <td className="px-3 py-3 text-[12.5px] text-slate-600">{loanCustomerName(loan) || "—"}</td>
+                                  <td className="px-3 py-3 text-[12.5px] font-semibold text-slate-700">{formatRupees(loanAmount(loan))}</td>
+                                  <td className="px-5 py-3"><FranchiseStatusChip status={loanStatus(loan)} /></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </section>
+
+                    {/* Newest customers */}
+                    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white" aria-labelledby="recent-customers-heading">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                        <div>
+                          <h2 id="recent-customers-heading" className="text-[15px] font-extrabold text-slate-800">
+                            Newest customers
+                          </h2>
+                          <p className="mt-0.5 text-[11.5px] text-slate-500">Registered most recently.</p>
+                        </div>
+                        <Button variant="link" size="sm" onClick={() => goToSection("customers")}>
+                          View all →
+                        </Button>
+                      </div>
+
+                      {customersError ? (
+                        <div className="px-5 py-6">
+                          <p role="alert" className="text-[12.5px] font-semibold text-red-700">{customersError}</p>
+                          <Button variant="link" size="sm" onClick={() => void loadCustomers()}>Try again</Button>
+                        </div>
+                      ) : loadingCustomers && customers.length === 0 ? (
+                        <p className="flex items-center gap-2 px-5 py-8 text-[12.5px] font-semibold text-slate-500">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)" aria-hidden="true" />
+                          Loading customers…
+                        </p>
+                      ) : recentCustomers.length === 0 ? (
+                        <div className="px-5 py-8 text-center">
+                          <p className="text-[13px] font-bold text-slate-700">No customers yet</p>
+                          <p className="mt-1 text-[12px] text-slate-500">Register your first client to get started.</p>
+                          <Button size="sm" className="mt-3" onClick={() => goToSection("customers")}>Register customer</Button>
+                        </div>
+                      ) : (
+                        <ul className="divide-y divide-slate-100">
+                          {recentCustomers.map((customer) => (
+                            <li key={customer._id} className="flex items-center gap-3 px-5 py-3">
+                              <span
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[10.5px] font-extrabold"
+                                style={{ background: "var(--brand-navy-14)", color: "var(--brand-navy)" }}
+                                aria-hidden="true"
+                              >
+                                {fullNameInitials(customer.fullName)}
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-[12.5px] font-bold text-slate-800">{customer.fullName || "Unnamed customer"}</p>
+                                <p className="mt-0.5 text-[11px] text-slate-500">{customer.mobile || "—"}</p>
+                              </div>
+                              <span className="shrink-0 text-[10.5px] font-semibold text-slate-400">{formatDate(customer.createdAt)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  </div>
+                </div>
+              )}
+
+              {section === "customers" && (
+                <CustomerRegistry
+                  customers={customers}
+                  loading={loadingCustomers}
+                  error={customersError}
+                  onReload={() => void loadCustomers()}
+                  onNotice={setNotice}
+                  onApplyLoan={(customer, customerId) => {
+                    setNotice(null);
+                    setSearchParams({ section: "apply" }, { replace: true });
+                    setApplyForCustomer(customer);
+                    setOpenProduct((customerId));
+                  }}
+                />
+              )}
+
+              {section === "loans" && (
+                <AllLoansSection
+                  loans={loans}
+                  loading={loadingLoans}
+                  error={loansError}
+                  onReload={() => void loadLoans()}
+                />
+              )}
+
+              {section === "profile" && <ProfilePanel profile={profile} session={session} />}
+
+              {section === "plan" && <PlanPanel profile={profile} />}
+
+              {section === "apply" && (
+                <div className="space-y-4">
+                  {!canSubmit && (
+                    <p className="rounded-xl px-4 py-3 text-[12.5px] font-semibold" style={{ background: "#fff8e6", border: "1px solid rgba(224,168,0,0.45)", color: "#8a5a00" }}>
+                      Filing unlocks once your franchise agreement is active. You can still review customers and loans.
+                    </p>
+                  )}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="max-w-xl text-[12.5px] leading-relaxed text-slate-500">
+                        Choose a product below, then pick one of your registered customers. Their identity fields are
+                        filled and locked from the customer record.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => goToSection("customers")}>
+                        Manage customers
+                      </Button>
+                    </div>
+                    <LoanFormsMenu session={session} profile={profile} canSubmit={canSubmit} onOpenProduct={setOpenProduct} />
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
       </div>
 
       <LoanFormModal

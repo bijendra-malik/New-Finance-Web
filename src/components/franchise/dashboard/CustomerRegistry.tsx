@@ -48,20 +48,12 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
     [sorted, needle],
   );
 
-  const verifiedCount = customers.filter((customer) => customer.isVerified).length;
-
   return (
-    <section aria-labelledby="customers-heading">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 id="customers-heading" className="text-xl font-extrabold text-slate-800">
-            Customers
-          </h2>
-          <p className="mt-1 text-[13px] text-slate-500">
-            {customers.length} registered under this franchise
-            {customers.length > 0 ? ` · ${verifiedCount} verified` : ""}. Register once, then file any product for them.
-          </p>
-        </div>
+    <section aria-label="Customer registry">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[12.5px] leading-relaxed text-slate-500">
+          {customers.length} registered under this franchise. Register once, then file any product for them.
+        </p>
         <Button size="md" onClick={() => setRegisterOpen(true)}>
           <FranchiseIcon name="user-plus" className="h-4 w-4" />
           Register customer
@@ -84,7 +76,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
         </div>
       )}
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
           <label className="relative w-full max-w-sm">
             <span className="sr-only">Search customers</span>
@@ -138,7 +130,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="contain-paint overflow-x-auto">
             <table className="w-full min-w-250 text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">
@@ -168,13 +160,8 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
                           {fullNameInitials(customer.fullName)}
                         </span>
                         <div className="min-w-0">
-                          <p className="flex items-center gap-1.5 truncate font-bold text-slate-800">
+                          <p className="truncate font-bold text-slate-800">
                             {customer.fullName || "Unnamed customer"}
-                            {customer.isVerified && (
-                              <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-700">
-                                ✓ Verified
-                              </span>
-                            )}
                           </p>
                           <p className="mt-0.5 truncate text-[11.5px] text-slate-500">{customer.email || "—"}</p>
                         </div>

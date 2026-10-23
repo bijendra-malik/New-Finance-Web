@@ -62,25 +62,11 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
   const totalValue = filtered.reduce((sum, loan) => sum + (loanAmount(loan) ?? 0), 0);
 
   return (
-    <section aria-labelledby="all-loans-heading">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 id="all-loans-heading" className="text-xl font-extrabold text-slate-800">
-            All loans
-          </h2>
-          <p className="mt-1 text-[13px] text-slate-500">
-            Every application filed under this franchise, across all your customers.
-          </p>
-        </div>
-        <Button variant="outline" size="md" onClick={onReload} loading={loading}>
-          Refresh list
-        </Button>
-      </div>
-
+    <section aria-label="All loans">
       {error && (
         <div
           role="alert"
-          className="mt-4 rounded-xl px-4 py-3"
+          className="rounded-xl px-4 py-3"
           style={{ background: "var(--form-error-bg, #fef2f2)", border: "1px solid var(--form-error-border, #fecaca)" }}
         >
           <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text, #b91c1c)" }}>
@@ -93,7 +79,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
         </div>
       )}
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className={`${error ? "mt-4" : ""} overflow-hidden rounded-2xl border border-slate-200 bg-white`}>
         <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3">
           <label className="relative w-full max-w-sm">
             <span className="sr-only">Search loans</span>
@@ -130,6 +116,10 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
             {filtered.length} application{filtered.length === 1 ? "" : "s"}
             {totalValue > 0 ? ` · ${formatRupees(totalValue)} total` : ""}
           </p>
+
+          <Button variant="outline" size="sm" onClick={onReload} loading={loading}>
+            Refresh
+          </Button>
         </div>
 
         {loading && loans.length === 0 ? (
@@ -170,7 +160,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="contain-paint overflow-x-auto">
             <table className="w-full min-w-215 text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">

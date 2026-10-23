@@ -160,7 +160,7 @@ const LoanFormModal = ({ open, productKey, session, canSubmit, presetCustomer, o
         >
           <div className="flex items-center justify-between px-6 pt-6 pb-3 border-b" style={{ borderColor: "var(--form-divider)" }}>
             <div className="min-w-0">
-              <h2 id={labelledBy} className="truncate text-lg font-extrabold text-slate-800">
+              <h2 id={labelledBy} className="text-lg font-extrabold text-slate-800">
                 {productName}
               </h2>
               <p className="mt-0.5 truncate text-[12px] text-slate-500">

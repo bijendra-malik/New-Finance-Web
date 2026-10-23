@@ -127,19 +127,7 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
             <h2 id="franchise-customer-title" className="truncate text-lg font-extrabold text-slate-800">
               {displayName}
             </h2>
-            <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px] text-slate-500">
-              <span>Customer {customerId}</span>
-              {record?.isVerified === true && (
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700">
-                  ✓ Verified
-                </span>
-              )}
-              {record?.isVerified === false && (
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-bold text-amber-700">
-                  Verification pending
-                </span>
-              )}
-            </p>
+            <p className="mt-0.5 text-[12px] text-slate-500">Customer {customerId}</p>
           </div>
         </div>
         <button
