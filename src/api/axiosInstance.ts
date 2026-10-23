@@ -5,7 +5,7 @@ import {
   franchiseApplyResponseInterceptor,
 } from "./franchiseFiling";
 import { emitAuthCleared } from "../utils/authEvents";
-import { getDraftId, rememberDraftId } from "../utils/applySession";
+import { rememberPendingCreditScoreDraft } from "../utils/applicationFlowState";
 
 const axiosInstance = axios.create({
   baseURL:
@@ -15,25 +15,6 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const isApplyPost =
-      (config.method ?? "get").toLowerCase() === "post" &&
-      (config.url ?? "").endsWith("/customer/loan-apply");
-    if (!isApplyPost) return config;
-    const body =
-      config.data && typeof config.data === "object" && !Array.isArray(config.data)
-        ? (config.data as Record<string, unknown>)
-        : null;
-    if (!body || body.draftId) return config;
-    const draftId =
-      typeof body.product === "string" ? getDraftId(body.product) : null;
-    if (draftId) config.data = { ...body, draftId };
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 axiosInstance.interceptors.request.use(
   franchiseApplyRequestInterceptor,
@@ -95,9 +76,29 @@ axiosInstance.interceptors.response.use(
       (typeof data?._id === "string" && data._id);
 
     // The loan form endpoint creates the draft used by the next credit-score
-    // request. Persist exactly the ID it returns for that product.
+    // request. Persist exactly the ID it returns, but never send a browser-
+    // created ID back to the endpoint.
     if (isLoanApply && typeof requestBody?.product === "string" && draftId) {
-      rememberDraftId(requestBody.product, draftId);
+      try {
+        const rawUser = localStorage.getItem("user");
+        const user = rawUser ? JSON.parse(rawUser) as { _id?: unknown } : null;
+        if (typeof user?._id === "string" && user._id) {
+          const createdAt =
+            (typeof responseDraft?.createdAt === "string" && responseDraft.createdAt) ||
+            (typeof draft?.createdAt === "string" && draft.createdAt) ||
+            new Date().toISOString();
+          rememberPendingCreditScoreDraft(
+            user._id,
+            requestBody.product,
+            draftId,
+            createdAt,
+            { ...requestBody, _id: draftId, createdAt },
+          );
+        }
+      } catch {
+        // The application has been saved on the backend even if local recovery
+        // state cannot be recorded (for example, disabled browser storage).
+      }
     }
     return response;
   },
