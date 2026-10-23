@@ -34,8 +34,6 @@ const Header = () => {
     fdi:                "/showdetails/fdi",
   };
 
-  const franchiseLinks: { label: string; href: string; desc: string }[] = [];
-
   const loanProducts = [
     { label: "Personal Loan",            slug: "personalloan" },
     { label: "Business Loan",            slug: "businessloan" },
@@ -67,17 +65,14 @@ const Header = () => {
 
   type NavItem = { label: string; href: string; dropdown?: string; match?: string };
 
-  const navLinks: NavItem[] = (() => {
-    const all: NavItem[] = [
-      { label: "Home",               href: "/" },
-      { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
-      { label: "EMI Calculator",     href: "/emi-calculator" },
-      { label: "Loan Eligibility",   href: "/eligibility-calculator" },
-      { label: "Be a Franchisee",     href: "/franchise" },
-      { label: "Contact Us",         href: "/contact" },
-    ];
-    return all;
-  })();
+  const navLinks: NavItem[] = [
+    { label: "Home",               href: "/" },
+    { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
+    { label: "EMI Calculator",     href: "/emi-calculator" },
+    { label: "Loan Eligibility",   href: "/eligibility-calculator" },
+    { label: "Be a Franchisee",     href: "/franchise" },
+    { label: "Contact Us",         href: "/contact" },
+  ];
   const franchiseeLoginLink: NavItem = { label: "Franchisee Login", href: "/franchise-login" };
   const applicationStatusLink: NavItem = { label: "Check Application Status", href: "/application-status" };
 
@@ -299,30 +294,16 @@ const Header = () => {
 
                     {openMobileDropdown === link.dropdown && (
                       <div className="bg-slate-50 border-l-4 border-emerald-500 pl-0">
-                        {link.dropdown === "loans"
-                          ? loanProducts.map((item) => (
-                              <Link
-                                key={item.slug}
-                                to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                                className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
-                                onClick={closeMobileMenu}
-                              >
-                                → {item.label}
-                              </Link>
-                            ))
-                          : franchiseLinks.map((item) => (
-                              <Link
-                                key={item.label}
-                                to={item.href}
-                                className="block px-8 py-3 text-xs font-semibold text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100"
-                                onClick={closeMobileMenu}
-                              >
-                                → {item.label}
-                                <span className="mt-0.5 block text-[10.5px] font-normal text-slate-400">
-                                  {item.desc}
-                                </span>
-                              </Link>
-                            ))}
+                        {loanProducts.map((item) => (
+                          <Link
+                            key={item.slug}
+                            to={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
+                            onClick={closeMobileMenu}
+                          >
+                            → {item.label}
+                          </Link>
+                        ))}
                       </div>
                     )}
                   </li>
