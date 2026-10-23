@@ -13,7 +13,6 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const FranchiseLoginPage = lazy(() => import("./pages/FranchiseLoginPage"));
 const MyApplicationsPage = lazy(() => import("./pages/MyApplicationsPage"));
 const ApplicationStatusPage = lazy(() => import("./pages/ApplicationStatusPage"));
-const FranchiseApplicationStatusPage = lazy(() => import("./pages/FranchiseApplicationStatusPage"));
 const EligibilityCalculatorPage = lazy(() => import("./pages/EligibilityCalculatorPage"));
 const EMICalculatorPage = lazy(() => import("./pages/EMICalculatorPage"));
 const BeAFranchisorPage = lazy(() => import("./pages/BeAFranchisorPage"));
@@ -169,7 +168,7 @@ function App() {
               <Route path="/franchise/loan-forms" element={<FranchisePortalRedirect />} />
               <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="/application-status" element={<ApplicationStatusPage />} />
-              <Route path="/franchise-application-status" element={<FranchiseApplicationStatusPage />} />
+              <Route path="/franchise-application-status" element={<Navigate to="/application-status#franchise-application-status" replace />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
