@@ -14,22 +14,28 @@ interface LoanFormModalProps {
   productKey: string | null;
   session: { franchiseId: string; name?: string; mobile?: string; email?: string; franchiseStatus?: string } | null;
   canSubmit: boolean;
+  presetCustomer?: FranchiseCustomer | null;
   onClose: () => void;
 }
 
 const MODAL_ROOT = document.body;
 
-/** The client's registered identity, shaped exactly like the form's own fields. */
+const asText = (value: unknown): string => {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return "";
+};
+
 const customerIdentity = (customer: FranchiseCustomer): Partial<Record<LockableField, string>> => {
   const candidates: [LockableField, string][] = [
-    ["fullName", customer.fullName?.trim() ?? ""],
-    ["mobile", (customer.mobile ?? "").replace(/\D/g, "").slice(-10)],
-    ["email", customer.email?.trim().toLowerCase() ?? ""],
-    ["dob", customer.dob?.trim() ?? ""],
-    ["panNumber", (customer.panNumber ?? "").trim().toUpperCase()],
-    ["state", customer.state?.trim() ?? ""],
-    ["city", customer.city?.trim() ?? ""],
-    ["pincode", (customer.pincode ?? "").trim()],
+    ["fullName", asText(customer.fullName)],
+    ["mobile", asText(customer.mobile).replace(/\D/g, "").slice(-10)],
+    ["email", asText(customer.email).toLowerCase()],
+    ["dob", asText(customer.dob).slice(0, 10)],
+    ["panNumber", asText(customer.panNumber).toUpperCase()],
+    ["state", asText(customer.state)],
+    ["city", asText(customer.city)],
+    ["pincode", asText(customer.pincode)],
   ];
   return candidates.reduce<Partial<Record<LockableField, string>>>((acc, [key, value]) => {
     if (value) acc[key] = value;
@@ -37,14 +43,6 @@ const customerIdentity = (customer: FranchiseCustomer): Partial<Record<LockableF
   }, {});
 };
 
-/**
- * The filing itself: the real product form, opened for one registered client.
- *
- * Mounted under `key={productKey}`, so switching product resets the client picker.
- * While it is mounted the form's own apply call is rewritten to the franchise
- * endpoint (see `api/franchiseFiling.ts`) and its identity fields are filled and
- * locked from the client registry — no product form is copied or special-cased.
- */
 const LoanFormFiling = ({
   productKey,
   session,
@@ -64,7 +62,6 @@ const LoanFormFiling = ({
   );
   const prefill = useMemo<ApplicantPrefill>(() => ({ identity, note: identityNote }), [identity, identityNote]);
 
-  // Mark the window in which this form's apply POST belongs to a franchise filing.
   useEffect(() => {
     beginFranchiseFiling({
       customerId: customer._id,
@@ -131,17 +128,13 @@ const LoanFormFiling = ({
   );
 };
 
-/**
- * Step one picks the client; step two opens that client's product form.
- */
-const LoanFormModal = ({ open, productKey, session, canSubmit, onClose }: LoanFormModalProps) => {
-  const [customer, setCustomer] = useState<FranchiseCustomer | null>(null);
+const LoanFormModal = ({ open, productKey, session, canSubmit, presetCustomer, onClose }: LoanFormModalProps) => {
+  const [customer, setCustomer] = useState<FranchiseCustomer | null>(() => presetCustomer ?? null);
 
   if (!open || !productKey) return null;
 
   const productName = LOAN_KEY_TO_NAME[productKey] ?? productKey;
 
-  // Step one — pick an existing client or register a new one.
   if (!customer) {
     return (
       <ClientPickerModal
