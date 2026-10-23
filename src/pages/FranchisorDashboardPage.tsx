@@ -217,11 +217,13 @@ const FranchisorDashboardPage = () => {
 
   const [notice, setNotice] = useState<string | null>(null);
   const [openProduct, setOpenProduct] = useState<string | null>(null);
+  const [applyForCustomer, setApplyForCustomer] = useState<FranchiseCustomer | null>(null);
 
   const section = resolveSection(searchParams.get("section"));
 
   const goToSection = (next: Section) => {
     setOpenProduct(null);
+    setApplyForCustomer(null);
     setNotice(null);
     setSearchParams(next === "overview" ? {} : { section: next }, { replace: true });
   };
@@ -733,6 +735,12 @@ const FranchisorDashboardPage = () => {
               error={customersError}
               onReload={() => void loadCustomers()}
               onNotice={setNotice}
+              onApplyLoan={(customer, customerId) => {
+                setNotice(null);
+                setSearchParams({ section: "apply" }, { replace: true });
+                setApplyForCustomer(customer);
+                setOpenProduct((customerId));
+              }}
             />
           )}
 
@@ -771,12 +779,15 @@ const FranchisorDashboardPage = () => {
       </div>
 
       <LoanFormModal
+        key={applyForCustomer?._id ?? "no-preset"}
         open={Boolean(openProduct)}
         productKey={openProduct}
         session={session}
         canSubmit={canSubmit}
+        presetCustomer={applyForCustomer}
         onClose={() => {
           setOpenProduct(null);
+          setApplyForCustomer(null);
           void loadCustomers();
           void loadLoans();
           void loadProfile();
