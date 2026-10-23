@@ -7,9 +7,13 @@ import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import useSEO from "../../hooks/useSEO";
 import defaultBannerBg from "../../assets/bg.jpg";
-import type { DocSection } from "./types";
-export type { DocSection };
 import processBg from "../../assets/personal-loan/step-image.png"
+
+export interface DocSection {
+  id: string;
+  title: string;
+  docs: { name: string; note?: string }[];
+}
 
 interface Props {
   loanName: string;
