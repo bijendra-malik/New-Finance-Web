@@ -1,20 +1,13 @@
-import DashboardShell from "../shared/DashboardShell";
+import { createLoanDashboard } from "../shared/createLoanDashboard";
 import ApplicationForm from "./components/ApplicationForm";
 import { FDIStatus } from "../../../../components/form/LoanStatusView";
 import type { FDIApplication } from "./components/ApplicationForm";
 
-const FDIDashboard = () => (
-  <DashboardShell<FDIApplication>
-    productName="FDI"
-    icon="🌐"
-    stats={[["Max Amount", "₹5 Crores"], ["Rate", "From 9%"], ["Tenure", "Up to 20 yrs"]]}
-    renderForm={({ userName, userEmail, onSubmit }) => (
-      <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
-    )}
-    renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <FDIStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-    )}
-  />
-);
+const FDIDashboard = createLoanDashboard<FDIApplication>({
+  productName: "FDI",
+  icon: "🌐",
+  Form: ApplicationForm,
+  Status: FDIStatus,
+});
 
 export default FDIDashboard;

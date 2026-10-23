@@ -1,21 +1,14 @@
-import DashboardShell from "../shared/DashboardShell";
+import { createLoanDashboard } from "../shared/createLoanDashboard";
 import ApplicationForm from "./components/ApplicationForm";
 import { CreditCardStatus } from "../../../../components/form/LoanStatusView";
 import type { CreditCardApplication } from "./components/ApplicationForm";
 
-const CreditCardDashboard = () => (
-  <DashboardShell<CreditCardApplication>
-    productName="Credit Card"
-    icon="💳"
-    stats={[["Cashback", "Up to 5%"], ["Annual Fee", "₹0 - ₹999"], ["Approval", "In 48 hrs"]]}
-    applicationDesc="Fill your card details"
-    renderForm={({ userName, userEmail, onSubmit }) => (
-      <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
-    )}
-    renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <CreditCardStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-    )}
-  />
-);
+const CreditCardDashboard = createLoanDashboard<CreditCardApplication>({
+  productName: "Credit Card",
+  icon: "💳",
+  applicationDesc: "Fill your card details",
+  Form: ApplicationForm,
+  Status: CreditCardStatus,
+});
 
 export default CreditCardDashboard;

@@ -1,21 +1,14 @@
-import DashboardShell from "../shared/DashboardShell";
+import { createLoanDashboard } from "../shared/createLoanDashboard";
 import ApplicationForm from "./components/ApplicationForm";
 import { FilmLoanStatus } from "../../../../components/form/LoanStatusView";
 import type { FilmLoanApplication } from "./components/ApplicationForm";
 
-const FilmLoanDashboard = () => (
-  <DashboardShell<FilmLoanApplication>
-    productName="Film Funding"
-    icon="🎬"
-    stats={[["Max Amount", "₹5 Crores"], ["Rate", "From 12%"], ["Tenure", "Up to 10 yrs"]]}
-    applicationDesc="Fill your funding details"
-    renderForm={({ userName, userEmail, onSubmit }) => (
-      <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
-    )}
-    renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <FilmLoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-    )}
-  />
-);
+const FilmLoanDashboard = createLoanDashboard<FilmLoanApplication>({
+  productName: "Film Funding",
+  icon: "🎬",
+  applicationDesc: "Fill your funding details",
+  Form: ApplicationForm,
+  Status: FilmLoanStatus,
+});
 
 export default FilmLoanDashboard;

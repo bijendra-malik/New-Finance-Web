@@ -1,21 +1,14 @@
-import DashboardShell from "../shared/DashboardShell";
+import { createLoanDashboard } from "../shared/createLoanDashboard";
 import ApplicationForm from "./components/ApplicationForm";
 import { ODCCLimitStatus } from "../../../../components/form/LoanStatusView";
 import type { ODCCLimitApplication } from "./components/ApplicationForm";
 
-const ODCCLimitDashboard = () => (
-  <DashboardShell<ODCCLimitApplication>
-    productName="OD / CC Limit"
-    icon="🏦"
-    stats={[["Max Limit", "₹5 Crores"], ["Rate", "From 10.5%"], ["Renewal", "Up to 25 yrs"]]}
-    applicationDesc="Fill your limit details"
-    renderForm={({ userName, userEmail, onSubmit }) => (
-      <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
-    )}
-    renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <ODCCLimitStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-    )}
-  />
-);
+const ODCCLimitDashboard = createLoanDashboard<ODCCLimitApplication>({
+  productName: "OD / CC Limit",
+  icon: "🏦",
+  applicationDesc: "Fill your limit details",
+  Form: ApplicationForm,
+  Status: ODCCLimitStatus,
+});
 
 export default ODCCLimitDashboard;

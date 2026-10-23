@@ -1,20 +1,13 @@
-import DashboardShell from "../shared/DashboardShell";
+import { createLoanDashboard } from "../shared/createLoanDashboard";
 import ApplicationForm from "./components/ApplicationForm";
 import { BusinessLoanStatus } from "../../../../components/form/LoanStatusView";
 import type { BusinessLoanApplication } from "../../../../api/loanApplications";
 
-const BusinessLoanDashboard = () => (
-  <DashboardShell<BusinessLoanApplication>
-    productName="Business Loan"
-    icon="🏢"
-    stats={[["Max Amount", "₹5 Crores"], ["Rate", "From 12%"], ["Tenure", "Up to 10 yrs"]]}
-    renderForm={({ userName, userEmail, onSubmit }) => (
-      <ApplicationForm userName={userName} userEmail={userEmail} onSubmit={onSubmit} />
-    )}
-    renderStatus={({ applicationId, isSubmitted, submittedApp }) => (
-      <BusinessLoanStatus applicationId={applicationId} isSubmitted={isSubmitted} submittedApp={submittedApp} />
-    )}
-  />
-);
+const BusinessLoanDashboard = createLoanDashboard<BusinessLoanApplication>({
+  productName: "Business Loan",
+  icon: "🏢",
+  Form: ApplicationForm,
+  Status: BusinessLoanStatus,
+});
 
 export default BusinessLoanDashboard;
