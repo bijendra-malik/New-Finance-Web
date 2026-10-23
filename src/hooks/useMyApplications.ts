@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchMyApplications } from "../api/myApplications";
 import type { MyApplication } from "../api/myApplications";
-import { onApplicationSubmitted } from "../utils/applicationEvents";
+import { onApplicationSubmitted } from "../utils/applicationFlowState";
 
 // Shared between the header chip and the applications page, so mounting both
 // does not fan the 18 product calls out twice.
