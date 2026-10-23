@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { getApiErrorMessage } from "../utils/apiError";
+
+interface ResumedApplicationState {
+  resumeApplication?: Record<string, unknown>;
+}
 
 interface UseApplicationSubmitArgs<TApplication> {
   computeErrors: () => object;
@@ -24,11 +29,15 @@ interface UseApplicationSubmitResult<TApplication> {
 export const useApplicationSubmit = <TApplication extends { _id?: string }>({
   computeErrors, markAllTouched, agreed, submit, onSubmitSuccess,
 }: UseApplicationSubmitArgs<TApplication>): UseApplicationSubmitResult<TApplication> => {
+  const { state } = useLocation();
+  const resumedApplication = (state as ResumedApplicationState | null)?.resumeApplication;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submittedApp, setSubmittedApp] = useState<TApplication | null>(null);
+  const [submitted, setSubmitted] = useState(Boolean(resumedApplication));
+  const [submittedApp, setSubmittedApp] = useState<TApplication | null>(
+    resumedApplication ? resumedApplication as TApplication : null,
+  );
   const [showFormAfterSubmit, setShowFormAfterSubmit] = useState(false);
 
   const computeRef = useRef(computeErrors);
