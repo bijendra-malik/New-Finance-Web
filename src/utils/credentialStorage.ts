@@ -1,4 +1,8 @@
+import { onSessionReset } from "./sessionReset";
+
 export type CredentialFlow = "customer-status" | "franchise-status" | "franchisee-verification";
+
+const FLOWS: CredentialFlow[] = ["customer-status", "franchise-status", "franchisee-verification"];
 
 export interface StoredCredentials {
   fullName?: string;
@@ -10,9 +14,18 @@ export interface StoredCredentials {
 
 const keyFor = (flow: CredentialFlow) => `indexia_credentials_${flow}`;
 
-export const readCredentials = (flow: CredentialFlow): StoredCredentials | null => {
+const purgeLegacyCopy = (flow: CredentialFlow): void => {
   try {
-    const raw = localStorage.getItem(keyFor(flow));
+    localStorage.removeItem(keyFor(flow));
+  } catch {
+    // ignore storage errors so a locked-down browser does not break the flow
+  }
+};
+
+export const readCredentials = (flow: CredentialFlow): StoredCredentials | null => {
+  purgeLegacyCopy(flow);
+  try {
+    const raw = sessionStorage.getItem(keyFor(flow));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredCredentials;
     return parsed && typeof parsed === "object" ? parsed : null;
@@ -28,7 +41,7 @@ export const saveCredentials = (
 ): StoredCredentials => {
   const merged: StoredCredentials = { ...(readCredentials(flow) ?? {}), ...patch };
   try {
-    localStorage.setItem(keyFor(flow), JSON.stringify(merged));
+    sessionStorage.setItem(keyFor(flow), JSON.stringify(merged));
   } catch {
     // ignore storage errors so a full browser does not break the flow
   }
@@ -37,8 +50,15 @@ export const saveCredentials = (
 
 export const clearCredentials = (flow: CredentialFlow): void => {
   try {
-    localStorage.removeItem(keyFor(flow));
+    sessionStorage.removeItem(keyFor(flow));
   } catch {
     // ignore storage errors so a full browser does not break the flow
   }
+  purgeLegacyCopy(flow);
 };
+
+const clearAllCredentials = (): void => {
+  FLOWS.forEach(clearCredentials);
+};
+
+onSessionReset(clearAllCredentials);
