@@ -14,6 +14,10 @@ interface CustomerRegistryProps {
   onReload: () => void;
   /** Surfaces a one-line confirmation in the page's live region. */
   onNotice: (message: string) => void;
+  /** Starts the Apply Loan flow pre-set to this customer. */
+  /** Called from the row / View-details buttons; also receives the customer _id so the
+   * parent can pre-select a sensible default product from that customer's loans. */
+  onApplyLoan: (customer: FranchiseCustomer, customerId: string) => void;
 }
 
 /**
@@ -21,7 +25,7 @@ interface CustomerRegistryProps {
  * (GET /franchise/customer), searchable, with the full detail and loan history
  * one click away. Registration reuses the portal's validated modal.
  */
-const CustomerRegistry = ({ customers, loading, error, onReload, onNotice }: CustomerRegistryProps) => {
+const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApplyLoan }: CustomerRegistryProps) => {
   const [query, setQuery] = useState("");
   const [registerOpen, setRegisterOpen] = useState(false);
   const [selected, setSelected] = useState<FranchiseCustomer | null>(null);
@@ -135,7 +139,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice }: Cus
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-205 text-left text-sm">
+            <table className="w-full min-w-250 text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">
                   <th scope="col" className="px-4 py-3 font-bold">Customer</th>
@@ -184,10 +188,15 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice }: Cus
                       {[customer.city, customer.state].filter(Boolean).join(", ") || "—"}
                     </td>
                     <td className="px-4 py-3 text-[12px] text-slate-500">{formatDate(customer.createdAt)}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="outline" size="sm" onClick={() => setSelected(customer)}>
-                        View details
-                      </Button>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setSelected(customer)}>
+                          View details
+                        </Button>
+                        <Button size="sm" onClick={() => onApplyLoan(customer, customer._id)}>
+                          Apply loan
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -216,6 +225,10 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice }: Cus
         open={Boolean(selected)}
         customer={selected}
         onClose={() => setSelected(null)}
+        onApplyLoan={(customer) => {
+          setSelected(null);
+          onApplyLoan(customer, customer._id);
+        }}
       />
     </section>
   );
