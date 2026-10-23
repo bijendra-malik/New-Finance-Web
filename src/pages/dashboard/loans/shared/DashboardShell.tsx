@@ -16,7 +16,6 @@ const TABS: { key: Tab; label: string; icon: string; desc: string }[] = [
 export interface DashboardShellProps<T> {
   productName: string;
   icon: string;
-  stats: [string, string][];
   applicationDesc?: string;
   renderForm: (ctx: { userName: string; userEmail: string; onSubmit: (id: string, app: T) => void }) => ReactNode;
   renderStatus: (ctx: { applicationId: string; isSubmitted: boolean; submittedApp: T | null }) => ReactNode;
@@ -25,7 +24,6 @@ export interface DashboardShellProps<T> {
 const DashboardShell = <T,>({
   productName,
   icon,
-  stats,
   applicationDesc,
   renderForm,
   renderStatus,
@@ -142,16 +140,6 @@ const DashboardShell = <T,>({
             );
           })}
         </nav>
-
-        {/* Footer */}
-        <div className="px-5 py-4 border-t space-y-2" style={{ borderColor:"rgba(255,255,255,0.08)" }}>
-          {stats.map(([l,v]) => (
-            <div key={l} className="flex justify-between items-center">
-              <span className="text-[11px]" style={{ color:"rgba(255,255,255,0.4)" }}>{l}</span>
-              <span className="text-[11px] font-bold" style={{ color:C.yellow }}>{v}</span>
-            </div>
-          ))}
-        </div>
       </aside>
 
       {/* COL 2: MAIN CONTENT (CENTER) */}
