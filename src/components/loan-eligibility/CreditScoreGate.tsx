@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { submitCreditScore, type CreditScoreResponse } from "../../api/customer";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { emitApplicationSubmitted } from "../../utils/applicationEvents";
+import {
+  clearPendingCreditScoreDraft,
+  emitApplicationSubmitted,
+  rememberSubmittedApplication,
+  readPendingCreditScoreDraft,
+  remainingCreditScoreWindow,
+} from "../../utils/applicationFlowState";
 import { loanKeyFor } from "../../constants/loanSlugs";
-import { clearApplySessionPending, getDraftId } from "../../utils/applySession";
+import { clearApplySessionPending } from "../../utils/applySession";
+import { useAuth } from "../../context/authContext";
 import type { SuccessSection } from "../form/successSections";
 import ApplicationConfirmation from "./ApplicationConfirmation";
 import { buildApplicationSections } from "./applicationSections";
@@ -48,6 +55,7 @@ const applicationFrom = (response: CreditScoreResponse): Record<string, unknown>
 
 /** Completes a saved draft; the backend owns the eligibility decision. */
 const CreditScoreGate = ({ product, sections, dashboardPath, onFinalized }: CreditScoreGateProps) => {
+  const { user } = useAuth();
   const productLabel = product?.trim() || "this loan";
   const [rawScore, setRawScore] = useState("");
   const [error, setError] = useState("");
@@ -61,13 +69,20 @@ const CreditScoreGate = ({ product, sections, dashboardPath, onFinalized }: Cred
     if (!rawScore.trim()) return setError("Enter the score shown on your credit report");
     if (!isValidScore(typedScore)) return setError(`Enter a whole-number score between ${SCORE_MIN} and ${SCORE_MAX}`);
 
-    const draftId = (product ? getDraftId(loanKeyFor(product)) : null) ?? getDraftId();
-    if (!draftId) return setError("We could not find this application draft. Please start your application again.");
+    const pendingDraft = readPendingCreditScoreDraft(user?._id);
+    const productKey = product ? loanKeyFor(product) : null;
+    if (!pendingDraft || (productKey && pendingDraft.loanKey !== productKey)) {
+      return setError("We could not find this application draft. Please start your application again.");
+    }
+    if (remainingCreditScoreWindow(pendingDraft.createdAt).expired) {
+      clearPendingCreditScoreDraft();
+      return setError("This application draft has expired. Please start your application again.");
+    }
 
     setError("");
     setSubmitting(true);
     try {
-      const response = await submitCreditScore(draftId, typedScore);
+      const response = await submitCreditScore(pendingDraft.draftId, typedScore);
       const eligible = eligibilityFrom(response);
       if (eligible == null) {
         setError(response.message?.trim() || "We could not confirm your eligibility. Please try again.");
@@ -81,6 +96,8 @@ const CreditScoreGate = ({ product, sections, dashboardPath, onFinalized }: Cred
           : "You are not eligible for this application at the moment."),
       });
       if (eligible) {
+        rememberSubmittedApplication(pendingDraft.ownerId, pendingDraft.loanKey, new Date().toISOString());
+        clearPendingCreditScoreDraft();
         clearApplySessionPending();
         emitApplicationSubmitted();
         onFinalized?.();
