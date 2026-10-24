@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX, PAN_REGEX, isAtLeastAge, latestDobForAge } from "../../utils/validation";
+import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX, PAN_REGEX, earliestDobForAge, isAtLeastAge, isAtMostAge, latestDobForAge } from "../../utils/validation";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
@@ -227,7 +227,8 @@ const ApplicationModal = ({
     else if (!NAME_REGEX.test(fullName.trim())) e.fullName = "Enter a valid full name";
     if (!EMAIL_REGEX.test(email)) e.email = "Enter a valid email address";
     if (!dob) e.dob = "Date of birth is required";
-    else if (!isAtLeastAge(dob, 21)) e.dob = "You must be at least 21 years old to apply for a loan";
+    else if (!isAtLeastAge(dob, 18)) e.dob = "You must be at least 18 years old to apply for a loan";
+    else if (!isAtMostAge(dob, 65)) e.dob = "Applicants must be 65 years old or younger";
     validatePan("pan", pan, e);
     if (!continent) e.continent = "Select a continent";
     if (!country) e.country = "Select a country";
@@ -588,7 +589,8 @@ const ApplicationModal = ({
                         <Field
                           label="Date of Birth" type="date" name="dob"
                           value={dob}
-                          max={latestDobForAge(21)}
+                          min={earliestDobForAge(65)}
+                          max={latestDobForAge(18)}
                           onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
                           error={fieldErrors.dob}
                         />
