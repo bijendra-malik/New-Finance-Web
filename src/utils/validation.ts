@@ -20,17 +20,28 @@ export const ageOn = (dob: string, today = new Date()): number => {
   return age;
 };
 
-/** True only for a real date at or past `minAge` (loan applicants must be 21+). */
-export const isAtLeastAge = (dob: string, minAge = 21, today = new Date()): boolean => {
+const toIsoDate = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+/** True only for a real date at or past `minAge` (loan applicants must be 18+). */
+export const isAtLeastAge = (dob: string, minAge = 18, today = new Date()): boolean => {
   const age = ageOn(dob, today);
   return age >= minAge;
 };
 
-/** Latest date of birth that still satisfies `minAge` — for a date input's max. */
-export const latestDobForAge = (minAge = 21, today = new Date()): string => {
-  const cutoff = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
-  return `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+/** True only for a real date at or below `maxAge` (loan applicants must be 65 or younger). */
+export const isAtMostAge = (dob: string, maxAge = 65, today = new Date()): boolean => {
+  const age = ageOn(dob, today);
+  return age >= 0 && age <= maxAge;
 };
+
+/** Latest date of birth that still satisfies `minAge` — for a date input's max. */
+export const latestDobForAge = (minAge = 18, today = new Date()): string =>
+  toIsoDate(new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()));
+
+/** Earliest date of birth that still satisfies `maxAge` — for a date input's min. */
+export const earliestDobForAge = (maxAge = 65, today = new Date()): string =>
+  toIsoDate(new Date(today.getFullYear() - maxAge - 1, today.getMonth(), today.getDate() + 1));
 
 export interface PersonalDetailsDraft {
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
@@ -47,7 +58,7 @@ interface PersonalDetailsOptions {
 export const validatePersonalDetails = (
   draft: PersonalDetailsDraft,
   e: Partial<Record<string, string>>,
-  { minAge = 21, maxAge = 70, panExample = false }: PersonalDetailsOptions = {},
+  { minAge = 18, maxAge = 65, panExample = false }: PersonalDetailsOptions = {},
 ): void => {
   if(!draft.fullName.trim()) e.fullName="Name is required";
   else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
