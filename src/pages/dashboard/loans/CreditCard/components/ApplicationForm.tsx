@@ -138,7 +138,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
-      else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(draft.monthlyNetSalary<21000) e.monthlyNetSalary="Monthly net salary must be at least ₹21,000";
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
@@ -205,7 +205,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+    reviewOpen, handleSubmit, confirmReview, cancelReview,
   } = useApplicationSubmit<CreditCardApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {      const app = {
@@ -309,8 +309,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       headline="Unlock the best Credit Card offers suitable for your needs from 43+ lenders"
       application={submittedApp}
       submitted={submitted}
-      showFormAfterSubmit={showFormAfterSubmit}
-      onShowForm={setShowFormAfterSubmit}
+      values={form}
+      reviewOpen={reviewOpen}
+      onConfirmReview={() => void confirmReview()}
+      onCancelReview={cancelReview}
       buildSections={buildProductSections}
       onSubmit={handleSubmit}
       agreed={agreed}

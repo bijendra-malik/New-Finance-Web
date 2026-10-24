@@ -196,7 +196,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+    reviewOpen, handleSubmit, confirmReview, cancelReview,
   } = useApplicationSubmit<BusinessLoanApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {
@@ -289,8 +289,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       headline="Unlock the best Business Loan offers suitable for your needs from 43+ lenders"
       application={submittedApp}
       submitted={submitted}
-      showFormAfterSubmit={showFormAfterSubmit}
-      onShowForm={setShowFormAfterSubmit}
+      values={form}
+      reviewOpen={reviewOpen}
+      onConfirmReview={() => void confirmReview()}
+      onCancelReview={cancelReview}
       buildSections={buildProductSections}
       onSubmit={handleSubmit}
       agreed={agreed}

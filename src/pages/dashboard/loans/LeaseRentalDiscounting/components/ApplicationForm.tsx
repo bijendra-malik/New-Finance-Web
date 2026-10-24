@@ -162,7 +162,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
-      else if(draft.monthlyNetSalary<=12000) e.monthlyNetSalary="Monthly income should be greater than 12,000";
+      else if(draft.monthlyNetSalary<21000) e.monthlyNetSalary="Monthly net salary must be at least ₹21,000";
       else if(parseInt(draft.existingEMI)>=draft.monthlyNetSalary*0.7) e.existingEMI=`Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary*0.7)))}`; // 70% FOIR rule
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
@@ -230,7 +230,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+    reviewOpen, handleSubmit, confirmReview, cancelReview,
   } = useApplicationSubmit<LeaseRentalApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {      const app = {
@@ -342,8 +342,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       headline="Unlock the best Lease Rental Discounting offers suitable for your needs from 43+ lenders"
       application={submittedApp}
       submitted={submitted}
-      showFormAfterSubmit={showFormAfterSubmit}
-      onShowForm={setShowFormAfterSubmit}
+      values={form}
+      reviewOpen={reviewOpen}
+      onConfirmReview={() => void confirmReview()}
+      onCancelReview={cancelReview}
       buildSections={buildProductSections}
       onSubmit={handleSubmit}
       agreed={agreed}
@@ -414,7 +416,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           datePickerPortalId="business-established-datepicker-portal"
           loadCities={loadCities}
           onPincodeResolved={r => onPincodeResolved("business", r)}
-          salaryError={errors.monthlyNetSalary || (form.monthlyNetSalary > 0 && form.monthlyNetSalary <= 12000 ? "Monthly income should be greater than 12,000" : undefined)}
+          salaryError={errors.monthlyNetSalary || (form.monthlyNetSalary > 0 && form.monthlyNetSalary < 21000 ? "Monthly net salary must be at least ₹21,000" : undefined)}
         />
       </FormCard>
 

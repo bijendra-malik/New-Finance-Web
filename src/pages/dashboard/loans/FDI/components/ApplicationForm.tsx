@@ -222,7 +222,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+    reviewOpen, handleSubmit, confirmReview, cancelReview,
   } = useApplicationSubmit<FDIApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {      const app = {
@@ -322,8 +322,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       headline="Unlock the best FDI offers suitable for your needs from 43+ lenders"
       application={submittedApp}
       submitted={submitted}
-      showFormAfterSubmit={showFormAfterSubmit}
-      onShowForm={setShowFormAfterSubmit}
+      values={form}
+      reviewOpen={reviewOpen}
+      onConfirmReview={() => void confirmReview()}
+      onCancelReview={cancelReview}
       buildSections={buildProductSections}
       onSubmit={handleSubmit}
       agreed={agreed}
