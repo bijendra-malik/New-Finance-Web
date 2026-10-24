@@ -177,9 +177,10 @@ export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalI
 DateField.displayName = "DateField";
 
 export const DateOfBirthPicker = memo(({ value, onChange, err, disabled }: { value: string; onChange: (v: string) => void; err?: string; disabled?: boolean }) => {
+  // Applicants must be 18–65, so the calendar only offers dates inside that window.
   const today = new Date();
-  const maxDate = new Date(today.getFullYear() - 21, today.getMonth(), today.getDate());
-  const minDate = new Date(today.getFullYear() - 100, 0, 1);
+  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+  const minDate = new Date(today.getFullYear() - 66, today.getMonth(), today.getDate() + 1);
   return <DateField value={value} onChange={onChange} err={err} minDate={minDate} maxDate={maxDate} portalId="dob-datepicker-portal" disabled={disabled} />;
 });
 DateOfBirthPicker.displayName = "DateOfBirthPicker";
