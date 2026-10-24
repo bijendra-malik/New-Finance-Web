@@ -8,6 +8,8 @@
 //                                                 (slug e.g. "personal")
 //   POST /franchise/customer/:id/loans         — a client's loans
 //   GET  /franchise/customer/:id/loans/:applicationNo — one loan's status
+//   GET  /franchise/customer/:id/draft         — a client's in-progress application draft
+//   DELETE /franchise/customer/:id/draft       — discard that draft
 //   GET  /franchise/loans                      — every loan filed by this franchise
 //   GET  /franchise/status                     — this franchise's agreement status
 //
@@ -103,6 +105,25 @@ export interface FranchiseStatusResponse {
   message?: string;
   status?: string;
   franchiseStatus?: string;
+}
+
+/** The draft application a franchise is filing for one client. */
+export interface FranchiseCustomerDraft {
+  draftId?: string;
+  _id?: string;
+  product?: string;
+  loanKey?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export interface FranchiseCustomerDraftResponse {
+  success: boolean;
+  message?: string;
+  data?: FranchiseCustomerDraft | { draft?: FranchiseCustomerDraft } | null;
+  draft?: FranchiseCustomerDraft;
 }
 
 // ── Shared response unwrap ───────────────────────────────────────────────────
@@ -216,28 +237,6 @@ export interface FranchiseCustomerOtpVerifyPayload {
   otp: string;
 }
 
-/**
- * Request OTP for franchise customer registration/verification.
- * POST /franchise/customer/request-otp
- */
-export const requestFranchiseCustomerOtp = async (
-  payload: FranchiseCustomerOtpRequestPayload,
-): Promise<{ ok: true; message: string } | { ok: false; message: string }> => {
-  try {
-    const res = await axiosInstance.post<{ success?: boolean; message?: string }>(
-      "/franchise/customer/request-otp",
-      payload,
-    );
-    const body = res.data;
-    if (body?.success !== false) {
-      return { ok: true, message: body?.message || "OTP sent successfully." };
-    }
-    return { ok: false, message: body?.message || "Could not send OTP." };
-  } catch (err) {
-    return { ok: false, message: franchisePortalError(err, "Could not send OTP.") };
-  }
-};
-
 export const requestFranchiseCustomerVerifyOtp = async (
   payload: FranchiseCustomerOtpRequestPayload,
 ): Promise<{ ok: true; message: string } | { ok: false; message: string }> => {
@@ -323,27 +322,6 @@ export const fetchFranchiseCustomer = async (
     return { ok: true, customer: unwrapped.item };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load this customer's details.") };
-  }
-};
-
-/**
- * Apply for a loan on a client's behalf.
- * POST /franchise/customer/:slug/applyloan
- */
-export const applyFranchiseCustomerLoan = async <TPayload extends object>(
-  productKey: string,
-  payload: TPayload & { franchiseCustomerId: string },
-): Promise<{ ok: true; data: FranchiseCustomerLoan } | { ok: false; message: string }> => {
-  try {
-    const res = await axiosInstance.post<{ success: boolean; message?: string; data?: FranchiseCustomerLoan }>(
-      `/franchise/customer/${productKey}/applyloan`,
-      payload,
-    );
-    const unwrapped = unwrap<FranchiseCustomerLoan>(res, "Submission failed.");
-    if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, data: unwrapped.data };
-  } catch (err) {
-    return { ok: false, message: franchisePortalError(err, "Submission failed. Please try again.") };
   }
 };
 
@@ -447,6 +425,67 @@ export const fetchFranchiseStatus = async (): Promise<
     return { ok: false, message: body?.message || "The franchise status was not reported." };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load your franchise status.") };
+  }
+};
+
+/**
+ * A client's in-progress application draft, if one is open.
+ * GET /franchise/customer/:id/draft
+ *
+ * A missing draft is reported as `ok: true` with `draft: null` — that is the
+ * expected "nothing saved yet" answer, not a failure.
+ */
+export const fetchFranchiseCustomerDraft = async (
+  customerId: string,
+): Promise<
+  | { ok: true; draft: FranchiseCustomerDraft | null }
+  | { ok: false; message: string }
+> => {
+  try {
+    const res = await axiosInstance.get<FranchiseCustomerDraftResponse>(
+      `/franchise/customer/${encodeURIComponent(customerId)}/draft`,
+    );
+    const body = res.data;
+    if (body?.success === false) {
+      return { ok: false, message: body.message || "The draft could not be loaded." };
+    }
+    const payload = body?.data;
+    const record =
+      payload && typeof payload === "object" && !Array.isArray(payload)
+        ? (payload as Record<string, unknown>)
+        : undefined;
+    const candidate =
+      (record && "draft" in record ? record.draft : undefined) ??
+      body?.draft ??
+      payload ??
+      null;
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      return { ok: true, draft: null };
+    }
+    return { ok: true, draft: candidate as FranchiseCustomerDraft };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not load this client's draft.") };
+  }
+};
+
+/**
+ * Discard a client's in-progress application draft.
+ * DELETE /franchise/customer/:id/draft
+ */
+export const deleteFranchiseCustomerDraft = async (
+  customerId: string,
+): Promise<{ ok: true; message: string } | { ok: false; message: string }> => {
+  try {
+    const res = await axiosInstance.delete<{ success?: boolean; message?: string }>(
+      `/franchise/customer/${encodeURIComponent(customerId)}/draft`,
+    );
+    const body = res.data;
+    if (body?.success === false) {
+      return { ok: false, message: body.message || "The draft could not be discarded." };
+    }
+    return { ok: true, message: body?.message || "The draft was discarded." };
+  } catch (err) {
+    return { ok: false, message: franchisePortalError(err, "Could not discard this client's draft.") };
   }
 };
 
