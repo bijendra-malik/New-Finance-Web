@@ -151,7 +151,7 @@ const CreditScoreGate = ({ product, sections, dashboardPath, onFinalized }: Cred
             style={{ borderColor: error ? "#fca5a5" : "#cbd5e1", background: error ? "#fef2f2" : "#fff" }} />
           <div className="min-w-0 flex-1">
             {error ? <p id="credit-score-error" role="alert" className="text-xs font-semibold text-red-600">{error}</p> : <p id="credit-score-hint" className="text-[12px] leading-5 text-slate-500">Between {SCORE_MIN} and {SCORE_MAX}.</p>}
-            {typedIsValid && <p className="mt-1.5 text-[12px] font-semibold" style={{ color: BAND_META[bandForScore(typedScore)].color }}>This is the {BAND_META[bandForScore(typedScore)].label} band.</p>}
+            {typedIsValid && <p className="mt-1.5 text-[12px] font-semibold" style={{ color: BAND_META[bandForScore(typedScore)].color }}>This is the {BAND_META[bandForScore(typedScore)].label} score.</p>}
           </div>
         </div>
         <button type="submit" disabled={submitting} className="mt-5 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-60" style={{ background: "linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-navy) 100%)" }}>
