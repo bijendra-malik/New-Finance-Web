@@ -1,11 +1,10 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { useAuth } from "../../context/authContext";
 import { Link } from "react-router-dom";
 import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
-import { formatGSTIN, formatPAN } from "../../utils/formatters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
 import { readCredentials, saveCredentials } from "../../utils/credentialStorage";
@@ -16,94 +15,25 @@ import type { FranchiseEntryPayload } from "../../api/franchise";
 import { useFranchisePlans } from "../../hooks/useFranchisePlans";
 import { FRANCHISE_EMAIL } from "./franchiseData";
 import type { FranchisePlan } from "./franchiseData";
-import { PlanSummary, PackageSelector } from "./PlanSelector";
-import { LocationFields } from "../form/LocationFields";
+import { PlanSummary } from "./PlanSelector";
 import { Field } from "../ui/FieldRenderer";
-import OtpEntryPanel from "../status/OtpEntryPanel";
+import { EnquiryReadyPanel, OtpStagePanel, SubmittedPanel } from "./FranchiseFormPanels";
+import { FranchiseFields } from "./franchiseFormFields";
 
-export interface FranchiseFormValues {
-  continent: string;
-  country: string;
-  dob: string;
-  fullName: string;
-  pan: string;
-  mobile: string;
-  email: string;
-  state: string;
-  city: string;
-  pincode: string;
-  businessName: string;
-  businessType: string;
-  businessTypeOther: string;
-  gstNumber: string;
-  yearsInBusiness: string;
-  address: string;
-  packageId: string;
-}
+import {
+  API_FIELD_TO_FORM,
+  EMPTY,
+  FRANCHISEE_FIELD_ORDER,
+  FRANCHISEE_STEPS,
+  PINCODE_DEBOUNCE_MS,
+  inputClass,
+  type FieldKey,
+  type FranchiseFormProps,
+  type FranchiseFormValues,
+  type VerifiedLocation,
+} from "./franchiseFormConfig";
 
-const EMPTY: FranchiseFormValues = {
-  fullName: "", pan: "", mobile: "", email: "", state: "", city: "",
-  pincode: "", businessName: "", businessType: "", businessTypeOther: "",
-  gstNumber: "", yearsInBusiness: "", address: "", packageId: "",
-  continent: "",
-  country: "",
-  dob: ""
-};
-
-type FieldKey = keyof FranchiseFormValues;
-type Variant = "franchisee" | "franchisor";
-
-export type FranchiseFormPresentation = "stacked" | "horizontal" | "stepped";
-
-interface FranchiseeStep {
-  id: string;
-  label: string;
-  hint: string;
-  fields: FieldKey[];
-}
-
-const FRANCHISEE_STEPS: FranchiseeStep[] = [
-  { id: "personal", label: "Personal", hint: "Name, contact and PAN", fields: ["fullName", "mobile", "email", "dob", "pan"] },
-  {
-    id: "business",
-    label: "Business",
-    hint: "Business and GST details",
-    fields: ["businessName", "businessType", "businessTypeOther", "gstNumber", "yearsInBusiness"],
-  },
-  { id: "location", label: "Location", hint: "Where you operate", fields: ["pincode", "state", "city", "address"] },
-  { id: "plan", label: "Plan", hint: "Choose your package", fields: ["packageId"] },
-];
-
-const FRANCHISEE_FIELD_ORDER: FieldKey[] = [
-  "fullName", "mobile", "email", "dob", "pan", "gstNumber",
-  "pincode", "state", "city",
-  "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address",
-  "packageId",
-];
-
-const API_FIELD_TO_FORM: Readonly<Record<string, FieldKey>> = {
-  name: "fullName",
-  mobile: "mobile",
-  email: "email",
-  dob: "dob",
-  panNumber: "pan",
-  planCode: "packageId",
-};
-
-interface VerifiedLocation {
-  pincode: string;
-  state: string;
-  city: string;
-}
-
-const PINCODE_DEBOUNCE_MS = 500;
-
-interface FranchiseFormProps {
-  variant: Variant;
-  packageId?: string;
-  onPackageChange?: (planId: string) => void;
-  presentation?: FranchiseFormPresentation;
-}
+export type { FranchiseFormValues, FranchiseFormPresentation } from "./franchiseFormConfig";
 
 const FranchiseForm = ({
   variant,
@@ -507,157 +437,48 @@ const FranchiseForm = ({
   // ── Success — application received, credentials to follow ────────────────────
   if (submitted && isFranchisee) {
     return (
-      <>
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-teal)">
-          <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <h3 className="mb-2 text-xl font-bold text-slate-800">Application submitted</h3>
-        <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
-          Your mobile number is verified and your franchise application has been received. Our team
-          will review your details — once approved, sign in with your{" "}
-          <strong>franchisee ID and the PAN number from this application</strong>.
-        </p>
-
-        <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
-          {[
-            ["Applicant", values.fullName],
-            ["Business", values.businessName],
-            ["PAN", values.pan],
-            ["Location", `${values.city}, ${values.state} — ${values.pincode}`],
-            ["Plan", selectedPlan ? `${selectedPlan.duration} — ${selectedPlan.fee}` : "—"],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4">
-              <dt className="text-slate-400">{k}</dt>
-              <dd className="text-right font-semibold text-slate-700">{v}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {franchisorLoginEnabled ? (
-          <Link
-            to="/franchise-login"
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white transition-all duration-200 hover:shadow-lg"
-            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
-          >
-            Go to Franchisee Login →
-          </Link>
-          ) : (
-          <span
-            aria-disabled="true"
-            title="Sign in to access the franchisee portal"
-            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white/60"
-            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
-          >
-            Go to Franchisee Login →
-          </span>
-          )}
-        </div>
-      </div>
-      {popupNode}
-      </>
+      <SubmittedPanel
+        values={values}
+        selectedPlan={selectedPlan}
+        franchisorLoginEnabled={franchisorLoginEnabled}
+        popup={popupNode}
+      />
     );
   }
 
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-teal)">
-          <svg className="h-7 w-7 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <h3 className="mb-2 text-xl font-bold text-slate-800">Details Ready to Send</h3>
-        <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
-          Your email app has been opened with all the details filled in and addressed to{" "}
-          <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-navy) hover:underline">
-            {FRANCHISE_EMAIL}
-          </a>
-          . Send that email and our franchise team will review your details and get in touch.
-        </p>
-
-        <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
-          {[
-            ["Name", values.fullName],
-            ["PAN", values.pan],
-            ["Mobile", values.mobile],
-            ["Email", values.email],
-            ["Location", `${values.city}, ${values.state}`],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4">
-              <dt className="text-slate-400">{k}</dt>
-              <dd className="text-right font-semibold text-slate-700">{v}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href={mailtoHref}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white"
-            style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
-          >
-            Open the email again
-          </a>
-          <Button
-            variant="outline"
-            size="md"
-            onClick={() => {
-              setSubmitted(false);
-              setValues(EMPTY);
-            }}
-          >
-            Submit another enquiry
-          </Button>
-        </div>
-      </div>
+      <EnquiryReadyPanel
+        values={values}
+        mailtoHref={mailtoHref}
+        onSubmitAnother={() => {
+          setSubmitted(false);
+          setValues(EMPTY);
+        }}
+      />
     );
   }
 
   // ── OTP stage — shown after the entry call accepts the application ──────
   if (isFranchisee && otpStage) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-7 sm:px-7">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--brand-teal)">Verify your mobile</p>
-        <h3 className="mt-2 text-xl font-extrabold text-(--brand-navy)">One step left — confirm your OTP</h3>
-        <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
-          Your application has been received. Enter the OTP sent to your registered mobile number to
-          verify your franchisee access.
-        </p>
-        <div className="mt-5">
-          <OtpEntryPanel
-            idPrefix="ff-apply"
-            maskedMobile={maskedMobile}
-            otp={otp}
-            onOtpChange={(value) => {
-              setOtp(value);
-              setOtpError("");
-            }}
-            otpError={otpError}
-            apiError={otpApiError}
-            notice={otpNotice}
-            busy={verifying}
-            resending={resending}
-            onVerify={verifyEntryOtp}
-            onResend={() => void resendEntryOtp()}
-            onChangeDetails={backToForm}
-            verifyLabel="Verify application"
-          />
-        </div>
-      </div>
+      <OtpStagePanel
+        maskedMobile={maskedMobile}
+        otp={otp}
+        onOtpChange={(value) => {
+          setOtp(value);
+          setOtpError("");
+        }}
+        otpError={otpError}
+        apiError={otpApiError}
+        notice={otpNotice}
+        busy={verifying}
+        resending={resending}
+        onVerify={verifyEntryOtp}
+        onResend={() => void resendEntryOtp()}
+        onChangeDetails={backToForm}
+      />
     );
-  }
-
-  function inputClass(hasError: boolean) {
-    return [
-      "w-full rounded-xl border px-3 py-2.5 text-sm text-slate-800 transition placeholder:text-slate-400",
-      hasError
-        ? "border-red-300 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-        : "border-slate-200 bg-white focus:border-(--brand-navy) focus:ring-2 focus:ring-(--brand-navy)/10",
-    ].join(" ");
   }
 
   const isHorizontal = presentation === "horizontal";
@@ -670,11 +491,6 @@ const FranchiseForm = ({
       ? "grid grid-cols-1 gap-4"
       : "grid grid-cols-1 gap-5 sm:grid-cols-2";
 
-  // Full-width spans only make sense where the grid actually has the extra columns.
-  const spanFull = isHorizontal ? "sm:col-span-2 lg:col-span-3" : isStepped ? "" : "sm:col-span-2";
-  const lockedClass = (key: "fullName" | "mobile" | "email" | "dob") =>
-    isLocked(key) ? "cursor-not-allowed bg-slate-100 text-slate-500" : "";
-
   const handleLocationSet = (key: "state" | "city", v: string) => {
     if (key === "state") {
       setValues((p) => ({ ...p, state: v, city: "" }));
@@ -684,272 +500,34 @@ const FranchiseForm = ({
     }
   };
 
-  const renderField = (key: FieldKey): React.ReactNode => {
-    switch (key) {
-      case "fullName":
-        return (
-          <Field
-            id={fid("name")}
-            label={isFranchisee ? "Full Name / Applicant Name" : "Full Name"}
-            required
-            error={errors.fullName}
-            hint={isFranchisee ? "Enter exactly as printed on your PAN card" : undefined}
-            full={isFranchisee && presentation === "stacked"}
-          >
-            <input
-              id={fid("name")}
-              className={`${inputClass(!!errors.fullName)} ${lockedClass("fullName")}`}
-              value={values.fullName}
-              onChange={(e) => set("fullName", e.target.value)}
-              placeholder="Your full name"
-              autoComplete="name"
-              readOnly={isLocked("fullName")}
-            />
-          </Field>
-        );
-
-      case "mobile":
-        return (
-          <Field id={fid("mobile")} label="Mobile Number" required error={errors.mobile}>
-            <input
-              id={fid("mobile")}
-              type="tel"
-              inputMode="numeric"
-              className={`${inputClass(!!errors.mobile)} ${lockedClass("mobile")}`}
-              value={values.mobile}
-              onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
-              placeholder="10-digit mobile number"
-              maxLength={10}
-              autoComplete="tel"
-              readOnly={isLocked("mobile")}
-            />
-          </Field>
-        );
-
-      case "email":
-        return (
-          <Field id={fid("email")} label="Email Address" required error={errors.email}>
-            <input
-              id={fid("email")}
-              type="email"
-              className={`${inputClass(!!errors.email)} ${lockedClass("email")}`}
-              value={values.email}
-              onChange={(e) => set("email", e.target.value)}
-              placeholder="your@email.com"
-              autoComplete="email"
-              readOnly={isLocked("email")}
-            />
-          </Field>
-        );
-
-      case "dob":
-        return (
-          <Field id={fid("dob")} label="Date of Birth" required error={errors.dob}>
-            <input
-              id={fid("dob")}
-              type="date"
-              className={`${inputClass(!!errors.dob)} ${lockedClass("dob")}`}
-              value={values.dob}
-              onChange={(e) => set("dob", e.target.value)}
-              placeholder="YYYY-MM-DD"
-            />
-          </Field>
-        );
-
-      case "pan":
-        return (
-          <Field id={fid("pan")} label="PAN Number" required error={errors.pan}>
-            <input
-              id={fid("pan")}
-              className={`${inputClass(!!errors.pan)} uppercase tracking-wider`}
-              value={values.pan}
-              onChange={(e) => set("pan", formatPAN(e.target.value))}
-              placeholder="ABCDE1234F"
-              maxLength={10}
-              autoComplete="off"
-            />
-          </Field>
-        );
-
-      case "gstNumber":
-        return (
-          <Field
-            id={fid("gst")}
-            label="GST Number"
-            error={errors.gstNumber}
-            hint="Optional — only if you have a GST-registered business"
-          >
-            <input
-              id={fid("gst")}
-              className={`${inputClass(!!errors.gstNumber)} uppercase tracking-wider`}
-              value={values.gstNumber}
-              onChange={(e) => set("gstNumber", formatGSTIN(e.target.value))}
-              placeholder="09ABCDE1234F1Z5"
-              maxLength={15}
-              autoComplete="off"
-            />
-          </Field>
-        );
-
-      case "yearsInBusiness":
-        return (
-          <Field id={fid("years")} label="Years in Business" required error={errors.yearsInBusiness}>
-            <input
-              id={fid("years")}
-              inputMode="numeric"
-              className={inputClass(!!errors.yearsInBusiness)}
-              value={values.yearsInBusiness}
-              onChange={(e) => set("yearsInBusiness", e.target.value.replace(/\D/g, "").slice(0, 2))}
-              placeholder="e.g. 3"
-              maxLength={2}
-            />
-          </Field>
-        );
-
-      case "businessName":
-        return (
-          <Field id={fid("businessName")} label="Business Name" required error={errors.businessName}>
-            <input
-              id={fid("businessName")}
-              className={inputClass(!!errors.businessName)}
-              value={values.businessName}
-              onChange={(e) => set("businessName", e.target.value)}
-              placeholder="Your business / firm name"
-              autoComplete="organization"
-            />
-          </Field>
-        );
-
-      case "businessType":
-        return (
-          <Field id={fid("businessType")} label="Business Type" required error={errors.businessType}>
-            <select
-              id={fid("businessType")}
-              className={inputClass(!!errors.businessType)}
-              value={values.businessType}
-              onChange={(e) => {
-                set("businessType", e.target.value);
-                if (e.target.value !== OTHER_OPTION) set("businessTypeOther", "");
-              }}
-            >
-              <option value="">Select business type</option>
-              {businessTypeOptions.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </Field>
-        );
-
-      case "businessTypeOther":
-        if (values.businessType !== OTHER_OPTION) return null;
-        return (
-          <Field id={fid("businessTypeOther")} label="Mention Business Type" required error={errors.businessTypeOther}>
-            <input
-              id={fid("businessTypeOther")}
-              className={inputClass(!!errors.businessTypeOther)}
-              value={values.businessTypeOther}
-              onChange={(e) => set("businessTypeOther", e.target.value)}
-              placeholder="Enter business type"
-            />
-          </Field>
-        );
-
-      case "address":
-        return (
-          <div className={spanFull}>
-            <Field id={fid("address")} label="Address" required error={errors.address}>
-              <textarea
-                id={fid("address")}
-                rows={isHorizontal ? 2 : 3}
-                className={`${inputClass(!!errors.address)} resize-y`}
-                value={values.address}
-                onChange={(e) => set("address", e.target.value)}
-                placeholder="Full postal address as per your official documents"
-              />
-            </Field>
-          </div>
-        );
-
-      case "packageId":
-        if (plansLoading) {
-          return (
-            <div className={spanFull}>
-              <Field id={fid("package")} label="Package Duration">
-                <div className="flex items-center gap-3 text-sm text-slate-400">
-                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                  </svg>
-                  Loading packages…
-                </div>
-              </Field>
-            </div>
-          );
-        }
-        return (
-          <div className={spanFull}>
-            {plansError && (
-              <div
-                role="alert"
-                className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-600"
-              >
-                <span>{plansError}</span>
-                <button
-                  type="button"
-                  onClick={reloadPlans}
-                  className="cursor-pointer font-bold underline underline-offset-2 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-            <PackageSelector
-              id={fid("package")}
-              value={packageId}
-              onChange={setPackage}
-              error={errors.packageId}
-              required
-              plans={plans}
-              disabled={plans.length === 0}
-            />
-          </div>
-        );
-
-      default:
-        return null;
-    }
+  // Everything the field grid needs, in one place so it stays readable at the call site.
+  const fieldProps = {
+    values,
+    errors,
+    set,
+    fid,
+    isLocked,
+    isFranchisee,
+    presentation,
+    businessTypeOptions,
+    stateOptions,
+    loadCities,
+    pincodeStatus,
+    verifiedLocation,
+    onPincodeResolved: (r: { pincode: string; state: string; city: string }) => {
+      setVerifiedLocation(r.state ? { pincode: r.pincode, state: r.state, city: r.city } : null);
+      setPincodeStatus("idle");
+      setValues((p) => ({ ...p, pincode: r.pincode, state: r.state, city: r.city }));
+      setErrors((p) => ({ ...p, state: undefined, city: undefined }));
+    },
+    onLocationSet: handleLocationSet,
+    plans,
+    plansLoading,
+    plansError,
+    reloadPlans,
+    setPackage,
+    packageId,
   };
-
-  /** Renders a key list, collapsing pincode/state/city into the shared location block. */
-  const renderFields = (keys: FieldKey[]): React.ReactNode =>
-    keys.map((key) => {
-      if (key === "pincode") {
-        return (
-          <LocationFields
-            key="location"
-            slice={{ state: values.state, city: values.city }}
-            pincode={values.pincode}
-            set={handleLocationSet}
-            errors={{ state: errors.state, city: errors.city }}
-            states={stateOptions}
-            loadCities={loadCities}
-            onPincodeResolved={(r) => {
-              setVerifiedLocation(r.state ? { pincode: r.pincode, state: r.state, city: r.city } : null);
-              setPincodeStatus("idle");
-              setValues((p) => ({ ...p, pincode: r.pincode, state: r.state, city: r.city }));
-              setErrors((p) => ({ ...p, state: undefined, city: undefined }));
-            }}
-            entityLabel=""
-            showPincode
-            pincodeStatus={pincodeStatus}
-            verifiedLocation={verifiedLocation}
-          />
-        );
-      }
-      if (key === "state" || key === "city") return null; // rendered by LocationFields
-      return <Fragment key={key}>{renderField(key)}</Fragment>;
-    });
-
   const planSummaryBlock = (
     <div
       className={isHorizontal ? "rounded-xl px-4 py-2.5" : "rounded-2xl p-4"}
@@ -1013,13 +591,10 @@ const FranchiseForm = ({
 
       <div className={gridClass}>
         {isFranchisee ? (
-          renderFields(isStepped ? FRANCHISEE_STEPS[step].fields : FRANCHISEE_FIELD_ORDER)
+          <FranchiseFields keys={isStepped ? FRANCHISEE_STEPS[step].fields : FRANCHISEE_FIELD_ORDER} {...fieldProps} />
         ) : (
           <>
-            {renderField("fullName")}
-            {renderField("mobile")}
-            {renderField("email")}
-            {renderField("pan")}
+            <FranchiseFields keys={["fullName", "mobile", "email", "pan"]} {...fieldProps} />
             <Field id={fid("state")} label="State" required error={errors.state}>
               <input
                 id={fid("state")}
