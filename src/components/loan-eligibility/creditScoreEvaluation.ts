@@ -23,7 +23,7 @@ export const BAND_ORDER: CreditBand[] = ["poor", "average", "good", "excellent"]
 
 export const BAND_META: Record<CreditBand, BandMeta> = {
   poor: {
-    label: "Poor",
+    label: "a Poor",
     range: [300, 600],
     segment: [300, 600],
     color: "#b91c1c",
@@ -32,7 +32,7 @@ export const BAND_META: Record<CreditBand, BandMeta> = {
     blurb: "Lenders see this as a higher-risk profile. Clearing dues and paying on time moves this band fastest.",
   },
   average: {
-    label: "Average",
+    label: "an Average",
     range: [601, 700],
     segment: [600, 700],
     color: "#a16207",
@@ -41,7 +41,7 @@ export const BAND_META: Record<CreditBand, BandMeta> = {
     blurb: "Some lenders may ask for extra documents or a co-applicant at this band.",
   },
   good: {
-    label: "Good",
+    label: "a Good",
     range: [701, 800],
     segment: [700, 800],
     color: "#0369a1",
@@ -50,7 +50,7 @@ export const BAND_META: Record<CreditBand, BandMeta> = {
     blurb: "Most lenders treat this as a low-risk profile with standard terms.",
   },
   excellent: {
-    label: "Excellent",
+    label: "an Excellent",
     range: [801, 900],
     segment: [800, 900],
     color: "#0f766e",
