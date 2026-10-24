@@ -15,8 +15,8 @@ import { ExistingLoanExposureSection } from "../../../../../components/form/Exis
 import { formatIndianNumber } from "../../../../../utils/formatters";
 import { NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import {
-  AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectField,
-  SelectWithOther, TenureYearsField, TextField,
+  AmountField, FieldLabel, FormCard, SelectField,
+SelectWithOther, TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
@@ -77,8 +77,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     else if (draft.loanAmount > 5000000) e.loanAmount = "Maximum loan amount is ₹50,00,000";
 
     if (!draft.loanTenureYears) e.loanTenureYears = "Select loan tenure";
-    else if (draft.loanTenureYears === MORE_THAN_TENURE_OPTION && (form.loanTenureYearsCustom <= 7 || form.loanTenureYearsCustom > 25))
-      e.loanTenureYearsCustom = form.loanTenureYearsCustom > 25 ? "Tenure cannot exceed 25 years" : "Enter a tenure greater than 7 years";
+    else if (draft.loanTenureYears > 7) e.loanTenureYears = "Loan tenure cannot exceed 7 years";
 
     if (!draft.existingEMI.trim()) e.existingEMI = "Existing Total EMI is required (enter 0 if none)";
     if (!draft.existingLoanAmount.trim()) e.existingLoanAmount = "Existing Loan Amount is required (enter 0 if none)";
@@ -94,7 +93,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       if (!draft.companyType) e.companyType = "Company type is required";
       else if (draft.companyType === OTHER_OPTION && !draft.companyTypeOther.trim()) e.companyTypeOther = "Please mention company type";
       if (!draft.monthlyNetSalary) e.monthlyNetSalary = "Monthly net salary is required";
-      else if (draft.monthlyNetSalary <= 12000) e.monthlyNetSalary = "Monthly income should be greater than 12,000";
+      else if (draft.monthlyNetSalary < 21000) e.monthlyNetSalary = "Monthly net salary must be at least ₹21,000";
       // 70% FOIR rule — total EMI must stay under 70% of net salary.
       else if (parseInt(draft.existingEMI) >= draft.monthlyNetSalary * 0.7)
         e.existingEMI = `Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary * 0.7)))}`;
@@ -105,7 +104,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       }
     }
 
-    validatePersonalDetails(draft, e, { maxAge: 60 });
+    validatePersonalDetails(draft, e, { maxAge: 65 });
     Object.assign(e, mismatchErrors(draft));
     return e;
   };
@@ -115,7 +114,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
 
   const {
     isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    showFormAfterSubmit, setShowFormAfterSubmit, handleSubmit,
+    reviewOpen, handleSubmit, confirmReview, cancelReview,
   } = useApplicationSubmit<PersonalLoanApplication>({
     computeErrors, markAllTouched, agreed,
     submit: async () => {
@@ -140,7 +139,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
           ? (form.salaryBankName === OTHER_OPTION ? (form.salaryBankNameOther.trim() || undefined) : undefined)
           : undefined,
         loanAmount: form.loanAmount,
-        loanTenure: form.loanTenureYears === MORE_THAN_TENURE_OPTION ? form.loanTenureYearsCustom : form.loanTenureYears,
+        loanTenure: form.loanTenureYears,
         existingEMI: parseInt(form.existingEMI) || 0, existingLoanAmount: parseInt(form.existingLoanAmount) || 0,
         existingBanks: stripOther(form.existingBanks), otherBankList: form.existingBanksOther,
         existingLoanTypes: stripOther(form.existingLoanTypes), otherLoanList: form.existingLoanTypesOther,
@@ -156,8 +155,10 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       headline={HEADLINE}
       application={submittedApp}
       submitted={submitted}
-      showFormAfterSubmit={showFormAfterSubmit}
-      onShowForm={setShowFormAfterSubmit}
+      values={form}
+      reviewOpen={reviewOpen}
+      onConfirmReview={() => void confirmReview()}
+      onCancelReview={cancelReview}
       buildSections={buildProductSections}
       onSubmit={handleSubmit}
       agreed={agreed}
@@ -176,7 +177,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v => set("loanTenureYears", v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v => set("loanTenureYearsCustom", v)}
-            options={masters.personalLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.personalLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
         </div>
       </FormCard>
