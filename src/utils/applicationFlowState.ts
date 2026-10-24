@@ -55,21 +55,6 @@ export const readSubmittedApplicationAt = (
   }
 };
 
-export const clearSubmittedApplication = (ownerId: string, productKey: string): void => {
-  if (!ownerId || !productKey) return;
-  try {
-    const raw = localStorage.getItem(SUBMITTED_APPLICATIONS_KEY);
-    if (!raw) return;
-    const map: unknown = JSON.parse(raw);
-    if (typeof map !== "object" || Array.isArray(map) || map === null) return;
-    const next: Record<string, string> = { ...(map as Record<string, string>) };
-    delete next[`${ownerId}:${productKey}`];
-    localStorage.setItem(SUBMITTED_APPLICATIONS_KEY, JSON.stringify(next));
-  } catch {
-    // ignore storage errors so a full browser does not break the apply flow
-  }
-};
-
 export interface PendingCreditScoreDraft {
   ownerId: string;
   loanKey: string;

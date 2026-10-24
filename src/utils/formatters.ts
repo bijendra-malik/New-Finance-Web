@@ -33,10 +33,6 @@ export const formatPAN = (raw: string): string => {
 export const digitsOnly = (raw: string): string =>
   raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
-/** Parses a possibly comma-grouped amount string into a non-negative integer ("" → 0). */
-export const parseIndianAmount = (raw: string): number =>
-  parseInt(raw.replace(/\D/g, ""), 10) || 0;
-
 /** Formats digits with Indian separators for display. */
 export const formatIndianNumber = (raw: string): string => {
   const digits = digitsOnly(raw);

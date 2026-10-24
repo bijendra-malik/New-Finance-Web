@@ -1,4 +1,4 @@
-// Credit-score bands and the eligibility verdict the post-submission check shows.
+// Credit-score bands: how an entered score maps to a lender-acceptable band.
 // Kept free of React so the rules stay readable and testable on their own.
 
 export const SCORE_MIN = 300;
@@ -60,17 +60,6 @@ export const BAND_META: Record<CreditBand, BandMeta> = {
   },
 };
 
-export const normalizeBand = (raw?: string): CreditBand | null => {
-  const normalized = (raw ?? "").toLowerCase().trim();
-  if (!normalized) return null;
-  if (BAND_ORDER.includes(normalized as CreditBand)) return normalized as CreditBand;
-  if (normalized.startsWith("excellent")) return "excellent";
-  if (normalized.startsWith("good")) return "good";
-  if (normalized.startsWith("average") || normalized.startsWith("fair")) return "average";
-  if (normalized.startsWith("poor") || normalized.startsWith("low") || normalized.startsWith("bad")) return "poor";
-  return null;
-};
-
 export const bandForScore = (score: number): CreditBand => {
   if (score >= BAND_META.excellent.segment[0]) return "excellent";
   if (score >= BAND_META.good.segment[0]) return "good";
@@ -81,126 +70,3 @@ export const bandForScore = (score: number): CreditBand => {
 /** True when the value is a whole score a credit bureau could actually report. */
 export const isValidScore = (value: number): boolean =>
   Number.isInteger(value) && value >= SCORE_MIN && value <= SCORE_MAX;
-
-export type VerdictKey = "eligible" | "likely" | "review" | "not-eligible";
-
-export interface VerdictMeta {
-  label: string;
-  headline: string;
-  color: string;
-  bg: string;
-  border: string;
-  icon: string;
-}
-
-export const VERDICT_META: Record<VerdictKey, VerdictMeta> = {
-  eligible: {
-    label: "Eligible",
-    headline: "You're eligible for this loan",
-    color: "#0f766e",
-    bg: "#ecfdf5",
-    border: "#6ee7b7",
-    icon: "✓",
-  },
-  likely: {
-    label: "Likely eligible",
-    headline: "You're likely to be eligible",
-    color: "#0369a1",
-    bg: "#f0f9ff",
-    border: "#bae6fd",
-    icon: "✓",
-  },
-  review: {
-    label: "Needs a review",
-    headline: "Your application needs a closer look",
-    color: "#a16207",
-    bg: "#fffbeb",
-    border: "#fde68a",
-    icon: "!",
-  },
-  "not-eligible": {
-    label: "Not eligible yet",
-    headline: "This score is below our cut-off",
-    color: "#b91c1c",
-    bg: "#fef2f2",
-    border: "#fecaca",
-    icon: "✕",
-  },
-};
-
-export interface CreditScoreEvaluation {
-  score: number;
-  band: CreditBand;
-  verdict: VerdictKey;
-  headline: string;
-  detail: string;
-  steps: string[];
-}
-
-/**
- * Turns an entered score into a verdict. Thresholds are the ones shown to
- * customers: 750+ is a strong match, 700–749 is usually accepted, 650–699 needs
- * underwriting, and anything lower falls short of the lender cut-off.
- */
-export const evaluateCreditScore = (score: number, product = "this loan"): CreditScoreEvaluation => {
-  const band = bandForScore(score);
-  const bandLabel = BAND_META[band].label;
-
-  if (score >= 750) {
-    return {
-      score,
-      band,
-      verdict: "eligible",
-      headline: VERDICT_META.eligible.headline,
-      detail: `A score of ${score} sits in the ${bandLabel} band — a strong match for ${product} across our lender panel.`,
-      steps: [
-        "Our team will call you within one working day to confirm the offer.",
-        "Keep your PAN, address proof and last three salary slips ready.",
-        "Avoid applying with several lenders at once — it can pull your score down.",
-      ],
-    };
-  }
-
-  if (score >= 700) {
-    return {
-      score,
-      band,
-      verdict: "likely",
-      headline: VERDICT_META.likely.headline,
-      detail: `At ${score} (${bandLabel} band), most lenders will consider your application, though the rate may be slightly higher than the best advertised one.`,
-      steps: [
-        "Expect a call from our team to confirm which lender fits your profile.",
-        "A co-applicant with a higher score can improve the terms you are offered.",
-        "Bring your latest salary slips and bank statements to the call.",
-      ],
-    };
-  }
-
-  if (score >= 650) {
-    return {
-      score,
-      band,
-      verdict: "review",
-      headline: VERDICT_META.review.headline,
-      detail: `A score of ${score} (${bandLabel} band) means lenders may ask for a co-applicant, a larger down payment or extra documents before approving ${product}.`,
-      steps: [
-        "Our team will review your application and tell you what else is needed.",
-        "Adding a co-applicant with a stronger score usually helps at this band.",
-        "Clear any overdue card or loan payments before the review call.",
-      ],
-    };
-  }
-
-  return {
-    score,
-    band,
-    verdict: "not-eligible",
-    headline: VERDICT_META["not-eligible"].headline,
-    detail: `A score of ${score} (${bandLabel} band) is below the cut-off our lenders usually approve for ${product}.`,
-    steps: [
-      "Pay every EMI and card bill on time for the next six months.",
-      "Bring card utilisation below 30% of your limit.",
-      "Avoid new loan applications for a few months, then check your score again.",
-    ],
-  };
-};

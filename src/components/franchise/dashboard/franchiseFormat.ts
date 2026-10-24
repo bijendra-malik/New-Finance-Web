@@ -90,14 +90,6 @@ export const loanCustomerMobile = (loan: FranchiseCustomerLoan): string | undefi
   );
 };
 
-export const loanCustomerEmail = (loan: FranchiseCustomerLoan): string | undefined => {
-  const row = loan as Row;
-  return (
-    pickString(row, ["customerEmail", "email"]) ??
-    pickString(customerRecord(row), ["email"])
-  );
-};
-
 /** The registry `_id` behind a loan row, used for the status endpoint. */
 export const loanCustomerId = (loan: FranchiseCustomerLoan): string | undefined => {
   const row = loan as Row;

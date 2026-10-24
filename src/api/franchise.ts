@@ -176,18 +176,6 @@ export interface FranchiseCustomerRegisterResponse {
   data?: FranchiseCustomer;
 }
 
-// POST /franchise/customer/verify-otp
-export interface FranchiseCustomerVerifyOTPPayload {
-  franchiseCustomerId: string;
-  otp: string;
-}
-
-export interface FranchiseCustomerVerifyOTPResponse {
-  success: boolean;
-  message: string;
-  customer?: FranchiseCustomer;
-}
-
 // ── API calls ───────────────────────────────────────────────────────────────────
 
 export const registerFranchise = async (
@@ -246,16 +234,6 @@ export const registerFranchiseCustomer = async (
 ): Promise<FranchiseCustomerRegisterResponse> => {
   const response = await axiosInstance.post<FranchiseCustomerRegisterResponse>(
     "/franchise/customer/register",
-    payload,
-  );
-  return response.data;
-};
-
-export const verifyFranchiseCustomerOTP = async (
-  payload: FranchiseCustomerVerifyOTPPayload,
-): Promise<FranchiseCustomerVerifyOTPResponse> => {
-  const response = await axiosInstance.post<FranchiseCustomerVerifyOTPResponse>(
-    "/franchise/customer/verify-otp",
     payload,
   );
   return response.data;

@@ -47,9 +47,6 @@ export const fmtDateTime = (v?: string | null) => {
   return isNaN(d.getTime()) ? dash : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 };
 
-export const fmtQty = (n: number | undefined | null, unit: string) =>
-  n === undefined || n === null || isNaN(n) || n === 0 ? dash : `${n.toLocaleString("en-IN")} ${unit}`;
-
 export const fmtTenure = (months?: number | null) => {
   if (months === undefined || months === null || isNaN(months) || months <= 0) return dash;
   if (months % 12 === 0) {
