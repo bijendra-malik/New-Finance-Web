@@ -85,7 +85,7 @@ const sections: DetailSection[] = [
         ["Female Student Benefits", "Discounts or lower interest rates for female students."],
         ["Loan Amount", "Based on annual family income and the chosen course."],
         ["Security Requirements", "Loans below ₹4 lakhs typically require no security. Higher amounts may need collateral."],
-        ["Maximum Limits", "Up to ₹10–15 lakhs for Indian students; up to ₹20 lakhs for those studying abroad."],
+        ["Maximum Limits", "Up to ₹2 crore for study in India and ₹3 crore abroad, usually against collateral."],
         ["Flexible Repayment", "Standard 5–7 years with flexible options extending to 10–15 years."],
       ]} />
     ),

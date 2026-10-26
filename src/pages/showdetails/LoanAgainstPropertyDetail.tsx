@@ -29,13 +29,13 @@ const sections: DetailSection[] = [
             <p className="text-gray-600 leading-relaxed">
               A Loan Against Property (LAP) lets you unlock the value of your residential or
               commercial property without selling it. Borrow from{" "}
-              <strong className="text-gray-800">₹10 Lakh onwards</strong> — up to{" "}
+              <strong className="text-gray-800">₹5 Lakh onwards</strong> — up to{" "}
               <strong className="text-gray-800">100% of the market value</strong> of your property —
               at some of the lowest interest rates available.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
               {[
-                ["Loan from", "₹10 Lakh onwards"],
+                ["Loan from", "₹5 Lakh onwards"],
                 ["Max LTV", "Up to 100% of property value"],
                 ["Repayment", "EMI-based or Overdraft"],
                 ["Tenure", "Up to 20 years"],
