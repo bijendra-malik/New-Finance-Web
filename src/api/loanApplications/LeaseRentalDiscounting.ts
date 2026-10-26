@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's LeaseRental document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyLeaseRental = async (
   return response.data;
 };
 
-/**
- * Fetch all LeaseRentalDiscounting applications for the logged-in user.
- * GET /customer/loan-apply?product=leaseRentalDiscounting
- * Requires: Authorization: Bearer <token>
- */
-export const fetchLeaseRentalApplications = async (): Promise<ApplicationsResponse<LeaseRentalApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<LeaseRentalApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "leaseRentalDiscounting" } }
-  );
-  return response.data;
-};

@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's BalanceTransfer document) ──────────────────────────────
 
@@ -50,15 +50,3 @@ export const applyBalanceTransfer = async (
   return response.data;
 };
 
-/**
- * Fetch all BalanceTransfer applications for the logged-in user.
- * GET /customer/loan-apply?product=balanceTransfer
- * Requires: Authorization: Bearer <token>
- */
-export const fetchBalanceTransferApplications = async (): Promise<ApplicationsResponse<BalanceTransferApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<BalanceTransferApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "balanceTransfer" } }
-  );
-  return response.data;
-};

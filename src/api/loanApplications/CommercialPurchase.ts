@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's CommercialPurchase document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyCommercialPurchase = async (
   return response.data;
 };
 
-/**
- * Fetch all CommercialPurchase applications for the logged-in user.
- * GET /customer/loan-apply?product=commercialPurchase
- * Requires: Authorization: Bearer <token>
- */
-export const fetchCommercialPurchaseApplications = async (): Promise<ApplicationsResponse<CommercialPurchaseApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<CommercialPurchaseApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "commercialPurchase" } }
-  );
-  return response.data;
-};

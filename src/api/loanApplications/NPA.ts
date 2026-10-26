@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's NPA document) ──────────────────────────────
 
@@ -55,15 +55,3 @@ export const applyNPA = async (
   return response.data;
 };
 
-/**
- * Fetch all NPA applications for the logged-in user.
- * GET /customer/loan-apply?product=npaLoan
- * Requires: Authorization: Bearer <token>
- */
-export const fetchNPAApplications = async (): Promise<ApplicationsResponse<NPAApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<NPAApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "npaLoan" } }
-  );
-  return response.data;
-};

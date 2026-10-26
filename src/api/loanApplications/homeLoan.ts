@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
+import type { ApplyResponse, LoanApplicationStatus } from "./shared";
 
 // Home Loan Aligned with the backend's HomeLoan document (POST /home-loan/apply, GET /home-loan/applications). transactionBankName is a plain string for a single bank, or an object for "Multiple Transaction Banks".
 
@@ -97,15 +97,3 @@ export const applyHomeLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all home loan applications for the logged-in user.
- * GET /customer/loan-apply?product=home
- * Requires: Authorization: Bearer <token>
- */
-export const fetchHomeLoanApplications = async (): Promise<ApplicationsResponse<HomeLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<HomeLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "home" } }
-  );
-  return response.data;
-};

@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
+import type { ApplyResponse, LoanApplicationStatus } from "./shared";
 
 // ── Types (aligned with the backend's PersonalLoan document) ──────────────────
 
@@ -83,15 +83,3 @@ export const applyPersonalLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all personal loan applications for the logged-in user.
- * GET /customer/loan-apply?product=personal
- * Requires: Authorization: Bearer <token>
- */
-export const fetchPersonalLoanApplications = async (): Promise<ApplicationsResponse<PersonalLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<PersonalLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "personal" } },
-  );
-  return response.data;
-};

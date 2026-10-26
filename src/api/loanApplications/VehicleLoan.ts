@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 // ── Types (aligned with the backend's VehicleLoan document) ──────────────────────────────
 export interface VehicleLoanApplication {
   _id: string;
@@ -46,15 +46,3 @@ export const applyVehicleLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all VehicleLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=vehicleLoan
- * Requires: Authorization: Bearer <token>
- */
-export const fetchVehicleLoanApplications = async (): Promise<ApplicationsResponse<VehicleLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<VehicleLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "vehicleLoan" } }
-  );
-  return response.data;
-};

@@ -15,10 +15,6 @@ import { formatInr, statusTone, titleCase } from "./statusFormat";
 import { Link } from "react-router-dom";
 import { clearCredentials, readCredentials, saveCredentials } from "../../utils/credentialStorage";
 
-const CUSTOMER_ID_REGEX = /^CUST\d{4,9}$/;
-/** Longest customer ID the regex above accepts: "CUST" plus 9 digits. */
-const CUSTOMER_ID_MAX_LENGTH = 13;
-
 type Stage = "details" | "otp" | "result";
 
 type FormErrors = {
@@ -70,7 +66,6 @@ const CustomerStatusLookup = () => {
     const next: FormErrors = {};
     const id = customerId.trim().toUpperCase();
     if (!id) next.customerId = "Enter your customer ID";
-    else if (!CUSTOMER_ID_REGEX.test(id)) next.customerId = "Enter a valid customer ID (e.g. CUST000001)";
     if (!PAN_REGEX.test(panNumber.trim().toUpperCase())) next.panNumber = "Enter a valid PAN number";
     if (!MOBILE_REGEX.test(mobile)) next.mobile = "Enter your registered 10-digit mobile number";
     setErrors(next);
@@ -354,12 +349,11 @@ const CustomerStatusLookup = () => {
                 id="customer-id"
                 value={customerId}
                 onChange={(value) => {
-                  setCustomerId(value.toUpperCase().slice(0, CUSTOMER_ID_MAX_LENGTH));
+                  setCustomerId(value.toUpperCase());
                   clearError("customerId");
                 }}
-                placeholder="CUST000001"
+                placeholder="Your customer ID"
                 error={errors.customerId}
-                maxLength={CUSTOMER_ID_MAX_LENGTH}
                 autoComplete="organization"
               />
             </Field>

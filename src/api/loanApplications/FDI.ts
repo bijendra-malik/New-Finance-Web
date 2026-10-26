@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's FDI document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyFDI = async (
   return response.data;
 };
 
-/**
- * Fetch all FDI applications for the logged-in user.
- * GET /customer/loan-apply?product=fdiLoan
- * Requires: Authorization: Bearer <token>
- */
-export const fetchFDIApplications = async (): Promise<ApplicationsResponse<FDIApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<FDIApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "fdiLoan" } }
-  );
-  return response.data;
-};

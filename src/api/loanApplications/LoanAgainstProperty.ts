@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's LoanAgainstProperty document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyLoanAgainstProperty = async (
   return response.data;
 };
 
-/**
- * Fetch all LoanAgainstProperty applications for the logged-in user.
- * GET /customer/loan-apply?product=lap
- * Requires: Authorization: Bearer <token>
- */
-export const fetchLoanAgainstPropertyApplications = async (): Promise<ApplicationsResponse<LoanAgainstPropertyApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<LoanAgainstPropertyApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "lap" } }
-  );
-  return response.data;
-};

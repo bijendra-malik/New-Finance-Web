@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's FilmLoan document) ──────────────────────────────
 
@@ -50,15 +50,3 @@ export const applyFilmLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all FilmLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=filmFunding
- * Requires: Authorization: Bearer <token>
- */
-export const fetchFilmLoanApplications = async (): Promise<ApplicationsResponse<FilmLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<FilmLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "filmFunding" } }
-  );
-  return response.data;
-};

@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's EducationLoan document) ──────────────────────────────
 
@@ -56,15 +56,3 @@ export const applyEducationLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all EducationLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=educationLoan
- * Requires: Authorization: Bearer <token>
- */
-export const fetchEducationLoanApplications = async (): Promise<ApplicationsResponse<EducationLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<EducationLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "educationLoan" } }
-  );
-  return response.data;
-};

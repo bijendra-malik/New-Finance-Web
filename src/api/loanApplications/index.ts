@@ -18,4 +18,3 @@ export * from "./NPA";
 export * from "./ODCCLimit";
 export * from "./ProjectLoan";
 export * from "./WorkingCapital";
-export { applyVehicleLoan, fetchVehicleLoanApplications, type VehicleLoanApplication, type VehicleLoanPayload } from "./VehicleLoan";

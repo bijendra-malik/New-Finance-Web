@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's GoldLoan document) ──────────────────────────────
 
@@ -53,15 +53,3 @@ export const applyGoldLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all GoldLoan applications for the logged-in user.
- * GET /customer/loan-apply?product=goldLoan
- * Requires: Authorization: Bearer <token>
- */
-export const fetchGoldLoanApplications = async (): Promise<ApplicationsResponse<GoldLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<GoldLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "goldLoan" } }
-  );
-  return response.data;
-};

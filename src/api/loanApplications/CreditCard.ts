@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's CreditCard document) ──────────────────────────────
 
@@ -48,15 +48,3 @@ export const applyCreditCard = async (
   return response.data;
 };
 
-/**
- * Fetch all CreditCard applications for the logged-in user.
- * GET /customer/loan-apply?product=creditCard
- * Requires: Authorization: Bearer <token>
- */
-export const fetchCreditCardApplications = async (): Promise<ApplicationsResponse<CreditCardApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<CreditCardApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "creditCard" } }
-  );
-  return response.data;
-};

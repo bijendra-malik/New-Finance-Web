@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's WorkingCapital document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyWorkingCapital = async (
   return response.data;
 };
 
-/**
- * Fetch all WorkingCapital applications for the logged-in user.
- * GET /customer/loan-apply?product=workingCapital
- * Requires: Authorization: Bearer <token>
- */
-export const fetchWorkingCapitalApplications = async (): Promise<ApplicationsResponse<WorkingCapitalApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<WorkingCapitalApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "workingCapital" } }
-  );
-  return response.data;
-};

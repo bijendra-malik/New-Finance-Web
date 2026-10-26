@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from "./shared";
+import type { ApplyResponse, LoanApplicationStatus } from "./shared";
 
 // ── Business Loan ─────────────────────────────────────────────────────────────
 
@@ -125,15 +125,3 @@ export const applyBusinessLoan = async (
   return response.data;
 };
 
-/**
- * Fetch all business loan applications for the logged-in user.
- * GET /customer/loan-apply?product=business
- * Requires: Authorization: Bearer <token>
- */
-export const fetchBusinessLoanApplications = async (): Promise<ApplicationsResponse<BusinessLoanApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<BusinessLoanApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "business" } }
-  );
-  return response.data;
-};

@@ -1,5 +1,5 @@
 import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, ApplicationsResponse } from "./shared";
+import type { ApplyResponse } from "./shared";
 
 // ── Types (aligned with the backend's ODCCLimit document) ──────────────────────────────
 
@@ -51,15 +51,3 @@ export const applyODCCLimit = async (
   return response.data;
 };
 
-/**
- * Fetch all ODCCLimit applications for the logged-in user.
- * GET /customer/loan-apply?product=odCcLimit
- * Requires: Authorization: Bearer <token>
- */
-export const fetchODCCLimitApplications = async (): Promise<ApplicationsResponse<ODCCLimitApplication>> => {
-  const response = await axiosInstance.get<ApplicationsResponse<ODCCLimitApplication>>(
-    "/customer/loan-apply",
-    { params: { product: "odCcLimit" } }
-  );
-  return response.data;
-};
