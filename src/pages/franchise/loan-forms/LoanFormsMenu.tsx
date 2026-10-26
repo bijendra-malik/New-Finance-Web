@@ -12,7 +12,7 @@ const PRODUCTS = [
     key: "personal-loan",
     name: "Personal Loan",
     icon: "💳",
-    amount: "₹1,00,000 – ₹50,00,000",
+    amount: "₹50,000 – ₹50,00,000",
     tenure: "1–7 years",
     category: "Unsecured",
   },
@@ -109,7 +109,7 @@ const PRODUCTS = [
     name: "OD / CC Limit",
     icon: "📊",
     amount: "As sanctioned",
-    tenure: "3–20 years",
+    tenure: "1–20 years",
     category: "Unsecured",
   },
   {
@@ -149,7 +149,7 @@ const PRODUCTS = [
     name: "FDI",
     icon: "🌍",
     amount: "As per eligibility",
-    tenure: "Up to 11 years",
+    tenure: "3–15 years",
     category: "Secured",
   },
 ];
