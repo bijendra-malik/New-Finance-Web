@@ -13,7 +13,7 @@ const PRODUCTS = [
     name: "Personal Loan",
     icon: "💳",
     amount: "₹50,000 – ₹50,00,000",
-    tenure: "1–84 months",
+    tenure: "1–7 years",
     category: "Unsecured",
   },
   {
@@ -21,7 +21,7 @@ const PRODUCTS = [
     name: "Business Loan",
     icon: "🏢",
     amount: "₹1,00,000 – ₹50,00,000",
-    tenure: "Up to 84 months",
+    tenure: "Up to 5 years",
     category: "Unsecured",
   },
   {
@@ -37,7 +37,7 @@ const PRODUCTS = [
     name: "Loan Against Property",
     icon: "🏛️",
     amount: "Up to ₹10,00,00,000",
-    tenure: "Up to 15 years",
+    tenure: "Up to 20 years",
     category: "Secured",
   },
   {
@@ -45,7 +45,7 @@ const PRODUCTS = [
     name: "Balance Transfer",
     icon: "🔁",
     amount: "Existing loan balance",
-    tenure: "Up to 84 months",
+    tenure: "Up to 30 years",
     category: "Unsecured",
   },
   {
@@ -53,7 +53,7 @@ const PRODUCTS = [
     name: "Project Loan",
     icon: "🏗️",
     amount: "As per project",
-    tenure: "As per lender",
+    tenure: "Up to 10 years",
     category: "Secured",
   },
   {
@@ -61,7 +61,7 @@ const PRODUCTS = [
     name: "Vehicle Loan",
     icon: "🚗",
     amount: "On-road vehicle value",
-    tenure: "Up to 84 months",
+    tenure: "Up to 7 years",
     category: "Secured",
   },
   {
@@ -85,7 +85,7 @@ const PRODUCTS = [
     name: "Commercial Purchase",
     icon: "🏬",
     amount: "Purchase value",
-    tenure: "Up to 84 months",
+    tenure: "Up to 20 years",
     category: "Secured",
   },
   {
@@ -93,7 +93,7 @@ const PRODUCTS = [
     name: "Working Capital",
     icon: "⚙️",
     amount: "As per requirement",
-    tenure: "Up to 84 months",
+    tenure: "Up to 4 years",
     category: "Unsecured",
   },
   {
@@ -101,7 +101,7 @@ const PRODUCTS = [
     name: "Lease Rental Discounting",
     icon: "📜",
     amount: "Lease receivables",
-    tenure: "Up to 84 months",
+    tenure: "Up to 10 years",
     category: "Secured",
   },
   {
@@ -109,7 +109,7 @@ const PRODUCTS = [
     name: "OD / CC Limit",
     icon: "📊",
     amount: "As sanctioned",
-    tenure: "As per limit",
+    tenure: "Up to 3 years",
     category: "Unsecured",
   },
   {
@@ -117,7 +117,7 @@ const PRODUCTS = [
     name: "Loan Against Share",
     icon: "📈",
     amount: "Market value × LTV",
-    tenure: "Up to 84 months",
+    tenure: "Up to 6 years",
     category: "Secured",
   },
   {
@@ -125,7 +125,7 @@ const PRODUCTS = [
     name: "Film Funding",
     icon: "🎬",
     amount: "Project cost",
-    tenure: "As per lender",
+    tenure: "Up to 5 years",
     category: "Secured",
   },
   {
@@ -133,7 +133,7 @@ const PRODUCTS = [
     name: "NPA",
     icon: "⚠️",
     amount: "As per case",
-    tenure: "As per lender",
+    tenure: "Up to 5 years",
     category: "Secured",
   },
   {
@@ -141,7 +141,7 @@ const PRODUCTS = [
     name: "Gold Loan",
     icon: "🥇",
     amount: "Gold value × LTV",
-    tenure: "Up to 12 months",
+    tenure: "Up to 3 years",
     category: "Secured",
   },
   {
@@ -149,7 +149,7 @@ const PRODUCTS = [
     name: "FDI",
     icon: "🌍",
     amount: "As per eligibility",
-    tenure: "As per lender",
+    tenure: "Up to 5 years",
     category: "Secured",
   },
 ];
