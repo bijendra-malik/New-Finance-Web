@@ -52,34 +52,41 @@ export const PersonalDetailsSection = ({
     [portalIdentity, verified]
   );
 
-  const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(() => {
+  const prefilled = useMemo<Partial<Record<PersonalDetailsField, string>>>(() => {
     if (portalIdentity) return portalIdentity;
     const merged = { ...(popupIdentity ?? {}), ...verified };
     if (Object.keys(merged).length) return merged;
     return accountFieldDefaults();
   }, [portalIdentity, popupIdentity, verified]);
 
+  const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(
+    () => portalIdentity ?? {},
+    [portalIdentity]
+  );
+
   const appliedIdentity = useRef("");
   useEffect(() => {
-    const signature = JSON.stringify({ locked, authoritative: !!authoritative });
+    const signature = JSON.stringify({ prefilled, authoritative: !!authoritative });
     if (appliedIdentity.current === signature) return;
     const firstPass = appliedIdentity.current === "";
     appliedIdentity.current = signature;
-    (Object.keys(locked) as PersonalDetailsField[]).forEach(key => {
-      const value = locked[key];
+    (Object.keys(prefilled) as PersonalDetailsField[]).forEach(key => {
+      const value = prefilled[key];
       if (!value) return;
       if (!firstPass || authoritative || !form[key]) set(key, value as string);
     });
-  }, [locked, form, set, authoritative]);
+  }, [prefilled, form, set, authoritative]);
 
   const isLocked = (key: PersonalDetailsField) => !!locked[key];
 
   return (
     <FormCard title={title} subtitle={subtitle}>
-        {Object.keys(locked).length > 0 && (
+        {Object.keys(prefilled).length > 0 && (
           <p className="mb-4 rounded-lg px-3 py-2 text-xs"
             style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
-            {portalIdentity ? prefill?.note : "🔒 Details available from your account have been filled and locked. Contact support to correct them."}
+            {portalIdentity
+              ? prefill?.note
+              : "Details from your account have been filled in for you. You can change any of them before you proceed."}
           </p>
         )}
         <div className={FORM.grid}>
