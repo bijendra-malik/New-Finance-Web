@@ -30,12 +30,6 @@ export const fmtDate = (v?: string | null) => {
   return asLocal(new Date(v));
 };
 
-export const fmtDateTime = (v?: string | null) => {
-  if (!v) return dash;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? dash : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-};
-
 export const fmtTenure = (years?: number | null) => {
   if (years === undefined || years === null || isNaN(years) || years <= 0) return dash;
   const value = Math.round(years * 10) / 10;

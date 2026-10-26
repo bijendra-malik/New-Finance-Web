@@ -18,9 +18,6 @@ export interface BandMeta {
   blurb: string;
 }
 
-// Ordered low → high so the meter reads left to right.
-export const BAND_ORDER: CreditBand[] = ["poor", "average", "good", "excellent"];
-
 export const BAND_META: Record<CreditBand, BandMeta> = {
   poor: {
     label: "a Poor",
