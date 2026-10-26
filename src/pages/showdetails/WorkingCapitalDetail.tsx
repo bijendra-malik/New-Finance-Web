@@ -77,7 +77,7 @@ const sections: DetailSection[] = [
             ["Quantum of Assistance", "75% of the working capital requirement for one operational cycle"],
             ["Promoters' Contribution", "25%"],
             ["Interest Rate", "PLR + Risk Weightage"],
-            ["Repayment Period", "Maximum 3 years"],
+            ["Repayment Period", "Maximum 5 years"],
             ["Upfront Fee", "0.1% of the loan amount"],
           ].map(([param, value], i) => (
             <div key={param} className="flex justify-between items-center px-4 py-3 text-sm"
