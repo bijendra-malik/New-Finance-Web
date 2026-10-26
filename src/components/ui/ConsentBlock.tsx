@@ -34,7 +34,7 @@ export const ConsentBlock = ({
 }: ConsentBlockProps) => {
   const showError =
     !!apiError || (submitAttempted && invalidCount > 0);
-  const errorMsg = apiError ?? `${invalidCount} field${invalidCount === 1 ? " is" : "s are"} invalid — fix the highlighted fields to submit.`;
+  const errorMsg = apiError || `${invalidCount} field${invalidCount === 1 ? " is" : "s are"} invalid — fix the highlighted fields to proceed.`;
 
   return (
     <>
