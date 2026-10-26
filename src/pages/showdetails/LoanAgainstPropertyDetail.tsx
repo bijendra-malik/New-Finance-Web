@@ -38,7 +38,7 @@ const sections: DetailSection[] = [
                 ["Loan from", "₹10 Lakh onwards"],
                 ["Max LTV", "Up to 100% of property value"],
                 ["Repayment", "EMI-based or Overdraft"],
-                ["Tenure", "Up to 15 years"],
+                ["Tenure", "Up to 20 years"],
                 ["Interest Rate", "Among the lowest available"],
                 ["Eligibility", "Salaried, self-employed & businessmen"],
               ].map(([label, value]) => (
@@ -64,7 +64,7 @@ const sections: DetailSection[] = [
     content: (
       <BulletList items={[
         ["Cheaper than Personal Loans", "LAP interest rates are far lower than personal loans, which typically range from 11.5% – 21% p.a."],
-        ["Longer Loan Tenure", "LAP tenures can go up to 15 years, giving you much more breathing room than a personal loan."],
+        ["Longer Loan Tenure", "LAP tenures can go up to 20 years, giving you much more breathing room than a personal loan."],
         ["Lower EMI", "Because the interest rate is lower and tenure is longer, your monthly outgo is significantly reduced."],
         ["Simple Documentation & Fast Approvals", "Being a secured loan, LAP has comparatively minimal documentation requirements and faster processing."],
       ]} />
