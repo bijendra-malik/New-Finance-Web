@@ -3,7 +3,7 @@ import { useAuth } from "../../../../../context/authContext";
 import { applyHomeLoan } from "../../../../../api/loanApplications";
 import type { HomeLoanApplication } from "../../../../../api/loanApplications";
 import { FORM } from "../../../../../constants/formStyles";
-import { MORE_THAN_TENURE_OPTION, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { HOME_LOAN_MAX_TENURE_YEARS, MORE_THAN_TENURE_OPTION, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { addCustomBankName } from "../../../../../api/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -151,7 +151,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹10,00,00,000";
-    validateTenure(draft, e, 30);
+    validateTenure(draft, e, HOME_LOAN_MAX_TENURE_YEARS);
 
     if(!draft.buyingPropertyType) e.buyingPropertyType="Buying property type is required";
     else if(draft.buyingPropertyType===OTHER_OPTION&&!draft.buyingPropertyTypeOther.trim()) e.buyingPropertyTypeOther="Please mention buying property type";
@@ -381,7 +381,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)" required
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.homeLoanTenureYears} maxYears={30} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.homeLoanTenureYears} maxYears={HOME_LOAN_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="buyingPropertyType" label="Buying Property Type" required

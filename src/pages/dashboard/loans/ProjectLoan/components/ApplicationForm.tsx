@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { FORM } from "../../../../../constants/formStyles";
-import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, PROJECT_LOAN_MAX_TENURE_YEARS, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -138,7 +138,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>250000000) e.loanAmount="Maximum loan amount is ₹25,00,00,000";
-    validateTenure(draft, e, 10);
+    validateTenure(draft, e, PROJECT_LOAN_MAX_TENURE_YEARS);
 
     if(!draft.projectType) e.projectType="Project type is required";
     else if(draft.projectType===OTHER_OPTION&&!draft.projectTypeOther.trim()) e.projectTypeOther="Please mention project type";
@@ -367,7 +367,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.projectLoanTenureYears} maxYears={10} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.projectLoanTenureYears} maxYears={PROJECT_LOAN_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="projectType" label="Project Type" required

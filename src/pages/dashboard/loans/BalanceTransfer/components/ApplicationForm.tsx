@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { FORM } from "../../../../../constants/formStyles";
-import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { BALANCE_TRANSFER_MAX_TENURE_YEARS, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -133,7 +133,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.balanceTransferType===OTHER_OPTION&&!draft.balanceTransferTypeOther.trim()) e.balanceTransferTypeOther="Please mention type of balance transfer";
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
-    validateTenure(draft, e, 30);
+    validateTenure(draft, e, BALANCE_TRANSFER_MAX_TENURE_YEARS);
     if(draft.currentPropertyValue.trim()){
       const pv=parseInt(draft.currentPropertyValue);
       if(pv<100000) e.currentPropertyValue="Minimum property value is ₹1,00,000";
@@ -372,7 +372,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Balance Transfer Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.balanceTransferTenureYears} maxYears={30} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.balanceTransferTenureYears} maxYears={BALANCE_TRANSFER_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <div id="topUpAmount"><FieldLabel label="Top-up Amount (if any)"/>
             <AmountField value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.topUpAmount}/>

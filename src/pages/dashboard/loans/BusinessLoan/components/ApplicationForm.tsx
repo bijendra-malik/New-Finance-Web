@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
-import { OTHER_OPTION } from "../../../../../constants/masters";
+import { BUSINESS_LOAN_MAX_TENURE_YEARS, OTHER_OPTION } from "../../../../../constants/masters";
 import { addCustomBankName } from "../../../../../api/masters";
 import { applyBusinessLoan } from "../../../../../api/loanApplications";
 import type { BusinessLoanApplication } from "../../../../../api/loanApplications";
@@ -129,7 +129,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
-    validateTenure(draft, e, 5);
+    validateTenure(draft, e, BUSINESS_LOAN_MAX_TENURE_YEARS);
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -312,7 +312,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.businessLoanTenureYears} maxYears={5} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.businessLoanTenureYears} maxYears={BUSINESS_LOAN_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
         </div>
       </FormCard>

@@ -4,7 +4,7 @@ import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { FORM } from "../../../../../constants/formStyles";
-import { OTHER_OPTION, SALARIED } from "../../../../../constants/masters";
+import { OTHER_OPTION, PERSONAL_LOAN_MAX_TENURE_YEARS, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -76,7 +76,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     if (draft.loanAmount < 50000) e.loanAmount = "Minimum ₹50,000";
     else if (draft.loanAmount > 5000000) e.loanAmount = "Maximum loan amount is ₹50,00,000";
 
-    validateTenure(draft, e, 7);
+    validateTenure(draft, e, PERSONAL_LOAN_MAX_TENURE_YEARS);
 
     if (!draft.existingEMI.trim()) e.existingEMI = "Existing Total EMI is required (enter 0 if none)";
     if (!draft.existingLoanAmount.trim()) e.existingLoanAmount = "Existing Loan Amount is required (enter 0 if none)";
@@ -176,7 +176,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
             id="loanTenureYears" label="Required Loan Tenure (in years)"
             value={form.loanTenureYears} onChange={v => set("loanTenureYears", v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v => set("loanTenureYearsCustom", v)}
-            options={masters.personalLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.personalLoanTenureYears} maxYears={PERSONAL_LOAN_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
             allowOther={false} />
         </div>
       </FormCard>
