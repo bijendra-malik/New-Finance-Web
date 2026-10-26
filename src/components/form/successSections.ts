@@ -10,17 +10,6 @@ export interface SuccessSection {
   rows: SuccessRow[];
 }
 
-export interface SubmissionSuccessProps {
-  refNo: string;
-  fullId?: string;
-  createdAt?: string;
-  productName: string;
-  applicantName?: string;
-  mobile?: string;
-  email?: string;
-  sections: SuccessSection[];
-}
-
 const dash = "—";
 
 export const fmtINR = (n: number | undefined | null, opts?: Intl.NumberFormatOptions) =>
