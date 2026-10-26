@@ -1,4 +1,5 @@
 /** EMI calculator design tokens, loan-type config and formatting helpers. */
+import { LOAN_AMOUNT_RANGES } from "../constants/masters";
 
 export const T = {
   navy: "var(--brand-navy)",       // deep blue — primary dark, headers, hero
@@ -21,14 +22,16 @@ export const T = {
 export const serif = { fontFamily: "'Fraunces', Georgia, serif" };
 
 // ── Loan type config ──────────────────────────────────────────────────────────
+// Amount bounds come from the shared product constants so the calculator and
+// the application forms never disagree.
 export const loanTypes = [
-  { id: "personal",  label: "Personal",   full: "Personal Loan",        rate: 11.0, minAmt: 50000,   maxAmt: 5000000,  minTenure: 1, maxTenure: 5  },
-  { id: "home",      label: "Home",       full: "Home Loan",            rate: 8.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 30 },
-  { id: "vehicle",   label: "Vehicle",    full: "Vehicle Loan",         rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 7  },
-  { id: "business",  label: "Business",   full: "Business Loan",        rate: 12.0, minAmt: 100000,  maxAmt: 10000000, minTenure: 1, maxTenure: 5  },
-  { id: "education", label: "Education",  full: "Education Loan",       rate: 8.0,  minAmt: 100000,  maxAmt: 2000000,  minTenure: 1, maxTenure: 7  },
-  { id: "lap",       label: "Property",   full: "Loan Against Property",rate: 9.5,  minAmt: 500000,  maxAmt: 50000000, minTenure: 5, maxTenure: 20 },
-  { id: "balance",   label: "Transfer",   full: "Balance Transfer",     rate: 9.0,  minAmt: 100000,  maxAmt: 5000000,  minTenure: 1, maxTenure: 5  },
+  { id: "personal",  label: "Personal",   full: "Personal Loan",        rate: 11.0, minAmt: LOAN_AMOUNT_RANGES.personal.min,            maxAmt: LOAN_AMOUNT_RANGES.personal.max,            minTenure: 1, maxTenure: 7  },
+  { id: "home",      label: "Home",       full: "Home Loan",            rate: 8.5,  minAmt: LOAN_AMOUNT_RANGES.home.min,                maxAmt: LOAN_AMOUNT_RANGES.home.max,                minTenure: 5, maxTenure: 30 },
+  { id: "vehicle",   label: "Vehicle",    full: "Vehicle Loan",         rate: 9.0,  minAmt: LOAN_AMOUNT_RANGES.vehicle.min,             maxAmt: LOAN_AMOUNT_RANGES.vehicle.max,             minTenure: 1, maxTenure: 7  },
+  { id: "business",  label: "Business",   full: "Business Loan",        rate: 12.0, minAmt: LOAN_AMOUNT_RANGES.business.min,            maxAmt: LOAN_AMOUNT_RANGES.business.max,            minTenure: 1, maxTenure: 5  },
+  { id: "education", label: "Education",  full: "Education Loan",       rate: 8.0,  minAmt: LOAN_AMOUNT_RANGES.education.min,           maxAmt: LOAN_AMOUNT_RANGES.education.max,           minTenure: 1, maxTenure: 15 },
+  { id: "lap",       label: "Property",   full: "Loan Against Property",rate: 9.5,  minAmt: LOAN_AMOUNT_RANGES.loanAgainstProperty.min, maxAmt: LOAN_AMOUNT_RANGES.loanAgainstProperty.max, minTenure: 5, maxTenure: 20 },
+  { id: "balance",   label: "Transfer",   full: "Balance Transfer",     rate: 9.0,  minAmt: LOAN_AMOUNT_RANGES.balanceTransfer.min,     maxAmt: LOAN_AMOUNT_RANGES.balanceTransfer.max,     minTenure: 1, maxTenure: 30 },
   { id: "credit",    label: "Credit Card",full: "Credit Card",          rate: 18.0, minAmt: 10000,   maxAmt: 500000,   minTenure: 1, maxTenure: 3  },
 ];
 
