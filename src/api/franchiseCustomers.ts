@@ -18,6 +18,7 @@
 import axios from "axios";
 import axiosInstance from "./axiosInstance";
 import { getApiFieldErrors, type ApiFieldErrors } from "../utils/apiError";
+import type { CreditScoreResponse } from "./customer";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,6 +488,22 @@ export const deleteFranchiseCustomerDraft = async (
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not discard this client's draft.") };
   }
+};
+
+/**
+ * The step that turns a franchise application into a submitted one.
+ * POST /franchise/customer/:id/credit-score
+ */
+export const submitFranchiseCreditScore = async (
+  customerId: string,
+  draftId: string,
+  creditScore: number,
+): Promise<CreditScoreResponse> => {
+  const res = await axiosInstance.post<CreditScoreResponse>(
+    `/franchise/customer/${encodeURIComponent(customerId)}/credit-score`,
+    { draftId, creditScore, franchiseCustomerId: customerId },
+  );
+  return res.data;
 };
 
 // ── Errors ───────────────────────────────────────────────────────────────────
