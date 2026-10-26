@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
-import { BUSINESS_LOAN_MAX_TENURE_YEARS, OTHER_OPTION } from "../../../../../constants/masters";
+import { BUSINESS_LOAN_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, OTHER_OPTION } from "../../../../../constants/masters";
 import { addCustomBankName } from "../../../../../api/masters";
 import { applyBusinessLoan } from "../../../../../api/loanApplications";
 import type { BusinessLoanApplication } from "../../../../../api/loanApplications";
@@ -15,7 +15,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
@@ -127,8 +127,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
-    if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
-    else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.business);
     validateTenure(draft, e, BUSINESS_LOAN_MAX_TENURE_YEARS);
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
-import { FDI_MAX_TENURE_YEARS, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { FDI_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyFDI } from "../../../../../api/loanApplications";
@@ -130,8 +130,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
-    if(draft.loanAmount<1000000000) e.loanAmount="Minimum ₹100 Cr";
-    else if(draft.loanAmount>500000000000) e.loanAmount="Maximum loan amount is ₹500,00,00,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.fdi);
     validateTenure(draft, e, FDI_MAX_TENURE_YEARS);
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select what you wish to take the fund against";

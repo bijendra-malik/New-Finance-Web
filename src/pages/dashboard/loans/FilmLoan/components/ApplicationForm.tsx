@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
-import { FILM_LOAN_MAX_TENURE_YEARS, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { FILM_LOAN_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyFilmLoan } from "../../../../../api/loanApplications";
@@ -146,8 +146,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(!draft.ownInvestmentAmount) e.ownInvestmentAmount="Own investment amount is required";
     else if(draft.totalProjectCost&&draft.ownInvestmentAmount>draft.totalProjectCost) e.ownInvestmentAmount="Own investment amount cannot exceed total film project cost";
     else if(draft.totalProjectCost&&draft.ownInvestmentAmount<draft.totalProjectCost*0.2) e.ownInvestmentAmount="Own investment amount should be min 20% of the total film project cost";
-    if(draft.loanAmount<10000000) e.loanAmount="Minimum ₹1,00,00,000";
-    else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.film);
     validateTenure(draft, e, FILM_LOAN_MAX_TENURE_YEARS);
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";

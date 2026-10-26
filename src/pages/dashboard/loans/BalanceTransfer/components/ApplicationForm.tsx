@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { FORM } from "../../../../../constants/formStyles";
-import { BALANCE_TRANSFER_MAX_TENURE_YEARS, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { BALANCE_TRANSFER_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -11,7 +11,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithOther, TenureYearsField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyBalanceTransfer } from "../../../../../api/loanApplications";
@@ -131,8 +131,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     const e:Partial<Record<keyof FormData,string>> = {};
     if(!draft.balanceTransferType) e.balanceTransferType="Type of balance transfer is required";
     else if(draft.balanceTransferType===OTHER_OPTION&&!draft.balanceTransferTypeOther.trim()) e.balanceTransferTypeOther="Please mention type of balance transfer";
-    if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
-    else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.balanceTransfer);
     validateTenure(draft, e, BALANCE_TRANSFER_MAX_TENURE_YEARS);
     if(draft.currentPropertyValue.trim()){
       const pv=parseInt(draft.currentPropertyValue);

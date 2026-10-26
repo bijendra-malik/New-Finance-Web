@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../../../../context/authContext";
 import { THEME as C } from "../../../../../constants/theme";
 import { FORM } from "../../../../../constants/formStyles";
-import { EDUCATION_LOAN_MAX_TENURE_YEARS, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { EDUCATION_LOAN_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -16,7 +16,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { GSTIN_REGEX, stripOther, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
@@ -160,8 +160,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
-    if(draft.loanAmount<50000) e.loanAmount="Minimum ₹50,000";
-    else if(draft.loanAmount>15000000) e.loanAmount="Maximum loan amount is ₹1,50,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.education);
     validateTenure(draft, e, EDUCATION_LOAN_MAX_TENURE_YEARS);
 
     if(!draft.educationCountry) e.educationCountry="Country for education is required";

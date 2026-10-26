@@ -4,7 +4,7 @@ import { applyPersonalLoan } from "../../../../../api/loanApplications";
 import { addCustomBankName } from "../../../../../api/masters";
 import type { PersonalLoanApplication } from "../../../../../api/loanApplications";
 import { FORM } from "../../../../../constants/formStyles";
-import { OTHER_OPTION, PERSONAL_LOAN_MAX_TENURE_YEARS, SALARIED } from "../../../../../constants/masters";
+import { LOAN_AMOUNT_RANGES, OTHER_OPTION, PERSONAL_LOAN_MAX_TENURE_YEARS, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
 import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
@@ -13,7 +13,7 @@ import LoanApplicationFormShell from "../../../../../components/form/LoanApplica
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { COMPANY_NAME_REGEX, stripOther, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import {
   AmountField, FieldLabel, FormCard, SelectField,
 SelectWithOther, TenureYearsField, TextField,
@@ -73,8 +73,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
   const computeErrors = (draft: FormData = form) => {
     const e: Partial<Record<keyof FormData, string>> = {};
 
-    if (draft.loanAmount < 50000) e.loanAmount = "Minimum ₹50,000";
-    else if (draft.loanAmount > 5000000) e.loanAmount = "Maximum loan amount is ₹50,00,000";
+    validateLoanAmount(draft, e, LOAN_AMOUNT_RANGES.personal);
 
     validateTenure(draft, e, PERSONAL_LOAN_MAX_TENURE_YEARS);
 
