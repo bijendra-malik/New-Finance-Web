@@ -1,4 +1,4 @@
-import { OTHER_OPTION } from "../constants/masters";
+import { MORE_THAN_TENURE_OPTION, OTHER_OPTION } from "../constants/masters";
 
 export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const COMPANY_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9 .,'&()/-]{0,99}$/;
@@ -43,6 +43,28 @@ export const latestDobForAge = (minAge = 18, today = new Date()): string =>
 /** Earliest date of birth that still satisfies `maxAge` — for a date input's min. */
 export const earliestDobForAge = (maxAge = 65, today = new Date()): string =>
   toIsoDate(new Date(today.getFullYear() - maxAge - 1, today.getMonth(), today.getDate() + 1));
+
+export interface TenureDraft {
+  loanTenureYears: number;
+  loanTenureYearsCustom?: number;
+}
+
+export const validateTenure = (
+  draft: TenureDraft,
+  e: Partial<Record<string, string>>,
+  maxYears: number,
+): void => {
+  const custom = draft.loanTenureYearsCustom ?? 0;
+  if (!draft.loanTenureYears) {
+    e.loanTenureYears = "Select loan tenure";
+  } else if (draft.loanTenureYears === MORE_THAN_TENURE_OPTION) {
+    if (!custom) e.loanTenureYearsCustom = "Enter the loan tenure in years";
+    else if (custom < 1 || custom > maxYears)
+      e.loanTenureYearsCustom = `Enter a tenure between 1 and ${maxYears} years`;
+  } else if (draft.loanTenureYears < 1 || draft.loanTenureYears > maxYears) {
+    e.loanTenureYears = `Tenure must be between 1 and ${maxYears} years`;
+  }
+};
 
 export interface PersonalDetailsDraft {
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
