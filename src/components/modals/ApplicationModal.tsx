@@ -444,7 +444,7 @@ const ApplicationModal = ({
                   {/* Sign up / Sign in — the panel's mode switch. */}
                   <div role="tablist" aria-label="Sign up or sign in"
                     className="inline-flex rounded-full bg-white/10 p-1">
-                    {([["signup", "Register New Account"], ["signin", "Log In"]] as const).map(([m, label]) => (
+                    {([["signup", "Register New Account"], ["signin", "LogIn"]] as const).map(([m, label]) => (
                       <button
                         key={m}
                         type="button"
@@ -464,7 +464,7 @@ const ApplicationModal = ({
                   </h2>
                   <p className="mt-0.5 text-xs sm:text-sm text-white/70">
                     {mode === "signin"
-                      ? `Sign in with the mobile number registered with us. To create a new account, switch to Sign up above.`
+                      ? `Login with the mobile number registered with us. To create a new account, switch to Register New Account above.`
                       : "Add your contact and identity details to start your application."}
                   </p>
                 </div>
@@ -484,7 +484,7 @@ const ApplicationModal = ({
                 {[
                   { label: isLoginMode ? "Your number" : "Your details", state: step === "otp" ? "done" : "active" },
                   { label: "Verify mobile", state: step === "otp" ? "active" : "todo" },
-                  { label: isLoginMode ? "Sign in" : "Application form", state: "todo" },
+                  { label: isLoginMode ? "Application Form" : "Application form", state: "todo" },
                 ].map((s, i, arr) => (
                   <li key={s.label} className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
