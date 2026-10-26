@@ -6,7 +6,7 @@ import type { ApplyResponse, ApplicationsResponse, LoanApplicationStatus } from 
 export interface BusinessLoanPayload {
   product: "business";
   loanAmount: number;
-  loanTenure: number; // months
+  loanTenure: number;
   employmentType: string;
   // Self Employed - Business branch
   businessName?: string;

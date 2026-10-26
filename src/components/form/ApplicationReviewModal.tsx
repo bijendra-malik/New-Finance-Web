@@ -10,7 +10,7 @@ interface ApplicationReviewModalProps {
   sections: SuccessSection[];
   applicantName?: string;
   loanAmount?: number;
-  tenureMonths?: number;
+  tenureYears?: number;
   busy: boolean;
   error?: string;
   onCancel: () => void;
@@ -85,7 +85,7 @@ const ReviewDialog = ({
   sections,
   applicantName,
   loanAmount,
-  tenureMonths,
+  tenureYears,
   busy,
   error,
   onCancel,
@@ -108,7 +108,7 @@ const ReviewDialog = ({
     ["Applicant", applicantName ? fmtText(applicantName) : "—"],
     ["Product", productName],
     ["Loan amount", loanAmount ? fmtINR(loanAmount) : "—"],
-    ["Tenure", tenureMonths && tenureMonths > 0 ? fmtTenure(tenureMonths) : "—"],
+    ["Tenure", tenureYears && tenureYears > 0 ? fmtTenure(tenureYears) : "—"],
   ];
 
   return (

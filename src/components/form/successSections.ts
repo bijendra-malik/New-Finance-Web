@@ -36,13 +36,10 @@ export const fmtDateTime = (v?: string | null) => {
   return isNaN(d.getTime()) ? dash : d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 };
 
-export const fmtTenure = (months?: number | null) => {
-  if (months === undefined || months === null || isNaN(months) || months <= 0) return dash;
-  if (months % 12 === 0) {
-    const years = months / 12;
-    return `${years.toLocaleString("en-IN")} ${years === 1 ? "year" : "years"}`;
-  }
-  return `${months.toLocaleString("en-IN")} months`;
+export const fmtTenure = (years?: number | null) => {
+  if (years === undefined || years === null || isNaN(years) || years <= 0) return dash;
+  const value = Math.round(years * 10) / 10;
+  return `${value.toLocaleString("en-IN")} ${value === 1 ? "year" : "years"}`;
 };
 
 export const fmtList = (arr?: string[] | null) => (arr && arr.length > 0 ? arr.join(", ") : dash);

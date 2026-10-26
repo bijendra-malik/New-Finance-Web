@@ -80,7 +80,7 @@ const toPreviewRecord = (values: Record<string, unknown>): Record<string, unknow
   const years = selectedYears === MORE_THAN_TENURE_OPTION
     ? Number(values.loanTenureYearsCustom)
     : selectedYears;
-  const loanTenure = Number.isFinite(years) && years > 0 ? years * 12 : undefined;
+  const loanTenure = Number.isFinite(years) && years > 0 ? years : undefined;
   const transactionBanks = Array.isArray(values.transactionBanks) ? values.transactionBanks : [];
   const multipleBanks = values.transactionBankName === "Multiple Transaction Banks";
 
@@ -136,7 +136,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
   const preview = toPreviewRecord(values as Record<string, unknown>);
   const previewSections = buildSections(preview as unknown as TApplication);
   const loanAmount = asNumber(preview.loanAmount);
-  const tenureMonths = asNumber(preview.loanTenure);
+  const tenureYears = asNumber(preview.loanTenure);
   const applicantName = typeof preview.fullName === "string" ? preview.fullName : undefined;
 
   const handleEditSection = (section: SuccessSection) => {
@@ -174,7 +174,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
         sections={previewSections}
         applicantName={applicantName}
         loanAmount={loanAmount}
-        tenureMonths={tenureMonths}
+        tenureYears={tenureYears}
         busy={isSubmitting}
         error={apiError}
         onCancel={onCancelReview}
