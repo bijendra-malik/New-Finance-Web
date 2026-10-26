@@ -6,7 +6,18 @@ import { PRODUCT_FORMS } from "./productForms";
 import ApplicantPrefillProvider from "../../../context/ApplicantPrefillProvider";
 import type { ApplicantPrefill } from "../../../context/applicantPrefillContext";
 import { beginFranchiseFiling, endFranchiseFiling } from "../../../api/franchiseFiling";
-import type { FranchiseCustomer } from "../../../api/franchiseCustomers";
+import {
+  deleteFranchiseCustomerDraft,
+  fetchFranchiseCustomerDraft,
+  type FranchiseCustomer,
+  type FranchiseCustomerDraft,
+} from "../../../api/franchiseCustomers";
+import {
+  clearPendingCreditScoreDraft,
+  franchiseDraftOwner,
+  onPendingCreditScoreDraftChange,
+  readPendingCreditScoreDraft,
+} from "../../../utils/applicationFlowState";
 import type { LockableField } from "../../../utils/accountProfile";
 
 interface LoanFormModalProps {
@@ -62,6 +73,52 @@ const LoanFormFiling = ({
   );
   const prefill = useMemo<ApplicantPrefill>(() => ({ identity, note: identityNote }), [identity, identityNote]);
 
+  const [draftView, setDraftView] = useState<{
+    customerId: string;
+    draft: FranchiseCustomerDraft | null;
+    error: string;
+  }>({ customerId: customer._id, draft: null, error: "" });
+  const [discarding, setDiscarding] = useState(false);
+  const [, setDraftTick] = useState(0);
+  useEffect(
+    () => onPendingCreditScoreDraftChange(() => setDraftTick((tick) => tick + 1)),
+    [],
+  );
+  const openDraft = draftView.customerId === customer._id ? draftView.draft : null;
+  const discardError = draftView.customerId === customer._id ? draftView.error : "";
+  const awaitingCreditScore = Boolean(
+    readPendingCreditScoreDraft(franchiseDraftOwner(customer._id)),
+  );
+
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const result = await fetchFranchiseCustomerDraft(customer._id);
+      if (!alive || !result.ok) return;
+      setDraftView({ customerId: customer._id, draft: result.draft, error: "" });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [customer._id, awaitingCreditScore]);
+
+  const handleDiscardDraft = async () => {
+    if (discarding) return;
+    setDiscarding(true);
+    const result = await deleteFranchiseCustomerDraft(customer._id);
+    setDiscarding(false);
+    if (!result.ok) {
+      setDraftView((current) => ({ ...current, error: result.message }));
+      return;
+    }
+    if (readPendingCreditScoreDraft(franchiseDraftOwner(customer._id))) {
+      clearPendingCreditScoreDraft();
+      window.location.reload();
+      return;
+    }
+    setDraftView((current) => ({ ...current, draft: null, error: "" }));
+  };
+
   useEffect(() => {
     beginFranchiseFiling({
       customerId: customer._id,
@@ -111,6 +168,44 @@ const LoanFormFiling = ({
           </button>
         </div>
       </div>
+
+      {openDraft && (
+        <div
+          className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-xl px-4 py-3"
+          style={{ background: "#fff8e6", border: "1px solid rgba(224,168,0,0.45)" }}
+        >
+          <div className="min-w-0">
+            <p className="text-[12.5px] font-bold" style={{ color: "#92620a" }}>
+              {awaitingCreditScore
+                ? "This client has an application draft waiting for its credit score."
+                : <>
+                    An unfinished draft application
+                    {openDraft.product
+                      ? ` (${LOAN_KEY_TO_NAME[openDraft.product] ?? openDraft.product})`
+                      : ""}{" "}
+                    is already saved for this client.
+                  </>}
+            </p>
+            <p className="mt-0.5 text-[12px]" style={{ color: "#92620a" }}>
+              Discard it to drop this draft and start the application over — nothing has been
+              sent to the lenders yet.
+            </p>
+            {discardError && (
+              <p role="alert" className="mt-1 text-[12px] font-semibold text-red-600">
+                {discardError}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => void handleDiscardDraft()}
+            disabled={discarding}
+            className="shrink-0 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-[12px] font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {discarding ? "Discarding…" : "Discard draft"}
+          </button>
+        </div>
+      )}
 
       <ApplicantPrefillProvider value={prefill}>
         <Suspense
