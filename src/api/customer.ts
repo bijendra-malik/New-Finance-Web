@@ -49,13 +49,13 @@ export const fetchLoanApplyDraft = async (): Promise<LoanApplyDraftResponse> => 
   return response.data;
 };
 
-/**
- * Discard the signed-in customer's in-progress loan-apply draft.
- * DELETE /customer/loan-apply/draft
- */
-export const deleteLoanApplyDraft = async (): Promise<DraftActionResponse> => {
+// DELETE /customer/loan-apply/draft { draftId }
+export const deleteLoanApplyDraft = async (
+  draftId: string,
+): Promise<DraftActionResponse> => {
   const response = await axiosInstance.delete<DraftActionResponse>(
     "/customer/loan-apply/draft",
+    { data: { draftId } },
   );
   return response.data;
 };
