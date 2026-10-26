@@ -13,7 +13,7 @@ import LoanApplicationFormShell from "../../../../../components/form/LoanApplica
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
 import {
   AmountField, FieldLabel, FormCard, SelectField,
 SelectWithOther, TenureYearsField, TextField,
@@ -89,7 +89,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     if (!draft.employmentType) e.employmentType = "Employment type is required";
     if (draft.employmentType === SALARIED) {
       if (!draft.companyName.trim()) e.companyName = "Company name is required";
-      else if (!NAME_REGEX.test(draft.companyName.trim())) e.companyName = "Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if (!COMPANY_NAME_REGEX.test(draft.companyName.trim())) e.companyName = "Enter a valid company name";
       if (!draft.companyType) e.companyType = "Company type is required";
       else if (draft.companyType === OTHER_OPTION && !draft.companyTypeOther.trim()) e.companyTypeOther = "Please mention company type";
       if (!draft.monthlyNetSalary) e.monthlyNetSalary = "Monthly net salary is required";

@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyFDI } from "../../../../../api/loanApplications";
@@ -165,7 +165,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
     if(draft.employmentType===SELF_EMPLOYED_BUSINESS){
       if(!draft.businessName.trim()) e.businessName="Company full name is required";
-      else if(!NAME_REGEX.test(draft.businessName.trim())) e.businessName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if(!COMPANY_NAME_REGEX.test(draft.businessName.trim())) e.businessName="Enter a valid business name";
       if(!draft.businessType) e.businessType="Company type is required";
       else if(draft.businessType===OTHER_OPTION&&!draft.businessTypeOther.trim()) e.businessTypeOther="Please mention company type";
 

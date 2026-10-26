@@ -16,7 +16,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { GSTIN_REGEX, stripOther } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
@@ -183,7 +183,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
     if(draft.employmentType===SALARIED){
       if(!draft.companyName.trim()) e.companyName="Company name is required";
-      else if(!NAME_REGEX.test(draft.companyName.trim())) e.companyName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if(!COMPANY_NAME_REGEX.test(draft.companyName.trim())) e.companyName="Enter a valid company name";
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
@@ -198,7 +198,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
     if(draft.employmentType===SELF_EMPLOYED_BUSINESS){
       if(!draft.businessName.trim()) e.businessName="Company full name is required";
-      else if(!NAME_REGEX.test(draft.businessName.trim())) e.businessName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if(!COMPANY_NAME_REGEX.test(draft.businessName.trim())) e.businessName="Enter a valid business name";
       if(!draft.businessType) e.businessType="Company type is required";
       else if(draft.businessType===OTHER_OPTION&&!draft.businessTypeOther.trim()) e.businessTypeOther="Please mention company type";
 

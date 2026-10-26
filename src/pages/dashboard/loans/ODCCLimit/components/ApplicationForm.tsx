@@ -11,7 +11,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, PincodeInputField, SelectField, SelectWithOther, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyODCCLimit } from "../../../../../api/loanApplications";
@@ -167,7 +167,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
     if(draft.employmentType===SALARIED){
       if(!draft.companyName.trim()) e.companyName="Company name is required";
-      else if(!NAME_REGEX.test(draft.companyName.trim())) e.companyName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if(!COMPANY_NAME_REGEX.test(draft.companyName.trim())) e.companyName="Enter a valid company name";
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
@@ -182,7 +182,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
 
     if(draft.employmentType===SELF_EMPLOYED_BUSINESS){
       if(!draft.businessName.trim()) e.businessName="Company full name is required";
-      else if(!NAME_REGEX.test(draft.businessName.trim())) e.businessName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
+      else if(!COMPANY_NAME_REGEX.test(draft.businessName.trim())) e.businessName="Enter a valid business name";
       if(!draft.businessType) e.businessType="Company type is required";
       else if(draft.businessType===OTHER_OPTION&&!draft.businessTypeOther.trim()) e.businessTypeOther="Please mention company type";
 
@@ -333,7 +333,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               businessPlaceStatusOther:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
               ?(form.businessPlaceStatus===OTHER_OPTION?(form.businessPlaceStatusOther.trim()||undefined):undefined)
               :undefined,
-            loanAmount:form.loanAmount, loanTenure:form.loanTenureYears*12,
+            loanAmount:form.loanAmount, loanTenure:form.loanTenureYears,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
             existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
             existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
