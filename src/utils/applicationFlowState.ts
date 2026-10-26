@@ -14,6 +14,7 @@ export const onApplicationSubmitted = (handler: Handler): (() => void) => {
 };
 
 export const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+export const REJECTION_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 export const CREDIT_SCORE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export const creditScoreWindowMs = CREDIT_SCORE_WINDOW_MS;
@@ -21,27 +22,39 @@ export const creditScoreWindowMs = CREDIT_SCORE_WINDOW_MS;
 const SUBMITTED_APPLICATIONS_KEY = "indexia_submitted_applications";
 const PENDING_CREDIT_SCORE_KEY = "indexia_pending_credit_score_draft";
 
+export type ApplicationOutcome = "eligible" | "rejected";
+
+export interface SubmittedApplicationRecord {
+  at: string;
+  outcome: ApplicationOutcome;
+}
+
+export const cooldownMsFor = (outcome: ApplicationOutcome): number =>
+  outcome === "rejected" ? REJECTION_COOLDOWN_MS : COOLDOWN_MS;
+
 export const rememberSubmittedApplication = (
   ownerId: string,
   productKey: string,
   submittedAt: string,
+  outcome: ApplicationOutcome = "eligible",
 ): void => {
   if (!ownerId || !productKey) return;
   try {
     const raw = localStorage.getItem(SUBMITTED_APPLICATIONS_KEY);
-    const map: Record<string, string> = raw ? (JSON.parse(raw) as Record<string, string>) ?? {} : {};
+    const map: Record<string, SubmittedApplicationRecord> = raw
+      ? (JSON.parse(raw) as Record<string, SubmittedApplicationRecord>) ?? {} : {};
     if (typeof map !== "object" || Array.isArray(map)) throw new Error("stored map");
-    map[`${ownerId}:${productKey}`] = submittedAt;
+    map[`${ownerId}:${productKey}`] = { at: submittedAt, outcome };
     localStorage.setItem(SUBMITTED_APPLICATIONS_KEY, JSON.stringify(map));
   } catch {
     // ignore storage errors so a full browser does not break the apply flow
   }
 };
 
-export const readSubmittedApplicationAt = (
-  ownerId: string,
-  productKey: string,
-): string | null => {
+export const readSubmittedApplication = (
+  ownerId: string | null | undefined,
+  productKey: string | null | undefined,
+): SubmittedApplicationRecord | null => {
   if (!ownerId || !productKey) return null;
   try {
     const raw = localStorage.getItem(SUBMITTED_APPLICATIONS_KEY);
@@ -49,10 +62,40 @@ export const readSubmittedApplicationAt = (
     const map: unknown = JSON.parse(raw);
     if (typeof map !== "object" || Array.isArray(map) || map === null) return null;
     const entry = (map as Record<string, unknown>)[`${ownerId}:${productKey}`];
-    return typeof entry === "string" && entry ? entry : null;
+    if (typeof entry === "string" && entry) return { at: entry, outcome: "eligible" };
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+    const { at, outcome } = entry as Partial<SubmittedApplicationRecord>;
+    if (typeof at !== "string" || !at) return null;
+    return { at, outcome: outcome === "rejected" ? "rejected" : "eligible" };
   } catch {
     return null;
   }
+};
+
+export interface ApplicationCooldown {
+  submittedAt: string;
+  outcome: ApplicationOutcome;
+  availableAt: Date;
+  remainingMs: number;
+  blocked: boolean;
+}
+
+export const applicationCooldown = (
+  record: SubmittedApplicationRecord,
+  now = Date.now(),
+): ApplicationCooldown => {
+  const submittedMs = Date.parse(record.at);
+  if (Number.isNaN(submittedMs)) {
+    return { submittedAt: record.at, outcome: record.outcome, availableAt: new Date(0), remainingMs: 0, blocked: false };
+  }
+  const availableMs = submittedMs + cooldownMsFor(record.outcome);
+  return {
+    submittedAt: record.at,
+    outcome: record.outcome,
+    availableAt: new Date(availableMs),
+    remainingMs: Math.max(0, availableMs - now),
+    blocked: availableMs > now,
+  };
 };
 
 export interface PendingCreditScoreDraft {
@@ -127,9 +170,12 @@ export const clearPendingCreditScoreDraft = (): void => {
   notifyDraftChange();
 };
 
-export const formatCooldownExpiry = (submittedAt: string): string => {
+export const formatCooldownExpiry = (
+  submittedAt: string,
+  outcome: ApplicationOutcome = "eligible",
+): string => {
   const ms = Date.parse(submittedAt);
-  const expiry = new Date(ms + COOLDOWN_MS);
+  const expiry = new Date((Number.isNaN(ms) ? Date.now() : ms) + cooldownMsFor(outcome));
   return expiry.toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",
@@ -137,6 +183,9 @@ export const formatCooldownExpiry = (submittedAt: string): string => {
     year: "numeric",
   });
 };
+
+export const formatReapplyDate = (submittedAt: string): string =>
+  formatCooldownExpiry(submittedAt, "rejected");
 
 export const remainingCreditScoreWindow = (
   createdAt: string,
