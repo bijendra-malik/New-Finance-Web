@@ -64,6 +64,22 @@ export interface PendingCreditScoreDraft {
   application?: Record<string, unknown>;
 }
 
+export const franchiseDraftOwner = (customerId: string): string =>
+  `franchise:${customerId}`;
+
+const draftListeners = new Set<() => void>();
+
+export const onPendingCreditScoreDraftChange = (listener: () => void): (() => void) => {
+  draftListeners.add(listener);
+  return () => {
+    draftListeners.delete(listener);
+  };
+};
+
+const notifyDraftChange = (): void => {
+  draftListeners.forEach((listener) => listener());
+};
+
 export const rememberPendingCreditScoreDraft = (
   ownerId: string,
   loanKey: string,
@@ -77,6 +93,7 @@ export const rememberPendingCreditScoreDraft = (
       PENDING_CREDIT_SCORE_KEY,
       JSON.stringify({ ownerId, loanKey, draftId, createdAt, application }),
     );
+    notifyDraftChange();
   } catch {
     // ignore storage errors so a full browser does not break the apply flow
   }
@@ -107,6 +124,7 @@ export const clearPendingCreditScoreDraft = (): void => {
   } catch {
     // ignore storage errors so a full browser does not break the apply flow
   }
+  notifyDraftChange();
 };
 
 export const formatCooldownExpiry = (submittedAt: string): string => {
