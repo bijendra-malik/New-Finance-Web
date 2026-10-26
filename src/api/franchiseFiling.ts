@@ -1,4 +1,8 @@
 import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import {
+  franchiseDraftOwner,
+  rememberPendingCreditScoreDraft,
+} from "../utils/applicationFlowState";
 
 // ── File scope ───────────────────────────────────────────────────────────────
 
@@ -90,15 +94,53 @@ export const franchiseApplyRequestInterceptor = (
 
 // ── Response handling ────────────────────────────────────────────────────────
 
-/**
- * Keep the receipt coherent. The product forms render their success view from the
- * returned application (`_id`, `createdAt`, and the applicant's identity), and the
- * franchise endpoint's document may omit some of those — so the client's
- * registered identity is used as the fallback wherever the response is silent.
- */
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const pickText = (...candidates: unknown[]): string => {
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate) return candidate;
+  }
+  return "";
+};
+
+const rememberFranchiseDraft = (
+  filing: FranchiseFiling,
+  response: AxiosResponse,
+): void => {
+  const root = asRecord(response.data);
+  const rootData = asRecord(root?.data);
+  const rootDraft = asRecord(root?.draft);
+  const dataDraft = asRecord(rootData?.draft);
+  const nextStep = pickText(root?.nextStep, rootData?.nextStep);
+  const draftId =
+    pickText(rootDraft?.draftId, root?.draftId, rootData?.draftId, dataDraft?.draftId) ||
+    (/credit/i.test(nextStep) ? pickText(rootData?._id, root?._id) : "");
+  if (!draftId) return;
+  const createdAt =
+    pickText(rootDraft?.createdAt, dataDraft?.createdAt, rootData?.createdAt) ||
+    new Date().toISOString();
+  try {
+    rememberPendingCreditScoreDraft(
+      franchiseDraftOwner(filing.customerId),
+      filing.productKey,
+      draftId,
+      createdAt,
+      { ...(rootData ?? {}), _id: draftId, createdAt },
+    );
+  } catch {
+    // The application is saved on the backend even if local recovery state
+    // cannot be recorded (for example, disabled browser storage).
+  }
+};
+
 export const franchiseApplyResponseInterceptor = (response: AxiosResponse): AxiosResponse => {
   const filing = filingsByRequest.get(response.config);
   if (!filing) return response;
+
+  rememberFranchiseDraft(filing, response);
 
   const body = response.data as { data?: unknown } | undefined;
   const data = body?.data;

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { submitCreditScore, type CreditScoreResponse } from "../../api/customer";
+import { submitFranchiseCreditScore } from "../../api/franchiseCustomers";
+import { readFranchiseFiling } from "../../api/franchiseFiling";
 import { getApiErrorMessage } from "../../utils/apiError";
 import {
   clearPendingCreditScoreDraft,
   emitApplicationSubmitted,
+  franchiseDraftOwner,
   rememberSubmittedApplication,
   readPendingCreditScoreDraft,
   remainingCreditScoreWindow,
@@ -58,7 +61,12 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
   const typedScore = Number(rawScore);
   const typedIsValid = rawScore.trim() !== "" && isValidScore(typedScore);
 
-  const pendingDraft = readPendingCreditScoreDraft(user?._id);
+  const franchiseFiling = readFranchiseFiling();
+  const franchisePending = franchiseFiling
+    ? readPendingCreditScoreDraft(franchiseDraftOwner(franchiseFiling.customerId))
+    : null;
+  const franchiseMode = Boolean(franchiseFiling && franchisePending);
+  const pendingDraft = franchisePending ?? readPendingCreditScoreDraft(user?._id);
   const draftingWindow = pendingDraft ? remainingCreditScoreWindow(pendingDraft.createdAt) : null;
 
   const submitScore = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -72,7 +80,9 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
     setSubmitting(true);
     const startedAt = Date.now();
     try {
-      const response = await submitCreditScore(pendingDraft.draftId, typedScore);
+      const response = franchiseMode && franchiseFiling
+        ? await submitFranchiseCreditScore(franchiseFiling.customerId, pendingDraft.draftId, typedScore)
+        : await submitCreditScore(pendingDraft.draftId, typedScore);
       const remaining = ANALYZING_MS - (Date.now() - startedAt);
       if (remaining > 0) await pause(remaining);
 
@@ -130,7 +140,8 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
               </p>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            {!franchiseMode && (
+              <div className="mt-5 flex flex-wrap gap-2">
               <Link
                 to="/applications"
                 className="rounded-xl px-5 py-2.5 text-[12.5px] font-bold text-white shadow-sm transition hover:brightness-110"
@@ -147,6 +158,13 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
                 </Link>
               )}
             </div>
+            )}
+            {franchiseMode && (
+              <p className="mt-5 text-[12.5px] leading-6 text-slate-600">
+                The application has been submitted through your franchise. Its status will
+                appear in your franchise dashboard once the lenders respond.
+              </p>
+            )}
           </div>
         </section>
       );
