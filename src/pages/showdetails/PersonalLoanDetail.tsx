@@ -29,7 +29,7 @@ const sections: DetailSection[] = [
             A Personal Loan is an unsecured loan — no collateral needed — designed to cover a wide
             range of financial needs: weddings, holidays, medical emergencies, home renovation, or
             purchasing consumer durables. You can access anywhere from{" "}
-            <strong className="text-gray-800">₹1 lakh to ₹50 lakh</strong> with repayment tenures of{" "}
+            <strong className="text-gray-800">₹50,000 to ₹50 lakh</strong> with repayment tenures of{" "}
             <strong className="text-gray-800">1 to 7 years</strong>, all through a fast, paperless process.
           </p>
         </div>
