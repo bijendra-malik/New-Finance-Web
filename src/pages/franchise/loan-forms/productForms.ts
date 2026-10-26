@@ -1,19 +1,10 @@
 import { lazy } from "react";
 import type { ComponentType, LazyExoticComponent } from "react";
 
-/**
- * The real product application forms, loaded on demand.
- *
- * The franchisor portal does not keep its own copies of the forms: it renders the
- * exact components the customer portal renders, so every field, validation, receipt
- * and future form change applies to both portals at once. Each product module is
- * split into its own chunk and only fetched when that form is opened.
- */
-
-/** Props every product ApplicationForm accepts (the optional success callback is unused here). */
 export interface ProductFormProps {
   userName?: string;
   userEmail?: string;
+  onSubmit?: (id: string, application: unknown) => void;
 }
 
 export type ProductForm = ComponentType<ProductFormProps>;

@@ -9,7 +9,6 @@ import PlanPanel from "../components/franchise/dashboard/PlanPanel";
 import NotificationBell from "../components/franchise/dashboard/NotificationBell";
 import ProfilePanel from "../components/franchise/dashboard/ProfilePanel";
 import LoanFormsMenu from "./franchise/loan-forms/LoanFormsMenu";
-import LoanFormModal from "./franchise/loan-forms/LoanFormModal";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
 import { fetchFranchiseProfile } from "../api/franchise";
 import type { FranchiseProfileResponse } from "../api/franchise";
@@ -70,16 +69,19 @@ const FranchisorDashboardPage = () => {
   const [loadingLoans, setLoadingLoans] = useState(() => Boolean(readFranchiseSession()));
 
   const [notice, setNotice] = useState<string | null>(null);
-  const [openProduct, setOpenProduct] = useState<string | null>(null);
   const [applyForCustomer, setApplyForCustomer] = useState<FranchiseCustomer | null>(null);
 
   const section = resolveSection(searchParams.get("section"));
 
   const goToSection = (next: Section) => {
-    setOpenProduct(null);
     setApplyForCustomer(null);
     setNotice(null);
     setSearchParams(next === "overview" ? {} : { section: next }, { replace: true });
+  };
+
+  const openFilingDashboard = (productKey: string) => {
+    const query = applyForCustomer ? `?customer=${encodeURIComponent(applyForCustomer._id)}` : "";
+    navigate(`/franchisor-dashboard/apply/${productKey}${query}`);
   };
 
   const sessionId = session?.franchiseId;
@@ -428,11 +430,10 @@ const FranchisorDashboardPage = () => {
                   error={customersError}
                   onReload={() => void loadCustomers()}
                   onNotice={setNotice}
-                  onApplyLoan={(customer, customerId) => {
+                  onApplyLoan={(customer) => {
                     setNotice(null);
                     setSearchParams({ section: "apply" }, { replace: true });
                     setApplyForCustomer(customer);
-                    setOpenProduct((customerId));
                   }}
                 />
               )}
@@ -460,36 +461,27 @@ const FranchisorDashboardPage = () => {
                   <div className="rounded-2xl border border-slate-200 bg-white p-5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="max-w-xl text-[12.5px] leading-relaxed text-slate-500">
-                        Choose a product below, then pick one of your registered customers. Their identity fields are
-                        filled and locked from the customer record.
+                        Pick a product below. Its filing dashboard opens with the customer, the form
+                        and the credit-score step in one workspace — identity fields are filled and
+                        locked from the customer record.
                       </p>
                       <Button variant="outline" size="sm" onClick={() => goToSection("customers")}>
                         Manage customers
                       </Button>
                     </div>
-                    <LoanFormsMenu session={session} profile={profile} canSubmit={canSubmit} onOpenProduct={setOpenProduct} />
+                    <LoanFormsMenu
+                      session={session}
+                      canSubmit={canSubmit}
+                      onOpenProduct={openFilingDashboard}
+                      filingFor={applyForCustomer}
+                      onClearClient={() => setApplyForCustomer(null)}
+                    />
                   </div>
                 </div>
               )}
             </section>
           </div>
       </div>
-
-      <LoanFormModal
-        key={applyForCustomer?._id ?? "no-preset"}
-        open={Boolean(openProduct)}
-        productKey={openProduct}
-        session={session}
-        canSubmit={canSubmit}
-        presetCustomer={applyForCustomer}
-        onClose={() => {
-          setOpenProduct(null);
-          setApplyForCustomer(null);
-          void loadCustomers();
-          void loadLoans();
-          void loadProfile();
-        }}
-      />
     </div>
   );
 };

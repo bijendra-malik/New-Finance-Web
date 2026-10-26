@@ -14,10 +14,7 @@ interface CustomerRegistryProps {
   onReload: () => void;
   /** Surfaces a one-line confirmation in the page's live region. */
   onNotice: (message: string) => void;
-  /** Starts the Apply Loan flow pre-set to this customer. */
-  /** Called from the row / View-details buttons; also receives the customer _id so the
-   * parent can pre-select a sensible default product from that customer's loans. */
-  onApplyLoan: (customer: FranchiseCustomer, customerId: string) => void;
+  onApplyLoan: (customer: FranchiseCustomer) => void;
 }
 
 /**
@@ -180,7 +177,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
                         <Button variant="outline" size="sm" onClick={() => setSelected(customer)}>
                           View details
                         </Button>
-                        <Button size="sm" onClick={() => onApplyLoan(customer, customer._id)}>
+                        <Button size="sm" onClick={() => onApplyLoan(customer)}>
                           Apply loan
                         </Button>
                       </div>
@@ -214,7 +211,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
         onClose={() => setSelected(null)}
         onApplyLoan={(customer) => {
           setSelected(null);
-          onApplyLoan(customer, customer._id);
+          onApplyLoan(customer);
         }}
       />
     </section>

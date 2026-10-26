@@ -20,6 +20,7 @@ const CreditScorePage = lazy(() => import("./pages/CreditScorePage"));
 
 // ── Franchisor partner portal ────────────────────────────────────────────────
 const FranchisorDashboardPage = lazy(() => import("./pages/FranchisorDashboardPage"));
+const FranchiseFilingDashboard = lazy(() => import("./pages/franchise/loan-forms/FranchiseFilingDashboard"));
 
 // ── Loan dashboards ──────────────────────────────────────────────────────────
 const PersonalLoanDashboard = lazy(() => import("./pages/dashboard/loans/PersonalLoan/PersonalLoanDashboard"));
@@ -165,6 +166,7 @@ function App() {
               <Route path="/be-a-franchisor" element={<Navigate to="/franchise" replace />} />
               <Route path="/franchise-login" element={<FranchiseLoginPage />} />
               <Route path="/franchisor-dashboard" element={<FranchisorDashboardPage />} />
+              <Route path="/franchisor-dashboard/apply/:productKey" element={<FranchiseFilingDashboard />} />
               <Route path="/franchise/loan-forms" element={<FranchisePortalRedirect />} />
               <Route path="/applications" element={<ProtectedRoute><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="/application-status" element={<ApplicationStatusPage />} />

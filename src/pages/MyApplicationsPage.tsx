@@ -1,132 +1,28 @@
-import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
-import FranchiseIcon from "../components/franchise/FranchiseIcon";
-import { useMyApplications } from "../hooks/useMyApplications";
-import type { MyApplication } from "../api/myApplications";
-import { formatTimestamp } from "../utils/formatters";
+import CustomerApplications from "../components/status/CustomerApplications";
+import OtpEntryPanel from "../components/status/OtpEntryPanel";
+import Button from "../components/ui/Button";
+import { Field, TextField } from "../components/ui/FieldRenderer";
+import { useCustomerStatusCheck } from "../hooks/useCustomerStatusCheck";
 import useSEO from "../hooks/useSEO";
-
-// The service's known stages, in order. The reported status is matched
-// case-insensitively against these labels; anything unrecognised is shown
-// verbatim on the first stage rather than being mapped onto a stage it may
-// not mean.
-const STAGES = ["Submitted", "In Review", "Approved", "Disbursed"] as const;
-
-const stageOf = (status: string): number => {
-  const value = status.trim().toLowerCase();
-  if (value.includes("disburse") || value.includes("paid")) return 3;
-  if (value.includes("approv")) return 2;
-  if (value.includes("review") || value.includes("verif") || value.includes("process")) return 1;
-  return 0;
-};
-
-const statusChipStyle = (stage: number): React.CSSProperties => {
-  switch (stage) {
-    case 2:
-      return { background: "#e8f1fb", border: "1px solid #c6dcf4", color: "#1b6ca8" };
-    case 3:
-      return { background: "#e6f7ee", border: "1px solid #b6e4c9", color: "#0b7a3f" };
-    default:
-      return { background: "#fff8e6", border: "1px solid #fde68a", color: "#92400e" };
-  }
-};
-
-const money = (amount?: number): string | undefined =>
-  amount
-    ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount)
-    : undefined;
-
-const ApplicationCard = ({ app }: { app: MyApplication }) => {
-  const stage = stageOf(app.status);
-
-  return (
-    <article
-      className="rounded-2xl bg-white p-5"
-      style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 14px rgba(6,106,156,0.06)" }}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="text-[15px] font-extrabold text-slate-800">{app.productName}</h2>
-          <p className="mt-0.5 text-[11.5px] text-slate-400">
-            Application ID {app._id}
-          </p>
-        </div>
-        <span
-          className="rounded-full px-3 py-1 text-[11px] font-bold"
-          style={statusChipStyle(stage)}
-        >
-          {app.status}
-        </span>
-      </div>
-
-      {/* Progress track — the current stage is highlighted from the reported status. */}
-      <ol className="mt-5 flex items-center" aria-label={`Progress: ${app.status}`}>
-        {STAGES.map((label, index) => {
-          const done = index < stage;
-          const current = index === stage;
-          return (
-            <li key={label} className="flex flex-1 items-center gap-2 last:flex-none">
-              <span
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold"
-                style={
-                  done || current
-                    ? { background: "var(--brand-teal)", color: "#fff" }
-                    : { background: "#f1f5f9", color: "#94a3b8" }
-                }
-                aria-current={current ? "step" : undefined}
-              >
-                {done ? "✓" : index + 1}
-              </span>
-              <span
-                className={`text-[11.5px] font-semibold whitespace-nowrap ${done || current ? "text-slate-700" : "text-slate-400"}`}
-              >
-                {label}
-              </span>
-              {index < STAGES.length - 1 && (
-                <span
-                  className="mx-1 hidden h-px flex-1 sm:block"
-                  style={{ background: index < stage ? "var(--brand-teal)" : "#e2e8f0" }}
-                  aria-hidden="true"
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-        <p className="text-[12px] text-slate-500">
-          Submitted on <span className="font-semibold text-slate-700">{formatTimestamp(app.createdAt)}</span>
-          {money(app.loanAmount) && (
-            <>
-              {" · "}Requested <span className="font-semibold text-slate-700">{money(app.loanAmount)}</span>
-            </>
-          )}
-        </p>
-        {app.dashboardPath && (
-          <Link
-            to={app.dashboardPath}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-[12.5px] font-semibold text-slate-600 transition hover:bg-slate-50"
-          >
-            Open {app.productName} dashboard
-          </Link>
-        )}
-      </div>
-    </article>
-  );
-};
+import { formatPAN } from "../utils/formatters";
 
 const MyApplicationsPage = () => {
   useSEO({
     title: "My Applications",
     description:
-      "Track every loan application you have submitted with Indexia Finance — status, progress and requested amount in one place.",
+      "Track every loan application you have submitted with Indexia Finance — its stage, timeline and the details you filed, verified by OTP.",
     path: "/applications",
   });
 
-  const { applications, loading, error, refresh } = useMyApplications(true);
+  const check = useCustomerStatusCheck();
+  const { stage, missing } = check;
 
-  const inProgress = applications.filter((app) => stageOf(app.status) < 3).length;
+  const identityRows = [
+    { label: "Customer ID", value: check.customerId },
+    { label: "PAN number", value: check.panNumber },
+    { label: "Registered mobile", value: check.mobile ? `+91 ${check.mobile}` : "" },
+  ];
 
   return (
     <>
@@ -134,84 +30,147 @@ const MyApplicationsPage = () => {
         breadcrumb="My Applications"
         title="My"
         highlight="Applications"
-        tagline="Every loan application you have submitted, with its live status"
+        tagline="Every application you have filed, with its live status and the details you submitted"
       />
 
       <div className="bg-white">
         <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
-          {loading && (
-            <div className="flex items-center justify-center gap-3 py-16 text-slate-500">
-              <span
-                className="h-5 w-5 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)"
-                aria-hidden="true"
-              />
-              <span className="text-sm font-semibold">Loading your applications…</span>
-            </div>
-          )}
-
-          {!loading && error && (
-            <div
-              role="status"
-              className="rounded-2xl px-5 py-4 text-center"
-              style={{ background: "var(--form-error-bg)", border: "1px solid var(--form-error-border)" }}
+          {stage === "result" && check.result ? (
+            <CustomerApplications result={check.result} onCheckAgain={check.checkAgain} />
+          ) : (
+            <section
+              aria-labelledby="my-applications-title"
+              className="rounded-2xl p-6 md:p-8"
+              style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 16px rgba(6,106,156,0.08)" }}
             >
-              <p className="text-[13px] font-bold" style={{ color: "var(--form-error-text)" }}>{error}</p>
-              <button
-                type="button"
-                onClick={() => void refresh()}
-                className="mt-3 cursor-pointer rounded-xl border border-slate-300 px-4 py-2 text-[12.5px] font-semibold text-slate-600 transition hover:bg-slate-50"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-
-          {!loading && !error && applications.length === 0 && (
-            <div className="rounded-2xl p-8 text-center" style={{ background: "var(--brand-navy-14)" }}>
-              <span
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl text-white"
-                style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))" }}
-              >
-                <FranchiseIcon name="doc" filled className="h-6 w-6" />
-              </span>
-              <h2 className="mt-4 text-lg font-bold text-slate-800">No applications yet</h2>
-              <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-slate-600">
-                When you apply for a loan, it shows up here with its status — from submission through review,
-                approval and disbursal.
-              </p>
-              <Link
-                to="/"
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
-                style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
-              >
-                Explore loan products
-              </Link>
-            </div>
-          )}
-
-          {!loading && !error && applications.length > 0 && (
-            <>
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[13px] text-slate-600">
-                  <span className="font-bold text-slate-800">{applications.length}</span>{" "}
-                  {applications.length === 1 ? "application" : "applications"} ·{" "}
-                  <span className="font-bold text-slate-800">{inProgress}</span> in progress
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void refresh()}
-                  className="cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-[12.5px] font-semibold text-slate-600 transition hover:bg-slate-50"
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
+                  style={{ background: "linear-gradient(135deg,var(--brand-teal),var(--brand-navy))" }}
+                  aria-hidden="true"
                 >
-                  Refresh status
-                </button>
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                  </svg>
+                </span>
+                <div>
+                  <h2 id="my-applications-title" className="text-xl font-bold text-slate-800">
+                    {stage === "otp" ? "Verify your mobile number" : "Show my applications"}
+                  </h2>
+                  <p className="text-[12.5px] text-slate-500">
+                    Your details are filled in from your account — verify with the OTP sent to your mobile.
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {applications.map((app) => (
-                  <ApplicationCard key={`${app.productKey}-${app._id}`} app={app} />
-                ))}
-              </div>
-            </>
+              {stage === "verify" ? (
+                <div className="mt-6 space-y-5">
+                  {check.needsManualEntry ? (
+                    <div className="space-y-4">
+                      <p className="text-[12.5px] leading-6 text-slate-500">
+                        Confirm the details we should look your applications up by.
+                      </p>
+                      {missing.customerId && (
+                        <Field id="status-customer-id" label="Customer ID" required error={check.errors.customerId}>
+                          <TextField
+                            id="status-customer-id"
+                            value={check.customerId}
+                            onChange={(value) => {
+                              check.setCustomerId(value.toUpperCase());
+                              check.clearError("customerId");
+                            }}
+                            placeholder="Your customer ID"
+                            error={check.errors.customerId}
+                          />
+                        </Field>
+                      )}
+                      {missing.panNumber && (
+                        <Field id="status-pan" label="PAN number" required error={check.errors.panNumber}>
+                          <TextField
+                            id="status-pan"
+                            value={check.panNumber}
+                            onChange={(value) => {
+                              check.setPanNumber(formatPAN(value));
+                              check.clearError("panNumber");
+                            }}
+                            placeholder="ABCDE1234F"
+                            error={check.errors.panNumber}
+                            maxLength={10}
+                            extraCls="uppercase tracking-wider"
+                          />
+                        </Field>
+                      )}
+                      {missing.mobile && (
+                        <Field id="status-mobile" label="Registered mobile number" required error={check.errors.mobile}>
+                          <TextField
+                            id="status-mobile"
+                            value={check.mobile}
+                            onChange={(value) => {
+                              check.setMobile(value.replace(/\D/g, "").slice(0, 10));
+                              check.clearError("mobile");
+                            }}
+                            placeholder="10-digit mobile number"
+                            error={check.errors.mobile}
+                            maxLength={10}
+                            inputMode="tel"
+                          />
+                        </Field>
+                      )}
+                    </div>
+                  ) : (
+                    <dl className="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2">
+                      {identityRows.map((row) => (
+                        <div
+                          key={row.label}
+                          className="flex items-baseline justify-between gap-4 border-b border-slate-200/70 py-2.5 last:border-0"
+                        >
+                          <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{row.label}</dt>
+                          <dd className="min-w-0 text-right text-[13px] font-bold text-slate-700 wrap-anywhere">
+                            {row.value || "—"}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+
+                  {check.apiError && (
+                    <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700">
+                      {check.apiError}
+                    </p>
+                  )}
+
+                  <Button size="lg" fullWidth loading={check.busy} onClick={() => void check.requestOtp(false)}>
+                    {check.busy ? "Sending OTP…" : "Send OTP & show my applications"}
+                  </Button>
+
+                  <p className="text-[12px] leading-5 text-slate-500">
+                    🔒 These details come from your registration and are locked. We send a one-time
+                    password to your registered mobile before showing your applications.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <OtpEntryPanel
+                    idPrefix="my-applications"
+                    maskedMobile={check.otpMaskedMobile}
+                    otp={check.otp}
+                    onOtpChange={(value) => {
+                      check.setOtp(value);
+                      check.clearError("otp");
+                    }}
+                    otpError={check.errors.otp}
+                    apiError={check.apiError}
+                    notice={check.notice}
+                    busy={check.busy}
+                    resending={check.resending}
+                    onVerify={check.verifyOtp}
+                    onResend={() => void check.requestOtp(true)}
+                    onChangeDetails={check.editDetails}
+                    verifyLabel="Verify & show my applications"
+                  />
+                </div>
+              )}
+            </section>
           )}
         </div>
       </div>
