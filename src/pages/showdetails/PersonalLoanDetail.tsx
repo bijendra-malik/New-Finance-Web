@@ -29,8 +29,8 @@ const sections: DetailSection[] = [
             A Personal Loan is an unsecured loan — no collateral needed — designed to cover a wide
             range of financial needs: weddings, holidays, medical emergencies, home renovation, or
             purchasing consumer durables. You can access anywhere from{" "}
-            <strong className="text-gray-800">₹50,000 to ₹30 lakh</strong> with repayment tenures of{" "}
-            <strong className="text-gray-800">1 to 5 years</strong>, all through a fast, paperless process.
+            <strong className="text-gray-800">₹50,000 to ₹50 lakh</strong> with repayment tenures of{" "}
+            <strong className="text-gray-800">1 to 7 years</strong>, all through a fast, paperless process.
           </p>
         </div>
         <div className="shrink-0 w-full lg:w-80">
@@ -105,7 +105,7 @@ const sections: DetailSection[] = [
           ["No Collateral Required", "Fully unsecured — no property, gold, or guarantor needed."],
           ["Streamlined Documentation", "Minimal paperwork with digital KYC and e-signature support."],
           ["Complete Usage Freedom", "Spend the funds however you need — banks only evaluate repayment capacity."],
-          ["High Loan Amounts", "Access up to ₹30 lakh to meet large financial requirements."],
+          ["High Loan Amounts", "Access up to ₹50 lakh to meet large financial requirements."],
         ].map(([title, desc], i) => (
           <li key={title} className="flex items-start gap-3">
             <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>
