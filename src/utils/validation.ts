@@ -1,4 +1,6 @@
 import { MORE_THAN_TENURE_OPTION, OTHER_OPTION } from "../constants/masters";
+import type { LoanAmountRange } from "../constants/masters";
+import { formatIndianNumber } from "./formatters";
 
 export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const COMPANY_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9 .,'&()/-]{0,99}$/;
@@ -53,16 +55,34 @@ export const validateTenure = (
   draft: TenureDraft,
   e: Partial<Record<string, string>>,
   maxYears: number,
+  minYears = 1,
 ): void => {
   const custom = draft.loanTenureYearsCustom ?? 0;
+  const rangeLabel = `between ${minYears} and ${maxYears} years`;
   if (!draft.loanTenureYears) {
     e.loanTenureYears = "Select loan tenure";
   } else if (draft.loanTenureYears === MORE_THAN_TENURE_OPTION) {
     if (!custom) e.loanTenureYearsCustom = "Enter the loan tenure in years";
-    else if (custom < 1 || custom > maxYears)
-      e.loanTenureYearsCustom = `Enter a tenure between 1 and ${maxYears} years`;
-  } else if (draft.loanTenureYears < 1 || draft.loanTenureYears > maxYears) {
-    e.loanTenureYears = `Tenure must be between 1 and ${maxYears} years`;
+    else if (custom < minYears || custom > maxYears)
+      e.loanTenureYearsCustom = `Enter a tenure ${rangeLabel}`;
+  } else if (draft.loanTenureYears < minYears || draft.loanTenureYears > maxYears) {
+    e.loanTenureYears = `Tenure must be ${rangeLabel}`;
+  }
+};
+
+export interface LoanAmountDraft {
+  loanAmount: number;
+}
+
+export const validateLoanAmount = (
+  draft: LoanAmountDraft,
+  e: Partial<Record<string, string>>,
+  { min, max, minMessage }: LoanAmountRange,
+): void => {
+  if (draft.loanAmount < min) {
+    e.loanAmount = minMessage ?? `Minimum ₹${formatIndianNumber(String(min))}`;
+  } else if (draft.loanAmount > max) {
+    e.loanAmount = `Maximum loan amount is ₹${formatIndianNumber(String(max))}`;
   }
 };
 
