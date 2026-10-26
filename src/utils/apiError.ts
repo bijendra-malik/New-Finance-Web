@@ -32,3 +32,20 @@ export const getApiFieldErrors = (err: unknown): ApiFieldErrors => {
   }
   return fieldErrors;
 };
+
+const fieldLabel = (path: string): string => {
+  const words = path.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[._]/g, " ").trim().toLowerCase();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : path;
+};
+
+export const getApiErrorMessageWithFields = (
+  err: unknown,
+  fallback = "Something went wrong. Please try again."
+): string => {
+  const base = getApiErrorMessage(err, fallback);
+  const details = Object.entries(getApiFieldErrors(err)).map(
+    ([path, msg]) => `${fieldLabel(path)}: ${msg}`,
+  );
+  if (details.length === 0) return base;
+  return `${base} — ${details.join("; ")}`;
+};

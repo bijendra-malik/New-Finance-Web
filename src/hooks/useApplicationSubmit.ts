@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getApiErrorMessage } from "../utils/apiError";
+import { getApiErrorMessageWithFields } from "../utils/apiError";
 
 interface ResumedApplicationState {
   resumeApplication?: Record<string, unknown>;
@@ -87,7 +87,7 @@ export const useApplicationSubmit = <TApplication extends { _id?: string }>({
       setSubmittedApp(savedDraft); setSubmitted(true); setReviewOpen(false);
       successRef.current?.(savedDraft._id ?? "", savedDraft);
     } catch (err) {
-      setApiError(getApiErrorMessage(err, "Submission failed. Please try again."));
+      setApiError(getApiErrorMessageWithFields(err, "Submission failed. Please try again."));
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
