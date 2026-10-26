@@ -107,13 +107,15 @@ interface TenureYearsFieldProps {
   customErr?: string;
   options: readonly number[]; placeholder?: string; err?: string;
   maxYears?: number;
+  /** Floor for both the presets and the "Other" field (the API sets one for some products). */
+  minYears?: number;
   allowOther?: boolean;
 }
 export const TenureYearsField = memo(({
   id, label, required = true, value, onChange, customValue, onCustomChange, customErr,
-  options, placeholder = "Select", err, maxYears, allowOther = true,
+  options, placeholder = "Select", err, maxYears, minYears = 1, allowOther = true,
 }: TenureYearsFieldProps) => {
-  const presetOptions = maxYears ? options.filter(y => y <= maxYears) : options;
+  const presetOptions = options.filter(y => y >= minYears && (!maxYears || y <= maxYears));
   const tenureOptions = (allowOther ? [...presetOptions, MORE_THAN_TENURE_OPTION] : [...presetOptions]) as readonly number[];
   return (
     <div id={id}>
@@ -128,8 +130,8 @@ export const TenureYearsField = memo(({
           <FieldLabel label="Enter Tenure (in years)" required />
           <TextField type="number" value={customValue === 0 ? "" : String(customValue)}
             onChange={v => onCustomChange(Math.max(0, parseInt(v) || 0))}
-            placeholder={maxYears ? `Between 1 and ${maxYears} years` : "Enter years"}
-            err={customErr} min={1} max={maxYears} />
+            placeholder={maxYears ? `Between ${minYears} and ${maxYears} years` : "Enter years"}
+            err={customErr} min={minYears} max={maxYears} />
         </div>
       )}
     </div>
