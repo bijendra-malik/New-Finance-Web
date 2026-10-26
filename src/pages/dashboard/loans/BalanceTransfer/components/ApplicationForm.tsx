@@ -11,7 +11,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithOther, TenureYearsField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyBalanceTransfer } from "../../../../../api/loanApplications";
@@ -133,8 +133,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.balanceTransferType===OTHER_OPTION&&!draft.balanceTransferTypeOther.trim()) e.balanceTransferTypeOther="Please mention type of balance transfer";
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Select balance transfer tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=25||form.loanTenureYearsCustom>30)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>30?"Tenure cannot exceed 30 years":"Enter a tenure greater than 25 years";
+    validateTenure(draft, e, 30);
     if(draft.currentPropertyValue.trim()){
       const pv=parseInt(draft.currentPropertyValue);
       if(pv<100000) e.currentPropertyValue="Minimum property value is ₹1,00,000";

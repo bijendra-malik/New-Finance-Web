@@ -11,7 +11,7 @@ import LoanApplicationFormShell from "../../../../../components/form/LoanApplica
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyNPA } from "../../../../../api/loanApplications";
@@ -164,8 +164,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Select settlement tenure (minimum 3 years)";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=20||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 20 years";
+    validateTenure(draft, e, 5);
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select the collateral property backing this account";
     else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention collateral property type";
@@ -500,7 +499,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Tenure (not less than 3 year)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.npaTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.npaTenureYears} maxYears={5} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="collateralPropertyType" label="Collateral Property Type" required

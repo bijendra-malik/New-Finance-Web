@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyFDI } from "../../../../../api/loanApplications";
@@ -132,8 +132,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<1000000000) e.loanAmount="Minimum ₹100 Cr";
     else if(draft.loanAmount>500000000000) e.loanAmount="Maximum loan amount is ₹500,00,00,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Select fund tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
+    validateTenure(draft, e, 5);
 
     if(!draft.collateralPropertyType) e.collateralPropertyType="Please select what you wish to take the fund against";
     else if(draft.collateralPropertyType===OTHER_OPTION&&!draft.collateralPropertyTypeOther.trim()) e.collateralPropertyTypeOther="Please mention fund against type";
@@ -346,7 +345,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Fund Tenure"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.fdiTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.fdiTenureYears} maxYears={5} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="collateralPropertyType" label="Wish To Take Fund Against" required

@@ -13,7 +13,7 @@ import LoanApplicationFormShell from "../../../../../components/form/LoanApplica
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { COMPANY_NAME_REGEX, stripOther, validatePersonalDetails } from "../../../../../utils/validation";
+import { COMPANY_NAME_REGEX, stripOther, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import {
   AmountField, FieldLabel, FormCard, SelectField,
 SelectWithOther, TenureYearsField, TextField,
@@ -76,8 +76,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     if (draft.loanAmount < 50000) e.loanAmount = "Minimum ₹50,000";
     else if (draft.loanAmount > 5000000) e.loanAmount = "Maximum loan amount is ₹50,00,000";
 
-    if (!draft.loanTenureYears) e.loanTenureYears = "Select loan tenure";
-    else if (draft.loanTenureYears > 7) e.loanTenureYears = "Loan tenure cannot exceed 7 years";
+    validateTenure(draft, e, 7);
 
     if (!draft.existingEMI.trim()) e.existingEMI = "Existing Total EMI is required (enter 0 if none)";
     if (!draft.existingLoanAmount.trim()) e.existingLoanAmount = "Existing Loan Amount is required (enter 0 if none)";
@@ -178,7 +177,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
             value={form.loanTenureYears} onChange={v => set("loanTenureYears", v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v => set("loanTenureYearsCustom", v)}
             options={masters.personalLoanTenureYears} maxYears={7} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
-          />
+            allowOther={false} />
         </div>
       </FormCard>
 

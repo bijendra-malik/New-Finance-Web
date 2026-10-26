@@ -107,15 +107,14 @@ interface TenureYearsFieldProps {
   customErr?: string;
   options: readonly number[]; placeholder?: string; err?: string;
   maxYears?: number;
+  allowOther?: boolean;
 }
 export const TenureYearsField = memo(({
   id, label, required = true, value, onChange, customValue, onCustomChange, customErr,
-  options, placeholder = "Select", err, maxYears,
+  options, placeholder = "Select", err, maxYears, allowOther = true,
 }: TenureYearsFieldProps) => {
-  const cappedOptions = maxYears ? options.filter(y => y <= maxYears) : options;
-  const maxYear = cappedOptions[cappedOptions.length - 1];
-  const showMoreOption = !maxYears || maxYears > maxYear;
-  const tenureOptions = (showMoreOption ? [...cappedOptions, MORE_THAN_TENURE_OPTION] : [...cappedOptions]) as readonly number[];
+  const presetOptions = maxYears ? options.filter(y => y <= maxYears) : options;
+  const tenureOptions = (allowOther ? [...presetOptions, MORE_THAN_TENURE_OPTION] : [...presetOptions]) as readonly number[];
   return (
     <div id={id}>
       <FieldLabel label={label} required={required} />
@@ -123,13 +122,14 @@ export const TenureYearsField = memo(({
         onChange(v);
         if (v !== MORE_THAN_TENURE_OPTION) onCustomChange(0);
       }} options={tenureOptions} placeholder={placeholder} err={err}
-        formatOption={y => y === MORE_THAN_TENURE_OPTION ? `More than ${maxYear} years` : `${y} ${y === 1 ? "year" : "years"}`} />
+        formatOption={y => y === MORE_THAN_TENURE_OPTION ? "Other (enter years)" : `${y} ${y === 1 ? "year" : "years"}`} />
       {value === MORE_THAN_TENURE_OPTION && (
         <div id={`${id}Custom`} className="mt-3">
           <FieldLabel label="Enter Tenure (in years)" required />
           <TextField type="number" value={customValue === 0 ? "" : String(customValue)}
             onChange={v => onCustomChange(Math.max(0, parseInt(v) || 0))}
-            placeholder="" err={customErr} max={maxYears} />
+            placeholder={maxYears ? `Between 1 and ${maxYears} years` : "Enter years"}
+            err={customErr} min={1} max={maxYears} />
         </div>
       )}
     </div>

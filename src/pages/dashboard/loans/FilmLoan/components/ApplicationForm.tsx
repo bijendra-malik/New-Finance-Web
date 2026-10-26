@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyFilmLoan } from "../../../../../api/loanApplications";
@@ -148,8 +148,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.totalProjectCost&&draft.ownInvestmentAmount<draft.totalProjectCost*0.2) e.ownInvestmentAmount="Own investment amount should be min 20% of the total film project cost";
     if(draft.loanAmount<10000000) e.loanAmount="Minimum ₹1,00,00,000";
     else if(draft.loanAmount>50000000) e.loanAmount="Maximum loan amount is ₹5,00,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Select funding tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
+    validateTenure(draft, e, 5);
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -354,7 +353,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Tenure (in years)"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.businessLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.filmLoanTenureYears} maxYears={5} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
         </div>
       </FormCard>

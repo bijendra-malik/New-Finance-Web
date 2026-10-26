@@ -3,7 +3,7 @@ import { useAuth } from "../../../../../context/authContext";
 import { applyHomeLoan } from "../../../../../api/loanApplications";
 import type { HomeLoanApplication } from "../../../../../api/loanApplications";
 import { FORM } from "../../../../../constants/formStyles";
-import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
+import { MORE_THAN_TENURE_OPTION, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { addCustomBankName } from "../../../../../api/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
@@ -14,8 +14,8 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
-import { AmountField, FieldLabel, FormCard, PincodeInputField, SelectField, SelectWithOther, TextField } from "../../../../../components/form/FormControls";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
+import { AmountField, FieldLabel, FormCard, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
 // Type lives in the API layer now (aligned with the backend's HomeLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
@@ -44,7 +44,7 @@ interface FormData {
   currentYearNetIncome:number; previousYearNetIncome:number;
   businessState:string; businessCity:string;
   businessPincode:string; businessPlaceStatus:string; businessPlaceStatusOther:string;
-  loanAmount:number; loanTenureYears:number; existingEMI:string; existingLoanAmount:string;
+  loanAmount:number; loanTenureYears:number; loanTenureYearsCustom:number; existingEMI:string; existingLoanAmount:string;
   existingBanks:string[]; existingLoanTypes:string[]; existingBanksOther:string[]; existingLoanTypesOther:string[];
 }
 
@@ -68,7 +68,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     currentYearTurnover:0, priorYearTurnover:0, currentYearNetIncome:0, previousYearNetIncome:0,
     businessState:"", businessCity:"",
     businessPincode:"", businessPlaceStatus:"", businessPlaceStatusOther:"",
-    loanAmount:0, loanTenureYears:0, existingEMI:"", existingLoanAmount:"",
+    loanAmount:0, loanTenureYears:0, loanTenureYearsCustom:0, existingEMI:"", existingLoanAmount:"",
     existingBanks:[], existingLoanTypes:[], existingBanksOther:[], existingLoanTypesOther:[],
   });
 
@@ -151,9 +151,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>100000000) e.loanAmount="Maximum loan amount is ₹10,00,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Enter loan tenure";
-    else if(draft.loanTenureYears<3) e.loanTenureYears="Minimum loan tenure is 3 years";
-    else if(draft.loanTenureYears>35) e.loanTenureYears="Maximum loan tenure is 35 years";
+    validateTenure(draft, e, 30);
 
     if(!draft.buyingPropertyType) e.buyingPropertyType="Buying property type is required";
     else if(draft.buyingPropertyType===OTHER_OPTION&&!draft.buyingPropertyTypeOther.trim()) e.buyingPropertyTypeOther="Please mention buying property type";
@@ -342,7 +340,8 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
               businessPlaceStatusOther:(form.employmentType===SELF_EMPLOYED_BUSINESS||form.employmentType===SELF_EMPLOYED_PROFESSIONAL)
               ?(form.businessPlaceStatus===OTHER_OPTION?(form.businessPlaceStatusOther.trim()||undefined):undefined)
               :undefined,
-            loanAmount:form.loanAmount, loanTenure:form.loanTenureYears,
+            loanAmount:form.loanAmount,
+            loanTenure:form.loanTenureYears===MORE_THAN_TENURE_OPTION?form.loanTenureYearsCustom:form.loanTenureYears,
             existingEMI:parseInt(form.existingEMI)||0, existingLoanAmount:parseInt(form.existingLoanAmount)||0,
             existingBanks:stripOther(form.existingBanks), otherBankList:form.existingBanksOther,
             existingLoanTypes:stripOther(form.existingLoanTypes), otherLoanList:form.existingLoanTypesOther,
@@ -378,10 +377,12 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
             <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
           </div>
-          <div id="loanTenureYears"><FieldLabel label="Required Loan Tenure (in years)" required/>
-            <TextField type="number" min={3} max={35} value={form.loanTenureYears===0?"":String(form.loanTenureYears)}
-              onChange={v=>set("loanTenureYears",Math.max(0,parseInt(v)||0))} placeholder="Between 3 and 35 years" err={errors.loanTenureYears}/>
-          </div>
+          <TenureYearsField
+            id="loanTenureYears" label="Required Loan Tenure (in years)" required
+            value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
+            customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
+            options={masters.homeLoanTenureYears} maxYears={30} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+          />
           <SelectWithOther
             id="buyingPropertyType" label="Buying Property Type" required
             value={form.buyingPropertyType} onChange={v=>{

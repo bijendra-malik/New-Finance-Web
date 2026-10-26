@@ -12,7 +12,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX, validateTenure } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
@@ -163,8 +163,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
     if(draft.loanAmount<100000) e.loanAmount="Minimum ₹1,00,000";
     else if(draft.loanAmount>5000000) e.loanAmount="Maximum loan amount is ₹50,00,000";
-    if(!draft.loanTenureYears) e.loanTenureYears="Select loan tenure";
-    else if(draft.loanTenureYears===MORE_THAN_TENURE_OPTION&&(form.loanTenureYearsCustom<=10||form.loanTenureYearsCustom>25)) e.loanTenureYearsCustom=form.loanTenureYearsCustom>25?"Tenure cannot exceed 25 years":"Enter a tenure greater than 10 years";
+    validateTenure(draft, e, 3);
 
     if(!draft.typeOfLoan) e.typeOfLoan="Please select type of loan";
     else if(draft.typeOfLoan===OTHER_OPTION&&!draft.typeOfLoanOther.trim()) e.typeOfLoanOther="Please mention type of loan";
@@ -397,7 +396,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             id="loanTenureYears" label="Required Loan Tenure"
             value={form.loanTenureYears} onChange={v=>set("loanTenureYears",v)}
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
-            options={masters.goldLoanTenureYears} maxYears={25} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
+            options={masters.goldLoanTenureYears} maxYears={3} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <SelectWithOther
             id="typeOfLoan" label="Type of Loan" required
