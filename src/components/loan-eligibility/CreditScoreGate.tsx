@@ -188,7 +188,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
                 <p className="mt-2 text-sm leading-6 text-red-900">
                   We regret to inform you that your application is not eligible for a loan at this
                   moment. This decision follows an assessment of your details and your credit score.
-                  Please try again after some time.
+                  You may apply again after 30 days.
                 </p>
               </div>
             </div>
