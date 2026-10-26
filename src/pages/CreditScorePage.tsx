@@ -5,10 +5,14 @@ import { FORM } from "../constants/formStyles";
 import { THEME as C } from "../constants/theme";
 import useSEO from "../hooks/useSEO";
 import { useAuth } from "../context/authContext";
+import { deleteLoanApplyDraft } from "../api/customer";
+import { getApiErrorMessage } from "../utils/apiError";
 import {
+  clearPendingCreditScoreDraft,
   readPendingCreditScoreDraft,
   remainingCreditScoreWindow,
 } from "../utils/applicationFlowState";
+import { clearApplySessionPending } from "../utils/applySession";
 import { loanKeyFor } from "../constants/loanSlugs";
 
 export interface CreditScorePageState {
@@ -26,6 +30,7 @@ const CreditScorePage = () => {
   const [now, setNow] = useState(() => Date.now());
   const [discardOpen, setDiscardOpen] = useState(false);
   const [discardNotice, setDiscardNotice] = useState("");
+  const [discarding, setDiscarding] = useState(false);
   const pendingDraft = readPendingCreditScoreDraft(user?._id);
   const deadline = pendingDraft
     ? remainingCreditScoreWindow(pendingDraft.createdAt, now)
@@ -47,6 +52,24 @@ const CreditScorePage = () => {
       "Check your credit score against the cut-offs our lenders use, see the band it falls in, and find out what to do next. Free, instant, and it never affects your score.",
     path: "/credit-score",
   });
+
+  const handleDiscard = async () => {
+    if (discarding || !pendingDraft?.draftId) return;
+    setDiscarding(true);
+    setDiscardNotice("");
+    try {
+      await deleteLoanApplyDraft(pendingDraft.draftId);
+      clearPendingCreditScoreDraft();
+      clearApplySessionPending();
+      setDiscardOpen(false);
+    } catch (err) {
+      setDiscardNotice(
+        getApiErrorMessage(err, "The application could not be discarded. Please try again."),
+      );
+    } finally {
+      setDiscarding(false);
+    }
+  };
 
   const timeRemaining = deadline
     ? [
@@ -148,20 +171,18 @@ const CreditScorePage = () => {
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Once discarded, all application data will be permanently deleted. You will need to fill in the form again if you decide to apply for the same loan.
             </p>
-            <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-              Deletion is not available yet because the backend does not expose a discard endpoint. This application will remain saved until that API is added.
-            </p>
-            {discardNotice && <p role="status" className="mt-3 text-xs font-semibold text-amber-800">{discardNotice}</p>}
+            {discardNotice && <p role="alert" className="mt-3 text-xs font-semibold text-red-600">{discardNotice}</p>}
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setDiscardOpen(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+              <button type="button" onClick={() => setDiscardOpen(false)} disabled={discarding} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60">
                 Keep application
               </button>
               <button
                 type="button"
-                onClick={() => setDiscardNotice("Discarding will be available once the backend deletion endpoint is connected.")}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
+                onClick={() => void handleDiscard()}
+                disabled={discarding}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Discard application
+                {discarding ? "Discarding…" : "Discard application"}
               </button>
             </div>
           </section>
