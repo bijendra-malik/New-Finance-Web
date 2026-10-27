@@ -61,10 +61,12 @@ const LOAN_KEY_ALIASES: Readonly<Record<string, LoanKey>> = {
   "Lease Rental Discounting": "leaseRentalDiscounting",
   "Film Funding": "filmFunding",
   "OD CC Limit": "odCcLimit",
+  "OD / CC Limit": "odCcLimit",
   "Loan Against Share": "loanAgainstShare",
   "Gold Loan": "goldLoan",
   FDI: "fdiLoan",
   NPA: "npaLoan",
+  "NPA Resolution": "npaLoan",
 };
 
 /** Returns the canonical LOAN_SLUGS key to send to the OTP API. */
