@@ -1,3 +1,5 @@
+import { formatMoney } from "../../utils/formatters";
+
 export interface SuccessRow {
   label: string;
   value?: string | number | null;
@@ -13,8 +15,7 @@ export interface SuccessSection {
 
 const dash = "—";
 
-export const fmtINR = (n: number | undefined | null, opts?: Intl.NumberFormatOptions) =>
-  `₹${(n ?? 0).toLocaleString("en-IN", opts)}`;
+export const fmtINR = (n?: number | null): string => formatMoney(n ?? 0) ?? "₹0";
 
 export const isBlank = (v?: string | number | null) =>
   v === undefined || v === null || String(v).trim() === "" || String(v).trim() === "0";
