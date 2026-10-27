@@ -13,7 +13,7 @@ export const PERSONAL_LOAN_MAX_TENURE_YEARS = 7;
 
 /** Unsecured business loans: 5 years (Axis and Kotak both cap at 5). */
 export const BUSINESS_LOAN_TENURE_YEARS = [1, 2, 3, 4, 5] as const;
-export const BUSINESS_LOAN_MAX_TENURE_YEARS = 5;
+export const BUSINESS_LOAN_MAX_TENURE_YEARS = 10;
 
 /** Home loans: up to 30 years (SBI / HDFC). */
 export const HOME_LOAN_TENURE_YEARS = [5, 10, 15, 20, 25, 30] as const;
