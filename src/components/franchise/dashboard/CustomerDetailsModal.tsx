@@ -152,7 +152,6 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
             <DetailItem label="City / State" value={record ? `${record.city || "—"}, ${record.state || "—"}` : undefined} />
             <DetailItem label="Pincode" value={record?.pincode} />
             <DetailItem label="Registered on" value={formatDate(record?.createdAt)} />
-            <DetailItem label="Franchise" value={record?.franchiseId} />
           </dl>
         </section>
 
