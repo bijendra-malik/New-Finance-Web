@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Button from "../../ui/Button";
 import FranchiseIcon from "../FranchiseIcon";
 import FranchiseStatusChip from "./FranchiseStatusChip";
@@ -6,11 +7,14 @@ import ApplicationDetailsModal from "./ApplicationDetailsModal";
 import {
   formatDate,
   formatRupees,
+  isLoanIncomplete,
   loanAmount,
   loanApplicationNo,
+  loanCustomerId,
   loanCustomerMobile,
   loanCustomerName,
   loanProductName,
+  loanProductKey,
   loanStatus,
   loanSubmittedAt,
   sortLoansNewestFirst,
@@ -24,14 +28,52 @@ interface AllLoansSectionProps {
   onReload: () => void;
 }
 
+const customerLabel = (loan: FranchiseCustomerLoan): string =>
+  loanCustomerName(loan) || "Unknown customer";
+
+const distinctLabels = (
+  rows: FranchiseCustomerLoan[],
+  read: (loan: FranchiseCustomerLoan) => string,
+): string[] => [...new Set(rows.map(read))].sort((a, b) => a.localeCompare(b));
+
+interface HeaderFilterProps {
+  label: string;
+  value: string;
+  options: string[];
+  allLabel: string;
+  onChange: (value: string) => void;
+}
+
+const HeaderFilter = ({ label, value, options, allLabel, onChange }: HeaderFilterProps) => (
+  <th scope="col" className="px-4 py-3 align-bottom">
+    <span className="sr-only">{label}</span>
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      aria-label={`Filter by ${label}`}
+      className="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] font-semibold normal-case text-slate-700 transition hover:border-slate-300 focus:border-(--brand-teal-44) focus:ring-2 focus:ring-(--brand-teal-14) focus:outline-none"
+    >
+      <option value="all">{allLabel}</option>
+      {options.map((option) => (
+        <option key={option} value={option.toLowerCase()}>
+          {option}
+        </option>
+      ))}
+    </select>
+  </th>
+);
+
 /**
  * All Loans (GET /franchise/loans): every application this franchise has filed,
- * across all of its customers, with a status filter and the application detail
- * one click away.
+ * across all of its customers. Each heading — Application, Customer, Status —
+ * carries its own filter, unfinished drafts offer a Continue link back into the
+ * filing form, and the application detail is one click away.
  */
 const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionProps) => {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
+  const [customerFilter, setCustomerFilter] = useState("all");
   const [selected, setSelected] = useState<FranchiseCustomerLoan | null>(null);
 
   const sorted = useMemo(() => sortLoansNewestFirst(loans), [loans]);
@@ -46,17 +88,22 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
     return [...seen.values()].sort((a, b) => a.localeCompare(b));
   }, [sorted]);
 
+  const products = useMemo(() => distinctLabels(sorted, loanProductName), [sorted]);
+  const customers = useMemo(() => distinctLabels(sorted, customerLabel), [sorted]);
+
   const needle = query.trim().toLowerCase();
   const filtered = useMemo(
     () =>
       sorted.filter((loan) => {
         if (statusFilter !== "all" && loanStatus(loan).toLowerCase() !== statusFilter) return false;
+        if (productFilter !== "all" && loanProductName(loan).toLowerCase() !== productFilter) return false;
+        if (customerFilter !== "all" && customerLabel(loan).toLowerCase() !== customerFilter) return false;
         if (!needle) return true;
         return [loanApplicationNo(loan), loanProductName(loan), loanCustomerName(loan), loanCustomerMobile(loan)]
           .filter(Boolean)
           .some((field) => String(field).toLowerCase().includes(needle));
       }),
-    [sorted, statusFilter, needle],
+    [sorted, statusFilter, productFilter, customerFilter, needle],
   );
 
   const totalValue = filtered.reduce((sum, loan) => sum + (loanAmount(loan) ?? 0), 0);
@@ -96,22 +143,6 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
             />
           </label>
 
-          <label className="flex items-center gap-2 text-[12px] font-semibold text-slate-500">
-            Status
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[12.5px] font-semibold text-slate-700 focus:border-(--brand-teal-44) focus:ring-2 focus:ring-(--brand-teal-14) focus:outline-none"
-            >
-              <option value="all">All statuses</option>
-              {statuses.map((status) => (
-                <option key={status} value={status.toLowerCase()}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </label>
-
           <p className="ml-auto text-[11.5px] font-semibold text-slate-400">
             {filtered.length} application{filtered.length === 1 ? "" : "s"}
             {totalValue > 0 ? ` · ${formatRupees(totalValue)} total` : ""}
@@ -146,7 +177,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
         ) : filtered.length === 0 ? (
           <div className="px-6 py-10 text-center">
             <p className="text-[13px] font-bold text-slate-700">No applications match these filters</p>
-            <p className="mt-1 text-[12px] text-slate-500">Try a different search term or status.</p>
+            <p className="mt-1 text-[12px] text-slate-500">Try a different search term or filter.</p>
             <Button
               variant="outline"
               size="sm"
@@ -154,6 +185,8 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
               onClick={() => {
                 setQuery("");
                 setStatusFilter("all");
+                setProductFilter("all");
+                setCustomerFilter("all");
               }}
             >
               Clear filters
@@ -163,13 +196,31 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
           <div className="contain-paint overflow-x-auto">
             <table className="w-full min-w-215 text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/70 text-[10.5px] uppercase tracking-wider text-slate-400">
-                  <th scope="col" className="px-4 py-3 font-bold">Application</th>
-                  <th scope="col" className="px-4 py-3 font-bold">Customer</th>
-                  <th scope="col" className="px-4 py-3 font-bold">Amount</th>
-                  <th scope="col" className="px-4 py-3 font-bold">Submitted</th>
-                  <th scope="col" className="px-4 py-3 font-bold">Status</th>
-                  <th scope="col" className="px-4 py-3 text-right font-bold">
+                <tr className="border-b border-slate-100 bg-slate-50/70">
+                  <HeaderFilter
+                    label="Application"
+                    value={productFilter}
+                    options={products}
+                    allLabel="All applications"
+                    onChange={setProductFilter}
+                  />
+                  <HeaderFilter
+                    label="Customer"
+                    value={customerFilter}
+                    options={customers}
+                    allLabel="All customers"
+                    onChange={setCustomerFilter}
+                  />
+                  <th scope="col" className="px-4 py-3 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Amount</th>
+                  <th scope="col" className="px-4 py-3 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Submitted</th>
+                  <HeaderFilter
+                    label="Status"
+                    value={statusFilter}
+                    options={statuses}
+                    allLabel="All statuses"
+                    onChange={setStatusFilter}
+                  />
+                  <th scope="col" className="px-4 py-3 text-right text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
@@ -177,6 +228,13 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((loan, index) => {
                   const key = `${loanApplicationNo(loan)}-${index}`;
+                  const productKey = isLoanIncomplete(loan) ? loanProductKey(loan) : null;
+                  const customerId = loanCustomerId(loan);
+                  const continuePath = productKey
+                    ? `/franchisor-dashboard/apply/${productKey}${
+                        customerId ? `?customer=${encodeURIComponent(customerId)}` : ""
+                      }`
+                    : null;
                   return (
                     <tr key={key} className="transition-colors hover:bg-slate-50/70">
                       <td className="px-4 py-3">
@@ -195,9 +253,19 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
                         <FranchiseStatusChip status={loanStatus(loan)} />
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button variant="outline" size="sm" onClick={() => setSelected(loan)}>
-                          View
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          {continuePath && (
+                            <Link
+                              to={continuePath}
+                              className="inline-flex items-center rounded-lg border border-(--brand-teal-44) bg-white px-3 py-1.5 text-xs font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-14) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                            >
+                              Continue
+                            </Link>
+                          )}
+                          <Button variant="outline" size="sm" onClick={() => setSelected(loan)}>
+                            View
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
