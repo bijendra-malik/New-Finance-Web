@@ -3,6 +3,7 @@ export interface SuccessRow {
   value?: string | number | null;
   omit?: boolean;
   force?: boolean;
+  locked?: boolean;
 }
 
 export interface SuccessSection {
@@ -117,11 +118,11 @@ export const buildSuccessSections = (app: CommonApp, opts: SuccessSectionOptions
   sections.push({
     title: "Applicant Details",
     rows: [
-      { label: "Full Name", value: app.fullName },
-      { label: "Date of Birth", value: fmtDate(app.dob) },
-      { label: "PAN Number", value: app.panNumber ? String(app.panNumber).toUpperCase() : undefined },
-      { label: "Mobile", value: app.mobile ? `+91 ${app.mobile}` : undefined },
-      { label: "Email", value: app.email },
+      { label: "Full Name", value: app.fullName, locked: true },
+      { label: "Date of Birth", value: fmtDate(app.dob), locked: true },
+      { label: "PAN Number", value: app.panNumber ? String(app.panNumber).toUpperCase() : undefined, locked: true },
+      { label: "Mobile", value: app.mobile ? `+91 ${app.mobile}` : undefined, locked: true },
+      { label: "Email", value: app.email, locked: true },
       { label: "Residence", value: [app.city, app.state].filter(Boolean).join(", ") || undefined },
       { label: "Pincode", value: app.pincode },
       { label: "Residence Status", value: resolveOther(app.residenceStatus, app.residenceStatusOther) },
