@@ -1,10 +1,9 @@
 import type { FranchiseCustomerLoan } from "../../../api/franchiseCustomers";
 import { LOAN_PRODUCTS } from "../../../pages/franchise/loan-forms/loanCatalogue";
+import { formatMoney } from "../../../utils/formatters";
+import { asRecord } from "../../../utils/objects";
 
 type Row = Record<string, unknown>;
-
-const asRecord = (value: unknown): Row | null =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Row) : null;
 
 const pickString = (record: Row | null, keys: readonly string[]): string | undefined => {
   if (!record) return undefined;
@@ -145,9 +144,7 @@ export const loanProductKey = (loan: FranchiseCustomerLoan): string | null => {
 const EMDASH = "—";
 
 export const formatRupees = (value?: number | null): string =>
-  typeof value === "number" && Number.isFinite(value)
-    ? `₹${Math.round(value).toLocaleString("en-IN")}`
-    : EMDASH;
+  (typeof value === "number" && Number.isFinite(value) ? formatMoney(Math.round(value)) : undefined) ?? EMDASH;
 
 export const formatRupeesCompact = (value?: number | null): string => {
   if (typeof value !== "number" || !Number.isFinite(value)) return EMDASH;
