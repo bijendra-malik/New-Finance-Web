@@ -25,19 +25,33 @@ export interface StatusOtpSentResponse {
 
 // ── Customer (loan application) status ─────────────────────────────────────────
 
+export interface CustomerStatusTimelineEntry {
+  step?: string;
+  at?: string;
+}
+
 export interface CustomerStatusApplication {
   _id?: string;
-  applicationNumber?: string;
   applicationNo?: string;
-  loanType?: string;
+  applicationNumber?: string;
   product?: string;
+  loanType?: string;
   productName?: string;
+  loanAmount?: number | null;
+  franchiseCode?: string | null;
   status?: string;
-  loanAmount?: number;
+  stage?: string;
+  stageKey?: string;
+  step?: number;
+  stages?: string[];
   submittedAt?: string;
   createdAt?: string;
   updatedAt?: string;
   statusUpdatedAt?: string;
+  decisionAt?: string | null;
+  adminNote?: string;
+  timeline?: CustomerStatusTimelineEntry[];
+  details?: Record<string, unknown> | null;
   message?: string;
 }
 
@@ -48,13 +62,17 @@ export interface CustomerStatusResponse {
     customerId?: string;
     name?: string;
     mobileMasked?: string;
+    panNumber?: string;
     panMasked?: string;
     email?: string;
   };
-  customerStatus?: string;
-  status?: string;
+  total?: number;
+  byStatus?: Record<string, number>;
+  stages?: string[];
   applications?: CustomerStatusApplication[];
   loans?: CustomerStatusApplication[];
+  customerStatus?: string;
+  status?: string;
   appliedAt?: string;
   updatedAt?: string;
 }
