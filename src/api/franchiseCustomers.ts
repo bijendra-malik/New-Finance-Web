@@ -167,6 +167,25 @@ const unwrapList = <T>(
   return { ok: false, message };
 };
 
+const flattenLoanGroups = (items: readonly unknown[]): FranchiseCustomerLoan[] => {
+  const rows: FranchiseCustomerLoan[] = [];
+  for (const item of items) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const record = item as Record<string, unknown>;
+    if (!Array.isArray(record.applications)) {
+      rows.push(item as FranchiseCustomerLoan);
+      continue;
+    }
+    const slug = typeof record.product === "string" ? record.product.trim() : "";
+    for (const entry of record.applications) {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
+      const row = entry as FranchiseCustomerLoan;
+      rows.push(slug && typeof row.product !== "string" ? { ...row, product: slug } : row);
+    }
+  }
+  return rows;
+};
+
 const unwrapObject = <T>(
   res: { data?: unknown },
   keys: readonly string[],
@@ -347,7 +366,7 @@ export const fetchCustomerLoans = async (
       "No loans were returned.",
     );
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, loans: unwrapped.items };
+    return { ok: true, loans: flattenLoanGroups(unwrapped.items) };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load this client's loans.") };
   }
@@ -368,7 +387,7 @@ export const fetchFranchiseLoans = async (): Promise<
       "No loans were returned.",
     );
     if (!unwrapped.ok) return { ok: false, message: unwrapped.message };
-    return { ok: true, loans: unwrapped.items };
+    return { ok: true, loans: flattenLoanGroups(unwrapped.items) };
   } catch (err) {
     return { ok: false, message: franchisePortalError(err, "Could not load your franchise's loans.") };
   }
