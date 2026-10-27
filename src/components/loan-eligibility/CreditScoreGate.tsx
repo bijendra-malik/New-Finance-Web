@@ -303,7 +303,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
         <div className="min-w-0">
           <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">Last step to complete your application form</h2>
             <h3 className="text-md font-bold text-(--brand-navy)">Kindly enter your credit score</h3>
-          <p className="mt-1 max-w-md text-[12.5px] leading-6 text-slate-500">
+          <p className="mt-1 max-w-lg text-[12.5px] leading-6 text-slate-500">
             Your credit score could be entered only once, so please check it before submitting.
           </p>
         </div>
