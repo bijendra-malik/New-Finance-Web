@@ -7,6 +7,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import {
   clearPendingCreditScoreDraft,
   emitApplicationSubmitted,
+  formatReapplyDate,
   franchiseDraftOwner,
   rememberSubmittedApplication,
   readPendingCreditScoreDraft,
@@ -58,6 +59,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [reapplyFrom, setReapplyFrom] = useState("");
   const typedScore = Number(rawScore);
   const typedIsValid = rawScore.trim() !== "" && isValidScore(typedScore);
 
@@ -91,7 +93,14 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
         setError(response.message?.trim() || "We could not confirm your eligibility. Please try again.");
         return;
       }
-      rememberSubmittedApplication(pendingDraft.ownerId, pendingDraft.loanKey, new Date().toISOString());
+      const decidedAt = new Date().toISOString();
+      rememberSubmittedApplication(
+        pendingDraft.ownerId,
+        pendingDraft.loanKey,
+        decidedAt,
+        eligible ? "eligible" : "rejected",
+      );
+      if (!eligible) setReapplyFrom(formatReapplyDate(decidedAt));
       clearPendingCreditScoreDraft();
       clearApplySessionPending();
       emitApplicationSubmitted();
@@ -188,7 +197,9 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
                 <p className="mt-2 text-sm leading-6 text-red-900">
                   We regret to inform you that your application is not eligible for a loan at this
                   moment. This decision follows an assessment of your details and your credit score.
-                  You may apply again after 30 days.
+                  {reapplyFrom
+                    ? ` A fresh application can be submitted after a 30-day cooling-off period — from ${reapplyFrom}.`
+                    : " A fresh application can be submitted after a 30-day cooling-off period."}
                 </p>
               </div>
             </div>
