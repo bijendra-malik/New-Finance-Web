@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { CustomerStatusApplication, CustomerStatusResponse } from "../../api/statusTracking";
 import { formatTimestamp } from "../../utils/formatters";
-import { resolveDashboardPath } from "../modals/applicationModalRoutes";
 import Button from "../ui/Button";
 import { applicationDetailGroups, applicationProgress } from "./applicationDetails";
 import { formatInr, statusTone, titleCase } from "./statusFormat";
@@ -15,6 +14,9 @@ const applicationNumber = (app: CustomerStatusApplication): string | undefined =
 
 const applicationName = (app: CustomerStatusApplication): string =>
   app.loanType?.trim() || app.productName?.trim() || titleCase(app.product) || "Loan application";
+
+const statusOf = (app: CustomerStatusApplication): string =>
+  app.status?.trim() || app.stage?.trim() || "Status unavailable";
 
 /** The stages this application moves through, with the ones already passed marked. */
 const StageTrack = ({ app }: { app: CustomerStatusApplication }) => {
@@ -56,7 +58,6 @@ const StageTrack = ({ app }: { app: CustomerStatusApplication }) => {
   );
 };
 
-/** Every status update the feed recorded, with the moment it happened. */
 const Timeline = ({ app }: { app: CustomerStatusApplication }) => {
   const entries = app.timeline ?? [];
   if (entries.length === 0) return null;
@@ -87,7 +88,6 @@ const StatusApplicationCard = ({
   const submitted = formatTimestamp(submittedAtOf(app));
   const decided = formatTimestamp(app.decisionAt);
   const number = applicationNumber(app);
-  const dashboardPath = resolveDashboardPath(app.product ?? "");
   const detailCount = groups.reduce((total, group) => total + group.rows.length, 0);
   const panelId = `application-details-${number ?? app._id ?? "unknown"}`;
 
@@ -146,14 +146,6 @@ const StatusApplicationCard = ({
           >
             {open ? "Hide application details" : `View application details${detailCount ? ` (${detailCount})` : ""}`}
           </button>
-          {dashboardPath && (
-            <Link
-              to={dashboardPath}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-[12.5px] font-semibold text-(--brand-navy) transition hover:bg-slate-50"
-            >
-              Open {applicationName(app)} dashboard
-            </Link>
-          )}
         </div>
 
         {open && (
@@ -192,10 +184,6 @@ const StatusApplicationCard = ({
   );
 };
 
-/**
- * Every application the status feed returned, verified by OTP, newest first.
- * The newest application opens expanded so the details are visible immediately.
- */
 const CustomerApplications = ({
   result,
   onCheckAgain,
@@ -209,6 +197,29 @@ const CustomerApplications = ({
       (a, b) => Date.parse(submittedAtOf(b) ?? "") - Date.parse(submittedAtOf(a) ?? ""),
     );
   }, [result]);
+
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const statusOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    applications.forEach((app) => {
+      const status = statusOf(app);
+      counts.set(status, (counts.get(status) ?? 0) + 1);
+    });
+    return [...counts.entries()].map(([status, count]) => ({ status, count }));
+  }, [applications]);
+
+  const activeStatus = statusOptions.some((option) => option.status === statusFilter)
+    ? statusFilter
+    : "all";
+
+  const visibleApplications = useMemo(
+    () =>
+      activeStatus === "all"
+        ? applications
+        : applications.filter((app) => statusOf(app) === activeStatus),
+    [applications, activeStatus],
+  );
 
   const customer = result.customer;
   const counts = Object.entries(result.byStatus ?? {}).filter(([, value]) => value > 0);
@@ -282,17 +293,7 @@ const CustomerApplications = ({
         )}
       </div>
 
-      {applications.length > 0 ? (
-        <div className="space-y-4">
-          {applications.map((app, index) => (
-            <StatusApplicationCard
-              key={app.applicationNo ?? app._id ?? `${app.product}-${index}`}
-              app={app}
-              defaultOpen={index === 0}
-            />
-          ))}
-        </div>
-      ) : (
+      {applications.length === 0 ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-5">
           <p className="text-sm font-bold text-amber-900">No applications found</p>
           <p className="mt-1 text-sm leading-6 text-amber-800">
@@ -300,6 +301,67 @@ const CustomerApplications = ({
             here as soon as it is submitted.
           </p>
         </div>
+      ) : (
+        <>
+          {statusOptions.length > 1 && (
+            <div
+              role="group"
+              aria-label="Filter applications by status"
+              className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3"
+            >
+              <span className="mr-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                Filter by status
+              </span>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                aria-pressed={activeStatus === "all"}
+                className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                style={
+                  activeStatus === "all" ? { boxShadow: "0 0 0 2px var(--brand-navy)" } : undefined
+                }
+              >
+                All · {applications.length}
+              </button>
+              {statusOptions.map(({ status, count }) => {
+                const active = activeStatus === status;
+                const tone = statusTone(status);
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setStatusFilter(status)}
+                    aria-pressed={active}
+                    className={`rounded-full px-3 py-1 text-[11px] font-bold transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) ${tone.className}`}
+                    style={active ? { boxShadow: "0 0 0 2px var(--brand-navy)" } : undefined}
+                  >
+                    {tone.label} · {count}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {visibleApplications.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5">
+              <p className="text-sm font-bold text-slate-700">No {activeStatus} applications</p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                None of your applications are at this stage right now. Pick another status above to
+                see the rest.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {visibleApplications.map((app, index) => (
+                <StatusApplicationCard
+                  key={app.applicationNo ?? app._id ?? `${app.product}-${index}`}
+                  app={app}
+                  defaultOpen={index === 0}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <div className="flex flex-wrap items-center gap-4">
