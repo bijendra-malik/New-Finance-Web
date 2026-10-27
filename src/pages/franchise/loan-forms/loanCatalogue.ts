@@ -13,14 +13,14 @@ export interface LoanProduct {
 }
 
 export const LOAN_PRODUCTS: readonly LoanProduct[] = [
-  { key: "personal-loan", name: "Personal Loan", icon: "💳", amount: "₹50,000 – ₹50,00,000", tenure: "1–7 years", category: "Unsecured" },
-  { key: "business-loan", name: "Business Loan", icon: "🏢", amount: "₹1,00,000 – ₹1,00,00,000", tenure: "Up to 5 years", category: "Unsecured" },
-  { key: "home-loan", name: "Home Loan", icon: "🏠", amount: "Up to ₹10,00,00,000", tenure: "Up to 30 years", category: "Secured" },
-  { key: "loan-against-property", name: "Loan Against Property", icon: "🏛️", amount: "Up to ₹10,00,00,000", tenure: "Up to 20 years", category: "Secured" },
+  { key: "personal-loan", name: "Personal Loan", icon: "💳", amount: "₹50,000 onwards", tenure: "1–7 years", category: "Unsecured" },
+  { key: "business-loan", name: "Business Loan", icon: "🏢", amount: "₹1,00,000 onwards", tenure: "Up to 5 years", category: "Unsecured" },
+  { key: "home-loan", name: "Home Loan", icon: "🏠", amount: "₹3,00,000 onwards", tenure: "Up to 30 years", category: "Secured" },
+  { key: "loan-against-property", name: "Loan Against Property", icon: "🏛️", amount: "₹5,00,000 onwards", tenure: "Up to 20 years", category: "Secured" },
   { key: "balance-transfer", name: "Balance Transfer", icon: "🔁", amount: "Existing loan balance", tenure: "Up to 30 years", category: "Unsecured" },
   { key: "project-loan", name: "Project Loan", icon: "🏗️", amount: "As per project", tenure: "Up to 10 years", category: "Secured" },
   { key: "vehicle-loan", name: "Vehicle Loan", icon: "🚗", amount: "On-road vehicle value", tenure: "Up to 7 years", category: "Secured" },
-  { key: "education-loan", name: "Education Loan", icon: "🎓", amount: "Up to ₹3,00,00,000", tenure: "Up to 15 years", category: "Secured" },
+  { key: "education-loan", name: "Education Loan", icon: "🎓", amount: "₹50,000 onwards", tenure: "Up to 15 years", category: "Secured" },
   { key: "credit-card", name: "Credit Card", icon: "💳", amount: "Credit limit", tenure: "Revolving", category: "Unsecured" },
   { key: "commercial-purchase", name: "Commercial Purchase", icon: "🏬", amount: "Purchase value", tenure: "Up to 20 years", category: "Secured" },
   { key: "working-capital", name: "Working Capital", icon: "⚙️", amount: "As per requirement", tenure: "Up to 5 years", category: "Unsecured" },
