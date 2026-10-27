@@ -37,16 +37,10 @@ interface LoanApplicationFormShellProps<TApplication extends SubmittedApplicatio
 
 const EDIT_TARGETS: Readonly<Record<string, readonly string[]>> = {
   "Loan Requirement": ["loanAmount"],
-  "Applicant Details": ["fullName"],
   "Employment & Income": ["employmentType"],
   "Existing Loan Obligations": ["existingEMI"],
   "Loan Amount": ["loanAmount"],
   "Tenure": ["loanTenureYears"],
-  "Full Name": ["fullName"],
-  "Date of Birth": ["dob"],
-  "PAN Number": ["panNumber"],
-  "Mobile": ["mobile"],
-  "Email": ["email"],
   "Residence": ["state"],
   "Pincode": ["pincode"],
   "Residence Status": ["residenceStatus"],
