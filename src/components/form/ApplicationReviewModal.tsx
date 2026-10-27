@@ -40,6 +40,8 @@ const ReviewSection = ({
   const rows = visibleRows(section);
   if (rows.length === 0) return null;
   const headingId = `review-section-${index}`;
+  const lockedCount = rows.filter((row) => row.locked).length;
+  const canEdit = rows.some((row) => !row.locked);
 
   return (
     <section aria-labelledby={headingId} className="px-5 py-4 sm:px-6">
@@ -52,7 +54,7 @@ const ReviewSection = ({
             {section.title}
           </h3>
         </div>
-        {onEdit && (
+        {onEdit && canEdit && (
           <button
             type="button"
             onClick={() => onEdit(section)}
@@ -63,12 +65,29 @@ const ReviewSection = ({
             Edit
           </button>
         )}
+        {onEdit && !canEdit && (
+          <span
+            className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-bold"
+            style={{ borderColor: C.teal33, background: C.navy14, color: C.gray }}
+          >
+            <span aria-hidden="true">🔒</span> Locked
+          </span>
+        )}
       </div>
       <dl className="mt-2.5 grid gap-x-10 sm:grid-cols-2">
         {rows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-4 border-b py-2" style={{ borderColor: "#f1f5f9" }}>
             <dt className="shrink-0 text-[11px] font-semibold uppercase tracking-wide" style={{ color: C.gray }}>
               {row.label}
+              {row.locked && (
+                <span
+                  className="ml-1.5 align-middle text-[10px]"
+                  title="Taken from your registration — cannot be changed"
+                  aria-label="Locked: taken from your registration"
+                >
+                  🔒
+                </span>
+              )}
             </dt>
             <dd className="min-w-0 text-right text-[13px] font-bold wrap-anywhere" style={{ color: C.dark }}>
               {fmtText(row.value)}
@@ -76,6 +95,12 @@ const ReviewSection = ({
           </div>
         ))}
       </dl>
+      {lockedCount > 0 && (
+        <p className="mt-2 text-[11px] leading-5" style={{ color: C.gray }}>
+          🔒 {lockedCount === 1 ? "This detail comes" : "Details marked with a lock come"} from your
+          registration — {lockedCount === 1 ? "it cannot" : "they cannot"} be changed here.
+        </p>
+      )}
     </section>
   );
 };
@@ -104,11 +129,13 @@ const ReviewDialog = ({
     .map((section) => ({ section, rows: visibleRows(section) }))
     .filter((entry) => entry.rows.length > 0);
 
+  // Only the facts this product actually collects are shown: a credit card has no
+  // loan amount or tenure, so those tiles stay out instead of reading "—".
   const facts: [string, string][] = [
     ["Applicant", applicantName ? fmtText(applicantName) : "—"],
     ["Product", productName],
-    ["Loan amount", loanAmount ? fmtINR(loanAmount) : "—"],
-    ["Tenure", tenureYears && tenureYears > 0 ? fmtTenure(tenureYears) : "—"],
+    ...(loanAmount && loanAmount > 0 ? [["Loan amount", fmtINR(loanAmount)] as [string, string]] : []),
+    ...(tenureYears && tenureYears > 0 ? [["Tenure", fmtTenure(tenureYears)] as [string, string]] : []),
   ];
 
   return (
@@ -125,8 +152,8 @@ const ReviewDialog = ({
               Review your application
             </h2>
             <p className="mt-1 max-w-xl text-[12.5px] leading-6 text-white/75">
-              Please check every detail of your {productName} application. You can edit any section
-              before giving your final confirmation.
+              Please check every detail of your {productName} application. You can edit any
+              section that is not locked before giving your final confirmation.
             </p>
           </div>
           <button
@@ -145,7 +172,7 @@ const ReviewDialog = ({
 
       {/* ── Scrollable preview ─────────────────────────────────────────────── */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-white">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-b px-5 py-4 sm:grid-cols-4 sm:px-6" style={{ borderColor: C.teal1f, background: C.navy14 }}>
+        <dl className={`grid grid-cols-2 gap-x-6 gap-y-3 border-b px-5 py-4 sm:px-6 ${facts.length > 2 ? "sm:grid-cols-4" : "sm:grid-cols-2"}`} style={{ borderColor: C.teal1f, background: C.navy14 }}>
           {facts.map(([label, value]) => (
             <div key={label}>
               <dt className="text-[9.5px] font-bold uppercase tracking-[0.16em]" style={{ color: C.gray }}>{label}</dt>
