@@ -17,6 +17,7 @@ import {
   loanUpdatedAt,
 } from "./franchiseFormat";
 import { fetchCustomerLoanStatus, type FranchiseCustomerLoan } from "../../../api/franchiseCustomers";
+import { detailGroupsFromBag, type ApplicationDetailGroup } from "../../status/applicationDetails";
 
 interface ApplicationDetailsModalProps {
   open: boolean;
@@ -37,11 +38,31 @@ const Detail = ({ label, value }: { label: string; value?: string | number | nul
   );
 };
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+
+const DETAIL_CONTAINERS = [
+  "details", "applicationDetails", "applicationData", "loanDetails", "application", "form", "data",
+];
+
+const filedDetails = (loan: FranchiseCustomerLoan | null): ApplicationDetailGroup[] => {
+  if (!loan) return [];
+  const row = loan as Record<string, unknown>;
+  let nested: Record<string, unknown> = {};
+  for (const key of DETAIL_CONTAINERS) {
+    const candidate = asRecord(row[key]);
+    if (candidate) nested = { ...nested, ...candidate };
+  }
+  return detailGroupsFromBag({ ...nested, ...row }).filter(
+    (group) => group.title !== "Other details",
+  );
+};
+
 /**
  * One application from the franchise-wide loan list. When the row carries a
  * customer id and application number, the latest status is fetched from
  * GET /franchise/customer/:id/loans/:applicationNo; otherwise the list row is
- * shown as-is.
+ * shown as-is. The submitted form fields are rendered underneath.
  */
 const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModalProps) => {
   const customerId = loan ? loanCustomerId(loan) : undefined;
@@ -71,6 +92,8 @@ const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModa
   }, [open, loan, customerId, applicationNo]);
 
   const record = fresh ?? loan;
+  const groups = filedDetails(record);
+  const fieldCount = groups.reduce((total, group) => total + group.rows.length, 0);
 
   return (
     <Modal open={open && Boolean(loan)} onClose={onClose} labelledBy="franchise-application-title" maxWidth="max-w-2xl">
@@ -126,6 +149,34 @@ const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModa
               <Detail label="Last updated" value={formatDate(loanUpdatedAt(record))} />
               <Detail label="Customer id" value={customerId} />
             </dl>
+
+            {groups.length > 0 && (
+              <section aria-labelledby="filed-details-heading" className="mt-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3
+                    id="filed-details-heading"
+                    className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400"
+                  >
+                    Details filed by franchisee
+                  </h3>
+                  <p className="text-[11px] font-semibold text-slate-400">
+                    {fieldCount} field{fieldCount === 1 ? "" : "s"}
+                  </p>
+                </div>
+                {groups.map((group) => (
+                  <div key={group.title} className="mt-3 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3">
+                    <p className="text-[10.5px] font-bold uppercase tracking-wider text-(--brand-navy)">
+                      {group.title}
+                    </p>
+                    <dl className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {group.rows.map((row) => (
+                        <Detail key={row.label} label={row.label} value={row.value} />
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </section>
+            )}
 
             {loanRemark(record) && (
               <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
