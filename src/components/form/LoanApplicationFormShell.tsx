@@ -116,7 +116,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
           style={{ background: "var(--brand-teal-14)", border: "1px solid var(--brand-teal-33)" }}
           role="status"
         >
-          <p className="text-sm font-bold text-(--brand-dark)">✓ Application details are final</p>
+          <p className="text-sm font-bold text-(--brand-dark)">✓ Application details have been saved</p>
           <p className="mt-0.5 text-xs text-(--brand-gray)">
             Your application has been saved. Complete the credit-score step below — your details
             can no longer be edited.
