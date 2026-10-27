@@ -113,31 +113,3 @@ export const SelectField = memo(
 );
 SelectField.displayName = "SelectField";
 
-
-export const TextAreaField = memo(
-  ({
-    value,
-    onChange,
-    placeholder,
-    error,
-    rows,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-    placeholder: string;
-    error?: string;
-    rows?: number;
-  }) => (
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      className={cx(
-        "w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) resize-y",
-        error ? "border-red-400 bg-red-50/40" : "border-slate-300"
-      )}
-    />
-  )
-);
-TextAreaField.displayName = "TextAreaField";

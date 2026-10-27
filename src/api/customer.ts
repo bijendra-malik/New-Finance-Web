@@ -13,41 +13,10 @@ export interface CreditScoreResponse {
   application?: unknown;
 }
 
-/** The in-progress loan-apply draft for the signed-in customer. */
-export interface LoanApplyDraft {
-  draftId?: string;
-  _id?: string;
-  product?: string;
-  nextStep?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  [key: string]: unknown;
-}
-
-export interface LoanApplyDraftResponse {
-  success: boolean;
-  message?: string;
-  data?: LoanApplyDraft | { draft?: LoanApplyDraft } | null;
-  draft?: LoanApplyDraft;
-  nextStep?: string;
-}
-
 export interface DraftActionResponse {
   success: boolean;
   message?: string;
 }
-
-/**
- * The signed-in customer's in-progress loan-apply draft, as the last
- * `POST /customer/loan-apply` left it.
- * GET /customer/loan-apply/draft
- */
-export const fetchLoanApplyDraft = async (): Promise<LoanApplyDraftResponse> => {
-  const response = await axiosInstance.get<LoanApplyDraftResponse>(
-    "/customer/loan-apply/draft",
-  );
-  return response.data;
-};
 
 // DELETE /customer/loan-apply/draft { draftId }
 export const deleteLoanApplyDraft = async (

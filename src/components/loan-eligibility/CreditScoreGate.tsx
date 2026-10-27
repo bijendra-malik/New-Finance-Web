@@ -6,7 +6,6 @@ import { readFranchiseFiling } from "../../api/franchiseFiling";
 import { getApiErrorMessage } from "../../utils/apiError";
 import {
   clearPendingCreditScoreDraft,
-  emitApplicationSubmitted,
   formatReapplyDate,
   franchiseDraftOwner,
   rememberSubmittedApplication,
@@ -104,7 +103,6 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
       if (!eligible) setReapplyFrom(formatReapplyDate(decidedAt));
       clearPendingCreditScoreDraft();
       clearApplySessionPending();
-      emitApplicationSubmitted();
       setResult({ eligible });
       onFinalized?.();
     } catch (requestError) {
