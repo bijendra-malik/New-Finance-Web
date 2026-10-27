@@ -708,7 +708,7 @@ const ApplicationModal = ({
                       <Field
                         label="Full Name" type="text" name="fullName"
                         value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
-                        placeholder="As shown on your PAN card" error={fieldErrors.fullName}
+                        placeholder="As per your PAN card" error={fieldErrors.fullName}
                       />
                     )}
                     <Field
