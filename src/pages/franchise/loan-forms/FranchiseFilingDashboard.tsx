@@ -661,7 +661,7 @@ const FranchiseFilingDashboard = () => {
                 style={{ background: "var(--brand-teal-14)", border: "1px solid var(--brand-teal-33)" }}
                 role="status"
               >
-                <p className="text-sm font-bold text-(--brand-dark)">✓ Application details are final</p>
+                <p className="text-sm font-bold text-(--brand-dark)">✓ Application details have been saved</p>
                 <p className="mt-0.5 text-xs text-(--brand-gray)">
                   Filed for {customer.fullName}. The details have been saved and can no longer be
                   edited — the credit score can be entered only once.
@@ -705,7 +705,7 @@ const FranchiseFilingDashboard = () => {
                 ? "Fill the form, then proceed — the details become final at that point."
                 : finalized
                   ? "The application is with the lenders; its status updates in All Loans."
-                  : "Details are final. Enter the customer's credit score to submit the application."}
+                  : "Details have been saved. Enter the customer's credit score to submit the application."}
           </p>
           {customer && (
             <p className="mt-3">

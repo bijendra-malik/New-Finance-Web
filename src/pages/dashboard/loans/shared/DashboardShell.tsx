@@ -202,7 +202,7 @@ const DashboardShell = <T,>({
           <p className="rounded-xl px-3 py-2.5 text-[10.5px] leading-4"
             style={{ background:"rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.65)" }}>
             {proceeded
-              ? "Your application details are final. Enter your credit score to submit."
+              ? "Your application details have been saved. Enter your credit score to submit."
               : "Proceed from the form to unlock the credit-score step."}
           </p>
         </div>
@@ -270,7 +270,7 @@ const DashboardShell = <T,>({
                     style={{ background: "var(--brand-teal-14)", border: "1px solid var(--brand-teal-33)" }}
                     role="status"
                   >
-                    <p className="text-sm font-bold text-(--brand-dark)">✓ Application details are final</p>
+                    <p className="text-sm font-bold text-(--brand-dark)">✓ Application details have been saved</p>
                     <p className="mt-0.5 text-xs text-(--brand-gray)">
                       Your details have been saved and can no longer be edited. Your credit score can be
                       entered only once.
