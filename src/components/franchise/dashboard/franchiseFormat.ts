@@ -1,12 +1,5 @@
-// Display helpers for the franchisee dashboard.
-//
-// The franchise service returns loan rows with slightly different field names
-// across endpoints (a client's loans, the franchise-wide loan list and the
-// single-application status), so every read goes through a tolerant accessor
-// instead of assuming one shape. Unknown values render as an em dash rather
-// than "undefined" in the UI.
-
 import type { FranchiseCustomerLoan } from "../../../api/franchiseCustomers";
+import { LOAN_PRODUCTS } from "../../../pages/franchise/loan-forms/loanCatalogue";
 
 type Row = Record<string, unknown>;
 
@@ -45,7 +38,6 @@ export const loanProductName = (loan: FranchiseCustomerLoan): string => {
   return pickString(row, ["loanType", "loanName", "product", "productName", "type"]) ?? "Loan application";
 };
 
-/** The application number the status endpoint takes back. */
 export const loanApplicationNo = (loan: FranchiseCustomerLoan): string => {
   const row = loan as Row;
   return (
@@ -90,7 +82,6 @@ export const loanCustomerMobile = (loan: FranchiseCustomerLoan): string | undefi
   );
 };
 
-/** The registry `_id` behind a loan row, used for the status endpoint. */
 export const loanCustomerId = (loan: FranchiseCustomerLoan): string | undefined => {
   const row = loan as Row;
   const direct = pickString(row, ["franchiseCustomerId", "customerId", "franchise_customer_id"]);
@@ -104,17 +95,60 @@ export const loanRemark = (loan: FranchiseCustomerLoan): string | undefined => {
   return pickString(row, ["remarks", "remark", "statusMessage", "message", "note", "description"]);
 };
 
+export const loanDraftId = (loan: FranchiseCustomerLoan): string | undefined => {
+  const row = loan as Row;
+  const direct = pickString(row, ["draftId", "draft_id", "draftID"]);
+  if (direct) return direct;
+  const nested = asRecord(row.draft) ?? asRecord(row.draftDetails);
+  return pickString(nested, ["draftId", "_id", "id"]);
+};
+
+export const isLoanIncomplete = (loan: FranchiseCustomerLoan): boolean =>
+  Boolean(loanDraftId(loan)) || /\b(draft|incomplete|not submitted)\b/i.test(loanStatus(loan));
+
+const slugify = (value: string): string =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+export const loanProductKey = (loan: FranchiseCustomerLoan): string | null => {
+  const row = loan as Row;
+  const candidates = [
+    pickString(row, ["productKey", "slug", "loanKey", "formKey", "product"]),
+    loanProductName(loan),
+  ]
+    .map((value) => (value ?? "").trim())
+    .filter(Boolean);
+
+  for (const candidate of candidates) {
+    const slug = slugify(candidate);
+    const exact = LOAN_PRODUCTS.find(
+      (product) => product.key === slug || product.name.toLowerCase() === candidate.toLowerCase(),
+    );
+    if (exact) return exact.key;
+  }
+  for (const candidate of candidates) {
+    const slug = slugify(candidate);
+    if (!slug) continue;
+    const partial = LOAN_PRODUCTS.find(
+      (product) => product.key.startsWith(`${slug}-`) || slug.startsWith(`${product.key}-`),
+    );
+    if (partial) return partial.key;
+  }
+  return null;
+};
+
 // ── Dates and money ─────────────────────────────────────────────────────────
 
 const EMDASH = "—";
 
-/** Rupees with Indian digit grouping, e.g. 1250000 → ₹12,50,000. */
 export const formatRupees = (value?: number | null): string =>
   typeof value === "number" && Number.isFinite(value)
     ? `₹${Math.round(value).toLocaleString("en-IN")}`
     : EMDASH;
 
-/** Compact rupee label for tiles, e.g. 1250000 → ₹12.5L. */
 export const formatRupeesCompact = (value?: number | null): string => {
   if (typeof value !== "number" || !Number.isFinite(value)) return EMDASH;
   if (value >= 10000000) return `₹${(value / 10000000).toFixed(value >= 100000000 ? 0 : 2)}Cr`;
@@ -125,8 +159,6 @@ export const formatRupeesCompact = (value?: number | null): string => {
 
 export const formatDate = (value?: string | null): string => {
   if (!value) return EMDASH;
-  // Date-only values are calendar dates, not instants: parse them in local time
-  // so a timezone behind UTC cannot shift the displayed day.
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value);
   if (Number.isNaN(date.getTime())) return EMDASH;
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
@@ -159,7 +191,6 @@ export interface StatusTone {
   dot: string;
 }
 
-/** Colour family for a status string, matched loosely so backend wording can vary. */
 export const statusTone = (status?: string): StatusTone => {
   const normalized = (status ?? "").trim().toLowerCase().replace(/[_-]+/g, " ");
 
