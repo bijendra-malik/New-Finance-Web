@@ -7,7 +7,6 @@ import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
-import { readCredentials, saveCredentials } from "../../utils/credentialStorage";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX, isAtLeastAge } from "../../utils/validation";
 import { registerFranchise, verifyFranchiseOTP } from "../../api/franchise";
@@ -57,15 +56,7 @@ const FranchiseForm = ({
   } = useFranchisePlans();
 
   const [values, setValues] = useState<FranchiseFormValues>(() => {
-    const stored = readCredentials("franchisee-verification");
-    if (!stored) return EMPTY;
-    return {
-      ...EMPTY,
-      fullName: stored.fullName ?? "",
-      mobile: stored.mobile ?? "",
-      email: stored.email ?? "",
-      pan: stored.pan ?? "",
-    };
+    return EMPTY;
   });
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -337,14 +328,6 @@ const FranchiseForm = ({
       }
       setOtpStage(false);
       setSubmitted(true);
-      if (lastPayload) {
-        saveCredentials("franchisee-verification", {
-          fullName: lastPayload.name,
-          mobile: lastPayload.mobile,
-          email: lastPayload.email,
-          pan: lastPayload.panNumber,
-        });
-      }
     } catch (err) {
       setOtpApiError(getApiErrorMessage(err, "We could not verify that OTP. Request a new one and try again."));
     } finally {

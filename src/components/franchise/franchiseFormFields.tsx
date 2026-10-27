@@ -50,7 +50,6 @@ export const FranchiseFields = ({
   errors,
   set,
   fid,
-  isLocked,
   isFranchisee,
   presentation,
   businessTypeOptions,
@@ -70,8 +69,7 @@ export const FranchiseFields = ({
   const isHorizontal = presentation === "horizontal";
   // Full-width spans only make sense where the grid actually has the extra columns.
   const spanFull = isHorizontal ? "sm:col-span-2 lg:col-span-3" : presentation === "stepped" ? "" : "sm:col-span-2";
-  const lockedClass = (key: "fullName" | "mobile" | "email" | "dob") =>
-    isLocked(key) ? "cursor-not-allowed bg-slate-100 text-slate-500" : "";
+  const lockedClass = (_key: "fullName" | "mobile" | "email" | "dob") => _key;
 
   const renderField = (key: FieldKey): ReactNode => {
     switch (key) {
@@ -86,14 +84,12 @@ export const FranchiseFields = ({
             full={isFranchisee && presentation === "stacked"}
           >
             <input
-              id={fid("name")}
-              className={`${inputClass(!!errors.fullName)} ${lockedClass("fullName")}`}
+              id={fid("name")} className={`${inputClass(!!errors.fullName)} ${lockedClass("fullName")}`}
               value={values.fullName}
               onChange={(e) => set("fullName", e.target.value)}
               placeholder="Your full name"
               autoComplete="name"
-              readOnly={isLocked("fullName")}
-            />
+              />
           </Field>
         );
 
@@ -102,15 +98,12 @@ export const FranchiseFields = ({
           <Field id={fid("mobile")} label="Mobile Number" required error={errors.mobile}>
             <input
               id={fid("mobile")}
-              type="tel"
-              inputMode="numeric"
-              className={`${inputClass(!!errors.mobile)} ${lockedClass("mobile")}`}
+              type="tel" inputMode="numeric" className={`${inputClass(!!errors.mobile)} ${lockedClass("fullName")}`}
               value={values.mobile}
               onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
               placeholder="10-digit mobile number"
               maxLength={10}
               autoComplete="tel"
-              readOnly={isLocked("mobile")}
             />
           </Field>
         );
@@ -121,12 +114,11 @@ export const FranchiseFields = ({
             <input
               id={fid("email")}
               type="email"
-              className={`${inputClass(!!errors.email)} ${lockedClass("email")}`}
+              className={`${inputClass(!!errors.email)} ${lockedClass("fullName")}`}
               value={values.email}
               onChange={(e) => set("email", e.target.value)}
               placeholder="your@email.com"
               autoComplete="email"
-              readOnly={isLocked("email")}
             />
           </Field>
         );
@@ -136,8 +128,7 @@ export const FranchiseFields = ({
           <Field id={fid("dob")} label="Date of Birth" required error={errors.dob}>
             <input
               id={fid("dob")}
-              type="date"
-              className={`${inputClass(!!errors.dob)} ${lockedClass("dob")}`}
+              type="date" className={`${inputClass(!!errors.dob)} ${lockedClass("fullName")}`}
               value={values.dob}
               onChange={(e) => set("dob", e.target.value)}
               placeholder="YYYY-MM-DD"
