@@ -407,7 +407,7 @@ const FranchiseFilingDashboard = () => {
           <dd className="text-[12px] font-semibold text-slate-700">{session.franchiseId}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-3">
-          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount range</dt>
+          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</dt>
           <dd className="text-right text-[12px] font-semibold text-slate-700">{product.amount}</dd>
         </div>
         <div className="flex items-baseline justify-between gap-3">
