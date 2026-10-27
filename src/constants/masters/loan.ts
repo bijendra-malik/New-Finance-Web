@@ -28,8 +28,8 @@ export const PROJECT_LOAN_TENURE_YEARS = [3, 5, 7, 10] as const;
 export const PROJECT_LOAN_MAX_TENURE_YEARS = 10;
 
 /** New-car loans: 7 years for conventional cars (8 only for select EVs). */
-export const VEHICLE_LOAN_TENURE_YEARS = [1, 2, 3, 4, 5, 6, 7] as const;
-export const VEHICLE_LOAN_MAX_TENURE_YEARS = 7;
+export const VEHICLE_LOAN_TENURE_YEARS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export const VEHICLE_LOAN_MAX_TENURE_YEARS = 8;
 
 /** Education loans: up to 15 years (SBI / Axis). */
 export const EDUCATION_LOAN_TENURE_YEARS = [3, 5, 7, 10, 15] as const;
