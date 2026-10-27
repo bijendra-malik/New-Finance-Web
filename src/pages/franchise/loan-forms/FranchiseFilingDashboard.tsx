@@ -40,7 +40,7 @@ const asText = (value: unknown): string => {
   return "";
 };
 
-/** The identity fields the customer record supplies to the form, locked in place. */
+/** The identity fields the customer record fills into the form. */
 const customerIdentity = (customer: FranchiseCustomer): Partial<Record<LockableField, string>> => {
   const candidates: [LockableField, string][] = [
     ["fullName", asText(customer.fullName)],
@@ -235,8 +235,9 @@ const FranchiseFilingDashboard = () => {
   const prefill = useMemo<ApplicantPrefill>(
     () => ({
       identity,
+      lockIdentity: false,
       note: customer
-        ? `🔒 Name, mobile, email, date of birth, PAN and address are taken from the registered customer record for ${customer.fullName} and are locked. Update the customer in Customer Registration to change them.`
+        ? `Name, mobile, email, date of birth, PAN and address are prefilled from the registered customer record for ${customer.fullName}. Check them before you proceed — any correction is saved with this application.`
         : "",
     }),
     [identity, customer],
