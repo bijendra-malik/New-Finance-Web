@@ -24,6 +24,7 @@ interface CreditScoreGateProps {
   product?: string;
   dashboardPath?: string;
   onFinalized?: () => void;
+  onDiscard?: () => void;
 }
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
@@ -52,7 +53,7 @@ const spinner = (
   </svg>
 );
 
-const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGateProps) => {
+const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: CreditScoreGateProps) => {
   const { user } = useAuth();
   const productLabel = product?.trim() || "this loan";
   const [rawScore, setRawScore] = useState("");
@@ -129,10 +130,10 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">After analyzing your details</p>
                   <h2 id="eligibility-result-title" className="mt-1 text-xl font-extrabold text-emerald-950 sm:text-2xl">
-                    Your application is eligible for a loan
+                    Your application is eligible for this loan
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-emerald-900">
-                    We are pleased to inform you that your application is eligible for a loan.
+                    We are pleased to inform you that your application is eligible for this loan.
                     We have forwarded it to the banks and NBFCs with which you are most compatible
                     and which offer you the highest chances of disbursement.
                   </p>
@@ -302,11 +303,24 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized }: CreditScoreGat
 
   return (
     <section aria-labelledby="credit-score-gate-title" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">One last step: your credit score</h2>
-      <p className="mt-1 max-w-md text-[12.5px] leading-6 text-slate-500">
-        Enter the score from your credit report and check your eligibility. Your score can be
-        entered only once, so please check it before submitting.
-      </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">Last step to complete your application form</h2>
+            <h3 className="text-md font-bold text-(--brand-navy)">Kindly enter your credit score</h3>
+          <p className="mt-1 max-w-md text-[12.5px] leading-6 text-slate-500">
+            Your credit score could be entered only once, so please check it before submitting.
+          </p>
+        </div>
+        {onDiscard && (
+          <button
+            type="button"
+            onClick={onDiscard}
+            className="shrink-0 cursor-pointer rounded-xl border border-red-200 bg-white px-3.5 py-2 text-xs font-extrabold uppercase tracking-wider text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+          >
+            Discard
+          </button>
+        )}
+      </div>
       <form onSubmit={(event) => void submitScore(event)} noValidate className="mt-5">
         <label htmlFor="credit-score-input" className="block text-xs font-bold uppercase tracking-wide text-slate-500">Your credit score</label>
         <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:items-start">

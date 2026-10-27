@@ -140,15 +140,6 @@ const CreditScorePage = () => {
                 ? `Your ${productLabel} details are saved. Enter your credit score to check eligibility and submit the application.`
                 : "Enter your credit score to check eligibility and submit your application."}
             </p>
-            {pendingDraft && !deadline?.expired && (
-              <button
-                type="button"
-                onClick={() => { setDiscardNotice(""); setDiscardOpen(true); }}
-                className="mt-3 text-xs font-bold text-red-700 underline underline-offset-2 transition hover:text-red-800"
-              >
-                Discard this application
-              </button>
-            )}
           </header>
         )}
 
@@ -156,6 +147,11 @@ const CreditScorePage = () => {
           product={productLabel}
           dashboardPath={from}
           onFinalized={() => setFinalized(true)}
+          onDiscard={
+            pendingDraft && !deadline?.expired
+              ? () => { setDiscardNotice(""); setDiscardOpen(true); }
+              : undefined
+          }
         />
       </div>
       {discardOpen && (
