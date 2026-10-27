@@ -3,6 +3,7 @@ import {
   franchiseDraftOwner,
   rememberPendingCreditScoreDraft,
 } from "../utils/applicationFlowState";
+import { asRecord } from "../utils/objects";
 
 // ── File scope ───────────────────────────────────────────────────────────────
 
@@ -93,11 +94,6 @@ export const franchiseApplyRequestInterceptor = (
 };
 
 // ── Response handling ────────────────────────────────────────────────────────
-
-const asRecord = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
 
 const pickText = (...candidates: unknown[]): string => {
   for (const candidate of candidates) {

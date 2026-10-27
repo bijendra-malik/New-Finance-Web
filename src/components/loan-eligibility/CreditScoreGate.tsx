@@ -4,6 +4,7 @@ import { submitCreditScore, type CreditScoreResponse } from "../../api/customer"
 import { submitFranchiseCreditScore } from "../../api/franchiseCustomers";
 import { readFranchiseFiling } from "../../api/franchiseFiling";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { asRecord } from "../../utils/objects";
 import {
   clearPendingCreditScoreDraft,
   formatReapplyDate,
@@ -25,9 +26,6 @@ interface CreditScoreGateProps {
   onFinalized?: () => void;
   onDiscard?: () => void;
 }
-
-const asRecord = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 
 const eligibilityFrom = (response: CreditScoreResponse): boolean | null => {
   const candidates = [asRecord(response), asRecord(response.data), asRecord(response.application)];
