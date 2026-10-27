@@ -25,6 +25,7 @@ import {
   type ApplicationCooldown,
 } from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
+import CodeBoxes from "../ui/CodeBoxes";
 import { resolveDashboardPath } from "./applicationModalRoutes";
 import { Field, Select } from "./applicationModalFields";
 
@@ -808,20 +809,17 @@ const ApplicationModal = ({
                   </div>
 
                   <div>
-                    <label htmlFor="apply-otp" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                    <label htmlFor="apply-otp-0" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
                       Enter OTP <span className="text-red-500 ml-0.5">*</span>
                     </label>
-                    <input
-                      id="apply-otp"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
+                    <CodeBoxes
+                      idPrefix="apply-otp"
+                      label="Enter OTP"
                       value={otp}
+                      onChange={(v) => { setOtp(v); setOtpError(""); }}
                       autoFocus
                       disabled={otpBusy}
-                      onChange={(e) => { setOtp(e.target.value.replace(/\D/g, "").slice(0, 6)); setOtpError(""); }}
-                      placeholder="• • • • • •"
-                      className={`w-full rounded-xl border px-3 py-3 text-center text-xl font-bold tracking-[0.4em] text-slate-800 shadow-sm outline-none transition focus:ring-2 focus:ring-(--brand-teal-20) disabled:bg-slate-100 ${otpError ? "border-red-400 bg-red-50/30" : "border-slate-300 focus:border-(--brand-teal)"}`}
+                      invalid={Boolean(otpError)}
                     />
                     {otpError && <p className="mt-1 text-xs font-medium text-red-500">{otpError}</p>}
                     {resendNotice && <p className="mt-1 text-[11px] font-medium text-emerald-600">{resendNotice}</p>}

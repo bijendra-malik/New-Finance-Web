@@ -1,4 +1,5 @@
 import Button from "../ui/Button";
+import CodeBoxes from "../ui/CodeBoxes";
 
 interface OtpEntryPanelProps {
   idPrefix: string;
@@ -45,24 +46,18 @@ const OtpEntryPanel = ({
       </div>
 
       <div>
-        <label htmlFor={otpId} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-700">
+        <label htmlFor={`${otpId}-0`} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-700">
           One-time password <span className="ml-0.5 text-red-500">*</span>
         </label>
-        <input
-          id={otpId}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
+        <CodeBoxes
+          idPrefix={otpId}
+          label="One-time password"
           value={otp}
+          onChange={onOtpChange}
           autoFocus
           disabled={busy}
-          placeholder="6-digit OTP"
-          onChange={(event) => onOtpChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
-          aria-invalid={Boolean(otpError)}
-          aria-describedby={otpError ? otpErrorId : undefined}
-          className={`w-full rounded-lg border px-3.5 py-3 text-center text-lg font-bold tracking-[0.3em] text-slate-800 transition focus:outline-none focus:ring-2 focus:ring-(--brand-teal)/30 disabled:bg-slate-100 ${
-            otpError ? "border-red-400 bg-red-50/40" : "border-slate-300 focus:border-(--brand-teal)"
-          }`}
+          invalid={Boolean(otpError)}
+          describedBy={otpError ? otpErrorId : undefined}
         />
         {otpError && (
           <p id={otpErrorId} role="alert" className="mt-1.5 text-xs font-medium text-red-600">

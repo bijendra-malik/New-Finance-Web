@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../../../components/ui/Modal";
 import Button from "../../../components/ui/Button";
+import CodeBoxes from "../../../components/ui/CodeBoxes";
 import {
   DateOfBirthPicker,
   FieldLabel,
@@ -307,13 +308,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
           )}
           <div>
             <FieldLabel label="Enter OTP" required />
-            <TextField
-              value={otp}
-              onChange={(v) => setOtp(v.replace(/\D/g, "").slice(0, 6))}
-              placeholder="Enter 6-digit OTP"
-              inputMode="numeric"
-              maxLength={6}
-            />
+            <CodeBoxes idPrefix="customer-register-otp" label="Enter OTP" value={otp} onChange={setOtp} invalid={Boolean(otpError)} />
           </div>
           <div className="mt-6 flex items-center justify-end gap-3">
             <Button type="button" variant="outline" size="md" onClick={() => setStep("details")} disabled={busy}>
