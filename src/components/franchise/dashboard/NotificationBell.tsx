@@ -20,19 +20,23 @@ interface NotificationBellProps {
   onOpenSection: (section: Target) => void;
 }
 
-const SEEN_KEY_PREFIX = "indexia_franchise_updates_seen:";
+const READ_KEY_PREFIX = "indexia_franchise_updates_read:";
+const DISMISSED_KEY_PREFIX = "indexia_franchise_updates_dismissed:";
+const MAX_STORED_IDS = 200;
 
-const readSeen = (franchiseId: string): string | null => {
+const readStoredIds = (prefix: string, franchiseId: string): string[] => {
   try {
-    return localStorage.getItem(`${SEEN_KEY_PREFIX}${franchiseId}`);
+    const raw = localStorage.getItem(`${prefix}${franchiseId}`);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
   } catch {
-    return null;
+    return [];
   }
 };
 
-const writeSeen = (franchiseId: string, iso: string): void => {
+const writeStoredIds = (prefix: string, franchiseId: string, ids: string[]): void => {
   try {
-    localStorage.setItem(`${SEEN_KEY_PREFIX}${franchiseId}`, iso);
+    localStorage.setItem(`${prefix}${franchiseId}`, JSON.stringify(ids.slice(-MAX_STORED_IDS)));
   } catch {
     // a full browser should not break the dashboard
   }
@@ -56,22 +60,17 @@ const relativeTime = (iso?: string): string => {
   return formatDate(iso);
 };
 
-/**
- * Bell in the dashboard header listing the newest activity in the partner's
- * book — loan status updates and newly registered customers. The service has no
- * notifications feed, so items are derived from the data the dashboard already
- * loads; the last-opened timestamp is kept per franchise in local storage to
- * drive the unread count.
- */
 const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: NotificationBellProps) => {
   const [open, setOpen] = useState(false);
-  const [seenAt, setSeenAt] = useState<string | null>(() => readSeen(franchiseId));
-  const [markerAt, setMarkerAt] = useState<string | null>(() => readSeen(franchiseId));
+  const [readIds, setReadIds] = useState<string[]>(() => readStoredIds(READ_KEY_PREFIX, franchiseId));
+  const [dismissedIds, setDismissedIds] = useState<string[]>(() =>
+    readStoredIds(DISMISSED_KEY_PREFIX, franchiseId),
+  );
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<UpdateItem[]>(() => {
-    const loanUpdates = loans.map((loan, index) => ({
-      id: `loan-${loanApplicationNo(loan)}-${index}`,
+    const dismissed = new Set(dismissedIds);
+    const loanUpdates = loans.map((loan) => ({      id: `loan-${loanApplicationNo(loan)}`,
       target: "loans" as const,
       title: `${loanProductName(loan)} · ${loanStatus(loan)}`,
       detail: [loanCustomerName(loan), loanApplicationNo(loan)].filter(Boolean).join(" · "),
@@ -87,13 +86,13 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     }));
 
     return [...loanUpdates, ...customerUpdates]
-      .filter((item) => timeValue(item.at) > 0)
+      .filter((item) => !dismissed.has(item.id) && timeValue(item.at) > 0)
       .sort((a, b) => timeValue(b.at) - timeValue(a.at))
       .slice(0, 8);
-  }, [loans, customers]);
+  }, [loans, customers, dismissedIds]);
 
-  const unreadCount = items.filter((item) => timeValue(item.at) > timeValue(seenAt ?? undefined)).length;
-  const newest = items[0]?.at;
+  const readSet = useMemo(() => new Set(readIds), [readIds]);
+  const unreadCount = items.filter((item) => !readSet.has(item.id)).length;
 
   useEffect(() => {
     if (!open) return;
@@ -111,19 +110,25 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     };
   }, [open]);
 
-  const toggle = () => {
-    if (open) {
-      setOpen(false);
-      return;
-    }
-    // Snapshot what was already seen so this session can still mark the newer
-    // rows, then record everything as seen.
-    setMarkerAt(seenAt);
-    if (newest) {
-      setSeenAt(newest);
-      writeSeen(franchiseId, newest);
-    }
-    setOpen(true);
+  const toggle = () => setOpen((wasOpen) => !wasOpen);
+
+  const markRead = (id: string) => {
+    if (readIds.includes(id)) return;
+    const next = [...readIds, id];
+    setReadIds(next);
+    writeStoredIds(READ_KEY_PREFIX, franchiseId, next);
+  };
+
+  const markAllRead = () => {
+    const next = Array.from(new Set([...readIds, ...items.map((item) => item.id)]));
+    setReadIds(next);
+    writeStoredIds(READ_KEY_PREFIX, franchiseId, next);
+  };
+
+  const dismiss = (id: string) => {
+    const next = [...dismissedIds, id];
+    setDismissedIds(next);
+    writeStoredIds(DISMISSED_KEY_PREFIX, franchiseId, next);
   };
 
   const goTo = (target: Target) => {
@@ -191,13 +196,16 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
           ) : (
             <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
               {items.map((item) => {
-                const isNew = timeValue(item.at) > timeValue(markerAt ?? undefined);
+                const unread = !readSet.has(item.id);
                 return (
-                  <li key={item.id}>
+                  <li key={item.id} className="flex items-start gap-2 px-4 py-3 transition-colors hover:bg-slate-50">
                     <button
                       type="button"
-                      onClick={() => goTo(item.target)}
-                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50"
+                      onClick={() => {
+                        markRead(item.id);
+                        goTo(item.target);
+                      }}
+                      className="flex min-w-0 flex-1 items-start gap-3 text-left focus:outline-none focus-visible:bg-slate-50"
                     >
                       <span
                         className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
@@ -211,15 +219,19 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-start gap-2">
-                          <span className="text-[12.5px] font-bold text-slate-800">{item.title}</span>
-                          {isNew && (
+                          <span
+                            className={`text-[12.5px] ${unread ? "font-bold text-slate-800" : "font-semibold text-slate-500"}`}
+                          >
+                            {item.title}
+                          </span>
+                          {unread && (
                             <>
                               <span
                                 className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full"
                                 style={{ background: "var(--brand-teal)" }}
                                 aria-hidden="true"
                               />
-                              <span className="sr-only">New</span>
+                              <span className="sr-only">Unread</span>
                             </>
                           )}
                         </span>
@@ -229,13 +241,48 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                         </span>
                       </span>
                     </button>
+
+                    <span className="flex shrink-0 items-center gap-0.5 pt-0.5">
+                      {unread && (
+                        <button
+                          type="button"
+                          onClick={() => markRead(item.id)}
+                          title="Mark as read"
+                          aria-label={`Mark “${item.title}” as read`}
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-(--brand-teal-14) hover:text-(--brand-navy) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                        >
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => dismiss(item.id)}
+                        title="Delete notification"
+                        aria-label={`Delete “${item.title}”`}
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        </svg>
+                      </button>
+                    </span>
                   </li>
                 );
               })}
             </ul>
           )}
 
-          <div className="border-t border-slate-100 px-4 py-2.5">
+          <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5">
+            <button
+              type="button"
+              onClick={markAllRead}
+              disabled={unreadCount === 0}
+              className="text-[12px] font-bold text-slate-500 transition hover:text-(--brand-navy) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Mark all as read
+            </button>
             <button
               type="button"
               onClick={() => goTo("loans")}
