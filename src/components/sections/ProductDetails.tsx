@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import bgImage from "../../assets/copyright-free.png";
+import bgImage from "../../assets/copyright-free.webp";
 import ApplicationModal from "../modals/ApplicationModal";
 
 import { products, PRODUCT_META, VISIBLE_COUNT } from "./productDetailsData";

@@ -1,19 +1,19 @@
 import type { DocSection } from "./DocPageLayout";
 
-import balanceTransferBanner from "../../assets/loan-images/BlanceTransper-banner.png";
-import businessBanner from "../../assets/loan-images/business-banner.png";
-import commercialBanner from "../../assets/loan-images/commercial-banner.png";
-import constructionBanner from "../../assets/loan-images/construction-banner.png";
-import creditCardBanner from "../../assets/loan-images/CreditCards-banner.png";
-import educationBanner from "../../assets/loan-images/Education-banner.png";
-import filmBanner from "../../assets/loan-images/Film-banner.png";
-import homeBanner from "../../assets/loan-images/Home-banner.png";
-import leaseRentalBanner from "../../assets/loan-images/LeaseRental-banner.png";
-import loanAgainstPropertyBanner from "../../assets/loan-images/AgainstProperty-banner.png";
-import personalBanner from "../../assets/loan-images/personal-banner.png";
-import projectBanner from "../../assets/loan-images/project-banner.png";
-import vehicleBanner from "../../assets/loan-images/vehicle-banner.png";
-import workingBanner from "../../assets/loan-images/working-banner.png";
+import balanceTransferBanner from "../../assets/loan-images/BlanceTransper-banner.webp";
+import businessBanner from "../../assets/loan-images/business-banner.webp";
+import commercialBanner from "../../assets/loan-images/commercial-banner.webp";
+import constructionBanner from "../../assets/loan-images/construction-banner.webp";
+import creditCardBanner from "../../assets/loan-images/CreditCards-banner.webp";
+import educationBanner from "../../assets/loan-images/Education-banner.webp";
+import filmBanner from "../../assets/loan-images/Film-banner.webp";
+import homeBanner from "../../assets/loan-images/Home-banner.webp";
+import leaseRentalBanner from "../../assets/loan-images/LeaseRental-banner.webp";
+import loanAgainstPropertyBanner from "../../assets/loan-images/AgainstProperty-banner.webp";
+import personalBanner from "../../assets/loan-images/personal-banner.webp";
+import projectBanner from "../../assets/loan-images/project-banner.webp";
+import vehicleBanner from "../../assets/loan-images/vehicle-banner.webp";
+import workingBanner from "../../assets/loan-images/working-banner.webp";
 
 export interface DocumentPageContent {
   loanName: string;

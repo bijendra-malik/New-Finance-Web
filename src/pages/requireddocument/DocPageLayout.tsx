@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import useSEO from "../../hooks/useSEO";
-import defaultBannerBg from "../../assets/bg.jpg";
-import processBg from "../../assets/personal-loan/step-image.png"
+import defaultBannerBg from "../../assets/bg.webp";
+import processBg from "../../assets/personal-loan/step-image.webp"
 
 export interface DocSection {
   id: string;

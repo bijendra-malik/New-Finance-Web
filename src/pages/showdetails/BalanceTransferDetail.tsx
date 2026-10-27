@@ -1,7 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/BlanceTransper-banner.png";
-import balanceTransferConcept from "../../assets/personal-loan/balance-transfer-03.png";
+import bannerBg from "../../assets/loan-images/BlanceTransper-banner.webp";
+import balanceTransferConcept from "../../assets/personal-loan/balance-transfer-03.webp";
 
 const ACCENT = "var(--brand-navy)";
 

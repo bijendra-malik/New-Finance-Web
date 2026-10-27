@@ -1,18 +1,4 @@
 // modal, API interceptor, credit-score page, and submission hook storage logic
-type Handler = () => void;
-
-const handlers = new Set<Handler>();
-
-export const emitApplicationSubmitted = (): void => {
-  handlers.forEach((handler) => handler());
-};
-export const onApplicationSubmitted = (handler: Handler): (() => void) => {
-  handlers.add(handler);
-  return () => {
-    handlers.delete(handler);
-  };
-};
-
 export const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
 export const REJECTION_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 export const CREDIT_SCORE_WINDOW_MS = 24 * 60 * 60 * 1000;

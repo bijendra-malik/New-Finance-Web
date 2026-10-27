@@ -1,7 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/LeaseRental-banner.png";
-import LeaseRentalImg from "../../assets/personal-loan/leaserental-Details.png";
+import bannerBg from "../../assets/loan-images/LeaseRental-banner.webp";
+import LeaseRentalImg from "../../assets/personal-loan/leaserental-Details.webp";
 
 const ACCENT = "var(--brand-navy)";
 

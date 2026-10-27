@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram } from "react-icons/fa";
-import footerBg from "../../assets/bg-footerimg01.png";
+import footerBg from "../../assets/bg-footerimg01.webp";
 import globeVideo from "../../assets/logo-footer.webm";
 import { SITE_URL } from "../../constants/siteLinks";
 

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/common/Container";
-import bgImage from "../assets/customer-img.png";
+import bgImage from "../assets/customer-img.webp";
 import useSEO from "../hooks/useSEO";
 import { T, serif, loanTypes, banks, fmt } from "./emiCalculatorData";
 import { Icon } from "./emiCalculatorIcons";

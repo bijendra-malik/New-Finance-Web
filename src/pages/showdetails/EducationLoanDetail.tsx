@@ -1,7 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/Education-banner.png";
-import EducationLoanImg from "../../assets/personal-loan/educationloan-details.png";
+import bannerBg from "../../assets/loan-images/Education-banner.webp";
+import EducationLoanImg from "../../assets/personal-loan/educationloan-details.webp";
 
 const ACCENT = "var(--brand-navy)";
 

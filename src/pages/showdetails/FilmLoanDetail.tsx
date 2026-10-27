@@ -1,6 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerBg from "../../assets/loan-images/Film-banner.png";
+import bannerBg from "../../assets/loan-images/Film-banner.webp";
 
 const ACCENT = "var(--brand-navy)";
 

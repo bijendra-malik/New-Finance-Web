@@ -1,7 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import bannerFallback from "../../assets/loan-images/CreditCards-banner.png";
-import creaditcarddetails from "../../assets/personal-loan/creaditcard-details.png";
+import bannerFallback from "../../assets/loan-images/CreditCards-banner.webp";
+import creaditcarddetails from "../../assets/personal-loan/creaditcard-details.webp";
 
 const ACCENT = "var(--brand-navy)";
 

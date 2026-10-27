@@ -1,6 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
-import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.png";
+import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.webp";
 
 const ACCENT = "var(--brand-navy)";
 
