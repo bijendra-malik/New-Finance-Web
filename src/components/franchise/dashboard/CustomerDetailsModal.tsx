@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../../ui/Modal";
 import Button from "../../ui/Button";
+import { DetailItem } from "../../ui/DetailItem";
 import FranchiseIcon from "../FranchiseIcon";
 import FranchiseStatusChip from "./FranchiseStatusChip";
 import {
@@ -27,16 +28,6 @@ interface CustomerDetailsModalProps {
   onClose: () => void;
   onApplyLoan: (customer: FranchiseCustomer) => void;
 }
-
-const Detail = ({ label, value }: { label: string; value?: string | number | null }) => {
-  const text = value === null || value === undefined ? "" : String(value).trim();
-  return (
-    <div>
-      <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-      <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{text || "—"}</dd>
-    </div>
-  );
-};
 
 /**
  * One registered customer: their registered details plus every loan filed for
@@ -154,14 +145,14 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
             </Button>
           </div>
           <dl className="mt-3 grid grid-cols-1 gap-4 rounded-xl border border-slate-100 bg-slate-50/70 p-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Detail label="Mobile" value={record?.mobile} />
-            <Detail label="Email" value={record?.email} />
-            <Detail label="PAN" value={record?.panNumber} />
-            <Detail label="Date of birth" value={formatDate(record?.dob)} />
-            <Detail label="City / State" value={record ? `${record.city || "—"}, ${record.state || "—"}` : undefined} />
-            <Detail label="Pincode" value={record?.pincode} />
-            <Detail label="Registered on" value={formatDate(record?.createdAt)} />
-            <Detail label="Franchise" value={record?.franchiseId} />
+            <DetailItem label="Mobile" value={record?.mobile} />
+            <DetailItem label="Email" value={record?.email} />
+            <DetailItem label="PAN" value={record?.panNumber} />
+            <DetailItem label="Date of birth" value={formatDate(record?.dob)} />
+            <DetailItem label="City / State" value={record ? `${record.city || "—"}, ${record.state || "—"}` : undefined} />
+            <DetailItem label="Pincode" value={record?.pincode} />
+            <DetailItem label="Registered on" value={formatDate(record?.createdAt)} />
+            <DetailItem label="Franchise" value={record?.franchiseId} />
           </dl>
         </section>
 
