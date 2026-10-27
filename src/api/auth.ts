@@ -24,11 +24,14 @@ export interface VerifyOTPPayload {
 
 export interface ApiUser {
   _id: string;
+  customerId?: string;
   name: string;
   mobile: string;
   email: string;
   isVerified: boolean;
   isActive: boolean;
+  dob?: string;
+  panNumber?: string;
   continent?: string;
   country?: string;
   lastLogin: string;
