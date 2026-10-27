@@ -1,11 +1,7 @@
-const INR = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
+import { formatMoney } from "../../utils/formatters";
 
 export const formatInr = (amount?: number | null): string | undefined =>
-  typeof amount === "number" && Number.isFinite(amount) ? INR.format(amount) : undefined;
+  formatMoney(amount, { maximumFractionDigits: 0 });
 
 export interface StatusTone {
   label: string;
