@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Modal from "../../ui/Modal";
 import Button from "../../ui/Button";
+import { DetailItem } from "../../ui/DetailItem";
+import { asRecord } from "../../../utils/objects";
 import FranchiseStatusChip from "./FranchiseStatusChip";
 import {
   formatDate,
@@ -25,21 +27,6 @@ interface ApplicationDetailsModalProps {
   loan: FranchiseCustomerLoan | null;
   onClose: () => void;
 }
-
-/** Label/value pair used across the detail panes. */
-const Detail = ({ label, value }: { label: string; value?: string | number | null }) => {
-  // Loan rows carry backend-shaped values — a number must not throw here.
-  const text = value === null || value === undefined ? "" : String(value).trim();
-  return (
-    <div>
-      <dt className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">{label}</dt>
-      <dd className="mt-0.5 wrap-break-word text-[13px] font-semibold text-slate-700">{text || "—"}</dd>
-    </div>
-  );
-};
-
-const asRecord = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 
 const DETAIL_CONTAINERS = [
   "details", "applicationDetails", "applicationData", "loanDetails", "application", "form", "data",
@@ -141,13 +128,13 @@ const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModa
             </div>
 
             <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Detail label="Application no." value={loanApplicationNo(record)} />
-              <Detail label="Customer" value={loanCustomerName(record)} />
-              <Detail label="Mobile" value={loanCustomerMobile(record)} />
-              <Detail label="Loan amount" value={formatRupees(loanAmount(record))} />
-              <Detail label="Submitted on" value={formatDate(loanSubmittedAt(record))} />
-              <Detail label="Last updated" value={formatDate(loanUpdatedAt(record))} />
-              <Detail label="Customer id" value={customerId} />
+              <DetailItem label="Application no." value={loanApplicationNo(record)} />
+              <DetailItem label="Customer" value={loanCustomerName(record)} />
+              <DetailItem label="Mobile" value={loanCustomerMobile(record)} />
+              <DetailItem label="Loan amount" value={formatRupees(loanAmount(record))} />
+              <DetailItem label="Submitted on" value={formatDate(loanSubmittedAt(record))} />
+              <DetailItem label="Last updated" value={formatDate(loanUpdatedAt(record))} />
+              <DetailItem label="Customer id" value={customerId} />
             </dl>
 
             {groups.length > 0 && (
@@ -170,7 +157,7 @@ const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModa
                     </p>
                     <dl className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                       {group.rows.map((row) => (
-                        <Detail key={row.label} label={row.label} value={row.value} />
+                        <DetailItem key={row.label} label={row.label} value={row.value} />
                       ))}
                     </dl>
                   </div>
