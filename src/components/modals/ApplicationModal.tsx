@@ -353,6 +353,11 @@ const ApplicationModal = ({
       const cooldown = record ? applicationCooldown(record) : null;
       if (cooldown?.blocked) {
         setApiError("");
+        if (cooldown.outcome === "rejected") {
+          setStep("otp");
+          setBlockedNotice(noticeForCooldown(cooldown));
+          return;
+        }
         setBlockedNotice(noticeForCooldown(cooldown));
         return;
       }
@@ -367,8 +372,22 @@ const ApplicationModal = ({
       const response = await requestOtp();
       if (!response.success) {
         if (isAlreadyRegisteredResponse(response)) {
-          setAlreadyRegistered(true);
-          setStep("details");
+          switchMode("signin");
+          try {
+            const loginOtp = await requestLoginOTP({ mobile });
+            if (!loginOtp.success) {
+              setApiError(loginOtp.message || "We could not send the OTP just now. Please try again.");
+              return;
+            }
+            setAlreadyRegistered(true);
+            setPendingDashboard(dashboardPath);
+            setOtp("");
+            setOtpError("");
+            setResendNotice("");
+            setStep("otp");
+          } catch (loginError) {
+            setApiError(getApiErrorMessage(loginError, "We could not send the OTP just now. Please try again."));
+          }
           return;
         }
         setApiError(response.message || "We could not send the OTP just now. Please try again.");
@@ -604,9 +623,13 @@ const ApplicationModal = ({
                     className={`text-xs font-bold uppercase tracking-wider ${
                       blockedNotice.kind === "rejected" ? "text-amber-700" : "text-slate-500"
                     }`}
-                  >
-                    {blockedNotice.title}
-                  </p>
+                  >                      {blockedNotice.title}
+                    </p>
+                    {blockedNotice.kind === "rejected" && (
+                      <span className="mt-1 inline-flex w-fit rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                        30 days
+                      </span>
+                    )}
                   <p
                     className={`mt-1 text-sm leading-6 ${
                       blockedNotice.kind === "rejected" ? "text-amber-900" : "text-slate-700"
@@ -627,7 +650,10 @@ const ApplicationModal = ({
                     <Button
                       variant="outline"
                       className="rounded-lg font-semibold"
-                      onClick={() => setBlockedNotice(null)}
+                      onClick={() => {
+                        setBlockedNotice(null);
+                        if (step === "otp") setStep("details");
+                      }}
                     >
                       Got it
                     </Button>
@@ -646,27 +672,17 @@ const ApplicationModal = ({
                 </div>
               )}
 
-              {/* Feature 1 — this mobile is already registered; sign in instead. */}
+              {/* Feature 1 — the number is already registered, so the panel has
+                  switched itself to LogIn. Informational only: the shift needs no
+                  click, and the tab pills above still allow going back. */}
               {alreadyRegistered && (
-                <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <div role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                   <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Already in our system</p>
                   <p className="mt-1 text-sm text-emerald-800">
-                    This mobile number is already registered with us. To continue applying for {productName},
-                    sign in with that number instead.
+                    This mobile number is already registered with us, so we have moved you to
+                    sign in. The OTP for {productName} has been sent to this number — enter it
+                    below to continue.
                   </p>
-                  <div className="mt-3 flex gap-2">
-                    <Button variant="outline" className="flex-1 rounded-lg font-semibold"
-                      onClick={() => {
-                        setAlreadyRegistered(false);
-                        switchMode("signin");
-                      }}>
-                      Sign in
-                    </Button>
-                    <Button variant="ghost" className="flex-1 rounded-lg font-semibold"
-                      onClick={() => setAlreadyRegistered(false)}>
-                      Try again
-                    </Button>
-                  </div>
                 </div>
               )}
 
@@ -769,8 +785,10 @@ const ApplicationModal = ({
               )}
 
               {/* Step 2 — the OTP from POST /auth/{loanKey} (apply) or
-                  POST /auth/login/request-otp (sign-in) */}
-              {step === "otp" && (
+                  POST /auth/login/request-otp (sign-in). A refused application
+                  lands here to be told about its 30-day cooling-off, so the OTP
+                  form itself is withheld while that notice stands. */}
+              {step === "otp" && blockedNotice?.kind !== "rejected" && (
                 <form onSubmit={handleOtpVerify} className="space-y-3.5" noValidate>
                   {!isLoginMode && (
                     <div className="rounded-xl border border-(--brand-navy-22) bg-(--brand-navy-14) px-4 py-2.5">

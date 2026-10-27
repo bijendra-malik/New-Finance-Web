@@ -25,11 +25,20 @@ export const NATURE_OF_BUSINESS = [
   "Manufacture", "Trader/Wholesaler", "Retailer", "Service Provider", OTHER_OPTION,
 ] as const;
 
+// Sectors a borrower picks from today: the manufacturing-era list it replaced
+// had no IT, retail, logistics or media, and folded modern consumer businesses
+// into vague entries like "Durables". Kept alphabetical; "Other" stays last
+// because the forms branch on it.
 export const INDUSTRY_TYPES = [
-  "Agriculture", "Automobiles", "Cement", "Chemical", "Computer", "Construction",
-  "Consumer Durables", "Container & Packaging", "Durables", "Energy", "Food & Beverages",
-  "Hardware Equipments", "Healthcare", "Household Products", "Industrial Projects", "Metals",
-  "Paper", "Petroleum Products", "Plastic", "Rubber", "Textiles", OTHER_OPTION,
+  "Agriculture & Allied Activities", "Automobiles & Auto Components", "Banking & Financial Services",
+  "Cement", "Chemicals & Petrochemicals", "Construction & Real Estate",
+  "Consumer Durables & FMCG", "E-commerce & Retail", "Education",
+  "Electronics & Hardware", "Energy & Power", "Engineering & Capital Goods",
+  "Food & Beverages", "Gems & Jewellery", "Healthcare & Pharmaceuticals",
+  "Hospitality & Tourism", "Information Technology & Software", "Infrastructure",
+  "Logistics & Transportation", "Media & Entertainment", "Metals & Mining",
+  "Oil, Gas & Petroleum", "Paper & Packaging", "Plastics & Polymers",
+  "Telecom", "Textiles & Apparel", OTHER_OPTION,
 ] as const;
 
 export const BUSINESS_PLACE_STATUSES = [
