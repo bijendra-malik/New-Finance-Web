@@ -60,8 +60,8 @@ export const PersonalDetailsSection = ({
   }, [portalIdentity, popupIdentity, verified]);
 
   const locked = useMemo<Partial<Record<PersonalDetailsField, string>>>(
-    () => portalIdentity ?? {},
-    [portalIdentity]
+    () => ({ ...verified, ...(portalIdentity ?? {}) }),
+    [verified, portalIdentity]
   );
 
   const appliedIdentity = useRef("");
@@ -78,6 +78,7 @@ export const PersonalDetailsSection = ({
   }, [prefilled, form, set, authoritative]);
 
   const isLocked = (key: PersonalDetailsField) => !!locked[key];
+  const hasLockedFields = Object.keys(locked).length > 0;
 
   return (
     <FormCard title={title} subtitle={subtitle}>
@@ -86,7 +87,9 @@ export const PersonalDetailsSection = ({
             style={{ background: C.teal14, color: C.dark, border: `1px solid ${C.teal20}` }}>
             {portalIdentity
               ? prefill?.note
-              : "Details from your account have been filled in for you. You can change any of them before you proceed."}
+              : hasLockedFields
+                ? "Your name, date of birth, PAN, mobile and email come from your registration and stay locked. Contact support if any of them is incorrect."
+                : "Details from your account have been filled in for you. You can change any of them before you proceed."}
           </p>
         )}
         <div className={FORM.grid}>
