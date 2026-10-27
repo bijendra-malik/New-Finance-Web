@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../../ui/Modal";
 import Button from "../../ui/Button";
 import FranchiseIcon from "../FranchiseIcon";
@@ -10,14 +10,11 @@ import {
   loanAmount,
   loanApplicationNo,
   loanProductName,
-  loanRemark,
   loanStatus,
   loanSubmittedAt,
-  loanUpdatedAt,
   sortLoansNewestFirst,
 } from "./franchiseFormat";
 import {
-  fetchCustomerLoanStatus,
   fetchCustomerLoans,
   fetchFranchiseCustomer,
   type FranchiseCustomer,
@@ -26,17 +23,12 @@ import {
 
 interface CustomerDetailsModalProps {
   open: boolean;
-  /** The list row the modal was opened from — shown while the detail calls run. */
   customer: FranchiseCustomer | null;
   onClose: () => void;
-  /** Starts the Apply Loan flow pre-set to this customer. */
   onApplyLoan: (customer: FranchiseCustomer) => void;
 }
 
-/** Label/value pair used across the detail panes. */
 const Detail = ({ label, value }: { label: string; value?: string | number | null }) => {
-  // Registry values are not guaranteed to be strings — mobile and pincode come
-  // back as numbers, and calling `.trim()` on them throws.
   const text = value === null || value === undefined ? "" : String(value).trim();
   return (
     <div>
@@ -48,8 +40,8 @@ const Detail = ({ label, value }: { label: string; value?: string | number | nul
 
 /**
  * One registered customer: their registered details plus every loan filed for
- * them (POST /franchise/customer/:id/loans), with each application's latest
- * status fetched on demand.
+ * them (POST /franchise/customer/:id/loans), each with its current status and
+ * a status filter over the list.
  */
 const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: CustomerDetailsModalProps) => {
   const [details, setDetails] = useState<FranchiseCustomer | null>(null);
@@ -57,10 +49,7 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
   const [loans, setLoans] = useState<FranchiseCustomerLoan[]>([]);
   const [loansLoading, setLoansLoading] = useState(true);
   const [loansError, setLoansError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [applicationDetails, setApplicationDetails] = useState<Record<string, FranchiseCustomerLoan>>({});
-  const [statusError, setStatusError] = useState<string | null>(null);
-  const [statusLoading, setStatusLoading] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const customerId = customer?._id ?? null;
 
@@ -88,26 +77,23 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
     };
   }, [open, customerId]);
 
-  const toggleApplication = async (loan: FranchiseCustomerLoan) => {
-    const key = loanApplicationNo(loan);
-    if (expanded === key) {
-      setExpanded(null);
-      setStatusError(null);
-      return;
-    }
-    setExpanded(key);
-    setStatusError(null);
-    if (applicationDetails[key] || !customerId) return;
+  const statuses = useMemo(() => {
+    const seen = new Map<string, string>();
+    loans.forEach((loan) => {
+      const status = loanStatus(loan);
+      const key = status.toLowerCase();
+      if (!seen.has(key)) seen.set(key, status);
+    });
+    return [...seen.values()].sort((a, b) => a.localeCompare(b));
+  }, [loans]);
 
-    setStatusLoading(key);
-    const res = await fetchCustomerLoanStatus(customerId, key);
-    setStatusLoading(null);
-    if (res.ok) {
-      setApplicationDetails((previous) => ({ ...previous, [key]: res.loan }));
-    } else {
-      setStatusError(res.message);
-    }
-  };
+  const visibleLoans = useMemo(
+    () =>
+      statusFilter === "all"
+        ? loans
+        : loans.filter((loan) => loanStatus(loan).toLowerCase() === statusFilter),
+    [loans, statusFilter],
+  );
 
   const record = details ?? customer;
   const displayName = record?.fullName?.trim() || "Customer";
@@ -188,9 +174,28 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
                 Loans filed
               </h3>
             </div>
-            <p className="text-[11.5px] font-semibold text-slate-400">
-              {loans.length} application{loans.length === 1 ? "" : "s"}
-            </p>
+            <div className="flex items-center gap-2.5">
+              <label className="relative">
+                <span className="sr-only">Filter loans filed by status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  disabled={loans.length === 0}
+                  className="cursor-pointer rounded-lg border border-slate-200 bg-white py-1.5 pr-7 pl-2.5 text-[12px] font-semibold text-slate-700 transition hover:border-slate-300 focus:border-(--brand-teal-44) focus:ring-2 focus:ring-(--brand-teal-14) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="all">All statuses</option>
+                  {statuses.map((status) => (
+                    <option key={status} value={status.toLowerCase()}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="text-[11.5px] font-semibold text-slate-400">
+                {visibleLoans.length} application{visibleLoans.length === 1 ? "" : "s"}
+                {statusFilter !== "all" ? ` of ${loans.length}` : ""}
+              </p>
+            </div>
           </div>
 
           <div className="mt-3">
@@ -214,12 +219,19 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
               </div>
             )}
 
-            {loans.length > 0 && (
+            {loans.length > 0 && visibleLoans.length === 0 && (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-center">
+                <p className="text-[13px] font-bold text-slate-700">No applications match this status</p>
+                <Button variant="outline" size="sm" className="mt-3" onClick={() => setStatusFilter("all")}>
+                  Show all statuses
+                </Button>
+              </div>
+            )}
+
+            {visibleLoans.length > 0 && (
               <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100 bg-white">
-                {loans.map((loan) => {
+                {visibleLoans.map((loan) => {
                   const key = loanApplicationNo(loan);
-                  const isOpen = expanded === key;
-                  const detail = applicationDetails[key];
                   return (
                     <li key={key}>
                       <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -235,47 +247,8 @@ const CustomerDetailsModal = ({ open, customer, onClose, onApplyLoan }: Customer
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                           <FranchiseStatusChip status={loanStatus(loan)} />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => void toggleApplication(loan)}
-                            aria-expanded={isOpen}
-                          >
-                            {isOpen ? "Hide status" : "View status"}
-                          </Button>
                         </div>
                       </div>
-
-                      {isOpen && (
-                        <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3">
-                          {statusLoading === key && (
-                            <p className="flex items-center gap-2 text-[12px] font-semibold text-slate-500">
-                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-(--brand-teal-40) border-t-(--brand-teal)" aria-hidden="true" />
-                              Fetching the latest status…
-                            </p>
-                          )}
-                          {statusError && expanded === key && (
-                            <p role="alert" className="text-[12px] font-semibold text-red-700">{statusError}</p>
-                          )}
-                          {detail && (
-                            <div>
-                              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                <Detail label="Application no." value={loanApplicationNo(detail)} />
-                                <Detail label="Status" value={loanStatus(detail)} />
-                                <Detail label="Loan amount" value={formatRupees(loanAmount(detail))} />
-                                <Detail label="Submitted on" value={formatDate(loanSubmittedAt(detail))} />
-                                <Detail label="Last updated" value={formatDate(loanUpdatedAt(detail))} />
-                                <Detail label="Customer" value={record?.fullName ?? displayName} />
-                              </dl>
-                              {loanRemark(detail) && (
-                                <p className="mt-3 rounded-lg bg-white px-3 py-2 text-[12px] leading-5 text-slate-600" style={{ border: "1px solid #e2e8f0" }}>
-                                  {loanRemark(detail)}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </li>
                   );
                 })}

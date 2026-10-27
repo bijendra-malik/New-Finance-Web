@@ -219,6 +219,7 @@ const formatDay = (value: string): string | undefined => {
 const formatValue = (key: string, raw: unknown): string | undefined => {
   if (raw === null || raw === undefined) return undefined;
   if (typeof raw === "boolean") return raw ? "Yes" : "No";
+  if (typeof raw === "object" && !Array.isArray(raw)) return undefined;
   if (Array.isArray(raw)) {
     const items = raw.filter((item): item is string => typeof item === "string" && item.trim() !== "");
     return items.length ? items.join(", ") : undefined;
@@ -246,29 +247,61 @@ const formatValue = (key: string, raw: unknown): string | undefined => {
   return text;
 };
 
-/** The application's submitted fields, grouped and formatted for display. */
-export const applicationDetailGroups = (
-  app: CustomerStatusApplication,
+const CATALOGUE_KEYS = new Set(GROUPS.flatMap((group) => group.keys));
+
+const INTERNAL_KEYS = new Set([
+  "_id", "id", "__v", "status", "stage", "stageKey", "step", "stages", "timeline",
+  "product", "productName", "productKey", "loanType", "loanName", "type",
+  "applicationNo", "applicationNumber", "applicationId", "referenceNo",
+  "customerId", "franchiseId", "franchiseCode", "franchiseCustomerId", "draftId",
+  "createdAt", "updatedAt", "submittedAt", "appliedAt", "modifiedAt", "lastUpdated",
+  "statusUpdatedAt", "decisionAt", "deletedAt", "isActive", "active",
+  "message", "remarks", "remark", "description", "note", "adminNote", "statusMessage",
+  "applicationStatus", "loanStatus", "customerName", "applicantName", "customerMobile", "customerPhone",
+  "customer", "applicant", "customerDetails", "details", "draft", "loanDetails",
+  "application", "applicationData", "form", "data",
+]);
+
+const isInternalKey = (key: string): boolean =>
+  INTERNAL_KEYS.has(key) || key.startsWith("_") || /(?:At|Id|ID|Url|URL)$/.test(key);
+
+export const detailGroupsFromBag = (
+  bag: Record<string, unknown> | null | undefined,
 ): ApplicationDetailGroup[] => {
-  const details = app.details && typeof app.details === "object" && !Array.isArray(app.details)
-    ? app.details
-    : {};
+  const source = bag && typeof bag === "object" && !Array.isArray(bag) ? bag : {};
   const groups: ApplicationDetailGroup[] = [];
+  const shown = new Set<string>();
+
   for (const group of GROUPS) {
     const rows: ApplicationDetailRow[] = [];
     for (const key of group.keys) {
-      const value = formatValue(key, details[key]);
-      if (value) rows.push({ label: labelFor(key), value });
+      const value = formatValue(key, source[key]);
+      if (value) {
+        rows.push({ label: labelFor(key), value });
+        shown.add(key);
+      }
     }
     if (rows.length > 0) groups.push({ title: group.title, rows });
   }
+
+  const extra: ApplicationDetailRow[] = [];
+  for (const [key, raw] of Object.entries(source)) {
+    if (shown.has(key) || CATALOGUE_KEYS.has(key) || isInternalKey(key)) continue;
+    const value = formatValue(key, raw);
+    if (value) extra.push({ label: labelFor(key), value });
+  }
+  if (extra.length > 0) groups.push({ title: "Other details", rows: extra });
+
   return groups;
 };
 
-/** The stages an application moves through, and where it currently stands. */
+export const applicationDetailGroups = (
+  app: CustomerStatusApplication,
+): ApplicationDetailGroup[] =>
+  detailGroupsFromBag(app.details as Record<string, unknown> | null | undefined);
+
 export interface ApplicationProgress {
   stages: string[];
-  /** Index of the stage reached; -1 when the application was rejected. */
   reached: number;
   rejected: boolean;
 }
