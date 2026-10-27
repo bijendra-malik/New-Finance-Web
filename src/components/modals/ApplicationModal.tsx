@@ -17,12 +17,12 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
-  COOLDOWN_MS,
+  applicationCooldown,
   clearPendingCreditScoreDraft,
-  formatCooldownExpiry,
   readPendingCreditScoreDraft,
-  readSubmittedApplicationAt,
+  readSubmittedApplication,
   remainingCreditScoreWindow,
+  type ApplicationCooldown,
 } from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
 import { resolveDashboardPath } from "./applicationModalRoutes";
@@ -34,6 +34,32 @@ const ALREADY_REGISTERED_SIGNALS = new Set([
   "already registered",
   "mobile number already registered",
 ]);
+
+interface BlockedNotice {
+  kind: "rejected" | "cooldown";
+  title: string;
+  body: string;
+  detail?: string;
+}
+
+const formatDay = (date: Date): string =>
+  date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+const alreadyAppliedError = (
+  err: unknown,
+): { message: string; availableAt?: string } | null => {
+  const response = (
+    err as {
+      response?: { status?: number; data?: { message?: string; retryAfter?: { availableAt?: string } } };
+    }
+  )?.response;
+  const message = response?.data?.message;
+  if (typeof message !== "string" || !message.trim()) return null;
+  const isCooldown =
+    response?.status === 409 || /already applied|already submitted/i.test(message);
+  if (!isCooldown) return null;
+  return { message: message.trim(), availableAt: response?.data?.retryAfter?.availableAt };
+};
 
 const isAlreadyRegisteredResponse = (
   response: AuthActionResponse,
@@ -122,6 +148,7 @@ const ApplicationModal = ({
   const [pendingDashboard, setPendingDashboard] = useState("");
   const [sessionWasSignedIn, setSessionWasSignedIn] = useState(true);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
+  const [blockedNotice, setBlockedNotice] = useState<BlockedNotice | null>(null);
 
   const resetAll = () => {
     setFullName("");
@@ -143,6 +170,7 @@ const ApplicationModal = ({
     setResendNotice("");
     setResending(false);
     setAlreadyRegistered(false);
+    setBlockedNotice(null);
     setPendingDashboard("");
     setSessionWasSignedIn(true);
     setMode(openedAsLogin ? "signin" : "signup");
@@ -162,6 +190,8 @@ const ApplicationModal = ({
     setResendNotice("");
     setApiError("");
     setFieldErrors({});
+    setAlreadyRegistered(false);
+    setBlockedNotice(null);
   };
 
   // Escape closes the panel, like the backdrop and the Cancel button.
@@ -212,6 +242,21 @@ const ApplicationModal = ({
   // The canonical LOAN_SLUGS key names the OTP endpoint (/auth/{loanKey}).
   const loanKey = loanKeyFor(productKey);
   const isLoginMode = mode === "signin";
+
+  const noticeForCooldown = (cooldown: ApplicationCooldown): BlockedNotice =>
+    cooldown.outcome === "rejected"
+      ? {
+          kind: "rejected",
+          title: "Your earlier application was not eligible",
+          body: `Our review of your earlier ${productName} application found it was not eligible for a loan. A refused application can be refilled after a 30-day cooling-off period — from ${formatDay(cooldown.availableAt)}.`,
+          detail: "A stronger credit score, or clearing existing dues, can change the outcome. Another product may still suit your profile today.",
+        }
+      : {
+          kind: "cooldown",
+          title: "You have already applied",
+          body: `You have already applied for ${productName}. A new application can be filed from ${formatDay(cooldown.availableAt)}.`,
+          detail: "You can follow the application you have already submitted from My Applications.",
+        };
 
   // ── Validate eligibility fields ───────────────────────────────────────────
 
@@ -304,9 +349,11 @@ const ApplicationModal = ({
     }
 
     if (!isLoginMode) {
-      const submittedAt = readSubmittedApplicationAt(user?._id ?? mobile, loanKey);
-      if (submittedAt && Date.parse(submittedAt) + COOLDOWN_MS > Date.now()) {
-        setApiError(`You can apply for ${productName} again on ${formatCooldownExpiry(submittedAt)}.`);
+      const record = readSubmittedApplication(user?._id ?? mobile, loanKey);
+      const cooldown = record ? applicationCooldown(record) : null;
+      if (cooldown?.blocked) {
+        setApiError("");
+        setBlockedNotice(noticeForCooldown(cooldown));
         return;
       }
     }
@@ -366,11 +413,14 @@ const ApplicationModal = ({
           } else {
             resetAll();
             onClose();
-            navigate("/credit-score", {
-              state: {
-                product: loanLabelFor(pendingDraft.loanKey) ?? pendingDraft.loanKey,
-                requestedProduct: productName,
-              },
+            const draftDashboard = resolveDashboardPath(pendingDraft.loanKey);
+            navigate(draftDashboard ?? "/credit-score", {
+              state: draftDashboard
+                ? undefined
+                : {
+                    product: loanLabelFor(pendingDraft.loanKey) ?? pendingDraft.loanKey,
+                    requestedProduct: productName,
+                  },
             });
             return;
           }
@@ -381,12 +431,28 @@ const ApplicationModal = ({
         navigate(pendingDashboard);
         return;
       }
-      // The token from this call is what lets POST /customer/loan-apply be accepted.
-      // A token issued to a previously signed-out visitor belongs to this one
-      // application: it is dropped if they leave without submitting.
       if (!sessionWasSignedIn) markApplySessionPending();
       openApplicationForm(pendingDashboard);
     } catch (err) {
+      const blocked = alreadyAppliedError(err);
+      if (blocked) {
+        const record = loanKey ? readSubmittedApplication(user?._id ?? mobile, loanKey) : null;
+        const cooldown = record ? applicationCooldown(record) : null;
+        setOtpError("");
+        setBlockedNotice(
+          cooldown && cooldown.outcome === "rejected"
+            ? noticeForCooldown(cooldown)
+            : {
+                kind: "cooldown",
+                title: "You have already applied",
+                body: blocked.availableAt
+                  ? `${blocked.message} You can apply again from ${formatDay(new Date(blocked.availableAt))}.`
+                  : blocked.message,
+                detail: "You can follow the application you have already submitted from My Applications.",
+              },
+        );
+        return;
+      }
       setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
     } finally {
       setOtpBusy(false);
@@ -521,6 +587,62 @@ const ApplicationModal = ({
                   text-sm text-red-600 flex gap-2.5 items-start">
                   <span className="shrink-0 text-base">⚠️</span>
                   <span>{apiError}</span>
+                </div>
+              )}
+
+              {/* An earlier application for this product still blocks a new one. */}
+              {blockedNotice && (
+                <div
+                  role="status"
+                  className={`mb-4 rounded-xl border px-4 py-3 ${
+                    blockedNotice.kind === "rejected"
+                      ? "border-amber-200 bg-amber-50"
+                      : "border-slate-200 bg-slate-50"
+                  }`}
+                >
+                  <p
+                    className={`text-xs font-bold uppercase tracking-wider ${
+                      blockedNotice.kind === "rejected" ? "text-amber-700" : "text-slate-500"
+                    }`}
+                  >
+                    {blockedNotice.title}
+                  </p>
+                  <p
+                    className={`mt-1 text-sm leading-6 ${
+                      blockedNotice.kind === "rejected" ? "text-amber-900" : "text-slate-700"
+                    }`}
+                  >
+                    {blockedNotice.body}
+                  </p>
+                  {blockedNotice.detail && (
+                    <p
+                      className={`mt-1.5 text-xs leading-5 ${
+                        blockedNotice.kind === "rejected" ? "text-amber-800" : "text-slate-500"
+                      }`}
+                    >
+                      {blockedNotice.detail}
+                    </p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      className="rounded-lg font-semibold"
+                      onClick={() => setBlockedNotice(null)}
+                    >
+                      Got it
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="rounded-lg font-semibold"
+                      onClick={() => {
+                        setBlockedNotice(null);
+                        handleClose();
+                        navigate("/applications");
+                      }}
+                    >
+                      View my applications
+                    </Button>
+                  </div>
                 </div>
               )}
 
