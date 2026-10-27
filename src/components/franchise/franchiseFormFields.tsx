@@ -25,7 +25,6 @@ export interface FranchiseFieldsProps {
   errors: Partial<Record<FieldKey, string>>;
   set: (key: FieldKey, value: string) => void;
   fid: (name: string) => string;
-  isLocked: (key: "fullName" | "mobile" | "email" | "dob") => boolean;
   /** True for the franchisee application, which words a few fields differently. */
   isFranchisee: boolean;
   presentation: FranchiseFormPresentation;
@@ -69,7 +68,6 @@ export const FranchiseFields = ({
   const isHorizontal = presentation === "horizontal";
   // Full-width spans only make sense where the grid actually has the extra columns.
   const spanFull = isHorizontal ? "sm:col-span-2 lg:col-span-3" : presentation === "stepped" ? "" : "sm:col-span-2";
-  const lockedClass = (_key: "fullName" | "mobile" | "email" | "dob") => _key;
 
   const renderField = (key: FieldKey): ReactNode => {
     switch (key) {
@@ -84,7 +82,8 @@ export const FranchiseFields = ({
             full={isFranchisee && presentation === "stacked"}
           >
             <input
-              id={fid("name")} className={`${inputClass(!!errors.fullName)} ${lockedClass("fullName")}`}
+              id={fid("name")}
+              className={inputClass(!!errors.fullName)}
               value={values.fullName}
               onChange={(e) => set("fullName", e.target.value)}
               placeholder="Your full name"
@@ -98,7 +97,9 @@ export const FranchiseFields = ({
           <Field id={fid("mobile")} label="Mobile Number" required error={errors.mobile}>
             <input
               id={fid("mobile")}
-              type="tel" inputMode="numeric" className={`${inputClass(!!errors.mobile)} ${lockedClass("fullName")}`}
+              type="tel"
+              inputMode="numeric"
+              className={inputClass(!!errors.mobile)}
               value={values.mobile}
               onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
               placeholder="10-digit mobile number"
@@ -114,7 +115,7 @@ export const FranchiseFields = ({
             <input
               id={fid("email")}
               type="email"
-              className={`${inputClass(!!errors.email)} ${lockedClass("fullName")}`}
+              className={inputClass(!!errors.email)}
               value={values.email}
               onChange={(e) => set("email", e.target.value)}
               placeholder="your@email.com"
@@ -128,7 +129,8 @@ export const FranchiseFields = ({
           <Field id={fid("dob")} label="Date of Birth" required error={errors.dob}>
             <input
               id={fid("dob")}
-              type="date" className={`${inputClass(!!errors.dob)} ${lockedClass("fullName")}`}
+              type="date"
+              className={inputClass(!!errors.dob)}
               value={values.dob}
               onChange={(e) => set("dob", e.target.value)}
               placeholder="YYYY-MM-DD"

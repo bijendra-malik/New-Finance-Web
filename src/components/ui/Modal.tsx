@@ -11,15 +11,13 @@ interface ModalProps {
   children: ReactNode;
   /** Tailwind max-width class for the panel. */
   maxWidth?: string;
-  /** Render as an edge-to-edge workspace instead of a centered dialog. */
-  fullScreen?: boolean;
 }
 
 /**
  * Portal-rendered dialog with backdrop, Escape handling and body scroll lock.
  * Portalled to <body> so an ancestor stacking context can't trap it under the header.
  */
-const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg", fullScreen = false }: ModalProps) => {
+const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg" }: ModalProps) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -40,14 +38,13 @@ const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg", ful
     <>
       <div className="fixed inset-0 z-90 bg-black/55 backdrop-blur-sm" onClick={onClose} />
 
-      <div className={cx("fixed inset-0 z-110 flex overflow-y-auto", fullScreen ? "items-stretch justify-stretch" : "items-start justify-center p-3 sm:items-center sm:p-4")}>
+      <div className="fixed inset-0 z-110 flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4">
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby={labelledBy}
           className={cx(
-            "relative flex w-full min-w-0 flex-col overflow-hidden bg-white shadow-2xl",
-            fullScreen ? "min-h-full rounded-none" : "max-h-[92vh] rounded-2xl",
+            "relative flex max-h-[92vh] w-full min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl",
             maxWidth,
           )}
         >

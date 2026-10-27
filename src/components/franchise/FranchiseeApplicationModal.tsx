@@ -11,13 +11,6 @@ interface FranchiseeApplicationModalProps {
   onPackageChange: (planId: string) => void;
 }
 
-/**
- * The franchisee application as a popup, opened from the hero / closing CTA
- * "Apply for a Franchise" button and from a plan card's select button.
- *
- * Wide screens get the whole application on one screen in a three-column grid;
- * phones and narrow tablets get the same fields one short step at a time.
- */
 const FranchiseeApplicationModal = ({
   open,
   onClose,
@@ -31,8 +24,7 @@ const FranchiseeApplicationModal = ({
       open={open}
       onClose={onClose}
       labelledBy="franchisee-application-title"
-      maxWidth="max-w-none"
-      fullScreen
+      maxWidth="max-w-4xl"
     >
       {/* Header */}
       <div
@@ -72,7 +64,7 @@ const FranchiseeApplicationModal = ({
       </div>
 
       {/* Body */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-8 lg:px-12">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
         <FranchiseForm
           variant="franchisee"
           presentation={isWide ? "horizontal" : "stepped"}

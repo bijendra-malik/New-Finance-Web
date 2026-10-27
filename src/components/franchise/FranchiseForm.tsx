@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
-import { useAuth } from "../../context/authContext";
 import { Link } from "react-router-dom";
 import { useMasters } from "../../hooks/useMasters";
 import { verifyPincode } from "../../api/masters";
@@ -42,7 +41,6 @@ const FranchiseForm = ({
 }: FranchiseFormProps) => {
   const isFranchisee = variant === "franchisee";
   const { masters, loadCities } = useMasters();
-  const { user } = useAuth();
   const franchisorLoginEnabled = true;
 
   const fid = (name: string) => `${isFranchisee ? "ff" : "fx"}-${name}`;
@@ -78,30 +76,6 @@ const FranchiseForm = ({
   const [otpNotice, setOtpNotice] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
-
-  const identity = useMemo(
-    () => ({
-      fullName: user?.name?.trim() ?? "",
-      mobile: (user?.mobile ?? "").replace(/\D/g, "").slice(-10),
-      email: user?.email?.trim() ?? "",
-    }),
-    [user],
-  );
-  const hasIdentity = Boolean(identity.fullName || identity.mobile || identity.email);
-  const isLocked = (key: "fullName" | "mobile" | "email" | "dob") =>
-    key === "dob" ? false : isFranchisee && Boolean(identity[key]);
-
-  const prefilled = useRef(false);
-  useEffect(() => {
-    if (prefilled.current || !hasIdentity) return;
-    prefilled.current = true;
-    setValues((prev) => ({
-      ...prev,
-      fullName: prev.fullName || identity.fullName,
-      mobile: prev.mobile || identity.mobile,
-      email: prev.email || identity.email,
-    }));
-  }, [hasIdentity, identity]);
 
   const packageId = packageIdProp || values.packageId || selectedPlanCode;
   const selectedPlan: FranchisePlan | undefined = plans.find((p) => p.id === packageId);
@@ -489,7 +463,6 @@ const FranchiseForm = ({
     errors,
     set,
     fid,
-    isLocked,
     isFranchisee,
     presentation,
     businessTypeOptions,
@@ -541,13 +514,6 @@ const FranchiseForm = ({
   return (
     <>
     <form onSubmit={handleSubmit} noValidate className={isHorizontal ? "space-y-4" : "space-y-5"}>
-      {isFranchisee && hasIdentity && (
-        <p className="rounded-lg border border-(--brand-teal-20) bg-(--brand-teal-14) px-3 py-2 text-[11.5px] leading-relaxed text-slate-600">
-          🔒 Name, mobile and email were filled from your registered account and are locked. They must
-          match your PAN card — contact support to correct them.
-        </p>
-      )}
-
       {/* Stepped layout — progress + which step is on screen */}
       {isStepped && (
         <div className="space-y-2">
