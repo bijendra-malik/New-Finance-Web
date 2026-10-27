@@ -77,45 +77,26 @@ export const ODCC_MAX_TENURE_YEARS = 20;
 export const FILM_LOAN_TENURE_YEARS = [1, 2, 3, 5] as const;
 export const FILM_LOAN_MAX_TENURE_YEARS = 5;
 
-/** Rupee bounds for one product's Required Loan Amount field. */
 export interface LoanAmountRange {
   min: number;
-  max: number;
 }
 
 export const LOAN_AMOUNT_RANGES = {
-  /** ICICI from ₹50,000 up to ₹50 lakh; SBI ₹1 lakh–₹50 lakh. */
-  personal: { min: 50_000, max: 5_000_000 },
-  /** Tata Capital ₹1 lakh–₹1 crore; HDFC up to ₹1 crore unsecured. */
-  business: { min: 100_000, max: 10_000_000 },
-  /** Axis starts at ₹3 lakh; mainstream bank ceilings are ₹10 crore. */
-  home: { min: 300_000, max: 100_000_000 },
-  /** Axis starts at ₹5 lakh; SBI caps at ₹5 crore, ICICI's calculator at ₹25 crore. */
-  loanAgainstProperty: { min: 500_000, max: 100_000_000 },
-  /** Axis starts at ₹3 lakh; the ceiling is the outstanding loan. */
-  balanceTransfer: { min: 300_000, max: 50_000_000 },
-  /** SBI MSME UDAAN sanctions up to ₹50 crore. */
-  project: { min: 100_000, max: 500_000_000 },
-  /** Lenders fund up to 100% of the car's value; ₹2 crore covers the luxury segment. */
-  vehicle: { min: 100_000, max: 20_000_000 },
-  /** Axis starts at ₹50,000; ICICI ₹2 crore India, ₹3 crore abroad. */
-  education: { min: 50_000, max: 30_000_000 },
-  /** SIDBI STEP caps at ₹3 crore; sector schemes go higher. */
-  workingCapital: { min: 100_000, max: 100_000_000 },
-  /** L&T Finance starts at ₹3 lakh; SBI commercial real estate up to ₹50 crore. */
-  commercialPurchase: { min: 300_000, max: 500_000_000 },
-  /** SBI Rent Plus: starts at ₹50,000, ₹7.5 crore metro ceiling. */
-  leaseRental: { min: 50_000, max: 75_000_000 },
-  /** ICICI starts at ₹25,000, HDFC at ₹30,000; equity-backed loans cap at ₹1 crore. */
-  loanAgainstShare: { min: 25_000, max: 10_000_000 },
-  /** Manappuram advertises from ₹10,000; Bank of Baroda ₹75 lakh per borrower. */
-  gold: { min: 10_000, max: 10_000_000 },
-  /** NPA resolution is case-specific; no published market range. */
-  npa: { min: 100_000, max: 50_000_000 },
-  /** RBL drop-line OD up to ₹15 crore; SBI commercial real estate to ₹50 crore. */
-  odCc: { min: 100_000, max: 150_000_000 },
-  /** No published floor; institutional funding tickets start near ₹10 crore. ECB size limits run to about US$1bn (10K CR). */
-  fdi: { min: 100_000_000, max: 100_000_000_000 },
-  /** No current lender quote for film funding; unchanged internal cap. */
-  film: { min: 10_000_000, max: 50_000_000 },
+  personal: { min: 50_000 },
+  business: { min: 100_000 },
+  home: { min: 300_000 },
+  loanAgainstProperty: { min: 500_000 },
+  balanceTransfer: { min: 300_000 },
+  project: { min: 100_000 },
+  vehicle: { min: 100_000 },
+  education: { min: 50_000 },
+  workingCapital: { min: 100_000 },
+  commercialPurchase: { min: 300_000 },
+  leaseRental: { min: 50_000 },
+  loanAgainstShare: { min: 25_000 },
+  gold: { min: 10_000 },
+  npa: { min: 100_000 },
+  odCc: { min: 100_000 },
+  fdi: { min: 100_000_000 },
+  film: { min: 10_000_000 },
 } as const satisfies Record<string, LoanAmountRange>;

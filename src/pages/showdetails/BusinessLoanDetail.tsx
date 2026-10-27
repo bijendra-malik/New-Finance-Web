@@ -37,7 +37,6 @@ const sections: DetailSection[] = [
           ["Maximum Age", "65 years"],
           ["Minimum Annual Income", "₹4,00,000"],
           ["Minimum Loan Amount", "₹1,00,000"],
-          ["Maximum Loan Amount", "₹1,00,00,000 (₹1 Crore)"],
           ["Minimum Business Existence", "3 years"],
           ["Minimum Loan Tenure", "1 year"],
           ["Maximum Loan Tenure", "5 years"],

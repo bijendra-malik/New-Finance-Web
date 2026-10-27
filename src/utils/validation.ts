@@ -77,12 +77,10 @@ export interface LoanAmountDraft {
 export const validateLoanAmount = (
   draft: LoanAmountDraft,
   e: Partial<Record<string, string>>,
-  { min, max }: LoanAmountRange,
+  { min }: LoanAmountRange,
 ): void => {
   if (draft.loanAmount < min) {
     e.loanAmount = `Minimum ₹${formatIndianNumber(String(min))}`;
-  } else if (draft.loanAmount > max) {
-    e.loanAmount = `Maximum loan amount is ₹${formatIndianNumber(String(max))}`;
   }
 };
 
