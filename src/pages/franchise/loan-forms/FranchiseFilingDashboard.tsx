@@ -19,13 +19,16 @@ import {
 } from "../../../api/franchiseCustomers";
 import { isFranchiseSignedIn, readFranchiseSession } from "../../../utils/franchiseSession";
 import {
+  applicationCooldown,
   clearPendingCreditScoreDraft,
   franchiseDraftOwner,
   onPendingCreditScoreDraftChange,
   readPendingCreditScoreDraft,
+  readSubmittedApplication,
   remainingCreditScoreWindow,
   type PendingCreditScoreDraft,
 } from "../../../utils/applicationFlowState";
+import Modal from "../../../components/ui/Modal";
 import type { LockableField } from "../../../utils/accountProfile";
 import useSEO from "../../../hooks/useSEO";
 import ClientPickerPanel from "./ClientPickerPanel";
@@ -123,6 +126,7 @@ const FranchiseFilingDashboard = () => {
     error: string;
   } | null>(null);
   const [discarding, setDiscarding] = useState(false);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [draftTick, setDraftTick] = useState(0);
 
   const loadCustomers = useCallback(async () => {
@@ -250,6 +254,7 @@ const FranchiseFilingDashboard = () => {
 
   const handleDiscardDraft = async () => {
     if (!customer || discarding) return;
+    setConfirmDiscardOpen(false);
     setDiscarding(true);
     setDraftView({ customerId: customer._id, draft, error: "" });
     const result = await deleteFranchiseCustomerDraft(customer._id);
@@ -272,6 +277,15 @@ const FranchiseFilingDashboard = () => {
     setProceededHere(true);
     setView(null);
   };
+
+  const cooldown = (() => {
+    if (!customer || !product) return null;
+    const record = readSubmittedApplication(franchiseDraftOwner(customer._id), product.key);
+    return record ? applicationCooldown(record) : null;
+  })();
+  const cooldownBlocked = Boolean(cooldown?.blocked);
+  const cooldownDay = (date: Date) =>
+    date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   // ── Signed-out guard ───────────────────────────────────────────────────────
   if (!session || !isFranchiseSignedIn() || !isLoggedIn) {
@@ -594,6 +608,38 @@ const FranchiseFilingDashboard = () => {
             />
           )}
 
+          {step === "form" && customer && cooldownBlocked && cooldown && (
+            <div
+              role="status"
+              className="rounded-xl px-4 py-3"
+              style={{
+                background: cooldown.outcome === "rejected" ? "#fff8e6" : "var(--brand-navy-14)",
+                border:
+                  cooldown.outcome === "rejected"
+                    ? "1px solid rgba(224,168,0,0.45)"
+                    : "1px dashed var(--brand-navy-44)",
+                color: cooldown.outcome === "rejected" ? "#8a5a00" : "var(--brand-navy)",
+              }}
+            >
+              <p className="text-[12.5px] font-extrabold">
+                {cooldown.outcome === "rejected"
+                  ? "The earlier application was not eligible"
+                  : "This customer has already applied for this loan"}
+              </p>
+              <p className="mt-0.5 text-[12px] leading-5">
+                {cooldown.outcome === "rejected"
+                  ? `A refused application can be refilled after a 30-day cooling-off period — from ${cooldownDay(cooldown.availableAt)}.`
+                  : `A new ${product.name} application can be filed for this customer from ${cooldownDay(cooldown.availableAt)}.`}
+              </p>
+              <Link
+                to="/franchisor-dashboard?section=loans"
+                className="mt-2 inline-block text-[11.5px] font-bold underline"
+              >
+                Track the submitted application →
+              </Link>
+            </div>
+          )}
+
           {step === "form" && customer && (
             <div className="space-y-4">
               {draft && (
@@ -615,7 +661,7 @@ const FranchiseFilingDashboard = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => void handleDiscardDraft()}
+                    onClick={() => setConfirmDiscardOpen(true)}
                     disabled={discarding}
                     className="shrink-0 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-[12px] font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -628,7 +674,7 @@ const FranchiseFilingDashboard = () => {
                 <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12.5px] font-semibold text-slate-500">
                   The form opens once your franchise agreement is active and verified.
                 </p>
-              ) : ProductForm ? (
+              ) : cooldownBlocked ? null : ProductForm ? (
                 <ApplicantPrefillProvider value={prefill}>
                   <Suspense
                     fallback={
@@ -691,6 +737,46 @@ const FranchiseFilingDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Confirm before the draft is permanently dropped. */}
+      <Modal
+        open={confirmDiscardOpen}
+        onClose={() => setConfirmDiscardOpen(false)}
+        labelledBy="discard-draft-confirm-title"
+        maxWidth="max-w-md"
+      >
+        <div className="px-5 pt-5">
+          <p className="text-[11px] font-extrabold uppercase tracking-widest text-red-600">
+            Permanent action
+          </p>
+          <h2 id="discard-draft-confirm-title" className="mt-1 text-xl font-extrabold text-slate-900">
+            Discard this draft?
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            Once discarded, the saved draft for {customer?.fullName ?? "this customer"} will be
+            permanently deleted and you will need to fill in the {product.name} form again.
+            Nothing has been sent to the lenders yet.
+          </p>
+        </div>
+        <div className="mt-5 flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={() => setConfirmDiscardOpen(false)}
+            disabled={discarding}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Keep draft
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDiscardDraft()}
+            disabled={discarding}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {discarding ? "Discarding…" : "Discard draft"}
+          </button>
+        </div>
+      </Modal>
 
       {/* RIGHT PANEL — the client and the filing summary */}
       <aside className="hidden w-72 shrink-0 flex-col gap-4 overflow-y-auto border-l bg-slate-50 p-4 lg:flex" style={{ borderColor: "#e2e8f0" }}>
