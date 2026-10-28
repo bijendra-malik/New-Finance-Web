@@ -13,9 +13,11 @@ import { useMasters } from "../../../hooks/useMasters";
 import {
   EMAIL_REGEX,
   MOBILE_REGEX,
+  NAME_REGEX,
   PAN_REGEX,
   PINCODE_REGEX,
   isAtLeastAge,
+  isAtMostAge,
 } from "../../../utils/validation";
 import { formatPAN } from "../../../utils/formatters";
 import {
@@ -103,6 +105,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
     const e: Partial<Record<keyof FormState, string>> = {};
 
     if (!form.fullName.trim()) e.fullName = "Name is required";
+    else if (!NAME_REGEX.test(form.fullName.trim())) e.fullName = "Enter a valid full name";
 
     if (!form.mobile.trim()) e.mobile = "Mobile number is required";
     else if (!MOBILE_REGEX.test(form.mobile)) e.mobile = "Enter a valid 10-digit mobile number";
@@ -113,7 +116,8 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
     if (!form.dob) e.dob = "Date of birth is required";
     else if (!/^\d{4}-\d{2}-\d{2}$/.test(form.dob))
       e.dob = "Enter a valid date of birth (YYYY-MM-DD)";
-    else if (!isAtLeastAge(form.dob, 21)) e.dob = "Customer must be at least 21 years old";
+    else if (!isAtLeastAge(form.dob, 18)) e.dob = "You must be at least 18 years old to apply for a loan";
+    else if (!isAtMostAge(form.dob, 65)) e.dob = "Applicants must be 65 years old or younger";
 
     if (!form.panNumber.trim()) e.panNumber = "PAN number is required";
     else if (!PAN_REGEX.test(form.panNumber.trim().toUpperCase()))
