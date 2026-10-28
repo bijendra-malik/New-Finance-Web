@@ -297,8 +297,16 @@ export const detailGroupsFromBag = (
 
 export const applicationDetailGroups = (
   app: CustomerStatusApplication,
-): ApplicationDetailGroup[] =>
-  detailGroupsFromBag(app.details as Record<string, unknown> | null | undefined);
+): ApplicationDetailGroup[] => {
+  const details = app.details as Record<string, unknown> | null | undefined;
+  if (!details || typeof details !== "object" || Array.isArray(details)) {
+    return detailGroupsFromBag(null);
+  }
+  const visible = Object.fromEntries(
+    Object.entries(details).filter(([key]) => !/reason/i.test(key)),
+  );
+  return detailGroupsFromBag(visible);
+};
 
 export interface ApplicationProgress {
   stages: string[];
