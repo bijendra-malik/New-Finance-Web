@@ -166,10 +166,19 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
             </div>
             )}
             {franchiseMode && (
-              <p className="mt-5 text-[12.5px] leading-6 text-slate-600">
-                The application has been submitted through your franchise. Its status will
-                appear in your franchise dashboard once the lenders respond.
-              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link
+                  to="/franchisor-dashboard?section=loans"
+                  className="rounded-xl px-5 py-2.5 text-[12.5px] font-bold text-white shadow-sm transition hover:brightness-110"
+                  style={{ background: `linear-gradient(135deg, ${C.teal} 0%, ${C.navy} 100%)` }}
+                >
+                  Track my application
+                </Link>
+                <p className="w-full text-[12.5px] leading-6 text-slate-600">
+                  The application has been submitted through your franchise. Track it from the
+                  All Loans panel of your franchise dashboard once the lenders respond.
+                </p>
+              </div>
             )}
           </div>
         </section>
