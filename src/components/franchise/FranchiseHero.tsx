@@ -51,7 +51,7 @@ const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
             </h1>
 
             <p className="mt-5 text-[15px] text-center leading-relaxed text-white/75 md:text-base">
-              Partner with Indexia Finance as a Franchisee and earn the highest payouts by connecting customers with Indexia Finance for various loan products, including secured and unsecured loans, as well as investment opportunities and FDI.
+              Be a Partner with Indexia Finance as a Franchisee and earn the highest payouts for any kind of loan products, including secured and unsecured loans, as well as investment opportunities and FDI.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
@@ -61,7 +61,7 @@ const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
               className="shadow-lg"
               style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
             >
-              Apply for a Franchise
+              Apply to be a Franchisee
             </Button>
               <Link
                 to="/contact"

@@ -172,7 +172,7 @@ const ContactPage = () => {
 
               {/* Email addresses share their own box */}
               <div className="rounded-2xl p-6" style={CARD_STYLE}>
-                <CardHeading icon={<MailIcon />} title="Email Us" note="We reply within 1 working day" />
+                <CardHeading icon={<MailIcon />} title="Email Us" note="You will be contacted shortly." />
                 <ul className="space-y-2.5">
                   {EMAILS.map((email) => (
                     <li key={email}>
@@ -197,7 +197,7 @@ const ContactPage = () => {
                 <LeadForm
                   submitLabel="Send Enquiry"
                   successTitle="Enquiry Sent!"
-                  successMessage="Thank you for reaching out. Our team will get back to you within 1 working day."
+                  successMessage="Thank you for reaching out. Our team will get back to you shortly."
                   fields={[
                     { name: "name", label: "Full Name", required: true, placeholder: "Your full name" },
                     { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-digit mobile number" },
@@ -213,7 +213,7 @@ const ContactPage = () => {
                         "Balance Transfer", "Vehicle Loan", "Education Loan", "Credit Card",
                         "Project Loan", "Commercial Purchase", "Working Capital", "Lease Rental Discounting",
                         "OD CC Limit", "Loan Against Share", "Film Funding", "NPA", "Gold Loan", "FDI",
-                        "Franchise", "Other",
+                        "Franchisee", "Other",
                       ],
                     },
                     {

@@ -48,7 +48,7 @@ const FranchiseCTA = ({ onApply }: FranchiseCTAProps) => {
           className="cursor-pointer rounded-xl px-7 py-3.5 text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/50"
           style={{ background: "var(--brand-yellow)", color: "#0b1730" }}
         >
-          Apply for a Franchise
+          Apply for a Franchisee
         </button>
       </div>
 
