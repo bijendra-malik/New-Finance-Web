@@ -4,6 +4,7 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { PackageSelector } from "./PlanSelector";
 import { LocationFields } from "../form/LocationFields";
 import { Field } from "../ui/FieldRenderer";
+import type { Continent, Country } from "../../api/masters";
 import type { FranchisePlan } from "./franchiseData";
 import type { FieldKey, FranchiseFormPresentation, FranchiseFormValues, VerifiedLocation } from "./franchiseFormConfig";
 import { inputClass } from "./franchiseFormConfig";
@@ -33,6 +34,10 @@ export interface FranchiseFieldsProps {
   loadCities: (state: string) => string[];
   pincodeStatus: PincodeStatus;
   verifiedLocation: VerifiedLocation | null;
+  continentOptions: Continent[];
+  continentsLoading: boolean;
+  countryOptions: Country[];
+  countriesLoading: boolean;
   onPincodeResolved: (r: { pincode: string; state: string; city: string }) => void;
   onLocationSet: (key: "state" | "city", value: string) => void;
   plans: FranchisePlan[];
@@ -56,6 +61,10 @@ export const FranchiseFields = ({
   loadCities,
   pincodeStatus,
   verifiedLocation,
+  continentOptions,
+  continentsLoading,
+  countryOptions,
+  countriesLoading,
   onPincodeResolved,
   onLocationSet,
   plans,
@@ -78,7 +87,6 @@ export const FranchiseFields = ({
             label={isFranchisee ? "Full Name / Applicant Name" : "Full Name"}
             required
             error={errors.fullName}
-            hint={isFranchisee ? "Enter exactly as printed on your PAN card" : undefined}
             full={isFranchisee && presentation === "stacked"}
           >
             <input
@@ -86,7 +94,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.fullName)}
               value={values.fullName}
               onChange={(e) => set("fullName", e.target.value)}
-              placeholder="Your full name"
+              placeholder="Name as per pan card"
               autoComplete="name"
               />
           </Field>
@@ -196,7 +204,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.businessName)}
               value={values.businessName}
               onChange={(e) => set("businessName", e.target.value)}
-              placeholder="Your business / firm name"
+              placeholder="Your Business / Firm / Company name"
               autoComplete="organization"
             />
           </Field>
@@ -236,10 +244,55 @@ export const FranchiseFields = ({
           </Field>
         );
 
+      case "continent":
+        return (
+          <Field id={fid("continent")} label="Continent" required error={errors.continent}>
+            <select
+              id={fid("continent")}
+              className={inputClass(!!errors.continent)}
+              value={values.continent}
+              disabled={continentsLoading}
+              aria-invalid={errors.continent ? true : undefined}
+              aria-describedby={errors.continent ? `${fid("continent")}-error` : undefined}
+              onChange={(e) => {
+                set("continent", e.target.value);
+                set("country", "");
+              }}
+            >
+              <option value="">{continentsLoading ? "Loading continents…" : "Select continent"}</option>
+              {continentOptions.map((continent) => (
+                <option key={continent._id} value={continent.name}>{continent.name}</option>
+              ))}
+            </select>
+          </Field>
+        );
+
+      case "country":
+        return (
+          <Field id={fid("country")} label="Country" required error={errors.country}>
+            <select
+              id={fid("country")}
+              className={inputClass(!!errors.country)}
+              value={values.country}
+              disabled={!values.continent || countriesLoading}
+              aria-invalid={errors.country ? true : undefined}
+              aria-describedby={errors.country ? `${fid("country")}-error` : undefined}
+              onChange={(e) => set("country", e.target.value)}
+            >
+              <option value="">
+                {!values.continent ? "Select continent first" : countriesLoading ? "Loading countries…" : "Select country"}
+              </option>
+              {countryOptions.map((country) => (
+                <option key={country._id} value={country.name}>{country.name}</option>
+              ))}
+            </select>
+          </Field>
+        );
+
       case "address":
         return (
           <div className={spanFull}>
-            <Field id={fid("address")} label="Address" required error={errors.address}>
+            <Field id={fid("address")} label="Business Office Address" required error={errors.address}>
               <textarea
                 id={fid("address")}
                 rows={isHorizontal ? 2 : 3}

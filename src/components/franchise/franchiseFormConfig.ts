@@ -62,17 +62,16 @@ export const FRANCHISEE_STEPS: FranchiseeStep[] = [
     id: "business",
     label: "Business",
     hint: "Business and GST details",
-    fields: ["businessName", "businessType", "businessTypeOther", "gstNumber", "yearsInBusiness"],
+    fields: ["gstNumber", "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address"],
   },
-  { id: "location", label: "Location", hint: "Where you operate", fields: ["pincode", "state", "city", "address"] },
+  { id: "location", label: "Location", hint: "Where you operate", fields: ["continent", "country", "pincode", "state", "city"] },
   { id: "plan", label: "Plan", hint: "Choose your package", fields: ["packageId"] },
 ];
 
 export const FRANCHISEE_FIELD_ORDER: FieldKey[] = [
-  "fullName", "mobile", "email", "dob", "pan", "gstNumber",
-  "pincode", "state", "city",
-  "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address",
-  "packageId",
+  "fullName", "mobile", "email", "dob", "pan", "gstNumber", "yearsInBusiness",
+  "businessName", "businessType", "businessTypeOther", "address", "continent", "country",
+  "pincode", "state", "city", "packageId",
 ];
 
 export const API_FIELD_TO_FORM: Readonly<Record<string, FieldKey>> = {

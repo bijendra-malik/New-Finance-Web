@@ -3,7 +3,13 @@ import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { Link } from "react-router-dom";
 import { useMasters } from "../../hooks/useMasters";
-import { verifyPincode } from "../../api/masters";
+import {
+  fetchContinents,
+  fetchCountriesByContinent,
+  verifyPincode,
+  type Continent,
+  type Country,
+} from "../../api/masters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
 import { OTHER_OPTION } from "../../constants/masters";
@@ -66,6 +72,10 @@ const FranchiseForm = ({
   const [step, setStep] = useState(0);
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
+  const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
+  const [continentsLoading, setContinentsLoading] = useState(true);
+  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(false);
   const [otpStage, setOtpStage] = useState(false);
   const [entryMobile, setEntryMobile] = useState("");
   const [maskedMobile, setMaskedMobile] = useState("");
@@ -79,6 +89,48 @@ const FranchiseForm = ({
 
   const packageId = packageIdProp || values.packageId || selectedPlanCode;
   const selectedPlan: FranchisePlan | undefined = plans.find((p) => p.id === packageId);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchContinents()
+      .then((list) => {
+        if (!cancelled) setContinentOptions(list);
+      })
+      .catch(() => {
+        if (!cancelled) setContinentOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setContinentsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const selectedContinent = continentOptions.find((item) => item.name === values.continent);
+    if (!selectedContinent) {
+      setCountryOptions([]);
+      setCountriesLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setCountriesLoading(true);
+    fetchCountriesByContinent(selectedContinent._id)
+      .then((list) => {
+        if (!cancelled) setCountryOptions(list);
+      })
+      .catch(() => {
+        if (!cancelled) setCountryOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setCountriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [continentOptions, values.continent]);
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
@@ -150,6 +202,8 @@ const FranchiseForm = ({
       e.pan = "Enter a valid PAN number (e.g. ABCDE1234F)";
 
     if (isFranchisee) {
+      if (!vals.continent) e.continent = "Continent is required";
+      if (!vals.country) e.country = "Country is required";
       if (!packageId) e.packageId = "Select the plan you are interested in";
     } else {
       if (!vals.state.trim()) e.state = "State is required";
@@ -168,17 +222,17 @@ const FranchiseForm = ({
   const submitEnquiry = (vals: FranchiseFormValues) => {
     const rows = [
       { label: "Full Name", value: vals.fullName },
-      { label: "PAN Number", value: vals.pan },
       { label: "Mobile Number", value: vals.mobile },
       { label: "Email Address", value: vals.email },
       { label: "Date of Birth", value: vals.dob },
-      { label: "Continent", value: vals.continent },
-      { label: "Country", value: vals.country },
-      { label: "Business Name", value: vals.businessName },
-      { label: "Business Type", value: vals.businessType === OTHER_OPTION ? vals.businessTypeOther : vals.businessType },
+      { label: "PAN Number", value: vals.pan },
       { label: "GST Number", value: vals.gstNumber },
       { label: "Years in Business", value: vals.yearsInBusiness },
-      { label: "Address", value: vals.address },
+      { label: "Business Name", value: vals.businessName },
+      { label: "Business Type", value: vals.businessType === OTHER_OPTION ? vals.businessTypeOther : vals.businessType },
+      { label: "Business Office Address", value: vals.address },
+      { label: "Continent", value: vals.continent },
+      { label: "Country", value: vals.country },
     ];
 
     const href = buildMailtoUrl(FRANCHISE_EMAIL, `Franchise Enquiry — ${vals.fullName}`, rows);
@@ -470,6 +524,10 @@ const FranchiseForm = ({
     loadCities,
     pincodeStatus,
     verifiedLocation,
+    continentOptions,
+    continentsLoading,
+    countryOptions,
+    countriesLoading,
     onPincodeResolved: (r: { pincode: string; state: string; city: string }) => {
       setVerifiedLocation(r.state ? { pincode: r.pincode, state: r.state, city: r.city } : null);
       setPincodeStatus("idle");
@@ -506,10 +564,10 @@ const FranchiseForm = ({
   );
 
   const consentText = isHorizontal
-    ? "All details must match your PAN card / official documents. Submitting is an application, not a confirmation of allotment, and you consent to being contacted about the franchise programme."
+    ? "All details must match your PAN card and official documents. Submitting an application does not guarantee allotment. By submitting, you consent to being contacted regarding the franchise programme."
     : isFranchisee
-      ? "All details must be entered as per PAN card / official documents. Submitting this form is an application, not a confirmation of franchise allotment. By submitting, you consent to being contacted by Indexia Finance about the franchise programme."
-      : "All details must be entered as per official documents. Our team reviews every enquiry before getting in touch. By submitting, you consent to being contacted by Indexia Finance about the franchise programme.";
+      ? "All details must match your PAN card and other official documents. Submitting this form constitutes an application and does not guarantee franchise allotment. By submitting, you consent to being contacted by Indexia Finance regarding the franchise programme."
+      : "All details must match your official documents. Our team reviews every enquiry before getting in touch. By submitting this form, you consent to being contacted by Indexia Finance regarding the franchise programme.";
 
   return (
     <>
