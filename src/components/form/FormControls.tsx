@@ -124,7 +124,7 @@ export const TenureYearsField = memo(({
         onChange(v);
         if (v !== MORE_THAN_TENURE_OPTION) onCustomChange(0);
       }} options={tenureOptions} placeholder={placeholder} err={err}
-        formatOption={y => y === MORE_THAN_TENURE_OPTION ? "Other (enter years)" : `${y} ${y === 1 ? "year" : "years"}`} />
+        formatOption={y => y === MORE_THAN_TENURE_OPTION ? "Other (Enter Years)" : `${y} ${y === 1 ? "year" : "years"}`} />
       {value === MORE_THAN_TENURE_OPTION && (
         <div id={`${id}Custom`} className="mt-3">
           <FieldLabel label="Enter Tenure (in years)" required />
