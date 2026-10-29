@@ -250,7 +250,7 @@ const DashboardShell = <T,>({
                   <h2 className="text-lg font-extrabold" style={{ color: C.dark }}>
                     This application draft is no longer active
                   </h2>
-                  <p className="mt-1 max-w-md text-[12.5px] leading-6" style={{ color: C.gray }}>
+                  <p className="mt-1 text-[12.5px] leading-6" style={{ color: C.gray }}>
                     The 24-hour window for your saved {productName} application has ended, so a fresh
                     application has to be filled in before a credit score can be checked.
                   </p>

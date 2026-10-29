@@ -135,7 +135,7 @@ const EMICalculatorPage = () => {
               <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-3" style={serif}>
                 Know your EMI<br className="hidden md:block" /> before you borrow
               </h1>
-              <p className="text-base md:text-lg leading-relaxed max-w-lg" style={{ color: "#C9DCEF" }}>
+              <p className="text-base md:text-lg leading-relaxed" style={{ color: "#C9DCEF" }}>
                 Move the sliders to see your monthly instalment, total interest and full repayment
                 schedule update instantly — no sign-up needed.
               </p>

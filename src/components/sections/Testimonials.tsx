@@ -127,7 +127,7 @@ const Testimonials = () => {
             </span>{" "}
             across India
           </p>
-          <p className="text-xs max-w-md mx-auto mt-0" style={{ color: BRAND_COLORS.GREY }}>
+          <p className="text-xs mx-auto mt-0" style={{ color: BRAND_COLORS.GREY }}>
             Real stories from real people who trusted us with their financial goals
           </p>
         </div>

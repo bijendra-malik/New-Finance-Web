@@ -61,7 +61,7 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
           </svg>
         </div>
         <h3 className="mb-2 text-xl font-bold text-gray-800">{successTitle}</h3>
-        <p className="mx-auto max-w-md text-sm leading-relaxed text-gray-500">{successMessage}</p>
+        <p className="mx-auto text-sm leading-relaxed text-gray-500">{successMessage}</p>
       </div>
     );
   }

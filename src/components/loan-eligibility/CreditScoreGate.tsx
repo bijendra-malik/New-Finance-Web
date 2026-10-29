@@ -266,7 +266,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
         <h2 id="credit-score-empty-title" className="text-lg font-extrabold" style={{ color: C.dark }}>
           No application is awaiting a credit check
         </h2>
-        <p className="mt-1 max-w-md text-[12.5px] leading-6" style={{ color: C.gray }}>
+        <p className="mt-1 text-[12.5px] leading-6" style={{ color: C.gray }}>
           Your application may already have been finalised, or the draft was not saved. Start a
           new application from the loan page to check your eligibility.
         </p>
@@ -289,7 +289,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
         <h2 id="credit-score-expired-title" className="text-lg font-extrabold text-red-900">
           This application draft has expired
         </h2>
-        <p className="mt-1 max-w-md text-[12.5px] leading-6 text-red-800">
+        <p className="mt-1 text-[12.5px] leading-6 text-red-800">
           The 24-hour window for your saved {productLabel} application has ended. Please start
           your application again.
         </p>
@@ -312,7 +312,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
         <div className="min-w-0">
           <h2 id="credit-score-gate-title" className="text-lg font-extrabold text-(--brand-navy)">Last step to complete your application form</h2>
             <h3 className="text-md font-bold text-(--brand-navy)">Kindly enter your credit score</h3>
-          <p className="mt-1 max-w-lg text-[12.5px] leading-6 text-slate-500">
+          <p className="mt-1 text-[12.5px] leading-6 text-slate-500">
             Your credit score could be entered only once, so please check it before submitting.
           </p>
         </div>

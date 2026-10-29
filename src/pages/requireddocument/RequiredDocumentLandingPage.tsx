@@ -53,7 +53,7 @@ const RequiredDocumentLandingPage = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
 
             {/* LEFT */}
-            <div className="flex-1 max-w-lg">
+            <div className="flex-1">
               <p className="text-white/50 text-xs md:text-lg leading-relaxed">
                 The documentation process in personal loans is very fast as against secured loans.
                 Keep these documents ready and get approved in minutes.

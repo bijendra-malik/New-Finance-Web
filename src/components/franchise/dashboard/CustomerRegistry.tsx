@@ -110,7 +110,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
               <FranchiseIcon name="user" filled className="h-6 w-6" />
             </span>
             <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No customers yet</h3>
-            <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-slate-500">
+            <p className="mx-auto mt-1.5 text-[13px] leading-relaxed text-slate-500">
               Register your first customer with their name, PAN, contact and address — then file any loan product on
               their behalf.
             </p>

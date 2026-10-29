@@ -58,7 +58,7 @@ const FAQ = () => {
                 style={{ background: `linear-gradient(90deg, ${C.navy}, ${C.teal}, ${C.lime})` }}
               />
             </h2>
-            <p className="text-sm max-w-lg mx-auto mt-3" style={{ color: C.grey }}>
+            <p className="text-sm mx-auto mt-3" style={{ color: C.grey }}>
               Three simple steps to get your loan approved — fast, secure, and fully online.
             </p>
           </div>
@@ -283,7 +283,7 @@ const FAQ = () => {
           </h3>
 
           {/* Description */}
-          <p className="text-sm leading-relaxed max-w-lg text-white/85 mb-5">
+          <p className="text-sm leading-relaxed text-white/85 mb-5">
             Join thousands of satisfied customers who've unlocked their financial dreams.
             Fast approvals, transparent pricing, and exceptional support.
           </p>

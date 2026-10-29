@@ -160,7 +160,7 @@ const CreditScorePage = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="discard-application-title"
-            className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl sm:p-6"
+            className="w-full rounded-2xl bg-white p-5 shadow-2xl sm:p-6"
           >
             <p className="text-xs font-extrabold uppercase tracking-widest text-red-600">Permanent action</p>
             <h2 id="discard-application-title" className="mt-1 text-xl font-extrabold text-slate-900">Discard this application?</h2>

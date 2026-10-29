@@ -206,7 +206,7 @@ const FranchisorDashboardPage = () => {
                 <FranchiseIcon name="lock" filled className="h-6 w-6" />
               </span>
               <h1 className="mt-4 text-xl font-bold text-slate-800">Sign in to open your dashboard</h1>
-              <p className="mx-auto mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
+              <p className="mx-auto mt-2 text-[13px] leading-relaxed text-slate-600">
                 Your dashboard holds your agreement status, registered customers and every loan filed under your
                 franchise ID. Portal credentials are issued with your franchise agreement.
               </p>
@@ -214,7 +214,7 @@ const FranchisorDashboardPage = () => {
               {profileError && (
                 <p
                   role="status"
-                  className="mx-auto mt-4 max-w-lg rounded-xl px-4 py-3 text-[12.5px] font-semibold"
+                  className="mx-auto mt-4 rounded-xl px-4 py-3 text-[12.5px] font-semibold"
                   style={{ background: "var(--form-error-bg)", border: "1px solid var(--form-error-border)", color: "var(--form-error-text)" }}
                 >
                   {profileError}

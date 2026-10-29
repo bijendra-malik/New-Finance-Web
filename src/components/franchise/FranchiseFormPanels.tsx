@@ -34,13 +34,13 @@ export const SubmittedPanel = ({
         </svg>
       </div>
       <h3 className="mb-2 text-xl font-bold text-slate-800">Application submitted</h3>
-      <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
+      <p className="mx-auto text-sm leading-relaxed text-slate-600">
         Your mobile number is verified and your franchise application has been received. Our team
         will review your details — once approved, sign in with your{" "}
         <strong>franchisee ID and the PAN number from this application</strong>.
       </p>
 
-      <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
+      <dl className="mx-auto mt-6 space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
         {[
           ["Applicant", values.fullName],
           ["Business", values.businessName],
@@ -95,7 +95,7 @@ export const EnquiryReadyPanel = ({ values, mailtoHref, onSubmitAnother }: Enqui
       </svg>
     </div>
     <h3 className="mb-2 text-xl font-bold text-slate-800">Details Ready to Send</h3>
-    <p className="mx-auto max-w-md text-sm leading-relaxed text-slate-600">
+    <p className="mx-auto text-sm leading-relaxed text-slate-600">
       Your email app has been opened with all the details filled in and addressed to{" "}
       <a href={`mailto:${FRANCHISE_EMAIL}`} className="font-semibold text-(--brand-navy) hover:underline">
         {FRANCHISE_EMAIL}
@@ -103,7 +103,7 @@ export const EnquiryReadyPanel = ({ values, mailtoHref, onSubmitAnother }: Enqui
       . Send that email and our franchise team will review your details and get in touch.
     </p>
 
-    <dl className="mx-auto mt-6 max-w-md space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
+    <dl className="mx-auto mt-6 space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
       {[
         ["Name", values.fullName],
         ["PAN", values.pan],
@@ -164,9 +164,8 @@ export const OtpStagePanel = ({
   <div className="rounded-2xl border border-slate-200 bg-white px-5 py-7 sm:px-7">
     <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--brand-teal)">Verify your mobile</p>
     <h3 className="mt-2 text-xl font-extrabold text-(--brand-navy)">One step left — confirm your OTP</h3>
-    <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-slate-600">
-      Your application has been received. Enter the OTP sent to your registered mobile number to
-      verify your franchisee access.
+    <p className="mt-2 text-[13px] leading-relaxed text-slate-600">
+      Your application has been received. Enter the OTP sent to your registered mobile number to verify your franchisee access.
     </p>
     <div className="mt-5">
       <OtpEntryPanel

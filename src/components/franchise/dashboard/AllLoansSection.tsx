@@ -169,7 +169,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
               <FranchiseIcon name="layers" filled className="h-6 w-6" />
             </span>
             <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No loans filed yet</h3>
-            <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-slate-500">
+            <p className="mx-auto mt-1.5 text-[13px] leading-relaxed text-slate-500">
               Open Apply Loan, pick a product and a registered customer — the application will appear here with its
               live status.
             </p>

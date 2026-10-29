@@ -66,10 +66,10 @@ const ApplicationStatusPage = () => {
         <div className="mx-auto grid max-w-6xl gap-8 xl:grid-cols-[0.7fr_1.3fr] xl:items-start">
           <div className="pt-2">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--brand-teal)">{support.eyebrow}</p>
-            <h1 className="mt-3 max-w-md text-3xl font-extrabold leading-tight text-(--brand-navy) md:text-4xl">
+            <h1 className="mt-3 text-3xl font-extrabold leading-tight text-(--brand-navy) md:text-4xl">
               {support.heading}
             </h1>
-            <p className="mt-4 max-w-lg text-sm leading-7 text-slate-600">
+            <p className="mt-4 text-sm leading-7 text-slate-600">
               {support.description}
             </p>
             <div className="mt-7 border-l-2 border-(--brand-teal) pl-4 text-sm leading-6 text-slate-500">
