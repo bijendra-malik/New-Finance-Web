@@ -110,12 +110,12 @@ export const useFranchisePlans = (): UseFranchisePlansResult => {
           const trimmed = code?.trim();
           return trimmed && publishedCodes.has(trimmed) ? trimmed : "";
         };
-        const bestValue = usable(response.bestValueCode) || mapped.find((plan) => plan.recommended)?.id || "";
+        const bestValue = mapped.find((plan) => plan.recommended)?.id || usable(response.bestValueCode) || "";
 
         setPlans(mapped);
         setBestValueCode(bestValue);
         setSelectedPlanCode(
-          usable(response.selectedPlanCode) || bestValue || mapped[0]?.id || "",
+          bestValue || usable(response.selectedPlanCode) || mapped[0]?.id || "",
         );
         setError(
           mapped.length === 0
