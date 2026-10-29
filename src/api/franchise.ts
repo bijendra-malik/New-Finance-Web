@@ -71,6 +71,9 @@ export interface FranchiseEntryPayload {
   panNumber?: string;
   continent?: string;
   country?: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
   planCode?: string;
   businessName?: string;
   businessType?: string;
