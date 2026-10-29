@@ -250,6 +250,9 @@ const FranchiseForm = ({
       dob: vals.dob,
       continent: vals.continent,
       country: vals.country,
+      state: vals.state.trim(),
+      city: vals.city.trim(),
+      pincode: vals.pincode.trim(),
       planCode: packageId,
       businessName: vals.businessName.trim(),
       businessType:
