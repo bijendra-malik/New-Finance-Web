@@ -1,3 +1,25 @@
+export const getApiRetryAfter = (err: unknown): string => {
+  const value = (
+    err as { response?: { data?: { retryAfter?: { availableAt?: unknown } } } } | undefined
+  )?.response?.data?.retryAfter?.availableAt;
+  if (typeof value !== "string" || !value.trim()) return "";
+  const ms = Date.parse(value);
+  if (Number.isNaN(ms)) return "";
+  return new Date(ms).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const withRetryAfter = (message: string, err: unknown): string => {
+  const availableFrom = getApiRetryAfter(err);
+  if (!availableFrom || message.includes(availableFrom)) return message;
+  const trimmed = message.trim();
+  const separator = /[.!?]$/.test(trimmed) ? " " : ". ";
+  return `${trimmed}${separator}A new application can be filed from ${availableFrom}.`;
+};
+
 /** Extracts a human-readable message from any axios/API error. */
 export const getApiErrorMessage = (
   err: unknown,
@@ -8,7 +30,7 @@ export const getApiErrorMessage = (
   if (typeof message === "string" && /no document found.*model\s+["']otp["']/i.test(message)) {
     return "This OTP request has expired or is no longer available. Please request a new OTP.";
   }
-  return message || fallback;
+  return withRetryAfter(message || fallback, err);
 };
 
 export type ApiFieldErrors = Record<string, string>;
