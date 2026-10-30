@@ -19,12 +19,10 @@ import {
 } from "../../../api/franchiseCustomers";
 import { isFranchiseSignedIn, readFranchiseSession } from "../../../utils/franchiseSession";
 import {
-  applicationCooldown,
   clearPendingCreditScoreDraft,
   franchiseDraftOwner,
   onPendingCreditScoreDraftChange,
   readPendingCreditScoreDraft,
-  readSubmittedApplication,
   remainingCreditScoreWindow,
   type PendingCreditScoreDraft,
 } from "../../../utils/applicationFlowState";
@@ -277,15 +275,6 @@ const FranchiseFilingDashboard = () => {
     setProceededHere(true);
     setView(null);
   };
-
-  const cooldown = (() => {
-    if (!customer || !product) return null;
-    const record = readSubmittedApplication(franchiseDraftOwner(customer._id), product.key);
-    return record ? applicationCooldown(record) : null;
-  })();
-  const cooldownBlocked = Boolean(cooldown?.blocked);
-  const cooldownDay = (date: Date) =>
-    date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   // ── Signed-out guard ───────────────────────────────────────────────────────
   if (!session || !isFranchiseSignedIn() || !isLoggedIn) {
@@ -608,38 +597,6 @@ const FranchiseFilingDashboard = () => {
             />
           )}
 
-          {step === "form" && customer && cooldownBlocked && cooldown && (
-            <div
-              role="status"
-              className="rounded-xl px-4 py-3"
-              style={{
-                background: cooldown.outcome === "rejected" ? "#fff8e6" : "var(--brand-navy-14)",
-                border:
-                  cooldown.outcome === "rejected"
-                    ? "1px solid rgba(224,168,0,0.45)"
-                    : "1px dashed var(--brand-navy-44)",
-                color: cooldown.outcome === "rejected" ? "#8a5a00" : "var(--brand-navy)",
-              }}
-            >
-              <p className="text-[12.5px] font-extrabold">
-                {cooldown.outcome === "rejected"
-                  ? "The earlier application was not eligible"
-                  : "This customer has already applied for this loan"}
-              </p>
-              <p className="mt-0.5 text-[12px] leading-5">
-                {cooldown.outcome === "rejected"
-                  ? `A refused application can be refilled after a 30-day cooling-off period — from ${cooldownDay(cooldown.availableAt)}.`
-                  : `A new ${product.name} application can be filed for this customer from ${cooldownDay(cooldown.availableAt)}.`}
-              </p>
-              <Link
-                to="/franchisor-dashboard?section=loans"
-                className="mt-2 inline-block text-[11.5px] font-bold underline"
-              >
-                Track the submitted application →
-              </Link>
-            </div>
-          )}
-
           {step === "form" && customer && (
             <div className="space-y-4">
               {draft && (
@@ -674,7 +631,7 @@ const FranchiseFilingDashboard = () => {
                 <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12.5px] font-semibold text-slate-500">
                   The form opens once your franchise agreement is active and verified.
                 </p>
-              ) : cooldownBlocked ? null : ProductForm ? (
+              ) : ProductForm ? (
                 <ApplicantPrefillProvider value={prefill}>
                   <Suspense
                     fallback={

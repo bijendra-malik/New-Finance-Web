@@ -7,7 +7,6 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { asRecord } from "../../utils/objects";
 import {
   clearPendingCreditScoreDraft,
-  formatReapplyDate,
   franchiseDraftOwner,
   rememberSubmittedApplication,
   readPendingCreditScoreDraft,
@@ -39,6 +38,20 @@ const eligibilityFrom = (response: CreditScoreResponse): boolean | null => {
   }
   return null;
 };
+
+/** The API owns the cooldown; read its `retryAfter.availableAt` when it sends one. */
+const reapplyAtFrom = (response: CreditScoreResponse): string => {
+  const candidates = [asRecord(response), asRecord(response.data), asRecord(response.application)];
+  for (const candidate of candidates) {
+    const retryAfter = asRecord(candidate?.retryAfter);
+    const value = retryAfter?.availableAt;
+    if (typeof value === "string" && value && !Number.isNaN(Date.parse(value))) return value;
+  }
+  return "";
+};
+
+const formatDay = (date: Date): string =>
+  date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 const ANALYZING_MS = 5000;
 const pause = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -77,6 +90,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
     if (draftingWindow?.expired) return setError("This application draft has expired. Please start your application again.");
 
     setError("");
+    setReapplyFrom("");
     setSubmitting(true);
     const startedAt = Date.now();
     try {
@@ -91,14 +105,16 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
         setError(response.message?.trim() || "We could not confirm your eligibility. Please try again.");
         return;
       }
-      const decidedAt = new Date().toISOString();
       rememberSubmittedApplication(
         pendingDraft.ownerId,
         pendingDraft.loanKey,
-        decidedAt,
+        new Date().toISOString(),
         eligible ? "eligible" : "rejected",
       );
-      if (!eligible) setReapplyFrom(formatReapplyDate(decidedAt));
+      if (!eligible) {
+        const reapplyAt = reapplyAtFrom(response);
+        setReapplyFrom(reapplyAt ? formatDay(new Date(reapplyAt)) : "");
+      }
       clearPendingCreditScoreDraft();
       clearApplySessionPending();
       setResult({ eligible });
@@ -204,8 +220,8 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
                   We regret to inform you that your application is not eligible for a loan at this
                   moment. This decision follows an assessment of your details and your credit score.
                   {reapplyFrom
-                    ? ` A fresh application can be submitted after a 30-day cooling-off period — from ${reapplyFrom}.`
-                    : " A fresh application can be submitted after a 30-day cooling-off period."}
+                    ? ` A fresh application can be submitted from ${reapplyFrom}.`
+                    : " A fresh application is not open yet."}
                 </p>
               </div>
             </div>

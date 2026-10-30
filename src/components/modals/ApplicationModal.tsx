@@ -17,12 +17,10 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
-  applicationCooldown,
   clearPendingCreditScoreDraft,
   readPendingCreditScoreDraft,
   readSubmittedApplication,
   remainingCreditScoreWindow,
-  type ApplicationCooldown,
 } from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
 import CodeBoxes from "../ui/CodeBoxes";
@@ -244,20 +242,38 @@ const ApplicationModal = ({
   const loanKey = loanKeyFor(productKey);
   const isLoginMode = mode === "signin";
 
-  const noticeForCooldown = (cooldown: ApplicationCooldown): BlockedNotice =>
-    cooldown.outcome === "rejected"
-      ? {
-          kind: "rejected",
-          title: "Your earlier application was not eligible",
-          body: `Our review of your earlier ${productName} application found it was not eligible for a loan. A refused application can be refilled after a 30-day cooling-off period — from ${formatDay(cooldown.availableAt)}.`,
-          detail: "A stronger credit score, or clearing existing dues, can change the outcome. Another product may still suit your profile today.",
-        }
-      : {
-          kind: "cooldown",
-          title: "You have already applied",
-          body: `You have already applied for ${productName}. A new application can be filed from ${formatDay(cooldown.availableAt)}.`,
-          detail: "You can follow the application you have already submitted from My Applications.",
-        };
+  const formatAvailableAt = (value?: string): string => {
+    if (!value) return "";
+    const ms = Date.parse(value);
+    return Number.isNaN(ms) ? "" : formatDay(new Date(ms));
+  };
+
+  /** The cooldown is owned by the API: `retryAfter.availableAt` is shown when it sends one. */
+  const noticeForBlockedApplication = (
+    rejected: boolean,
+    availableAt?: string,
+    message?: string,
+  ): BlockedNotice => {
+    const from = formatAvailableAt(availableAt);
+    if (rejected) {
+      return {
+        kind: "rejected",
+        title: "Your earlier application was not eligible",
+        body: `Our review of your earlier ${productName} application found it was not eligible for a loan.${
+          from ? ` A new application can be filed from ${from}.` : " A new application is not open yet."
+        }`,
+        detail: "A stronger credit score, or clearing existing dues, can change the outcome. Another product may still suit your profile today.",
+      };
+    }
+    return {
+      kind: "cooldown",
+      title: "You have already applied",
+      body: `${message?.trim() || `You have already applied for ${productName}.`}${
+        from ? ` A new application can be filed from ${from}.` : ""
+      }`,
+      detail: "You can follow the application you have already submitted from My Applications.",
+    };
+  };
 
   // ── Validate eligibility fields ───────────────────────────────────────────
 
@@ -349,21 +365,6 @@ const ApplicationModal = ({
       return;
     }
 
-    if (!isLoginMode) {
-      const record = readSubmittedApplication(user?._id ?? mobile, loanKey);
-      const cooldown = record ? applicationCooldown(record) : null;
-      if (cooldown?.blocked) {
-        setApiError("");
-        if (cooldown.outcome === "rejected") {
-          setStep("otp");
-          setBlockedNotice(noticeForCooldown(cooldown));
-          return;
-        }
-        setBlockedNotice(noticeForCooldown(cooldown));
-        return;
-      }
-    }
-
     // Every application is authorised by its own OTP: re-applying — for another
     // product, or after abandoning one — requests a fresh code and replaces the
     // token with the new one, so a stale session can never file the application.
@@ -400,6 +401,19 @@ const ApplicationModal = ({
       setResendNotice("");
       setStep("otp");
     } catch (err) {
+      const blocked = alreadyAppliedError(err);
+      if (blocked) {
+        const record = readSubmittedApplication(user?._id ?? mobile, loanKey);
+        setApiError("");
+        setBlockedNotice(
+          noticeForBlockedApplication(
+            record?.outcome === "rejected",
+            blocked.availableAt,
+            blocked.message,
+          ),
+        );
+        return;
+      }
       setApiError(getApiErrorMessage(err, "We could not send the OTP just now. Please try again."));
     } finally {
       setDetailsBusy(false);
@@ -457,19 +471,13 @@ const ApplicationModal = ({
       const blocked = alreadyAppliedError(err);
       if (blocked) {
         const record = loanKey ? readSubmittedApplication(user?._id ?? mobile, loanKey) : null;
-        const cooldown = record ? applicationCooldown(record) : null;
         setOtpError("");
         setBlockedNotice(
-          cooldown && cooldown.outcome === "rejected"
-            ? noticeForCooldown(cooldown)
-            : {
-                kind: "cooldown",
-                title: "You have already applied",
-                body: blocked.availableAt
-                  ? `${blocked.message} You can apply again from ${formatDay(new Date(blocked.availableAt))}.`
-                  : blocked.message,
-                detail: "You can follow the application you have already submitted from My Applications.",
-              },
+          noticeForBlockedApplication(
+            record?.outcome === "rejected",
+            blocked.availableAt,
+            blocked.message,
+          ),
         );
         return;
       }
@@ -508,7 +516,7 @@ const ApplicationModal = ({
     <>
       {/* Backdrop — above the header (z-55) */}
       <div
-        className="fixed inset-0 bg-black/50 z-90 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/70 z-90 backdrop-blur-sm"
         onClick={handleClose}
       />
 
@@ -626,11 +634,6 @@ const ApplicationModal = ({
                     }`}
                   >                      {blockedNotice.title}
                     </p>
-                    {blockedNotice.kind === "rejected" && (
-                      <span className="mt-1 inline-flex w-fit rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
-                        30 days
-                      </span>
-                    )}
                   <p
                     className={`mt-1 text-sm leading-6 ${
                       blockedNotice.kind === "rejected" ? "text-amber-900" : "text-slate-700"
@@ -731,6 +734,13 @@ const ApplicationModal = ({
                           min={earliestDobForAge(65)}
                           max={latestDobForAge(18)}
                           onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
+                          onKeyDown={(event) => {
+                            // Enter on a date input would submit the whole form; move to the next field instead.
+                            if (event.key !== "Enter") return;
+                            event.preventDefault();
+                            const next = event.currentTarget.form?.elements.namedItem("pan");
+                            if (next instanceof HTMLInputElement) next.focus();
+                          }}
                           error={fieldErrors.dob}
                         />
                         <Field
@@ -787,8 +797,8 @@ const ApplicationModal = ({
 
               {/* Step 2 — the OTP from POST /auth/{loanKey} (apply) or
                   POST /auth/login/request-otp (sign-in). A refused application
-                  lands here to be told about its 30-day cooling-off, so the OTP
-                  form itself is withheld while that notice stands. */}
+                  is told when the API reopens it, so the OTP form itself is
+                  withheld while that notice stands. */}
               {step === "otp" && blockedNotice?.kind !== "rejected" && (
                 <form onSubmit={handleOtpVerify} className="space-y-3.5" noValidate>
                   {!isLoginMode && (

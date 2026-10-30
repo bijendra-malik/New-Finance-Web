@@ -9,6 +9,7 @@ export interface CreditScoreResponse {
   score?: number;
   headline?: string;
   description?: string;
+  retryAfter?: { availableAt?: string };
   data?: unknown;
   application?: unknown;
 }

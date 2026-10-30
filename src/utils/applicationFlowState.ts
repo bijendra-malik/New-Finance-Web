@@ -1,6 +1,4 @@
 // modal, API interceptor, credit-score page, and submission hook storage logic
-export const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
-export const REJECTION_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 export const CREDIT_SCORE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export const creditScoreWindowMs = CREDIT_SCORE_WINDOW_MS;
@@ -14,9 +12,6 @@ export interface SubmittedApplicationRecord {
   at: string;
   outcome: ApplicationOutcome;
 }
-
-export const cooldownMsFor = (outcome: ApplicationOutcome): number =>
-  outcome === "rejected" ? REJECTION_COOLDOWN_MS : COOLDOWN_MS;
 
 export const rememberSubmittedApplication = (
   ownerId: string,
@@ -56,32 +51,6 @@ export const readSubmittedApplication = (
   } catch {
     return null;
   }
-};
-
-export interface ApplicationCooldown {
-  submittedAt: string;
-  outcome: ApplicationOutcome;
-  availableAt: Date;
-  remainingMs: number;
-  blocked: boolean;
-}
-
-export const applicationCooldown = (
-  record: SubmittedApplicationRecord,
-  now = Date.now(),
-): ApplicationCooldown => {
-  const submittedMs = Date.parse(record.at);
-  if (Number.isNaN(submittedMs)) {
-    return { submittedAt: record.at, outcome: record.outcome, availableAt: new Date(0), remainingMs: 0, blocked: false };
-  }
-  const availableMs = submittedMs + cooldownMsFor(record.outcome);
-  return {
-    submittedAt: record.at,
-    outcome: record.outcome,
-    availableAt: new Date(availableMs),
-    remainingMs: Math.max(0, availableMs - now),
-    blocked: availableMs > now,
-  };
 };
 
 export interface PendingCreditScoreDraft {
@@ -155,23 +124,6 @@ export const clearPendingCreditScoreDraft = (): void => {
   }
   notifyDraftChange();
 };
-
-export const formatCooldownExpiry = (
-  submittedAt: string,
-  outcome: ApplicationOutcome = "eligible",
-): string => {
-  const ms = Date.parse(submittedAt);
-  const expiry = new Date((Number.isNaN(ms) ? Date.now() : ms) + cooldownMsFor(outcome));
-  return expiry.toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-export const formatReapplyDate = (submittedAt: string): string =>
-  formatCooldownExpiry(submittedAt, "rejected");
 
 export const remainingCreditScoreWindow = (
   createdAt: string,
