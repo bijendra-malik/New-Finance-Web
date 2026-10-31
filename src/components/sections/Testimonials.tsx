@@ -102,7 +102,7 @@ const Testimonials = () => {
         <div className="text-center mb-6 md:mb-8">
           {/* Main Title with Animation */}
           <h2
-            className="text-3xl sm:text-3xl md:text-5xl font-black mb-4 tracking-tight animate-fade-in drop-shadow-sm"
+            className="text-3xl sm:text-3xl md:text-5xl font-extrabold mb-4 tracking-tight animate-fade-in drop-shadow-sm"
             style={{ color: "var(--brand-navy)" }}
           >
             What Our{" "}
