@@ -36,9 +36,16 @@ const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg" }: M
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-90 bg-black/55 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/55 backdrop-blur-sm"
+        style={{ zIndex: "var(--z-backdrop)" }}
+        onClick={onClose}
+      />
 
-      <div className="fixed inset-0 z-110 flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4">
+      <div
+        className="fixed inset-0 flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4"
+        style={{ zIndex: "var(--z-modal)" }}
+      >
         <div
           role="dialog"
           aria-modal="true"

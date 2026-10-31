@@ -155,7 +155,11 @@ const CreditScorePage = () => {
         />
       </div>
       {discardOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" role="presentation">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-slate-950/45 p-4"
+          style={{ zIndex: "var(--z-backdrop)" }}
+          role="presentation"
+        >
           <section
             role="dialog"
             aria-modal="true"
