@@ -2,14 +2,18 @@ import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import bannerVideo from "../assets/2.mp4";
 import useSEO from "../hooks/useSEO";
 import LoanProducts from "../components/sections/LoanProducts";
-import CreditScore from "../components/sections/CreditScore";
-import ProductDetails from "../components/sections/ProductDetails";
 
+const CreditScore = lazy(() => import("../components/sections/CreditScore"));
+const ProductDetails = lazy(() => import("../components/sections/ProductDetails"));
 const Partners = lazy(() => import("../components/sections/Partners"));
 const Testimonials = lazy(() => import("../components/sections/Testimonials"));
 const FAQ = lazy(() => import("../components/sections/FAQ"));
 
 const SectionFallback = () => <div className="min-h-105 bg-white" />;
+
+const SectionHolder = ({ minHeight }: { minHeight: string }) => (
+  <div aria-hidden className={`${minHeight} bg-white`} />
+);
 
 const Home = () => {
   useSEO({
@@ -145,7 +149,7 @@ const Home = () => {
         style={{
           background: "rgba(0,0,0,0.45)",
           border: "1.5px solid rgba(255,255,255,0.35)",
-          zIndex: 50,
+          zIndex: "var(--z-hero)",
           backdropFilter: "blur(4px)",
         }}
       >
@@ -171,7 +175,7 @@ const Home = () => {
         style={{
           background: "rgba(0,0,0,0.45)",
           border: "1.5px solid rgba(255,255,255,0.35)",
-          zIndex: 50,
+          zIndex: "var(--z-hero)",
           backdropFilter: "blur(4px)",
         }}
       >
@@ -197,8 +201,12 @@ const Home = () => {
       </div>
     </div>
 
-    <CreditScore />
-    <ProductDetails />
+    <Suspense fallback={<SectionHolder minHeight="min-h-[697px]" />}>
+      <CreditScore />
+    </Suspense>
+    <Suspense fallback={<SectionHolder minHeight="min-h-[1270px]" />}>
+      <ProductDetails />
+    </Suspense>
     <Suspense fallback={<SectionFallback />}>
       <Partners />
       <Testimonials />
