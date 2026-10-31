@@ -7,9 +7,8 @@ import { FORM } from "../../../../../constants/formStyles";
 import { LOAN_AMOUNT_RANGES, OTHER_OPTION, PERSONAL_LOAN_MAX_TENURE_YEARS, SALARIED } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
-import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
 import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
+import { useLoanApplicationForm } from "../../../../../components/form/useLoanApplicationForm";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
@@ -39,7 +38,6 @@ const HEADLINE = "Unlock the best Personal Loan offers suitable for your needs f
 const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: ApplicationFormProps) => {
   const { user } = useAuth();
   const { masters, loadCities } = useMasters();
-  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName: user?.name || userName, mobile: user?.mobile || "", email: user?.email || userEmail,
     dob: "", panNumber: "", state: "", city: "", pincode: "", residenceStatus: "", residenceStatusOther: "",
@@ -48,11 +46,6 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     loanAmount: 0, loanTenureYears: 0, loanTenureYearsCustom: 0, existingEMI: "", existingLoanAmount: "",
     existingBanks: [], existingLoanTypes: [], existingBanksOther: [], existingLoanTypesOther: [],
   });
-
-  const set = (f: keyof FormData, v: FormData[keyof FormData]) => {
-    setForm(p => ({ ...p, [f]: v }));
-    touch(f);
-  };
 
   // Employment types stay static for this product — /employment-types is Home Loan only.
   const employmentTypeOptions = useMemo(
@@ -107,14 +100,8 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     return e;
   };
 
-  const allErrors = computeErrors();
-  const { errors, touch, markAllTouched } = useTouchedErrors<keyof FormData>(allErrors);
-
-  const {
-    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    reviewOpen, handleSubmit, confirmReview, cancelReview,
-  } = useApplicationSubmit<PersonalLoanApplication>({
-    computeErrors, markAllTouched, agreed,
+  const { set, errors, shellProps } = useLoanApplicationForm<PersonalLoanApplication, FormData>({
+    form, setForm, computeErrors,
     submit: async () => {
       if (form.existingBanksOther.length > 0) {
         await Promise.allSettled(form.existingBanksOther.map(b => addCustomBankName(b)));
@@ -144,27 +131,15 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       });
       return res.data;
     },
-    onSubmitSuccess: onSubmit,
+    onSubmit,
   });
 
   return (
     <LoanApplicationFormShell
       productName="Personal Loan"
       headline={HEADLINE}
-      application={submittedApp}
-      submitted={submitted}
-      values={form}
-      reviewOpen={reviewOpen}
-      onConfirmReview={() => void confirmReview()}
-      onCancelReview={cancelReview}
       buildSections={buildProductSections}
-      onSubmit={handleSubmit}
-      agreed={agreed}
-      onAgreedChange={setAgreed}
-      apiError={apiError}
-      submitAttempted={submitAttempted}
-      invalidCount={Object.keys(allErrors).length}
-      isSubmitting={isSubmitting}
+      {...shellProps}
     >
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>

@@ -1,30 +1,23 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessFinancials, BusinessLocation } from "./shared";
 
 // ── Types (aligned with the backend's FilmLoan document) ──────────────────────────────
 
-export interface FilmLoanApplication {
-
+export interface FilmLoanApplication extends ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessFinancials, BusinessLocation {
   _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
-  employmentType: string; businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string;
-  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
+  employmentType: string;
+  businessName?: string;
+  businessType?: string;
+  gstNumber?: string;
+  companyPanNumber?: string;
   filmComesUnder: string;
   filmComesUnderOther?: string;
-  filmLanguages: string[]; starCastNames: string[];
-  totalProjectCost: number; ownInvestmentAmount: number;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; otherBankList?: string[];
-  existingLoanTypes: string[]; otherLoanList?: string[];
+  filmLanguages: string[];
+  starCastNames: string[];
+  totalProjectCost: number;
+  ownInvestmentAmount: number;
+  loanAmount: number;
+  loanTenure: number;
   loanType?: string;
   status: "Submitted";
   createdAt: string;
@@ -33,20 +26,7 @@ export interface FilmLoanApplication {
 
 export type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "filmFunding" };
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit FilmLoan application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyFilmLoan = async (
-  payload: FilmLoanPayload
-): Promise<ApplyResponse<FilmLoanApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<FilmLoanApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyFilmLoan = (payload: FilmLoanPayload) =>
+  postLoanApplication<FilmLoanApplication>(payload);

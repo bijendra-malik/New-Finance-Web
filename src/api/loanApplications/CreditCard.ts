@@ -1,28 +1,14 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, SalariedEmploymentDetails, BusinessIdentity, BusinessFinancials, BusinessLocation } from "./shared";
 
 // ── Types (aligned with the backend's CreditCard document) ──────────────────────────────
 
-export interface CreditCardApplication {
-
+export interface CreditCardApplication extends ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, SalariedEmploymentDetails, BusinessIdentity, BusinessFinancials, BusinessLocation {
   _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
-  hasActiveCard?: string; applyForBank?: string; applyForBankOther?: string;
+  hasActiveCard?: string;
+  applyForBank?: string;
+  applyForBankOther?: string;
   employmentType: string;
-  companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
-  businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; otherBankList?: string[];
-  existingLoanTypes: string[]; otherLoanList?: string[];
   loanType?: string;
   status: "Submitted";
   createdAt: string;
@@ -31,20 +17,7 @@ export interface CreditCardApplication {
 
 export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "creditCard" };
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit CreditCard application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyCreditCard = async (
-  payload: CreditCardPayload
-): Promise<ApplyResponse<CreditCardApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<CreditCardApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyCreditCard = (payload: CreditCardPayload) =>
+  postLoanApplication<CreditCardApplication>(payload);

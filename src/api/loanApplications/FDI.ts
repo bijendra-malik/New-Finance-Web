@@ -1,31 +1,23 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessIdentity, BusinessFinancials, BusinessLocation } from "./shared";
 
 // ── Types (aligned with the backend's FDI document) ──────────────────────────────
 
-export interface FDIApplication {
-
+export interface FDIApplication extends ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessIdentity, BusinessFinancials, BusinessLocation {
   _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
   collateralPropertyType: string;
-  collateralPropertyTypeOther?: string; collateralPropertyMarketValue: number; collateralPropertyAge: number;
-  collateralPropertyState: string; collateralPropertyCity: string; collateralPropertyPincode: string;
-  companyEvaluationValue?: number; interestedInEquityPartner?: string; equityShareOffered?: number;
+  collateralPropertyTypeOther?: string;
+  collateralPropertyMarketValue: number;
+  collateralPropertyAge: number;
+  collateralPropertyState: string;
+  collateralPropertyCity: string;
+  collateralPropertyPincode: string;
+  companyEvaluationValue?: number;
+  interestedInEquityPartner?: string;
+  equityShareOffered?: number;
   employmentType: string;
-  businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanks: string[]; otherBankList?: string[];
-  existingLoanTypes: string[]; otherLoanList?: string[];
+  loanAmount: number;
+  loanTenure: number;
   loanType?: string;
   status: "Submitted";
   createdAt: string;
@@ -34,20 +26,7 @@ export interface FDIApplication {
 
 export type FDIPayload = Omit<FDIApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "fdiLoan" };
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit FDI application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyFDI = async (
-  payload: FDIPayload
-): Promise<ApplyResponse<FDIApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<FDIApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyFDI = (payload: FDIPayload) =>
+  postLoanApplication<FDIApplication>(payload);

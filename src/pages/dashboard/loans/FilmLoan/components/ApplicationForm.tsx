@@ -5,9 +5,8 @@ import { FORM } from "../../../../../constants/formStyles";
 import { FILM_LOAN_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
-import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
 import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
+import { useLoanApplicationForm } from "../../../../../components/form/useLoanApplicationForm";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
@@ -52,7 +51,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
     dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
@@ -98,11 +96,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     setForm(p=>({...p, starCastNames:[...p.starCastNames, value]}));
   const removeStarCastName = (idx:number) =>
     setForm(p=>({...p, starCastNames:p.starCastNames.filter((_,i)=>i!==idx)}));
-
-  const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
-    setForm(p=>({...p,[f]:v}));
-    touch(f);
-  };
 
   const employmentBranchFields: (keyof FormData)[] = [
     "businessName", "businessType", "businessTypeOther",
@@ -204,14 +197,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   return e;
   };
 
-  const allErrors = computeErrors();
-  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
-
   const {
-    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    reviewOpen, handleSubmit, confirmReview, cancelReview,
-  } = useApplicationSubmit<FilmLoanApplication>({
-    computeErrors, markAllTouched, agreed,
+    set, errors, shellProps, touch, untouch,
+  } = useLoanApplicationForm<FilmLoanApplication, FormData>({
+    form, setForm, computeErrors,
     submit: async () => {
       const app = {
         product:"filmFunding" as const,
@@ -283,27 +272,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           const res = await applyFilmLoan(app);
       return res.data;
     },
-    onSubmitSuccess: onSubmit,
+    onSubmit,
   });
 
   return (
     <LoanApplicationFormShell
       productName="Film Funding"
       headline="Unlock the best Film Funding offers suitable for your needs from 43+ lenders"
-      application={submittedApp}
-      submitted={submitted}
-      values={form}
-      reviewOpen={reviewOpen}
-      onConfirmReview={() => void confirmReview()}
-      onCancelReview={cancelReview}
       buildSections={buildProductSections}
-      onSubmit={handleSubmit}
-      agreed={agreed}
-      onAgreedChange={setAgreed}
-      apiError={apiError}
-      submitAttempted={submitAttempted}
-      invalidCount={Object.keys(allErrors).length}
-      isSubmitting={isSubmitting}
+      {...shellProps}
     >
 
       {/* FUNDs REQUIREMENTS */}

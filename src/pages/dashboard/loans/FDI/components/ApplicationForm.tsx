@@ -5,9 +5,8 @@ import { FORM } from "../../../../../constants/formStyles";
 import { FDI_MAX_TENURE_YEARS, FDI_MIN_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
-import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
 import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
+import { useLoanApplicationForm } from "../../../../../components/form/useLoanApplicationForm";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
@@ -53,7 +52,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
     dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
@@ -98,11 +96,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
-
-  const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
-    setForm(p=>({...p,[f]:v}));
-    touch(f);
-  };
 
   const setEmploymentType = (v:string) => {
     setForm(p=>({
@@ -215,14 +208,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   return e;
   };
 
-  const allErrors = computeErrors();
-  const { errors, touch, markAllTouched } = useTouchedErrors<keyof FormData>(allErrors);
-
   const {
-    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    reviewOpen, handleSubmit, confirmReview, cancelReview,
-  } = useApplicationSubmit<FDIApplication>({
-    computeErrors, markAllTouched, agreed,
+    set, errors, shellProps, touch,
+  } = useLoanApplicationForm<FDIApplication, FormData>({
+    form, setForm, computeErrors,
     submit: async () => {      const app = {
       product:"fdiLoan" as const,
       fullName:form.fullName, mobile:form.mobile, email:form.email,
@@ -311,27 +300,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           const res = await applyFDI(app);
       return res.data;
     },
-    onSubmitSuccess: onSubmit,
+    onSubmit,
   });
 
   return (
     <LoanApplicationFormShell
       productName="FDI / Fund Against Security"
       headline="Unlock the best FDI offers suitable for your needs from 43+ lenders"
-      application={submittedApp}
-      submitted={submitted}
-      values={form}
-      reviewOpen={reviewOpen}
-      onConfirmReview={() => void confirmReview()}
-      onCancelReview={cancelReview}
       buildSections={buildProductSections}
-      onSubmit={handleSubmit}
-      agreed={agreed}
-      onAgreedChange={setAgreed}
-      apiError={apiError}
-      submitAttempted={submitAttempted}
-      invalidCount={Object.keys(allErrors).length}
-      isSubmitting={isSubmitting}
+      {...shellProps}
     >
 
       {/* FUNDS REQUIREMENTS */}

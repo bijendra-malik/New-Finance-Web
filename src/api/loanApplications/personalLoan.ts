@@ -1,5 +1,5 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, LoanApplicationStatus } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, LoanApplicationStatus } from "./shared";
 
 // ── Types (aligned with the backend's PersonalLoan document) ──────────────────
 
@@ -34,7 +34,7 @@ export interface PersonalLoanPayload {
   residenceStatusOther?: string;
 }
 
-export interface PersonalLoanApplication {
+export interface PersonalLoanApplication extends ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio {
   _id: string;
   user?: string;
   loanType?: string;
@@ -46,40 +46,12 @@ export interface PersonalLoanApplication {
   monthlySalary?: number;
   salaryReceivedAs?: string;
   salaryBankName?: string;
-  existingEMI: number;
-  existingLoanAmount: number;
-  existingBanks: string[];
-  otherBankList?: string[];
-  existingLoanTypes: string[];
-  otherLoanList?: string[];
-  fullName: string;
-  mobile: string;
-  email: string;
-  dob: string;
-  panNumber: string;
-  state: string;
-  city: string;
-  pincode: string;
-  residenceStatus: string;
   status: LoanApplicationStatus;
   createdAt: string;
   updatedAt: string;
 }
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit personal loan application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyPersonalLoan = async (
-  payload: PersonalLoanPayload
-): Promise<ApplyResponse<PersonalLoanApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<PersonalLoanApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyPersonalLoan = (payload: PersonalLoanPayload) =>
+  postLoanApplication<PersonalLoanApplication>(payload);

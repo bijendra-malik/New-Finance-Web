@@ -1,35 +1,33 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, SalariedEmploymentDetails, BusinessIdentity, BusinessFinancials, BusinessLocation } from "./shared";
 
 // ── Types (aligned with the backend's NPA document) ──────────────────────────────
 
-export interface NPAApplication {
-
+export interface NPAApplication extends ApplicantDetails, ExistingLoanAmounts, SalariedEmploymentDetails, BusinessIdentity, BusinessFinancials, BusinessLocation {
   _id: string;
-  fullName: string; mobile: string; email: string; dob: string; panNumber: string;
-  state: string; city: string; pincode: string; residenceStatus: string;
   collateralPropertyType: string;
-  collateralPropertyTypeOther?: string; collateralPropertyMarketValue: number; collateralPropertyAge: number;
-  collateralPropertyState: string; collateralPropertyCity: string; collateralPropertyPincode: string;
-  npaStatus: string; npaStatusOther?: string; otsOfferAmount?: number;
-  npaPrincipalLoanAmount: number; npaCurrentOutstandingAmount: number;
+  collateralPropertyTypeOther?: string;
+  collateralPropertyMarketValue: number;
+  collateralPropertyAge: number;
+  collateralPropertyState: string;
+  collateralPropertyCity: string;
+  collateralPropertyPincode: string;
+  npaStatus: string;
+  npaStatusOther?: string;
+  otsOfferAmount?: number;
+  npaPrincipalLoanAmount: number;
+  npaCurrentOutstandingAmount: number;
   employmentType: string;
-  companyName?: string; companyType?: string; monthlyNetSalary?: number; salaryReceivedAs?: string; salaryBankName?: string;
-  businessName?: string; businessType?: string;
-  gstNumber?: string; companyPanNumber?: string; natureOfBusiness?: string; industryType?: string; subIndustry?: string;
-  businessEstablishedDate?: string; transactionBankName?: string | { displayName: string; banks: string[] }; transactionBanks?: string[];
-  lastYearTurnover?: number; last2YearsTurnover?: number;
-  lastYearNetIncome?: number; last2YearsNetIncome?: number;
-  profession?: string;
-  currentYearTurnover?: number; priorYearTurnover?: number;
-  currentYearNetIncome?: number; previousYearNetIncome?: number;
-  businessState?: string; businessCity?: string; businessPincode?: string; businessPlaceStatus?: string;
-  loanAmount: number; loanTenure: number;
-  existingEMI: number; existingLoanAmount: number;
-  existingBanksNpa: string[]; existingBanksNpaOther?: string[];
-  existingBanksNonNpa: string[]; existingBanksNonNpaOther?: string[];
-  existingLoanTypesNpa: string[]; existingLoanTypesNpaOther?: string[];
-  existingLoanTypesNonNpa: string[]; existingLoanTypesNonNpaOther?: string[];
+  loanAmount: number;
+  loanTenure: number;
+  existingBanksNpa: string[];
+  existingBanksNpaOther?: string[];
+  existingBanksNonNpa: string[];
+  existingBanksNonNpaOther?: string[];
+  existingLoanTypesNpa: string[];
+  existingLoanTypesNpaOther?: string[];
+  existingLoanTypesNonNpa: string[];
+  existingLoanTypesNonNpaOther?: string[];
   loanType?: string;
   status: "Submitted";
   createdAt: string;
@@ -38,20 +36,7 @@ export interface NPAApplication {
 
 export type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "npaLoan" };
 
-// ── API Calls ─────────────────────────────────────────────────────────────────
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit NPA application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyNPA = async (
-  payload: NPAPayload
-): Promise<ApplyResponse<NPAApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<NPAApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyNPA = (payload: NPAPayload) =>
+  postLoanApplication<NPAApplication>(payload);

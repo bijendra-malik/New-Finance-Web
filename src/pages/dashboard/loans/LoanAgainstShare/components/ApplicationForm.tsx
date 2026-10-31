@@ -4,9 +4,8 @@ import { FORM } from "../../../../../constants/formStyles";
 import { LOAN_AGAINST_SHARE_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
-import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
 import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
+import { useLoanApplicationForm } from "../../../../../components/form/useLoanApplicationForm";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
@@ -48,7 +47,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
     dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
@@ -90,11 +88,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
-
-  const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
-    setForm(p=>({...p,[f]:v}));
-    touch(f);
-  };
 
   const employmentBranchFields: (keyof FormData)[] = [
     "companyName", "companyType", "companyTypeOther", "monthlyNetSalary", "salaryReceivedAs", "salaryBankName", "salaryBankNameOther",
@@ -216,14 +209,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   return e;
   };
 
-  const allErrors = computeErrors();
-  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
-
   const {
-    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    reviewOpen, handleSubmit, confirmReview, cancelReview,
-  } = useApplicationSubmit<LoanAgainstShareApplication>({
-    computeErrors, markAllTouched, agreed,
+    set, errors, shellProps, touch, untouch,
+  } = useLoanApplicationForm<LoanAgainstShareApplication, FormData>({
+    form, setForm, computeErrors,
     submit: async () => {      const app = {
       product:"loanAgainstShare" as const,
       fullName:form.fullName, mobile:form.mobile, email:form.email,
@@ -321,27 +310,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           const res = await applyLoanAgainstShare(app);
       return res.data;
     },
-    onSubmitSuccess: onSubmit,
+    onSubmit,
   });
 
   return (
     <LoanApplicationFormShell
       productName="Loan Against Share"
       headline="Unlock the best Loan Against Share offers suitable for your needs from 43+ lenders"
-      application={submittedApp}
-      submitted={submitted}
-      values={form}
-      reviewOpen={reviewOpen}
-      onConfirmReview={() => void confirmReview()}
-      onCancelReview={cancelReview}
       buildSections={buildProductSections}
-      onSubmit={handleSubmit}
-      agreed={agreed}
-      onAgreedChange={setAgreed}
-      apiError={apiError}
-      submitAttempted={submitAttempted}
-      invalidCount={Object.keys(allErrors).length}
-      isSubmitting={isSubmitting}
+      {...shellProps}
     >
 
       {/* LOAN REQUIREMENTS */}

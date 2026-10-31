@@ -1,5 +1,5 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, LoanApplicationStatus } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { LoanDocumentMeta } from "./shared";
 
 // Home Loan Aligned with the backend's HomeLoan document (POST /home-loan/apply, GET /home-loan/applications). transactionBankName is a plain string for a single bank, or an object for "Multiple Transaction Banks".
 
@@ -73,27 +73,10 @@ export interface HomeLoanPayload {
   residenceStatusOther?: string;
 }
 
-export interface HomeLoanApplication extends HomeLoanPayload {
-  _id: string;
+export interface HomeLoanApplication extends HomeLoanPayload, LoanDocumentMeta {
   user?: string;
-  loanType?: string;
-  status: LoanApplicationStatus;
-  createdAt: string;
-  updatedAt?: string;
 }
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit home loan application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyHomeLoan = async (
-  payload: HomeLoanPayload
-): Promise<ApplyResponse<HomeLoanApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<HomeLoanApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyHomeLoan = (payload: HomeLoanPayload) =>
+  postLoanApplication<HomeLoanApplication>(payload);

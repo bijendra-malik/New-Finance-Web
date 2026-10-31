@@ -5,9 +5,8 @@ import { FORM } from "../../../../../constants/formStyles";
 import { EDUCATION_LOAN_MAX_TENURE_YEARS, LOAN_AMOUNT_RANGES, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSINESS, SELF_EMPLOYED_PROFESSIONAL } from "../../../../../constants/masters";
 import { useMasters } from "../../../../../hooks/useMasters";
 import { usePincodeSections } from "../../../../../hooks/usePincodeSections";
-import { useApplicationSubmit } from "../../../../../hooks/useApplicationSubmit";
-import { useTouchedErrors } from "../../../../../hooks/useTouchedErrors";
 import LoanApplicationFormShell from "../../../../../components/form/LoanApplicationFormShell";
+import { useLoanApplicationForm } from "../../../../../components/form/useLoanApplicationForm";
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
@@ -20,7 +19,6 @@ import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, valida
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
-
 
 interface ApplicationFormProps {
   userName?: string;
@@ -59,7 +57,6 @@ interface FormData {
 
 const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProps) => {
   const {user} = useAuth();const { masters, loadCities } = useMasters();
-  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState<FormData>({
     fullName:user?.name||userName, mobile:user?.mobile||"", email:user?.email||userEmail,
     dob:"", panNumber:"", state:"", city:"", pincode:"", residenceStatus:"", residenceStatusOther:"",
@@ -106,18 +103,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     [form.parentState, loadCities]
   );
 
-
   const transactionBankOptions = useMemo(() => {
     const banks = masters.banks.filter(b=>b!==OTHER_OPTION);
     return [...banks, MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION];
   }, [masters.banks]);
-
-
-
-  const set = (f:keyof FormData, v:FormData[keyof FormData]) => {
-    setForm(p=>({...p,[f]:v}));
-    touch(f);
-  };
 
   const employmentBranchFields: (keyof FormData)[] = [
     "companyName", "companyType", "companyTypeOther", "monthlyNetSalary", "salaryReceivedAs", "salaryBankName", "salaryBankNameOther",
@@ -305,14 +294,10 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
   return e;
   };
 
-  const allErrors = computeErrors();
-  const { errors, touch, markAllTouched, untouch } = useTouchedErrors<keyof FormData>(allErrors);
-
   const {
-    isSubmitting, apiError, submitAttempted, submitted, submittedApp,
-    reviewOpen, handleSubmit, confirmReview, cancelReview,
-  } = useApplicationSubmit<EducationLoanApplication>({
-    computeErrors, markAllTouched, agreed,
+    set, errors, shellProps, touch, untouch,
+  } = useLoanApplicationForm<EducationLoanApplication, FormData>({
+    form, setForm, computeErrors,
     submit: async () => {
       const app = {
         product:"educationLoan" as const,
@@ -421,27 +406,15 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           const res = await applyEducationLoan(app);
       return res.data;
     },
-    onSubmitSuccess: onSubmit,
+    onSubmit,
   });
 
   return (
     <LoanApplicationFormShell
       productName="Education Loan"
       headline="Unlock the best Education Loan offers suitable for your needs from 43+ lenders"
-      application={submittedApp}
-      submitted={submitted}
-      values={form}
-      reviewOpen={reviewOpen}
-      onConfirmReview={() => void confirmReview()}
-      onCancelReview={cancelReview}
       buildSections={buildProductSections}
-      onSubmit={handleSubmit}
-      agreed={agreed}
-      onAgreedChange={setAgreed}
-      apiError={apiError}
-      submitAttempted={submitAttempted}
-      invalidCount={Object.keys(allErrors).length}
-      isSubmitting={isSubmitting}
+      {...shellProps}
     >
 
       {/* LOAN REQUIREMENTS */}

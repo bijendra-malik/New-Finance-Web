@@ -1,5 +1,5 @@
-import axiosInstance from "../axiosInstance";
-import type { ApplyResponse, LoanApplicationStatus } from "./shared";
+import { postLoanApplication } from "./shared";
+import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessIdentity, BusinessLocation, LoanApplicationStatus } from "./shared";
 
 // ── Business Loan ─────────────────────────────────────────────────────────────
 
@@ -58,20 +58,13 @@ export interface BusinessLoanPayload {
   transactionBankOther?: string;
 }
 
-export interface BusinessLoanApplication {
+export interface BusinessLoanApplication extends ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, BusinessIdentity, BusinessLocation {
   _id: string;
   user?: string;
   loanType?: string;
   loanAmount: number;
   loanTenure: number;
   employmentType: string;
-  businessName?: string;
-  businessType?: string;
-  gstNumber?: string;
-  companyPanNumber?: string;
-  natureOfBusiness?: string;
-  industryType?: string;
-  subIndustry?: string;
   businessEstablishedDate?: string;
   transactionBankName?: string;
   transactionBanks?: string[];
@@ -84,44 +77,13 @@ export interface BusinessLoanApplication {
   priorYearTurnover?: number;
   currentYearNetIncome?: number;
   previousYearNetIncome?: number;
-  businessState?: string;
-  businessCity?: string;
-  businessPincode?: string;
-  businessPlaceStatus?: string;
-  existingEMI: number;
-  existingLoanAmount: number;
-  existingBanks: string[];
   existingBanksOther?: string[];
-  otherBankList?: string[];
-  existingLoanTypes: string[];
   existingLoanTypesOther?: string[];
-  otherLoanList?: string[];
-  fullName: string;
-  mobile: string;
-  email: string;
-  dob: string;
-  panNumber: string;
-  state: string;
-  city: string;
-  pincode: string;
-  residenceStatus: string;
   status: LoanApplicationStatus;
   createdAt: string;
   updatedAt: string;
 }
+// ── API Call ────────────────────────────────────────────────────────────────
 
-/**
- * Submit business loan application.
- * POST /customer/loan-apply
- * Requires: Authorization: Bearer <token>
- */
-export const applyBusinessLoan = async (
-  payload: BusinessLoanPayload
-): Promise<ApplyResponse<BusinessLoanApplication>> => {
-  const response = await axiosInstance.post<ApplyResponse<BusinessLoanApplication>>(
-    "/customer/loan-apply",
-    payload
-  );
-  return response.data;
-};
-
+export const applyBusinessLoan = (payload: BusinessLoanPayload) =>
+  postLoanApplication<BusinessLoanApplication>(payload);
