@@ -105,14 +105,11 @@ const FranchiseLoginPage = () => {
         });
         return;
       }
-      saveFranchiseSession(
-        {
-          franchiseId: responseFranchiseId,
-          franchiseStatus: res.franchise?.franchiseStatus,
-          isVerified: res.franchise?.isVerified,
-        },
-        res.token,
-      );
+      saveFranchiseSession({
+        franchiseId: responseFranchiseId,
+        franchiseStatus: res.franchise?.franchiseStatus,
+        isVerified: res.franchise?.isVerified,
+      });
       setWelcome({ name: res.franchise?.name?.trim() || undefined });
       login(res.token, {
         _id: res.franchise?._id ?? responseFranchiseId,

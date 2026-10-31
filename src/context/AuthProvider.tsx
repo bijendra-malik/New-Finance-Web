@@ -3,13 +3,11 @@ import type { ApiUser } from "../api/auth";
 import { AuthContext } from "./authContext";
 import { onAuthCleared } from "../utils/authEvents";
 import { resetSessionCaches } from "../utils/sessionReset";
-
-const TOKEN_KEY = "token";
-const USER_KEY = "user";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY, purgeSessionCredentials } from "../utils/sessionCredentials";
 
 const readStoredToken = (): string | null => {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(AUTH_TOKEN_KEY);
   } catch {
     return null;
   }
@@ -17,7 +15,7 @@ const readStoredToken = (): string | null => {
 
 const readStoredUser = (): ApiUser | null => {
   try {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = localStorage.getItem(AUTH_USER_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ApiUser;
     return parsed?._id ? parsed : null;
@@ -34,14 +32,6 @@ const writeStorage = (key: string, value: string): void => {
   }
 };
 
-const removeStorage = (key: string): void => {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // ignore storage errors so a full browser does not break the session
-  }
-};
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<ApiUser | null>(readStoredUser);
   const [token, setToken] = useState<string | null>(readStoredToken);
@@ -50,21 +40,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     resetSessionCaches();
     setToken(newToken);
     setUser(newUser);
-    writeStorage(TOKEN_KEY, newToken);
-    writeStorage(USER_KEY, JSON.stringify(newUser));
+    writeStorage(AUTH_TOKEN_KEY, newToken);
+    writeStorage(AUTH_USER_KEY, JSON.stringify(newUser));
   }, []);
 
   const setLoggedIn = useCallback((newUser: ApiUser) => {
     setUser(newUser);
-    writeStorage(USER_KEY, JSON.stringify(newUser));
+    writeStorage(AUTH_USER_KEY, JSON.stringify(newUser));
   }, []);
 
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-    removeStorage(TOKEN_KEY);
-    removeStorage(USER_KEY);
-    resetSessionCaches();
+    purgeSessionCredentials();
   }, []);
 
   useEffect(() => onAuthCleared(logout), [logout]);

@@ -57,7 +57,7 @@ export const clearCredentials = (flow: CredentialFlow): void => {
   purgeLegacyCopy(flow);
 };
 
-const clearAllCredentials = (): void => {
+export const clearAllCredentials = (): void => {
   FLOWS.forEach(clearCredentials);
 };
 

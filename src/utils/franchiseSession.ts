@@ -10,7 +10,7 @@ export interface FranchiseSession {
 }
 
 const SESSION_KEY = "indexia_franchise_session";
-const FRANCHISE_TOKEN_KEY = "indexia_franchise_token";
+const LEGACY_FRANCHISE_TOKEN_KEY = "indexia_franchise_token";
 
 const readValue = (key: string): string | null => {
   try {
@@ -50,24 +50,17 @@ export const readFranchiseSession = (): FranchiseSession | null => {
 export const isFranchiseSignedIn = (): boolean =>
   Boolean(readFranchiseSession() && readValue("token"));
 
-export const saveFranchiseSession = (session: FranchiseSession, token: string): void => {
+export const saveFranchiseSession = (session: FranchiseSession): void => {
   writeValue(SESSION_KEY, JSON.stringify(session));
-  writeValue(FRANCHISE_TOKEN_KEY, token);
 };
 
-/**
- * Merge fresh profile details from the backend into the stored session and
- * write the result back, so the portal keeps showing the latest agreement
- * status after a refresh.
- */
 export const mergeFranchiseProfile = (details: Partial<FranchiseSession>): FranchiseSession => {
   const merged = { ...readFranchiseSession(), ...details } as FranchiseSession;
   writeValue(SESSION_KEY, JSON.stringify(merged));
   return merged;
 };
 
-/** Sign out of the franchise portal: forget both the session and its token. */
 export const clearStoredFranchiseSession = (): void => {
   removeValue(SESSION_KEY);
-  removeValue(FRANCHISE_TOKEN_KEY);
+  removeValue(LEGACY_FRANCHISE_TOKEN_KEY);
 };

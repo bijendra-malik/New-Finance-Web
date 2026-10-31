@@ -27,7 +27,6 @@ import { agreementTone } from "../components/franchise/dashboard/agreementTone";
 import OverviewPanel from "../components/franchise/dashboard/OverviewPanel";
 import useSEO from "../hooks/useSEO";
 import {
-  clearStoredFranchiseSession,
   mergeFranchiseProfile,
   readFranchiseSession,
   isFranchiseSignedIn,
@@ -52,7 +51,7 @@ const FranchisorDashboardPage = () => {
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, logout } = useAuth();
 
   const [session, setSession] = useState<FranchiseSession | null>(() => readFranchiseSession());
   const [hasToken, setHasToken] = useState(isFranchiseSignedIn);
@@ -165,7 +164,7 @@ const FranchisorDashboardPage = () => {
     setSession(null);
     setHasToken(false);
     setProfile(null);
-    clearStoredFranchiseSession();
+    logout();
     navigate("/franchise-login");
   };
 

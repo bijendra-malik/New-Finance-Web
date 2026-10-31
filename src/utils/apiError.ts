@@ -1,3 +1,16 @@
+const INTERNAL_DETAIL_PATTERN =
+  /no document found|model\s+["']|mongoose|mongodb|objectid|e11000|duplicate key|node_modules|\.[cm]?[jt]sx?:\d+:\d+|\bat\s+\w[\w.$]*\s*\([^)]*:\d+\)/i;
+
+const MAX_MESSAGE_LENGTH = 240;
+
+const toUserFacingMessage = (message: unknown, fallback: string): string => {
+  if (typeof message !== "string") return fallback;
+  const text = message.replace(/\s+/g, " ").trim();
+  if (!text || text.length > MAX_MESSAGE_LENGTH) return fallback;
+  if (INTERNAL_DETAIL_PATTERN.test(text)) return fallback;
+  return text;
+};
+
 export const getApiRetryAfter = (err: unknown): string => {
   const value = (
     err as { response?: { data?: { retryAfter?: { availableAt?: unknown } } } } | undefined
@@ -26,11 +39,11 @@ export const getApiErrorMessage = (
   fallback = "Something went wrong. Please try again."
 ): string => {
   const anyErr = err as { response?: { data?: { message?: string } }; message?: string };
-  const message = anyErr?.response?.data?.message || anyErr?.message;
-  if (typeof message === "string" && /no document found.*model\s+["']otp["']/i.test(message)) {
+  const raw = anyErr?.response?.data?.message || anyErr?.message;
+  if (typeof raw === "string" && /no document found.*model\s+["']otp["']/i.test(raw)) {
     return "This OTP request has expired or is no longer available. Please request a new OTP.";
   }
-  return withRetryAfter(message || fallback, err);
+  return withRetryAfter(toUserFacingMessage(raw, fallback), err);
 };
 
 export type ApiFieldErrors = Record<string, string>;
@@ -49,8 +62,9 @@ export const getApiFieldErrors = (err: unknown): ApiFieldErrors => {
   const fieldErrors: ApiFieldErrors = {};
   for (const issue of issues) {
     const { path, msg } = (issue ?? {}) as ValidationIssue;
-    if (typeof path !== "string" || typeof msg !== "string" || !msg.trim()) continue;
-    if (!fieldErrors[path]) fieldErrors[path] = msg.trim();
+    const text = toUserFacingMessage(msg, "");
+    if (typeof path !== "string" || !text) continue;
+    if (!fieldErrors[path]) fieldErrors[path] = text;
   }
   return fieldErrors;
 };

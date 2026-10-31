@@ -5,6 +5,7 @@ import {
   franchiseApplyResponseInterceptor,
 } from "./franchiseFiling";
 import { emitAuthCleared } from "../utils/authEvents";
+import { purgeSessionCredentials } from "../utils/sessionCredentials";
 import { rememberPendingCreditScoreDraft } from "../utils/applicationFlowState";
 
 const axiosInstance = axios.create({
@@ -109,8 +110,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      purgeSessionCredentials();
       emitAuthCleared();
     }
     return Promise.reject(error);

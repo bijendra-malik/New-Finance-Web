@@ -53,6 +53,14 @@ export const readSubmittedApplication = (
   }
 };
 
+export const clearSubmittedApplications = (): void => {
+  try {
+    localStorage.removeItem(SUBMITTED_APPLICATIONS_KEY);
+  } catch {
+    // ignore storage errors so a full browser does not break the apply flow
+  }
+};
+
 export interface PendingCreditScoreDraft {
   ownerId: string;
   loanKey: string;
