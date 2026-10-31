@@ -4,9 +4,11 @@ import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram } from "react-icons/f
 import footerBg from "../../assets/bg-footerimg01.webp";
 import globeVideo from "../../assets/logo-footer.webm";
 import { SITE_URL } from "../../constants/siteLinks";
+import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
 
 const Footer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaAllowed = useHeavyMediaAllowed();
   // Browsers without IntersectionObserver simply attach the video right away.
   const [reachedFooter, setReachedFooter] = useState(
     () => typeof IntersectionObserver === "undefined",
@@ -287,7 +289,7 @@ const Footer = () => {
               <video
                 ref={videoRef}
                 className="ftr-globe-video"
-                src={reachedFooter ? globeVideo : undefined}
+                src={reachedFooter && mediaAllowed ? globeVideo : undefined}
                 preload="none"
                 autoPlay
                 loop
