@@ -180,7 +180,7 @@ function App() {
                 <Route
                   key={path}
                   path={path}
-                  element={element}
+                  element={<ProtectedRoute>{element}</ProtectedRoute>}
                 />
               ))}
 
