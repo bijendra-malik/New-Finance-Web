@@ -153,7 +153,7 @@ const ProductDetails = () => {
               {/* Heading + tag badge */}
               <div className="flex items-start gap-3 flex-wrap mb-1">
                 <h2
-                  className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight"
+                  className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
                   style={{ color: "var(--brand-yellow)" }}
                 >
                   {active.heading}

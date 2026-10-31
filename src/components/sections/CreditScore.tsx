@@ -265,7 +265,7 @@ const CreditScore = () => {
     <section ref={sectionRef} className="w-full bg-[#f0f9ff] py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
 
       {/* Heading */}
-      <h2 className="text-center sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-700 uppercase tracking-wide mb-2">
+      <h2 className="text-center sm:text-2xl md:text-4xl font-extrabold text-slate-700 uppercase tracking-wide mb-2">
         Get Your{" "}
         <span style={{ color: "#006699" }}>Free Credit Score</span>{" "}
         and Report

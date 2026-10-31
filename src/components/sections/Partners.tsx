@@ -113,7 +113,7 @@ const Partners = () => {
 
       {/* Heading — two lines only */}
       <div className="text-center mb-8 px-4">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-800 leading-snug">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 leading-snug">
           Trusted by India's Leading Institutions —{" "}
           <span className="bg-linear-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">
             Our Business Partners
