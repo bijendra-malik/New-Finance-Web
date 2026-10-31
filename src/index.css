@@ -8,6 +8,15 @@
   --header-h: 80px;
   --subnav-h: 52px;
 
+/* Layering scale */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-hero: 20;
+  --z-header: 40;
+  --z-backdrop: 50;
+  --z-modal: 60;
+  --z-popover: 70;
+
   --brand-teal: #26ae90;
   --brand-navy: #066a9c;
   --brand-dark: #286090;
@@ -113,5 +122,19 @@
 
 [id$="-datepicker-portal"] {
   position: relative;
-  z-index: 120;
+  z-index: var(--z-popover);
+}
+
+/* Focus visibility */
+header a:focus-visible,
+header button:focus-visible,
+footer a:focus-visible,
+.ftr-link:focus-visible {
+  outline: 2px solid var(--brand-teal);
+  outline-offset: 3px;
+}
+
+footer a:focus-visible,
+.ftr-link:focus-visible {
+  outline-color: var(--brand-yellow);
 }
