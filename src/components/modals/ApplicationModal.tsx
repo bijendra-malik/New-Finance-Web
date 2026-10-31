@@ -84,7 +84,7 @@ const isAlreadyRegisteredResponse = (
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface ApplicationModalProps {
+export interface ApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName?: string;

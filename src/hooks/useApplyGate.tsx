@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import ApplicationModal from "../components/modals/ApplicationModal";
+import ApplicationModal from "../components/modals/LazyApplicationModal";
 import { products } from "../components/sections/productDetailsData";
 
 const productLabelById = (id: string) => products.find((p) => p.id === id)?.label ?? id;

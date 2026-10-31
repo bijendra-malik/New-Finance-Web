@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import bgImage from "../../assets/copyright-free.webp";
-import ApplicationModal from "../modals/ApplicationModal";
+import ApplicationModal from "../modals/LazyApplicationModal";
 
 import { products, PRODUCT_META, VISIBLE_COUNT } from "./productDetailsData";
 import type { Feature } from "./productDetailsData";
