@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX, PAN_REGEX, earliestDobForAge, isAtLeastAge, isAtMostAge, latestDobForAge } from "../../utils/validation";
+import { EMAIL_REGEX, MOBILE_REGEX, NAME_REGEX, PAN_REGEX, isAtLeastAge, isAtMostAge } from "../../utils/validation";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
@@ -25,6 +25,7 @@ import {
 import Button from "../ui/Button";
 import CodeBoxes from "../ui/CodeBoxes";
 import { advanceOnEnter } from "../../utils/enterToNext";
+import { DateOfBirthPicker } from "../form/FormControls";
 import { resolveDashboardPath } from "./applicationModalRoutes";
 import { Field, Select } from "./applicationModalFields";
 
@@ -729,14 +730,17 @@ const ApplicationModal = ({
                           value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
                           placeholder="you@example.com" error={fieldErrors.email}
                         />
-                        <Field
-                          label="Date of Birth" type="date" name="dob"
-                          value={dob}
-                          min={earliestDobForAge(65)}
-                          max={latestDobForAge(18)}
-                          onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
-                          error={fieldErrors.dob}
-                        />
+                        <div>
+                          <label htmlFor="apply-dob-day" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                            Date of Birth <span className="text-red-500 ml-0.5">*</span>
+                          </label>
+                          <DateOfBirthPicker
+                            id="apply-dob-day"
+                            value={dob}
+                            onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
+                            err={fieldErrors.dob}
+                          />
+                        </div>
                         <Field
                           label="PAN Number" type="text" name="pan"
                           value={pan}

@@ -27,8 +27,8 @@ export const FieldLabel = ({ label, required }: { label: string; required?: bool
   </label>
 );
 
-export const FieldError = ({ msg }: { msg?: string }) => msg
-  ? <p className="text-xs text-red-500 mt-1">{msg}</p> : null;
+export const FieldError = ({ msg, id }: { msg?: string; id?: string }) => msg
+  ? <p id={id} className="text-xs text-red-500 mt-1">{msg}</p> : null;
 
 interface TextFieldProps {
   type?: string; value: string; onChange: (v: string) => void; placeholder: string;
@@ -199,7 +199,17 @@ const joinBirthDate = (day: string, month: string, year: string): string => {
 const DOB_PART_CLASS =
   "min-w-0 bg-transparent px-1 py-(--form-field-pad-y) text-center text-sm tabular-nums focus:outline-none disabled:cursor-not-allowed";
 
-export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false }: { value: string; onChange: (v: string) => void; err?: string; disabled?: boolean }) => {
+interface DateOfBirthPickerProps {
+  value: string; onChange: (v: string) => void; err?: string; disabled?: boolean;
+  id?: string;
+  minAge?: number;
+  maxAge?: number | null;
+  showError?: boolean;
+}
+
+export const DateOfBirthPicker = memo(({
+  value, onChange, err, disabled = false, id, minAge = 18, maxAge = 65, showError = true,
+}: DateOfBirthPickerProps) => {
   const initial = splitBirthDate(value);
   const [day, setDay] = useState(initial.day);
   const [month, setMonth] = useState(initial.month);
@@ -277,14 +287,19 @@ export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false 
     emit(day, month, digits);
   };
 
-  // Applicants must be 18–65, so the calendar only offers dates inside that window.
+  // The calendar only offers dates inside the caller's age window.
   const today = new Date();
-  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-  const minDate = new Date(today.getFullYear() - 66, today.getMonth(), today.getDate() + 1);
+  const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+  const minDate = maxAge == null
+    ? null
+    : new Date(today.getFullYear() - maxAge - 1, today.getMonth(), today.getDate() + 1);
 
   const complete = day.length === 2 && month.length === 2 && year.length === 4;
-  const validDate = complete && joinBirthDate(day, month, year) !== "";
-  const shownError = complete && !validDate ? "Enter a valid date of birth" : err;
+  const invalidDate = complete && !joinBirthDate(day, month, year);
+  const internalError = invalidDate ? "Enter a valid date of birth" : "";
+  const shownError = internalError || err;
+  const errorId = id ? `${id}-error` : undefined;
+  const describedBy = shownError && errorId ? errorId : undefined;
 
   const openCalendar = () => {
     const input = calendarRef.current;
@@ -308,6 +323,7 @@ export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false 
         role="group"
         aria-label="Date of birth"
         aria-invalid={shownError ? true : undefined}
+        aria-describedby={describedBy}
         className={`flex items-center overflow-hidden rounded-(--form-field-radius) border transition-all focus-within:border-(--brand-teal) focus-within:ring-2 focus-within:ring-(--brand-teal-20) ${
           shownError ? "border-(--form-error)" : "border-(--form-field-border)"
         } ${disabled ? "cursor-not-allowed" : ""}`}
@@ -315,6 +331,7 @@ export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false 
       >
         <input
           ref={dayRef}
+          id={id}
           value={day}
           onChange={(e) => changeDay(e.target.value)}
           onFocus={(e) => e.currentTarget.select()}
@@ -393,7 +410,7 @@ export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false 
         ref={calendarRef}
         type="date"
         value={value}
-        min={toISODate(minDate)}
+        min={minDate ? toISODate(minDate) : undefined}
         max={toISODate(maxDate)}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
@@ -402,7 +419,11 @@ export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false 
         className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
       />
 
-      <FieldError msg={shownError} />
+      {showError
+        ? <FieldError msg={shownError} id={errorId} />
+        : internalError
+          ? <FieldError msg={internalError} id={errorId} />
+          : null}
     </div>
   );
 });

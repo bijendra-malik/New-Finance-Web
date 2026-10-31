@@ -3,6 +3,7 @@ import { formatGSTIN, formatPAN } from "../../utils/formatters";
 import { OTHER_OPTION } from "../../constants/masters";
 import { PackageSelector } from "./PlanSelector";
 import { LocationFields } from "../form/LocationFields";
+import { DateOfBirthPicker } from "../form/FormControls";
 import { Field } from "../ui/FieldRenderer";
 import type { Continent, Country } from "../../api/masters";
 import type { FranchisePlan } from "./franchiseData";
@@ -135,13 +136,14 @@ export const FranchiseFields = ({
       case "dob":
         return (
           <Field id={fid("dob")} label="Date of Birth" required error={errors.dob}>
-            <input
+            <DateOfBirthPicker
               id={fid("dob")}
-              type="date"
-              className={inputClass(!!errors.dob)}
               value={values.dob}
-              onChange={(e) => set("dob", e.target.value)}
-              placeholder="YYYY-MM-DD"
+              onChange={(v) => set("dob", v)}
+              err={errors.dob}
+              minAge={21}
+              maxAge={null}
+              showError={false}
             />
           </Field>
         );
