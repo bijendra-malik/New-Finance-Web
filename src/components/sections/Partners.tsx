@@ -109,7 +109,7 @@ const Partners = () => {
   const sectionRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={sectionRef} className="w-full bg-slate-50 py-8 md:py-15 overflow-hidden">
+    <section ref={sectionRef} className="w-full bg-slate-50 py-8 md:py-16 overflow-hidden">
 
       {/* Heading — two lines only */}
       <div className="text-center mb-8 px-4">

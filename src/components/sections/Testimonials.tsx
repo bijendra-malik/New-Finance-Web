@@ -84,7 +84,7 @@ const Testimonials = () => {
   }, []);
 
   return (
-    <section className="w-full py-8 md:py-15 px-4 md:px-8 relative overflow-hidden" style={{ background: "rgb(240, 249, 255)" }}>
+    <section className="w-full py-8 md:py-16 px-4 md:px-8 relative overflow-hidden" style={{ background: "rgb(240, 249, 255)" }}>
       <div
         className="absolute top-0 left-0 w-full h-0.5 z-20"
         style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))" }}
