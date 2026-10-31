@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
+import { advanceOnEnter } from "../utils/enterToNext";
 
 // ── Static data ───────────────────────────────────────────────────────────────
 const loanProducts = [
@@ -50,6 +51,9 @@ const EligibilityCalculatorPage = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [result, setResult]  = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
+  const dobDayRef = useRef<HTMLInputElement>(null);
+  const dobMonthRef = useRef<HTMLInputElement>(null);
+  const dobYearRef = useRef<HTMLInputElement>(null);
 
   const set = (f: keyof FormData, v: string | boolean) =>
     setForm(p => ({ ...p, [f]: v }));
@@ -239,7 +243,7 @@ const EligibilityCalculatorPage = () => {
               <p className="text-xs text-gray-500 mt-0.5">All fields marked * are required</p>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate className="px-6 md:px-8 py-7">
+            <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} noValidate className="px-6 md:px-8 py-7">
 
               {/* Row 1: Country | Product | Full Name */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
@@ -273,7 +277,27 @@ const EligibilityCalculatorPage = () => {
                   <div className="flex gap-2">
                     {([ ["dobDD","DD",2], ["dobMM","MM",2], ["dobYYYY","YYYY",4] ] as [keyof FormData, string, number][]).map(([f, ph, ml]) => (
                       <input key={f} type="text" placeholder={ph} maxLength={ml} value={form[f] as string}
-                        onChange={e => set(f, e.target.value)}
+                        ref={f === "dobDD" ? dobDayRef : f === "dobMM" ? dobMonthRef : dobYearRef}
+                        inputMode="numeric"
+                        autoComplete={f === "dobDD" ? "bday-day" : f === "dobMM" ? "bday-month" : "bday-year"}
+                        onChange={e => {
+                          let digits = e.target.value.replace(/\D/g, "").slice(0, ml);
+                          let advance = false;
+                          if (f === "dobDD" && digits.length === 1 && Number(digits) > 3) {
+                            digits = `0${digits}`;
+                            advance = true;
+                          } else if (f === "dobMM" && digits.length === 1 && Number(digits) > 1) {
+                            digits = `0${digits}`;
+                            advance = true;
+                          } else if (digits.length === ml) {
+                            advance = true;
+                          }
+                          set(f, digits);
+                          if (advance) {
+                            if (f === "dobDD") dobMonthRef.current?.focus();
+                            else if (f === "dobMM") dobYearRef.current?.focus();
+                          }
+                        }}
                         className={`flex-1 border rounded-xl px-2 py-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${errors.dobDD ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"}`}
                       />
                     ))}

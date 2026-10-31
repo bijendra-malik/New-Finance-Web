@@ -6,9 +6,9 @@ import LeadForm from "../components/forms/LeadForm";
 import useSEO from "../hooks/useSEO";
 
 /**
- * Contact Us page — every way to reach us in the left column, enquiry form on
- * the right. The phone numbers share one box, the email addresses another, and
- * the social profiles a third.
+ * Contact Us — a single navy direct-lines panel beside a squared enquiry
+ * sheet, followed by the registered office address and map. Contact channels
+ * share one panel so the page does not repeat the same card four times.
  */
 
 const PHONE_LINES = [
@@ -17,6 +17,21 @@ const PHONE_LINES = [
 ];
 
 const EMAILS = ["loans@indexiafinance.com", "contactus@indexiafinance.com"];
+
+const OFFICE = {
+  name: "Indexia Finserve Pvt Ltd - An Indexia Group Company",
+  addressLines: [
+    "213, Second Floor, Imperial Tower",
+    "Near Gurudwara, C Block Commercial Complex",
+    "Naraina Vihar, New Delhi \u2013 110028",
+  ],
+  phone: { label: "+91 11 4629 1155", href: "tel:+911146291155" },
+  mapQuery:
+    "Indexia Finserve Pvt Ltd, 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
+};
+
+const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(OFFICE.mapQuery)}&output=embed`;
+const MAP_DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.mapQuery)}`;
 
 interface SocialLink {
   name: string;
@@ -69,8 +84,8 @@ const CARD_STYLE = {
   boxShadow: "0 2px 12px rgba(6,106,156,0.06)",
 } as const;
 
-const PhoneIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+const PhoneIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
       strokeLinecap="round"
@@ -79,38 +94,14 @@ const PhoneIcon = () => (
   </svg>
 );
 
-const MailIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+const MailIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
   </svg>
-);
-
-const ShareIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-    <circle cx="18" cy="5" r="3" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="6" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="18" cy="19" r="3" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-const CardHeading = ({ icon, title, note }: { icon: React.ReactNode; title: string; note?: string }) => (
-  <div className="mb-4 flex items-center gap-3">
-    <div
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
-      style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))" }}
-    >
-      {icon}
-    </div>
-    <div>
-      <h3 className="text-base font-bold text-gray-800">{title}</h3>
-      {note && <p className="text-[12px] text-gray-500">{note}</p>}
-    </div>
-  </div>
 );
 
 const ContactPage = () => {
@@ -132,68 +123,165 @@ const ContactPage = () => {
 
       <div className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 md:px-8">
-          <div className="mb-8">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
-              Send an Enquiry
-            </span>
-            <h2 className="mt-2 text-2xl font-bold text-gray-800">Have a Question About a Loan?</h2>
-            <div
-              className="mt-3 h-0.75 w-32 rounded-full"
-              style={{ background: "linear-gradient(90deg,#27ae90 0%,var(--brand-navy) 55%,transparent 100%)" }}
-            />
-            <p className="mt-4 text-sm leading-relaxed text-gray-500">
-              Tell us what you're looking for and our loan experts will guide you to the right product —
-              from personal and home loans to gold loans, OD/CC limits and FDI funding.
-            </p>
-          </div>
+          {/* Editorial intro — a statement, not another card heading */}
+          <header className="mb-8 border-t border-slate-200 pt-5">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-end">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--brand-navy)">
+                  Contact / Loan help desk
+                </p>
+                <h2 className="mt-2 max-w-2xl text-3xl font-extrabold leading-[1.05] tracking-tight text-slate-900 md:text-4xl">
+                  Loans begin with a <span className="text-(--brand-teal)">conversation.</span>
+                </h2>
+              </div>
+              <p className="max-w-xs text-sm leading-relaxed text-slate-500 md:justify-self-end md:pb-1 md:text-right">
+                Share the product and the amount. A loan specialist will take it from there.
+              </p>
+            </div>
+          </header>
 
           <div className="grid gap-6 lg:grid-cols-5">
-            {/* Contact details on the left, enquiry form on the right */}
-            <div className="grid gap-6 lg:col-span-2">
-              {/* Phone numbers — landline and mobile share one box */}
-              <div className="rounded-2xl p-6" style={CARD_STYLE}>
-                <CardHeading icon={<PhoneIcon />} title="Call Us" note="Mon–Sat, 9:30 AM – 6:30 PM IST" />
-                <ul className="space-y-2.5">
-                  {PHONE_LINES.map((line) => (
-                    <li key={line.href}>
-                      <a
-                        href={line.href}
-                        className="flex items-baseline justify-between gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                      >
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                          {line.label}
-                        </span>
-                        <span className="text-sm font-bold text-(--brand-navy)">{line.number}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Email addresses share their own box */}
-              <div className="rounded-2xl p-6" style={CARD_STYLE}>
-                <CardHeading icon={<MailIcon />} title="Email Us" note="You will be contacted shortly." />
-                <ul className="space-y-2.5">
-                  {EMAILS.map((email) => (
-                    <li key={email}>
-                      <a
-                        href={`mailto:${email}`}
-                        className="block truncate rounded-xl px-3 py-2 text-sm font-semibold text-(--brand-navy) transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                      >
-                        {email}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Enquiry form */}
-            <div className="lg:col-span-3">
+            {/* Contact channels — one navy panel instead of separate cards */}
+            <aside
+              aria-labelledby="contact-desk-heading"
+              className="relative flex flex-col overflow-hidden text-white lg:col-span-2"
+              style={{
+                background: "linear-gradient(160deg, var(--brand-navy-deep) 0%, var(--brand-navy) 100%)",
+                borderRadius: "2px",
+              }}
+            >
               <div
-                className="rounded-2xl p-6 md:p-8"
-                style={{ border: "1px solid rgba(6,106,156,0.12)", boxShadow: "0 2px 16px rgba(6,106,156,0.08)" }}
-              >
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(135deg, rgba(255,255,255,0.045) 0, rgba(255,255,255,0.045) 1px, transparent 1px, transparent 16px)",
+                }}
+              />
+
+              <div className="relative flex flex-1 flex-col">
+                <div className="border-b border-white/15 px-6 py-5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--brand-yellow)">
+                    Direct lines
+                  </p>
+                  <h2 id="contact-desk-heading" className="mt-1 text-xl font-extrabold tracking-tight">
+                    Talk to a person.
+                  </h2>
+                  <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/75">
+                    Mon–Sat · 9:30 AM – 6:30 PM IST
+                  </p>
+                </div>
+
+                <section aria-labelledby="contact-call-heading" className="border-b border-white/15 px-6 py-5">
+                  <h3
+                    id="contact-call-heading"
+                    className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/85"
+                  >
+                    <PhoneIcon className="h-3.5 w-3.5 text-(--brand-teal)" />
+                    Call
+                  </h3>
+                  <ul className="mt-3 space-y-1">
+                    {PHONE_LINES.map((line) => (
+                      <li key={line.href}>
+                        <a
+                          href={line.href}
+                          className="group flex items-baseline justify-between gap-3 rounded-sm py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                        >
+                          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/80">
+                            {line.label}
+                          </span>
+                          <span className="text-[15px] font-bold tracking-tight text-white transition-colors group-hover:text-(--brand-yellow)">
+                            {line.number}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section aria-labelledby="contact-write-heading" className="px-6 py-5">
+                  <h3
+                    id="contact-write-heading"
+                    className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/85"
+                  >
+                    <MailIcon className="h-3.5 w-3.5 text-(--brand-teal)" />
+                    Write
+                  </h3>
+                  <ul className="mt-3 space-y-1">
+                    {EMAILS.map((email) => (
+                      <li key={email}>
+                        <a
+                          href={`mailto:${email}`}
+                          className="group flex items-center justify-between gap-3 rounded-sm py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                        >
+                          <span className="min-w-0 break-all text-[12px] font-semibold text-white/85 transition-colors group-hover:text-(--brand-yellow)">
+                            {email}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className="shrink-0 text-[13px] leading-none text-white/35 transition group-hover:translate-x-0.5 group-hover:text-(--brand-yellow)"
+                          >
+                            ↗
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <div className="mt-auto border-t border-white/15 px-6 py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/75">Follow</p>
+                    <ul aria-label="Indexia Finance social profiles" className="flex items-center gap-1.5">
+                      {SOCIAL_LINKS.map((social) => {
+                        const Icon = social.icon;
+                        return (
+                          <li key={social.name}>
+                            <a
+                              href={social.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`${social.name} — ${social.handle}`}
+                              title={`${social.name} — ${social.handle}`}
+                              className="flex h-8 w-8 items-center justify-center rounded-full text-white ring-1 ring-white/20 transition-transform hover:-translate-y-0.5 hover:ring-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                              style={{ background: social.brand }}
+                            >
+                              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            {/* Enquiry sheet — squared paper with its own header, not another rounded card */}
+            <section
+              aria-labelledby="enquiry-form-heading"
+              className="lg:col-span-3"
+              style={{ border: "1px solid rgba(6,106,156,0.16)", background: "#fbfcfd" }}
+            >
+              <div className="h-1 w-full bg-(--brand-teal)" />
+              <div className="p-6 md:p-8">
+                <div className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-5">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--brand-navy)">
+                      Enquiry form
+                    </p>
+                    <h2
+                      id="enquiry-form-heading"
+                      className="mt-1 text-xl font-extrabold tracking-tight text-slate-900"
+                    >
+                      Send an enquiry
+                    </h2>
+                  </div>
+                  <p className="max-w-xs text-[11.5px] leading-5 text-slate-500">
+                    We will use the mobile number or email you give us to reply.
+                  </p>
+                </div>
+
                 <LeadForm
                   submitLabel="Send Enquiry"
                   successTitle="Enquiry Sent!"
@@ -226,40 +314,85 @@ const ContactPage = () => {
                   ]}
                 />
               </div>
+            </section>
+          </div>
+
+          {/* Office — address and Google Map, after the enquiry form */}
+          <section
+            aria-labelledby="office-heading"
+            className="mt-6 overflow-hidden rounded-2xl"
+            style={CARD_STYLE}
+          >
+            <div
+              className="border-b px-6 py-5"
+              style={{
+                borderColor: "rgba(6,106,156,0.12)",
+                background: "linear-gradient(90deg, rgba(6,106,156,0.06), rgba(39,174,144,0.06))",
+              }}
+            >
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
+                Our Office
+              </p>
+              <h2 id="office-heading" className="mt-1 text-lg font-bold text-gray-800 md:text-xl">
+                Indexia Finserve Pvt Ltd - An Indexia Group Company
+              </h2>
             </div>
-          </div>
 
-          {/* Social profiles */}
-          <div className="rounded-2xl p-6 mt-6" style={CARD_STYLE}>
-            <CardHeading icon={<ShareIcon />} title="Follow Us" note="News, offers and loan updates" />
-            <ul className="grid gap-3 grid-cols-1 sm:grid-cols-3 lg:grid-cols-5">
-              {SOCIAL_LINKS.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <li key={social.name}>
-                    <a
-                      href={social.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                    >
-                      <span
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
-                        style={{ background: social.brand }}
-                      >
-                        <Icon className="h-4 w-4" aria-hidden="true" />
+            <div className="grid lg:grid-cols-5">
+              <div className="flex flex-col justify-center gap-4 p-6 lg:col-span-2">
+                <div className="flex items-start gap-3">
+                  <span
+                    className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white"
+                    style={{ background: "linear-gradient(135deg,#27ae90,var(--brand-navy))" }}
+                    aria-hidden="true"
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path
+                        d="M12 21s-7-5.686-7-11a7 7 0 1114 0c0 5.314-7 11-7 11z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="12" cy="10" r="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <address className="not-italic text-sm leading-7 text-gray-600">
+                    {OFFICE.addressLines.map((line) => (
+                      <span key={line} className="block">
+                        {line}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block text-[13.5px] font-bold text-gray-800">{social.name}</span>
-                        <span className="block truncate text-[12px] text-gray-500">{social.handle}</span>
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                    ))}
+                  </address>
+                </div>
 
+                <a
+                  href={OFFICE.phone.href}
+                  className="w-fit rounded-xl px-3 py-2 text-sm font-bold text-(--brand-navy) transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                >
+                  Call {OFFICE.phone.label}
+                </a>
+
+                <a
+                  href={MAP_DIRECTIONS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-fit text-[12.5px] font-bold text-(--brand-teal) hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                >
+                  Get directions on Google Maps ↗
+                </a>
+              </div>
+
+              <div className="min-h-72 lg:col-span-3">
+                <iframe
+                  src={MAP_EMBED_URL}
+                  title="Indexia Finserve Pvt Ltd, Naraina Vihar, New Delhi on Google Maps"
+                  className="h-full min-h-72 w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </>

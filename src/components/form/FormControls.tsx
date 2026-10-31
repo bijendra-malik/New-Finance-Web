@@ -1,5 +1,5 @@
 import { forwardRef, memo, useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { FocusEvent, ReactNode } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { THEME as C } from "../../constants/theme";
@@ -178,12 +178,233 @@ export const DateField = memo(({ value, onChange, err, minDate, maxDate, portalI
 ));
 DateField.displayName = "DateField";
 
-export const DateOfBirthPicker = memo(({ value, onChange, err, disabled }: { value: string; onChange: (v: string) => void; err?: string; disabled?: boolean }) => {
+const splitBirthDate = (value: string): { day: string; month: string; year: string } => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match
+    ? { year: match[1], month: match[2], day: match[3] }
+    : { year: "", month: "", day: "" };
+};
+
+const joinBirthDate = (day: string, month: string, year: string): string => {
+  if (day.length !== 2 || month.length !== 2 || year.length !== 4) return "";
+  const d = Number(day);
+  const m = Number(month);
+  const y = Number(year);
+  // Reject rolled-over dates such as 31 February.
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return "";
+  return `${year}-${month}-${day}`;
+};
+
+const DOB_PART_CLASS =
+  "min-w-0 bg-transparent px-1 py-(--form-field-pad-y) text-center text-sm tabular-nums focus:outline-none disabled:cursor-not-allowed";
+
+export const DateOfBirthPicker = memo(({ value, onChange, err, disabled = false }: { value: string; onChange: (v: string) => void; err?: string; disabled?: boolean }) => {
+  const initial = splitBirthDate(value);
+  const [day, setDay] = useState(initial.day);
+  const [month, setMonth] = useState(initial.month);
+  const [year, setYear] = useState(initial.year);
+  const dayRef = useRef<HTMLInputElement>(null);
+  const monthRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+  const calendarRef = useRef<HTMLInputElement>(null);
+  const emittedRef = useRef(value);
+
+  // A prefill, reset or calendar pick changes the parent value; mirror it into
+  // the three typed parts without clobbering what the user is currently typing.
+  useEffect(() => {
+    if (value === emittedRef.current) return;
+    emittedRef.current = value;
+    const next = splitBirthDate(value);
+    setDay(next.day);
+    setMonth(next.month);
+    setYear(next.year);
+  }, [value]);
+
+  const emit = (nextDay: string, nextMonth: string, nextYear: string) => {
+    const iso = joinBirthDate(nextDay, nextMonth, nextYear);
+    emittedRef.current = iso;
+    onChange(iso);
+  };
+
+  const changeDay = (raw: string) => {
+    let digits = raw.replace(/\D/g, "").slice(0, 2);
+    let advance = false;
+    if (digits.length === 1 && Number(digits) > 3) {
+      digits = `0${digits}`;
+      advance = true;
+    } else if (digits.length === 2) {
+      advance = true;
+    }
+    setDay(digits);
+    emit(digits, month, year);
+    if (advance) monthRef.current?.focus();
+  };
+
+  const padDay = (event: FocusEvent<HTMLInputElement>) => {
+    const current = event.currentTarget.value;
+    if (current.length !== 1) return;
+    const next = `0${current}`;
+    setDay(next);
+    emit(next, month, year);
+  };
+
+  const padMonth = (event: FocusEvent<HTMLInputElement>) => {
+    const current = event.currentTarget.value;
+    if (current.length !== 1) return;
+    const next = `0${current}`;
+    setMonth(next);
+    emit(day, next, year);
+  };
+
+  const changeMonth = (raw: string) => {
+    let digits = raw.replace(/\D/g, "").slice(0, 2);
+    let advance = false;
+    if (digits.length === 1 && Number(digits) > 1) {
+      digits = `0${digits}`;
+      advance = true;
+    } else if (digits.length === 2) {
+      advance = true;
+    }
+    setMonth(digits);
+    emit(day, digits, year);
+    if (advance) yearRef.current?.focus();
+  };
+
+  const changeYear = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 4);
+    setYear(digits);
+    emit(day, month, digits);
+  };
+
   // Applicants must be 18–65, so the calendar only offers dates inside that window.
   const today = new Date();
   const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
   const minDate = new Date(today.getFullYear() - 66, today.getMonth(), today.getDate() + 1);
-  return <DateField value={value} onChange={onChange} err={err} minDate={minDate} maxDate={maxDate} portalId="dob-datepicker-portal" disabled={disabled} />;
+
+  const complete = day.length === 2 && month.length === 2 && year.length === 4;
+  const validDate = complete && joinBirthDate(day, month, year) !== "";
+  const shownError = complete && !validDate ? "Enter a valid date of birth" : err;
+
+  const openCalendar = () => {
+    const input = calendarRef.current;
+    if (!input || disabled) return;
+    const picker = input as HTMLInputElement & { showPicker?: () => void };
+    if (typeof picker.showPicker === "function") {
+      try {
+        picker.showPicker();
+        return;
+      } catch {
+        // Fall back to a normal click where the picker API is unavailable.
+      }
+    }
+    input.focus();
+    input.click();
+  };
+
+  return (
+    <div className="relative">
+      <div
+        role="group"
+        aria-label="Date of birth"
+        aria-invalid={shownError ? true : undefined}
+        className={`flex items-center overflow-hidden rounded-(--form-field-radius) border transition-all focus-within:border-(--brand-teal) focus-within:ring-2 focus-within:ring-(--brand-teal-20) ${
+          shownError ? "border-(--form-error)" : "border-(--form-field-border)"
+        } ${disabled ? "cursor-not-allowed" : ""}`}
+        style={{ background: disabled ? FORM.fieldBgDisabled : FORM.fieldBg }}
+      >
+        <input
+          ref={dayRef}
+          value={day}
+          onChange={(e) => changeDay(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={padDay}
+          disabled={disabled}
+          placeholder="DD"
+          inputMode="numeric"
+          autoComplete="bday-day"
+          aria-label="Day of birth"
+          maxLength={2}
+          className={`${DOB_PART_CLASS} w-11`}
+          style={{ color: C.dark }}
+        />
+        <span aria-hidden="true" className="text-sm text-slate-400">
+          /
+        </span>
+        <input
+          ref={monthRef}
+          value={month}
+          onChange={(e) => changeMonth(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={padMonth}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" && month === "") {
+              e.preventDefault();
+              dayRef.current?.focus();
+            }
+          }}
+          disabled={disabled}
+          placeholder="MM"
+          inputMode="numeric"
+          autoComplete="bday-month"
+          aria-label="Month of birth"
+          maxLength={2}
+          className={`${DOB_PART_CLASS} w-11`}
+          style={{ color: C.dark }}
+        />
+        <span aria-hidden="true" className="text-sm text-slate-400">
+          /
+        </span>
+        <input
+          ref={yearRef}
+          value={year}
+          onChange={(e) => changeYear(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" && year === "") {
+              e.preventDefault();
+              monthRef.current?.focus();
+            }
+          }}
+          disabled={disabled}
+          placeholder="YYYY"
+          inputMode="numeric"
+          autoComplete="bday-year"
+          aria-label="Year of birth"
+          maxLength={4}
+          className={`${DOB_PART_CLASS} w-16`}
+          style={{ color: C.dark }}
+        />
+        <button
+          type="button"
+          onClick={openCalendar}
+          disabled={disabled}
+          aria-label="Choose date of birth from the calendar"
+          className="ml-auto mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-(--brand-navy) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15" rx="2" />
+            <path d="M3.5 9.5h17M8 3v4M16 3v4" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <input
+        ref={calendarRef}
+        type="date"
+        value={value}
+        min={toISODate(minDate)}
+        max={toISODate(maxDate)}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+      />
+
+      <FieldError msg={shownError} />
+    </div>
+  );
 });
 DateOfBirthPicker.displayName = "DateOfBirthPicker";
 

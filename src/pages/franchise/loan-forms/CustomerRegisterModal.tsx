@@ -20,6 +20,7 @@ import {
   isAtMostAge,
 } from "../../../utils/validation";
 import { formatPAN } from "../../../utils/formatters";
+import { advanceOnEnter } from "../../../utils/enterToNext";
 import {
   franchisePortalError,
   registerFranchiseCustomer,
@@ -224,7 +225,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
       </div>
 
       {step === "details" ? (
-        <form onSubmit={submit} noValidate className="overflow-y-auto px-6 py-5" style={{ maxHeight: "calc(92vh - 8rem)" }}>
+        <form onSubmit={submit} onKeyDown={advanceOnEnter} noValidate className="overflow-y-auto px-6 py-5" style={{ maxHeight: "calc(92vh - 8rem)" }}>
           {formError && (
             <p
               role="alert"

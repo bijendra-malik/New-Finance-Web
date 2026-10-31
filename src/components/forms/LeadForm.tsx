@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { type LeadFieldConfig, validateTel, validateEmail } from "../ui/LeadFormConfig";
+import { advanceOnEnter } from "../../utils/enterToNext";
 
 /**
  * Shared lead/enquiry form used by Franchise Login, Be An Associate and Contact pages.
@@ -67,7 +68,7 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+    <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} className="space-y-5" noValidate>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {fields.map((f) => (
           <div key={f.name} className={f.half === false ? "md:col-span-2" : ""}>

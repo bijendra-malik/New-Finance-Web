@@ -352,7 +352,7 @@ const Footer = () => {
           alignItems: "center", justifyContent: "space-between", gap: "8px",
         }} className="ftr-bottom-pad">
           <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255, 255, 255, 1)", letterSpacing: "0.06em", textTransform: "uppercase", textAlign: "center" }}>
-              An Indexia Group Company
+              Indexia Finance - An Indexia Group Company
             </p>
           <div style={{ display: "flex", gap: "20px" }} className="ftr-bottom-links">
             {[

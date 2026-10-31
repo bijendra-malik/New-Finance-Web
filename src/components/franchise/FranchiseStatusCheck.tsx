@@ -8,6 +8,7 @@ import {
 import { getApiErrorMessage } from "../../utils/apiError";
 import { clearCredentials, readCredentials, saveCredentials } from "../../utils/credentialStorage";
 import { formatTimestamp, formatPAN } from "../../utils/formatters";
+import { advanceOnEnter } from "../../utils/enterToNext";
 import { MOBILE_REGEX, PAN_REGEX } from "../../utils/validation";
 import Button from "../ui/Button";
 import { Field, TextField } from "../ui/FieldRenderer";
@@ -224,7 +225,7 @@ const FranchiseStatusCheck = () => {
           </div>
         </div>
       ) : stage === "details" ? (
-        <form onSubmit={handleDetailsSubmit} noValidate className="mt-5 space-y-4">
+        <form onSubmit={handleDetailsSubmit} onKeyDown={advanceOnEnter} noValidate className="mt-5 space-y-4">
           <p className="text-[12.5px] leading-relaxed text-slate-500">
             Enter the mobile number and PAN used in your franchise application. We will send an OTP to
             that mobile before showing the status.

@@ -6,6 +6,7 @@ import { ConsentAndSubmit } from "./SubmitSection";
 import FormPageHeader from "./FormPageHeader";
 import ApplicationReviewModal from "./ApplicationReviewModal";
 import CreditScoreGate from "../loan-eligibility/CreditScoreGate";
+import { advanceOnEnter } from "../../utils/enterToNext";
 
 export interface SubmittedApplication {
   _id: string;
@@ -148,7 +149,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
 
   return (
     <>
-      <form className={`${FORM.maxWidth} mx-auto`} onSubmit={onSubmit} noValidate>
+      <form className={`${FORM.maxWidth} mx-auto`} onSubmit={onSubmit} onKeyDown={advanceOnEnter} noValidate>
         <FormPageHeader headline={headline} />
         {children}
         <ConsentAndSubmit

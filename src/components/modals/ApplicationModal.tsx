@@ -24,6 +24,7 @@ import {
 } from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
 import CodeBoxes from "../ui/CodeBoxes";
+import { advanceOnEnter } from "../../utils/enterToNext";
 import { resolveDashboardPath } from "./applicationModalRoutes";
 import { Field, Select } from "./applicationModalFields";
 
@@ -692,7 +693,7 @@ const ApplicationModal = ({
 
               {/* Capture applicant identity before opening the loan form. */}
               {step === "details" && (
-                <form onSubmit={handleDetailsSubmit} className="space-y-3" noValidate>
+                <form onSubmit={handleDetailsSubmit} onKeyDown={advanceOnEnter} className="space-y-3" noValidate>
                   {/* Product selected on the home page — a sign-in has none. */}
                   {!isLoginMode && (
                     <div className="rounded-xl border border-(--brand-teal)/30 bg-(--brand-teal-14) px-4 py-2.5">
@@ -734,13 +735,6 @@ const ApplicationModal = ({
                           min={earliestDobForAge(65)}
                           max={latestDobForAge(18)}
                           onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
-                          onKeyDown={(event) => {
-                            // Enter on a date input would submit the whole form; move to the next field instead.
-                            if (event.key !== "Enter") return;
-                            event.preventDefault();
-                            const next = event.currentTarget.form?.elements.namedItem("pan");
-                            if (next instanceof HTMLInputElement) next.focus();
-                          }}
                           error={fieldErrors.dob}
                         />
                         <Field

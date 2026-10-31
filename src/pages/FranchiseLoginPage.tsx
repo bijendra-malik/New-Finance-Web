@@ -10,6 +10,7 @@ import {
   saveFranchiseSession,
 } from "../utils/franchiseSession";
 import { getApiErrorMessage } from "../utils/apiError";
+import { advanceOnEnter } from "../utils/enterToNext";
 import useSEO from "../hooks/useSEO";
 import { useAuth } from "../context/authContext";
 
@@ -239,7 +240,7 @@ const FranchiseLoginPage = () => {
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
+                <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} noValidate className="mt-6 space-y-5">
                   <div>
                     <label htmlFor="franchise-id" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
                       Franchisee ID <span className="text-red-500">*</span>

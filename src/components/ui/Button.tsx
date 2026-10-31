@@ -25,6 +25,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   loading?: boolean;
   fullWidth?: boolean;
+  /** Marks the button Enter should move to when a form has no fields left. */
+  "data-enter-next"?: boolean;
   children: ReactNode;
 }
 

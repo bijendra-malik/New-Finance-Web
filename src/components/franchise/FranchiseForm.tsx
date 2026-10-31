@@ -11,6 +11,7 @@ import {
   type Country,
 } from "../../api/masters";
 import { buildMailtoUrl } from "../../utils/mailto";
+import { advanceOnEnter } from "../../utils/enterToNext";
 import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
 import { OTHER_OPTION } from "../../constants/masters";
 import { EMAIL_REGEX, MOBILE_REGEX, PAN_REGEX, PINCODE_REGEX, isAtLeastAge } from "../../utils/validation";
@@ -574,7 +575,7 @@ const FranchiseForm = ({
 
   return (
     <>
-    <form onSubmit={handleSubmit} noValidate className={isHorizontal ? "space-y-4" : "space-y-5"}>
+    <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} noValidate className={isHorizontal ? "space-y-4" : "space-y-5"}>
       {/* Stepped layout — progress + which step is on screen */}
       {isStepped && (
         <div className="space-y-2">
@@ -675,6 +676,7 @@ const FranchiseForm = ({
           )}
           {step < lastStep ? (
             <Button
+              data-enter-next
               size="lg"
               fullWidth
               onClick={() => {
