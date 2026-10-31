@@ -3,12 +3,14 @@ import { Link, useLocation } from "react-router-dom";
 import Container from "../common/Container";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
+import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
 
 const isRealSafari = /^((?!chrome|android|crios|fxios|edg|opr).)*safari/i.test(
   navigator.userAgent
 );
 
 const Header = () => {
+  const logoVideoReady = useHeavyMediaAllowed() && !isRealSafari;
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
@@ -84,8 +86,9 @@ const Header = () => {
   return (
     <>
       <header
-        className="fixed w-full top-0 z-55 border-b"
+        className="fixed w-full top-0 border-b"
         style={{
+          zIndex: "var(--z-header)",
           background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.55) 100%)",
           backdropFilter: "blur(14px) saturate(1.4)",
           WebkitBackdropFilter: "blur(14px) saturate(1.4)",
@@ -94,28 +97,26 @@ const Header = () => {
         }}
       >
         <Container>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center h-20 px-5">
+          <div className="grid grid-cols-[auto_1fr_auto] items-center h-20 px-5">
             {/* Logo Section — pinned left */}
-            <Link to="/" className="col-start-1 row-start-1 flex items-center gap-3">
-            <div className="col-start-1 row-start-1 flex items-center gap-3">
-              {isRealSafari ? (
-                <img src={LogoAlphaWebp} alt="Indexia Finance" decoding="async" className="h-20 w-auto" />
-              ) : (
+            <Link to="/" className="col-start-1 row-start-1 flex shrink-0 items-center gap-3">
+              {logoVideoReady ? (
                 <video
                   src={WebmLogo}
-                  className="h-20"
+                  className="h-20 w-auto shrink-0"
                   autoPlay
                   muted
                   loop
                   playsInline
                 />
+              ) : (
+                <img src={LogoAlphaWebp} alt="Indexia Finance" decoding="async" className="h-20 w-auto shrink-0" />
               )}
-            </div>
             </Link>
 
             {/* Hamburger (small screens) — pinned right */}
             <div className="col-start-3 row-start-1 flex items-center gap-2 justify-self-end">
-              <div className="hidden items-center gap-2 lg:flex">
+              <div className="hidden items-center gap-2 xl:flex">
                 <Link
                   to={franchiseeLoginLink.href}
                   aria-current={isRouteActive(franchiseeLoginLink.href) ? "page" : undefined}
@@ -133,7 +134,7 @@ const Header = () => {
               </div>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 cursor-pointer z-60 lg:hidden"
+                className="flex items-center justify-center w-10 h-10 cursor-pointer z-60 xl:hidden"
                 aria-label="Toggle Menu"
               >
               <div className="relative w-6 h-6">
@@ -157,7 +158,7 @@ const Header = () => {
             </div>
 
             {/* Navigation Section - Desktop Only, centered */}
-            <nav className="col-start-2 row-start-1 hidden lg:block justify-self-center text-slate-600 font-medium">
+            <nav className="col-start-2 row-start-1 hidden xl:block justify-self-center text-slate-600 font-medium">
               <ul className="flex items-center text-sm gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (
@@ -256,14 +257,14 @@ const Header = () => {
       {/* Mobile Menu Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 top-(--header-h) bg-black/30 z-30 lg:hidden"
+          className="fixed inset-0 top-(--header-h) bg-black/30 z-30 xl:hidden"
           onClick={closeMobileMenu}
         ></div>
       )}
 
       {/* Mobile Menu - Slides from right */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-60 overflow-y-auto shadow-2xl">
+        <div className="xl:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-60 overflow-y-auto shadow-2xl">
           <nav className="text-slate-600 font-medium">
             <ul className="flex flex-col divide-y divide-slate-200">
               {[...navLinks, franchiseeLoginLink, applicationStatusLink].map((link) =>
@@ -336,7 +337,7 @@ const Header = () => {
           position: relative;
           display: inline-flex;
           align-items: center;
-          padding: 10px 16px;
+          padding: 10px;
           text-transform: uppercase;
           font-size: 12.5px;
           font-weight: 600;
@@ -397,7 +398,7 @@ const Header = () => {
           justify-content: center;
           border-radius: 10px;
           padding: 0 13px;
-          font-size: 11px;
+          font-size: 12.5px;
           font-weight: 750;
           letter-spacing: .02em;
           line-height: 1.2;
