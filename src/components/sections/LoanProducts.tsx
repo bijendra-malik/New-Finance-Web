@@ -40,10 +40,14 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
   };
 
   return (
-    <div
-      className="flex flex-col items-center w-full"
+    <button
+      type="button"
+      aria-label={`Apply for ${label}`}
+      className="flex w-full cursor-pointer flex-col items-center border-0 bg-transparent p-0 text-inherit focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--brand-teal)"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
       onClick={handleClick}
     >
       {/* Globe circle */}
@@ -115,7 +119,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
           </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
