@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Container from "../common/Container";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
@@ -96,10 +95,9 @@ const Header = () => {
           boxShadow: "0 4px 24px rgba(15,23,42,0.08)",
         }}
       >
-        <Container>
-          <div className="flex h-24 items-center justify-between px-5 xl:px-8 2xl:gap-x-12">
+          <div className="grid h-24 grid-cols-[1fr_auto_1fr] items-center px-5">
             {/* Logo Section — pinned left */}
-            <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
+            <Link to="/" className="relative order-1 col-start-1 row-start-1 justify-self-start flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
               {logoVideoReady ? (
                 <video
                   src={WebmLogo}
@@ -120,7 +118,7 @@ const Header = () => {
             </Link>
 
             {/* Hamburger (small screens) — pinned right */}
-            <div className="order-3 flex items-center gap-2 justify-self-end">
+            <div className="order-3 col-start-3 row-start-1 justify-self-end flex items-center gap-2">
               <div className="hidden items-center gap-2 xl:flex">
                 <Link
                   to={franchiseeLoginLink.href}
@@ -163,7 +161,7 @@ const Header = () => {
             </div>
 
             {/* Navigation Section - Desktop Only, centered */}
-            <nav className="order-2 hidden xl:block justify-self-center text-slate-600 font-medium">
+            <nav className="order-2 col-start-2 row-start-1 hidden xl:block justify-self-center text-slate-600 font-medium">
               <ul className="flex items-center text-sm gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (
@@ -256,7 +254,6 @@ const Header = () => {
               </ul>
             </nav>
           </div>
-        </Container>
       </header>
 
       {/* Mobile Menu Backdrop */}
@@ -344,7 +341,7 @@ const Header = () => {
           align-items: center;
           padding: 10px;
           text-transform: uppercase;
-          font-size: 12.5px;
+          font-size: 11.5px;
           font-weight: 600;
           letter-spacing: .3px;
           color: #334155;
@@ -402,8 +399,8 @@ const Header = () => {
           align-items: center;
           justify-content: center;
           border-radius: 10px;
-          padding: 0 13px;
-          font-size: 12.5px;
+          padding: 0 8px;
+          font-size: 11.5px;
           font-weight: 750;
           letter-spacing: .02em;
           line-height: 1.2;
@@ -447,20 +444,6 @@ const Header = () => {
           outline-offset: 3px;
         }
 
-        /* Tighter nav links at lg band so logo + centered nav + country chip fit without overflow */
-        @media (min-width: 1024px) and (max-width: 1289px) {
-          .nav-link {
-            padding-left: 10px;
-            padding-right: 10px;
-            font-size: 11.5px;
-          }
-
-          .header-action {
-            padding-left: 9px;
-            padding-right: 9px;
-            font-size: 10px;
-          }
-        }
 
         .loan-item {
           position: relative;
