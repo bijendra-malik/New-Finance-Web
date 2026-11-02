@@ -149,7 +149,6 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
                     color: "var(--brand-navy-light)",
                     fontFamily: "Georgia, serif",
                     fontSize: 11.5,
-                    fontStyle: "italic",
                     fontWeight: 700,
                     letterSpacing: 0.5,
                     lineHeight: 1,
