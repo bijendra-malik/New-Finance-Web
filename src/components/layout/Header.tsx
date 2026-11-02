@@ -97,25 +97,30 @@ const Header = () => {
         }}
       >
         <Container>
-          <div className="grid grid-cols-[auto_1fr_auto] items-center h-20 px-5">
+          <div className="flex h-24 items-center justify-between px-5 xl:px-8 2xl:gap-x-12">
             {/* Logo Section — pinned left */}
-            <Link to="/" className="col-start-1 row-start-1 flex shrink-0 items-center gap-3">
+            <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
               {logoVideoReady ? (
                 <video
                   src={WebmLogo}
-                  className="h-20 w-auto shrink-0"
+                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2"
                   autoPlay
                   muted
                   loop
                   playsInline
                 />
               ) : (
-                <img src={LogoAlphaWebp} alt="Indexia Finance" decoding="async" className="h-20 w-auto shrink-0" />
+                <img
+                  src={LogoAlphaWebp}
+                  alt="Indexia Finance"
+                  decoding="async"
+                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2"
+                />
               )}
             </Link>
 
             {/* Hamburger (small screens) — pinned right */}
-            <div className="col-start-3 row-start-1 flex items-center gap-2 justify-self-end">
+            <div className="order-3 flex items-center gap-2 justify-self-end">
               <div className="hidden items-center gap-2 xl:flex">
                 <Link
                   to={franchiseeLoginLink.href}
@@ -158,7 +163,7 @@ const Header = () => {
             </div>
 
             {/* Navigation Section - Desktop Only, centered */}
-            <nav className="col-start-2 row-start-1 hidden xl:block justify-self-center text-slate-600 font-medium">
+            <nav className="order-2 hidden xl:block justify-self-center text-slate-600 font-medium">
               <ul className="flex items-center text-sm gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (

@@ -16,16 +16,20 @@ interface LoanItem {
 // ── Data ──────────────────────────────────────────────────────────────────────
 import { products } from "./productDetailsData";
 
-const loans: LoanItem[] = products.slice(0, 18).map((p) => ({
-  id: p.id, 
-  label: p.label, 
-  ringColors: [
-    "#e74c3c",
-    "#f1c40f",
-    "#2ecc71",
-    "#3498db",
-  ],
-}));
+const loans: LoanItem[] = (() => {
+  const catalogue = products.slice(0, 18);
+  const npa = catalogue.find((product) => product.id === "npaLoan");
+  const orderedProducts = catalogue.filter((product) => product.id !== "npaLoan");
+  const loanAgainstPropertyIndex = orderedProducts.findIndex((product) => product.id === "lap");
+
+  if (npa) orderedProducts.splice(loanAgainstPropertyIndex + 1, 0, npa);
+
+  return orderedProducts.map((product) => ({
+    id: product.id,
+    label: product.id === "npaLoan" ? "NPA" : product.label,
+    ringColors: ["#e74c3c", "#f1c40f", "#2ecc71", "#3498db"],
+  }));
+})();
 
 // ── Globe Wireframe (without hover) ───────────────────────────────────────────
 import { ColoredRing, GlobeEarth, GlobeWireframe } from "./LoanGlobes";
@@ -95,28 +99,68 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
             transition: "background-color 0.3s ease",
           }}
         >
-          <span
+          <div
             style={{
-              display: "block",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
               textAlign: "center",
-              fontWeight: 800,
-              fontSize: 12,
-              lineHeight: 1.35,
-              letterSpacing: 0.2,
-              padding: "0 10px",
-              color: hovered ? "#ffffff" : "var(--brand-dark)",
-              textShadow: hovered
-                ? "0 1px 6px rgba(0,0,0,0.9)"
-                : "0 1px 0 rgba(255,255,255,0.9), 0 -1px 0 rgba(255,255,255,0.9), 1px 0 0 rgba(255,255,255,0.9), -1px 0 0 rgba(255,255,255,0.9)",
-              transition: "color 0.3s ease",
+              width: "100%",
+              maxWidth: 80,
+              minHeight: 31,
+              padding: 0,
+              gap: 4,
             }}
           >
             {hovered ? (
-              <>Apply<br />Now</>
+              <span
+                style={{
+                  color: "#ffffff",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  letterSpacing: 0.2,
+                  lineHeight: 1.35,
+                  textShadow: "0 1px 6px rgba(0,0,0,0.9)",
+                }}
+              >
+                Apply<br />Now
+              </span>
             ) : (
-              label
+              <>
+                <span
+                  style={{
+                    color: "var(--brand-dark)",
+                    fontSize: 10.5,
+                    fontWeight: 800,
+                    letterSpacing: 0.2,
+                    lineHeight: 1.2,
+                    whiteSpace: "normal",
+                    overflowWrap: "break-word",
+                    textShadow: "0 1px 0 rgba(255,255,255,0.9), 0 -1px 0 rgba(255,255,255,0.9), 1px 0 0 rgba(255,255,255,0.9), -1px 0 0 rgba(255,255,255,0.9)",
+                  }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    flexShrink: 0,
+                    color: "var(--brand-navy-light)",
+                    fontFamily: "Georgia, serif",
+                    fontSize: 11.5,
+                    fontStyle: "italic",
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    lineHeight: 1,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Apply
+                </span>
+              </>
             )}
-          </span>
+          </div>
         </div>
       </div>
     </button>
@@ -153,7 +197,7 @@ const LoanProducts = () => {
             transform: "translateX(-50%)",
             width: "min(100% - 20px, 1200px)",
             borderRadius: 9999,
-            background: "rgba(240,249,255,0.2)",
+            background: "var(--brand-blue-200)",
             backdropFilter: "blur(5px)",
             WebkitBackdropFilter: "blur(5px)",
             zIndex: 0,

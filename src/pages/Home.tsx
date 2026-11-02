@@ -17,7 +17,7 @@ const SectionHolder = ({ minHeight }: { minHeight: string }) => (
 
 const Home = () => {
   useSEO({
-    title: "Personal, Business & Home Loans Online",
+    title: "Personal, Business, Home Loans & More Online",
     description:
       "Apply online for personal, business, home and 15+ other loan products with Indexia Finance. Quick eligibility check, transparent pricing and approvals within 48 hours.",
     path: "/",
@@ -93,9 +93,7 @@ const Home = () => {
   return (
     <>
     <div aria-hidden style={{ height: "var(--header-h)" }} />
-    {/* The visual hero is a video, so the page keeps a real H1 for crawlers and
-        screen readers without changing the design. */}
-    <h1 className="sr-only">Indexia Finance — Personal, Business &amp; Home Loans Online</h1>
+    <h1 className="sr-only">Indexia Finance — Personal, Business, Home Loans &amp; More Online</h1>
     {/* HERO BANNER */}
     <div
       className="hero-viewport relative w-full overflow-hidden bg-slate-950"
