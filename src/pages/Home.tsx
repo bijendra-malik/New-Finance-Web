@@ -207,8 +207,8 @@ const Home = () => {
     </Suspense>
     <Suspense fallback={<SectionFallback />}>
       <Partners />
-      <Testimonials />
       <FAQ />
+      <Testimonials />
     </Suspense>
     </>
   );
