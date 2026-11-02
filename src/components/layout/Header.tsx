@@ -95,9 +95,9 @@ const Header = () => {
           boxShadow: "0 4px 24px rgba(15,23,42,0.08)",
         }}
       >
-          <div className="grid h-24 grid-cols-[1fr_auto_1fr] items-center px-5">
+          <div className="hdr-row flex h-24 items-center justify-between px-5 xl:justify-center xl:gap-x-8">
             {/* Logo Section — pinned left */}
-            <Link to="/" className="relative order-1 col-start-1 row-start-1 justify-self-start flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
+            <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
               {logoVideoReady ? (
                 <video
                   src={WebmLogo}
@@ -118,7 +118,7 @@ const Header = () => {
             </Link>
 
             {/* Hamburger (small screens) — pinned right */}
-            <div className="order-3 col-start-3 row-start-1 justify-self-end flex items-center gap-2">
+            <div className="order-3 flex items-center gap-2">
               <div className="hidden items-center gap-2 xl:flex">
                 <Link
                   to={franchiseeLoginLink.href}
@@ -161,7 +161,7 @@ const Header = () => {
             </div>
 
             {/* Navigation Section - Desktop Only, centered */}
-            <nav className="order-2 col-start-2 row-start-1 hidden xl:block justify-self-center text-slate-600 font-medium">
+            <nav className="order-2 hidden xl:block text-slate-600 font-medium">
               <ul className="flex items-center text-sm gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (
@@ -442,6 +442,16 @@ const Header = () => {
         .header-action:focus-visible {
           outline: 3px solid rgba(39,174,144,.45);
           outline-offset: 3px;
+        }
+
+        /* Tighter centered cluster inside the 1280–1439 window band */
+        @media (min-width: 1280px) and (max-width: 1439px) {
+          .hdr-row { column-gap: 24px; }
+          .hdr-row .nav-link {
+            padding-left: 9px;
+            padding-right: 9px;
+            font-size: 11px;
+          }
         }
 
 
