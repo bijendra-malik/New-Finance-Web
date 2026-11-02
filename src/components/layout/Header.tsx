@@ -341,7 +341,7 @@ const Header = () => {
           align-items: center;
           padding: 10px;
           text-transform: uppercase;
-          font-size: 11.5px;
+          font-size: 14px;
           font-weight: 600;
           letter-spacing: .3px;
           color: #334155;
@@ -400,7 +400,7 @@ const Header = () => {
           justify-content: center;
           border-radius: 10px;
           padding: 0 8px;
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 750;
           letter-spacing: .02em;
           line-height: 1.2;
