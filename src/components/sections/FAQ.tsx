@@ -1,6 +1,7 @@
 // How We Work + FAQ
 import { useState } from "react";
 import { Plus, Minus, FileText, BadgeCheck, CreditCard, Files, BarChart3, Wallet, FilePenLine } from "lucide-react";
+import { Check } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { THEME } from "../../constants/theme";
 
@@ -46,30 +47,37 @@ const FAQ = () => {
       <div
         className="w-full relative overflow-hidden"
         style={{
-          background: "linear-gradient(110deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
-          borderTop: "3px solid rgba(168,216,205,0.28)",
+          background: "linear-gradient(115deg, var(--brand-navy) 0%, var(--brand-teal) 115%)",
         }}
       >
-        {/* Centered column — text on top, button below */}
+        {/* Soft light sweep for depth */}
         <div
-          className="relative z-10 flex flex-col items-center text-center gap-6 px-8 py-16 max-w-4xl mx-auto"
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(55% 120% at 88% -20%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 62%), radial-gradient(45% 90% at 5% 115%, rgba(240,180,10,0.10) 0%, rgba(240,180,10,0) 55%)",
+          }}
+        />
+        <div
+          className="relative z-10 flex flex-col items-center text-center px-6 py-14 md:py-16 max-w-4xl mx-auto"
         >
           {/* Heading */}
           <h3
-            className="text-3xl md:text-5xl font-extrabold leading-tight"
+            className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight"
             style={{ color: C.lime }}
           >
             How much Loan can you get?
           </h3>
 
           {/* Description */}
-          <p className="text-sm leading-relaxed text-white/85 mb-5">
+          <p className="text-sm md:text-[15px] leading-relaxed text-white/85 mt-4 max-w-xl">
             Join thousands of satisfied customers who've unlocked their financial dreams.
             Fast approvals, transparent pricing, and exceptional support.
           </p>
 
-          {/* Checklist — centered with borders on each item */}
-          <ul className="flex flex-col sm:flex-row gap-3 sm:gap-4 text-left w-full max-w-3xl">
+          {/* Checklist — glass chips with check discs */}
+          <ul className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 text-left w-full max-w-3xl mt-8">
             {[
               ["Instant Eligibility Check",  "Know if you qualify in seconds"],
               ["Quick Approval in 48 Hours", "Get funds directly to your account"],
@@ -77,16 +85,17 @@ const FAQ = () => {
             ].map(([title, desc]) => (
               <li
                 key={title}
-                className="flex items-start gap-2 flex-1 px-4 py-3 rounded-xl"
-                style={{
-                  border: "1.5px solid rgba(255,255,255,0.28)",
-                  backdropFilter: "blur(4px)",
-                }}
+                className="flex items-center gap-2.5 flex-1 px-4 py-3 rounded-2xl bg-white/10 border border-white/15 hover:bg-white/17 transition-colors duration-300"
               >
-                <span className="font-bold text-base shrink-0 mt-0.5" style={{ color: C.lime }}>✓</span>
+                <span
+                  className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center"
+                  style={{ background: C.lime }}
+                >
+                  <Check size={14} strokeWidth={3.5} style={{ color: C.navy }} />
+                </span>
                 <div>
                   <span className="font-bold text-sm text-white block">{title}</span>
-                  <span className="text-xs text-white/65">{desc}</span>
+                  <span className="text-xs text-white/70">{desc}</span>
                 </div>
               </li>
             ))}
@@ -95,11 +104,11 @@ const FAQ = () => {
           {/* Button */}
           <button
             onClick={() => window.location.href = "/eligibility-calculator"}
-            className="mt-8 px-8 py-4 rounded-lg font-bold text-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer whitespace-nowrap"
+            className="mt-9 px-9 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer whitespace-nowrap"
             style={{
               background: C.lime,
               color: C.navy,
-              boxShadow: "0 4px 20px rgba(38,174,144,0.6)",
+              boxShadow: "0 10px 26px rgba(240,180,10,0.32)",
             }}
           >
             Check Your Loan Eligibility
