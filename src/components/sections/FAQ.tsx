@@ -1,6 +1,7 @@
 // How We Work + FAQ
 import { useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, FileText, BadgeCheck, CreditCard, Files, BarChart3, Wallet, FilePenLine } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { THEME } from "../../constants/theme";
 
 // Legacy aliases kept so call sites stay readable
@@ -14,6 +15,10 @@ const C = {
 const NAVY_HEX = "#066a9c";
 const TEAL_HEX = "#26ae90";
 const DARK_HEX = "#286090";
+
+// Lucide equivalents of the previous emoji markers (visual only — copy unchanged)
+const STEP_ICONS: Record<string, LucideIcon> = { "📝": FilePenLine, "✅": BadgeCheck, "💳": CreditCard };
+const FAQ_ICONS:  Record<string, LucideIcon> = { "📝": FileText, "📄": Files, "📊": BarChart3, "💰": Wallet };
 
 const STEPS = [
   { id: 1, title: "Apply Online",   desc: "Share basic details & loan amount. Takes under 2 minutes — no paperwork, no hassle.",        color: NAVY_HEX,  icon: "📝", tag: "Step 1" },
@@ -37,232 +42,7 @@ const FAQ = () => {
 
   return (
     <>
-      {/* SECTION 1 — How We Work + FAQ */}
-      <section className="relative w-full py-16 px-10 md:px-6 bg-white overflow-hidden">
-        {/* Top accent bar */}
-        <div
-          className="absolute top-0 left-0 w-full h-0.75"
-          style={{ background: `linear-gradient(90deg, ${C.navy}, ${C.teal}, ${C.lime})` }}
-        />
-
-        <div className="relative z-10 max-w-6xl mx-auto">
-          {/* Heading */}
-          <div className="text-center mb-8">
-            <h2
-              className="text-3xl md:text-4xl font-extrabold mb-0 inline-block relative"
-              style={{ color: C.navy }}
-            >
-              How We Work?
-              <span
-                className="absolute left-0 -bottom-1.5 w-full h-0.75 rounded-full block"
-                style={{ background: `linear-gradient(90deg, ${C.navy}, ${C.teal}, ${C.lime})` }}
-              />
-            </h2>
-            <p className="text-sm mx-auto mt-3" style={{ color: C.grey }}>
-              Three simple steps to get your loan approved — fast, secure, and fully online.
-            </p>
-          </div>
-
-          {/* Two Column Grid */}
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-
-            {/* LEFT — Process steps */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-1 h-6 rounded-full" style={{ background: C.teal }} />
-                <h3 className="text-lg font-bold" style={{ color: C.navy }}>Our Process</h3>
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                  style={{ background: "var(--brand-yellow-30)", color: C.navyDark }}
-                >
-                  3 Steps
-                </span>
-              </div>
-
-              <div>
-                {STEPS.map((step, i) => {
-                  const active  = expandedStep === step.id;
-                  const hovered = hoverStep === step.id;
-                  return (
-                    <div key={step.id} className="relative flex gap-0">
-                      {/* Timeline column */}
-                      <div className="flex flex-col items-center mr-4 pt-1">
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0 shadow-sm transition-all duration-300 z-10"
-                          style={{
-                            background: active ? `linear-gradient(135deg, ${step.color}, ${step.color}cc)` : "#f4f5f7",
-                            color: active ? "#fff" : step.color,
-                            border: `2px solid ${step.color}`,
-                            transform: active ? "scale(1.12)" : "scale(1)",
-                          }}
-                        >
-                          {i + 1}
-                        </div>
-                        {i < STEPS.length - 1 && (
-                          <div
-                            className="flex-1 w-0.5 my-1 rounded-full transition-colors duration-300"
-                            style={{ background: active ? step.color : "#e5e7eb", minHeight: 32 }}
-                          />
-                        )}
-                      </div>
-
-                      {/* Card */}
-                      <div
-                        className="flex-1 mb-4 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer bg-white"
-                        onMouseEnter={() => setHoverStep(step.id)}
-                        onMouseLeave={() => setHoverStep(null)}
-                        onClick={() => setExpandedStep(active ? null : step.id)}
-                        style={{
-                          border: `1.5px solid ${active || hovered ? step.color : "#e5e7eb"}`,
-                          boxShadow: active
-                            ? `0 8px 20px ${step.color}26`
-                            : hovered
-                            ? "0 4px 14px rgba(0,0,0,0.08)"
-                            : "0 1px 3px rgba(0,0,0,0.04)",
-                          transform: hovered && !active ? "translateY(-2px)" : "translateY(0)",
-                        }}
-                      >
-                        <div className="flex items-center justify-between px-4 py-3.5">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-xl">{step.icon}</span>
-                            <div>
-                              <span className="text-[10px] font-bold uppercase tracking-widest block" style={{ color: step.color }}>
-                                {step.tag}
-                              </span>
-                              <h4 className="font-bold text-[15px] leading-tight" style={{ color: "#1a1a1a" }}>
-                                {step.title}
-                              </h4>
-                            </div>
-                          </div>
-                          <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
-                            style={{ background: active || hovered ? step.color : "#f0f1f3" }}
-                          >
-                            {active
-                              ? <Minus size={13} color="#fff" />
-                              : <Plus  size={13} style={{ color: hovered ? "#fff" : C.grey }} />}
-                          </div>
-                        </div>
-                        <div
-                          className="overflow-hidden transition-all duration-300"
-                          style={{ maxHeight: active ? "120px" : "0px", opacity: active ? 1 : 0 }}
-                        >
-                          <div
-                            className="px-4 pb-4 pt-0 text-sm leading-relaxed border-t"
-                            style={{ borderColor: `${step.color}25`, color: C.grey }}
-                          >
-                            {step.desc}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Progress pills */}
-              <div className="flex gap-2 mt-2 ml-14">
-                {STEPS.map((step) => (
-                  <div
-                    key={step.id}
-                    className="flex-1 h-1 rounded-full transition-all duration-300"
-                    style={{ background: expandedStep === step.id ? step.color : "#e5e7eb" }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* RIGHT — FAQ */}
-            <div>
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-1 h-6 rounded-full" style={{ background: C.teal }} />
-                <h3 className="text-lg font-bold" style={{ color: C.navy }}>Frequently Asked Questions</h3>
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-                  style={{ background: `C.teal22`, color: C.teal }}
-                >
-                  {FAQS.length} FAQs
-                </span>
-              </div>
-
-              {FAQS.map((item, i) => {
-                const active  = expandedFAQ === item.id;
-                const hovered = hoverFAQ === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    className="rounded-xl overflow-hidden transition-all duration-300 mb-3 cursor-pointer bg-white"
-                    onMouseEnter={() => setHoverFAQ(item.id)}
-                    onMouseLeave={() => setHoverFAQ(null)}
-                    onClick={() => setExpandedFAQ(active ? null : item.id)}
-                    style={{
-                      border: `1.5px solid ${active || hovered ? C.teal : "#e5e7eb"}`,
-                      borderLeft: `4px solid ${active || hovered ? C.teal : "#d1d5db"}`,
-                      boxShadow: active
-                        ? `0 8px 20px C.teal26`
-                        : hovered
-                        ? "0 4px 14px rgba(0,0,0,0.08)"
-                        : "0 1px 3px rgba(0,0,0,0.04)",
-                      transform: hovered && !active ? "translateY(-2px)" : "translateY(0)",
-                    }}
-                  >
-                    <div className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 transition-all duration-300"
-                        style={{ background: active ? C.teal : "#f0f1f3", color: active ? "#fff" : C.teal }}
-                      >
-                        {i + 1}
-                      </div>
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="text-base">{item.icon}</span>
-                        <h4 className="font-semibold text-[14px] leading-snug" style={{ color: "#1a1a1a" }}>
-                          {item.q}
-                        </h4>
-                      </div>
-                      <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
-                        style={{ background: active || hovered ? C.teal : "#f0f1f3" }}
-                      >
-                        {active
-                          ? <Minus size={13} color="#fff" />
-                          : <Plus  size={13} style={{ color: hovered ? "#fff" : C.grey }} />}
-                      </div>
-                    </div>
-                    <div
-                      className="overflow-hidden transition-all duration-300"
-                      style={{ maxHeight: active ? "140px" : "0px", opacity: active ? 1 : 0 }}
-                    >
-                      <div
-                        className="px-4 pb-4 pt-0 text-sm leading-relaxed border-t ml-10"
-                        style={{ borderColor: `C.teal20`, color: C.grey }}
-                      >
-                        {item.a}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="flex gap-4 justify-center mt-8">
-                <p className="text-xs self-end mb-2.5" style={{ color: C.grey }}
-                
-                >
-                  Still have questions?
-                </p>
-                <button
-                  className="px-6 py-2.5 rounded-full text-lg font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 cursor-pointer"
-                  style={{ background: C.lime, color: C.navy }}
-                >
-                  View All FAQs →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA Section */}
-     
+      {/* Bottom CTA Section — How much Loan can you get? */}
       <div
         className="w-full relative overflow-hidden"
         style={{
@@ -272,11 +52,11 @@ const FAQ = () => {
       >
         {/* Centered column — text on top, button below */}
         <div
-          className="relative z-10 flex flex-col items-center text-center gap-6 px-8 md:px-25 py-16 max-w-4xl mx-auto"
+          className="relative z-10 flex flex-col items-center text-center gap-6 px-8 py-16 max-w-4xl mx-auto"
         >
           {/* Heading */}
           <h3
-            className="text-3xl md:text-5xl font-extrabold leading-tight "
+            className="text-3xl md:text-5xl font-extrabold leading-tight"
             style={{ color: C.lime }}
           >
             How much Loan can you get?
@@ -319,13 +99,216 @@ const FAQ = () => {
             style={{
               background: C.lime,
               color: C.navy,
-              boxShadow: `0 4px 20px C.teal60`,
+              boxShadow: "0 4px 20px rgba(38,174,144,0.6)",
             }}
           >
             Check Your Loan Eligibility
           </button>
         </div>
       </div>
+
+      {/* SECTION 1 — How We Work + FAQ */}
+      <section className="relative w-full bg-slate-50 border-y border-slate-200/60 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-16">
+
+          {/* Heading */}
+          <div className="text-center mb-6 md:mb-10">
+            <h2
+              id="how-we-work-title"
+              className="text-3xl md:text-4xl font-extrabold tracking-tight"
+              style={{ color: C.navy }}
+            >
+              How We Work?
+            </h2>
+            <p className="text-sm mx-auto mt-3 max-w-xl" style={{ color: C.grey }}>
+              Three simple steps to get your loan approved — fast, secure, and fully online.
+            </p>
+          </div>
+
+          {/* Two Column Grid */}
+          <div className="grid lg:grid-cols-2 gap-5 lg:gap-8 items-start">
+
+            {/* LEFT — Process steps */}
+            <div
+              className="rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-2 sm:p-5"
+              onMouseLeave={() => setHoverStep(null)}
+            >
+              <div className="flex items-center gap-2.5 px-3 pt-1 pb-3">
+                <div className="w-1 h-6 rounded-full" style={{ background: C.teal }} />
+                <h3 className="text-lg font-bold" style={{ color: C.navy }}>Our Process</h3>
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
+                  style={{ background: "rgba(240,180,10,0.12)", color: C.navyDark }}
+                >
+                  3 Steps
+                </span>
+              </div>
+
+              <div className="px-1 pb-2">
+                {STEPS.map((step, i) => {
+                  const active  = expandedStep === step.id;
+                  const hovered = hoverStep === step.id;
+                  const StepIcon = STEP_ICONS[step.icon];
+                  return (
+                    <div key={step.id} className="flex gap-3">
+                      {/* Timeline column */}
+                      <div className="flex flex-col items-center pt-3 pb-1">
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0 transition-all duration-300"
+                          style={{
+                            background: active ? step.color : "rgba(255,255,255,0.9)",
+                            color: active ? "#fff" : step.color,
+                            border: `2px solid ${step.color}`,
+                            boxShadow: active ? `0 6px 14px ${step.color}33` : "none",
+                          }}
+                        >
+                          {i + 1}
+                        </div>
+                        {i < STEPS.length - 1 && (
+                          <div
+                            className="flex-1 w-0.5 my-1 rounded-full"
+                            style={{ background: active ? step.color : "#e2e8f0", minHeight: 28 }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Content column */}
+                      <div className="flex-1 min-w-0 border-b border-slate-100">
+                        <button
+                          type="button"
+                          aria-expanded={active}
+                          onClick={() => setExpandedStep(active ? null : step.id)}
+                          onMouseEnter={() => setHoverStep(step.id)}
+                          className="w-full flex items-center gap-3 py-3 text-left cursor-pointer"
+                        >
+                          <span
+                            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300"
+                            style={{
+                              background: `${step.color}14`,
+                              color: step.color,
+                            }}
+                          >
+                            <StepIcon size={18} strokeWidth={2} />
+                          </span>
+                          <span className="flex-1 min-w-0">
+                            <span className="text-[10px] font-bold uppercase tracking-widest block" style={{ color: step.color }}>
+                              {step.tag}
+                            </span>
+                            <span className={`block font-bold text-[15px] leading-tight transition-colors duration-200${hovered && !active ? " underline decoration-2 underline-offset-4 decoration-(--brand-teal)" : ""}`}>
+                              {step.title}
+                            </span>
+                          </span>
+                          <span
+                            className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
+                            style={{ background: active || hovered ? step.color : "#f1f5f9" }}
+                          >
+                            {active
+                              ? <Minus size={13} color="#fff" />
+                              : <Plus size={13} style={{ color: hovered ? "#fff" : "#94a3b8" }} />}
+                          </span>
+                        </button>
+
+                        <div
+                          className="overflow-hidden transition-all duration-300"
+                          style={{ maxHeight: active ? "200px" : "0px", opacity: active ? 1 : 0 }}
+                        >
+                          <p className="px-1 pb-4 pr-6 text-sm leading-relaxed" style={{ color: C.grey }}>
+                            {step.desc}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* RIGHT — FAQ */}
+            <div
+              className="rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-2 sm:p-5"
+              onMouseLeave={() => setHoverFAQ(null)}
+            >
+              <div className="flex items-center gap-2.5 px-3 pt-1 pb-3">
+                <div className="w-1 h-6 rounded-full" style={{ background: C.teal }} />
+                <h3 className="text-lg font-bold" style={{ color: C.navy }}>Frequently Asked Questions</h3>
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
+                  style={{ background: "rgba(38,174,144,0.1)", color: C.teal }}
+                >
+                  {FAQS.length} FAQs
+                </span>
+              </div>
+
+              <div className="px-1">
+                {FAQS.map((item) => {
+                  const active  = expandedFAQ === item.id;
+                  const hovered = hoverFAQ === item.id;
+                  const FaqIcon = FAQ_ICONS[item.icon];
+                  return (
+                    <div key={item.id} className="border-b border-slate-100 last:border-0">
+                      <button
+                        type="button"
+                        aria-expanded={active}
+                        onClick={() => setExpandedFAQ(active ? null : item.id)}
+                        onMouseEnter={() => setHoverFAQ(item.id)}
+                        className="w-full flex items-center gap-3 py-3.5 text-left cursor-pointer"
+                      >
+                        <span
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 transition-all duration-300"
+                          style={{ background: active ? C.teal : "rgba(38,174,144,0.08)", color: active ? "#fff" : C.teal }}
+                        >
+                          {item.id}
+                        </span>
+                        <span
+                          className="hidden sm:flex w-7 h-7 rounded-lg items-center justify-center shrink-0 transition-colors duration-300"
+                          style={{ background: "#f1f5f9", color: "#64748b" }}
+                        >
+                          <FaqIcon size={15} strokeWidth={2} />
+                        </span>
+                        <h4
+                          className="flex-1 min-w-0 font-semibold text-[14px] sm:text-[15px] leading-snug text-slate-800 transition-opacity duration-200"
+                          style={{ opacity: active ? 1 : hovered ? 0.75 : 1 }}
+                        >
+                          {item.q}
+                        </h4>
+                        <span
+                          className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
+                          style={{ background: active || hovered ? C.teal : "#f1f5f9" }}
+                        >
+                          {active
+                            ? <Minus size={13} color="#fff" />
+                            : <Plus size={13} style={{ color: hovered ? "#fff" : "#94a3b8" }} />}
+                        </span>
+                      </button>
+
+                      <div
+                        className="overflow-hidden transition-all duration-300"
+                        style={{ maxHeight: active ? "200px" : "0px", opacity: active ? 1 : 0 }}
+                      >
+                        <p className="pl-10 pr-4 pb-4 pt-0 text-sm leading-relaxed border-t" style={{ borderColor: "rgba(38,174,144,0.16)", color: C.grey }}>
+                          {item.a}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-center gap-4 px-3 pt-4 pb-1 border-t border-slate-100">
+                <p className="text-xs" style={{ color: C.grey }}>
+                  Still have questions?
+                </p>
+                <button
+                  className="px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-95 cursor-pointer"
+                  style={{ background: C.lime, color: C.navy }}
+                >
+                  View All FAQs →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 };
