@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";
 import { cx } from "../ui/cx";
 
@@ -48,7 +47,7 @@ export const ConsentBlock = ({
         <span className="text-xs" style={{ color: C.gray }}>
           By continuing, you agree to Indexia Finance{" "}
           <Link
-            to={TERMS_OF_USE_URL}
+            to="/terms-of-use"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline"
@@ -58,7 +57,7 @@ export const ConsentBlock = ({
           </Link>{" "}
           and{" "}
           <Link
-            to={PRIVACY_POLICY_URL}
+            to="/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline"
