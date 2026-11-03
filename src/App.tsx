@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import WebsiteLayout from "./components/layout/WebsiteLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import ScrollToTop from "./components/common/ScrollToTop";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./context/authContext";
 import ApplicantPrefillProvider from "./context/ApplicantPrefillProvider";
@@ -10,6 +11,12 @@ import NotFoundPage from "./pages/NotFoundPage";
 
 const Login = lazy(() => import("./pages/auth/Login"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
+const AdvertiseWithUsPage = lazy(() => import("./pages/AdvertiseWithUsPage"));
+const ProductsServicesPage = lazy(() => import("./pages/ProductsServicesPage"));
+const TermsOfUsePage = lazy(() => import("./pages/TermsOfUsePage"));
+const TermsConditionsPage = lazy(() => import("./pages/TermsConditionsPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const GlobalResearchPage = lazy(() => import("./pages/GlobalResearchPage"));
 const FranchiseLoginPage = lazy(() => import("./pages/FranchiseLoginPage"));
 const MyApplicationsPage = lazy(() => import("./pages/MyApplicationsPage"));
 const ApplicationStatusPage = lazy(() => import("./pages/ApplicationStatusPage"));
@@ -145,6 +152,7 @@ const detailRoutes: [string, React.ReactNode][] = [
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <ApplicantPrefillProvider>
         <WebsiteLayout>
@@ -172,6 +180,12 @@ function App() {
               <Route path="/application-status" element={<ApplicationStatusPage />} />
               <Route path="/franchise-application-status" element={<Navigate to="/application-status#franchise-application-status" replace />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/advertise-with-us" element={<AdvertiseWithUsPage />} />
+              <Route path="/products-services" element={<ProductsServicesPage />} />
+              <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+              <Route path="/terms-conditions" element={<TermsConditionsPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/global-research" element={<GlobalResearchPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
               <Route path="/credit-score" element={<CreditScorePage />} />
