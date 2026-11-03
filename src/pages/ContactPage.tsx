@@ -296,7 +296,7 @@ const ContactPage = () => {
                 Our Office
               </p>
               <h2 id="office-heading" className="mt-1 text-lg font-bold text-gray-800 md:text-xl">
-                Indexia Finserve Pvt. Ltd - An Indexia Group Company
+                Indexia Finserve Pvt. Ltd. - An Indexia Group Company
               </h2>
             </div>
 
