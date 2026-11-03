@@ -42,6 +42,10 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
       if (f.type === "email" && values[f.name]) {
         const email = validateEmail(values[f.name]);
         if (email) e[f.name] = email;
+        continue;
+      }
+      if (f.minLength && (values[f.name]?.trim().length ?? 0) > 0 && (values[f.name]?.trim().length ?? 0) < f.minLength) {
+        e[f.name] = `${f.label} must be at least ${f.minLength} characters`;
       }
     }
     setErrors(e);
