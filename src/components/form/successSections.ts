@@ -1,4 +1,5 @@
 import { formatMoney } from "../../utils/formatters";
+import { stripOther } from "../../utils/validation";
 
 export interface SuccessRow {
   label: string;
@@ -54,8 +55,6 @@ const resolveTxnBank = (
   if (!name || !name.trim() || name === "Multiple Transaction Banks") return undefined;
   return name.trim();
 };
-
-export const stripOther = (arr?: string[] | null) => (arr ?? []).filter(v => v !== "Other");
 
 interface CommonApp {
   fullName: string; mobile: string; email: string; dob: string; panNumber?: string;

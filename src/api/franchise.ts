@@ -46,22 +46,6 @@ export interface FranchiseAccount {
   lastLogin?: string;
 }
 
-export interface FranchiseCustomer {
-  _id?: string;
-  franchise?: string;
-  franchiseCode?: string;
-  fullName?: string;
-  mobile?: string;
-  panNumber?: string;
-  dob?: string;
-  email?: string;
-  state?: string;
-  city?: string;
-  pincode?: string;
-  isVerified?: boolean;
-  verifiedAt?: string | null;
-}
-
 // POST /franchise/entry
 export interface FranchiseEntryPayload {
   name?: string;
@@ -109,14 +93,6 @@ export interface FranchiseVerifyOTPResponse {
   user: FranchiseAccount;
 }
 
-// GET /franchise/status response
-export interface FranchiseStatusResponse {
-  success: boolean;
-  message: string;
-  franchiseStatus?: string;
-  canLogin?: boolean;
-}
-
 // GET /franchise/profile response
 export interface FranchiseProfileResponse {
   success: boolean;
@@ -161,24 +137,6 @@ export interface FranchiseLoginResponse {
   franchise?: FranchiseAccount;
 }
 
-// POST /franchise/customer/register
-export interface FranchiseCustomerRegisterPayload {
-  fullName: string;
-  mobile: string;
-  panNumber: string;
-  dob: string;
-  email: string;
-  state: string;
-  city: string;
-  pincode: string;
-}
-
-export interface FranchiseCustomerRegisterResponse {
-  success: boolean;
-  message: string;
-  data?: FranchiseCustomer;
-}
-
 // ── API calls ───────────────────────────────────────────────────────────────────
 
 export const registerFranchise = async (
@@ -197,13 +155,6 @@ export const verifyFranchiseOTP = async (
   const response = await axiosInstance.post<FranchiseVerifyOTPResponse>(
     "/franchise/entry/verify",
     payload,
-  );
-  return response.data;
-};
-
-export const fetchFranchiseStatus = async (): Promise<FranchiseStatusResponse> => {
-  const response = await axiosInstance.get<FranchiseStatusResponse>(
-    "/franchise/status",
   );
   return response.data;
 };
@@ -227,16 +178,6 @@ export const loginFranchise = async (
 ): Promise<FranchiseLoginResponse> => {
   const response = await axiosInstance.post<FranchiseLoginResponse>(
     "/franchise/login",
-    payload,
-  );
-  return response.data;
-};
-
-export const registerFranchiseCustomer = async (
-  payload: FranchiseCustomerRegisterPayload,
-): Promise<FranchiseCustomerRegisterResponse> => {
-  const response = await axiosInstance.post<FranchiseCustomerRegisterResponse>(
-    "/franchise/customer/register",
     payload,
   );
   return response.data;
