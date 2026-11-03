@@ -1,9 +1,34 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import bgImage from "../../assets/copyright-free.webp";
 import ApplicationModal from "../modals/LazyApplicationModal";
 
 import { products, PRODUCT_META, VISIBLE_COUNT } from "./productDetailsData";
 import type { Feature } from "./productDetailsData";
+
+// Product ids differ from the /showdetails/:slug routes used by App.tsx.
+const DETAIL_ROUTES: Record<string, string> = {
+  personal: "/showdetails/personal-loan",
+  business: "/showdetails/business-loan",
+  home: "/showdetails/home-loan",
+  lap: "/showdetails/loanAP-loan",
+  balanceTransfer: "/showdetails/balance-loan",
+  vehicleLoan: "/showdetails/vehicle-loan",
+  creditCard: "/showdetails/credit-card",
+  educationLoan: "/showdetails/education-loan",
+  projectLoan: "/showdetails/project-loan",
+  commercialPurchase: "/showdetails/commercial-purchase",
+  leaseRentalDiscounting: "/showdetails/lease-rental",
+  workingCapital: "/showdetails/working-capital",
+  filmFunding: "/showdetails/film-funding",
+  odCcLimit: "/showdetails/od-cc-limit",
+  loanAgainstShare: "/showdetails/loan-against-share",
+  goldLoan: "/showdetails/gold-loan",
+  fdiLoan: "/showdetails/fdi",
+  npaLoan: "/showdetails/npa",
+};
+
+const detailRouteFor = (id: string): string => DETAIL_ROUTES[id] ?? "/products-services";
 
 const ProductDetails = () => {
   const [activeId, setActiveId]   = useState(products[0].id);
@@ -187,24 +212,24 @@ const ProductDetails = () => {
                 <a
                   href={(() => {
                     const docRouteMap: Record<string, string> = {
-                      "personal-loan":    "/requireddocument/personal-loan",
-                      "business-loan":    "/requireddocument/business-loan",
-                      "home-loan":        "/requireddocument/home-loan",
-                      "loanAP-loan":      "/requireddocument/loan-against-property",
-                      "balance-loan":     "/requireddocument/balance-transfer",
-                      "Vehicle-loan":     "/requireddocument/vehicle-loan",
-                      "credit-card":      "/requireddocument/credit-card",
-                      "education-loan":   "/requireddocument/education-loan",
-                      "project-loan":     "/requireddocument/project-loan",
-                      "commercial-purchase": "/requireddocument/commercial-purchase",
-                      "lease-rental":     "/requireddocument/lease-rental",
-                      "working-capital":  "/requireddocument/working-capital",
-                      "film-funding":     "/requireddocument/film-funding",
-                      "od-cc-limit":      "/requireddocument/od-cc-limit",
-                      "loan-against-share": "/requireddocument/loan-against-share",
-                      "gold-loan":        "/requireddocument/gold-loan",
-                      "npa":              "/requireddocument/npa",
-                      "fdi":              "/requireddocument/fdi",
+                      "personal":    "/requireddocument/personal-loan",
+                      "business":    "/requireddocument/business-loan",
+                      "home":        "/requireddocument/home-loan",
+                      "lap":         "/requireddocument/loan-against-property",
+                      "balanceTransfer": "/requireddocument/balance-transfer",
+                      "vehicleLoan":     "/requireddocument/vehicle-loan",
+                      "creditCard":      "/requireddocument/credit-card",
+                      "educationLoan":   "/requireddocument/education-loan",
+                      "projectLoan":     "/requireddocument/project-loan",
+                      "commercialPurchase": "/requireddocument/commercial-purchase",
+                      "leaseRentalDiscounting": "/requireddocument/lease-rental",
+                      "workingCapital":  "/requireddocument/working-capital",
+                      "filmFunding":     "/requireddocument/film-funding",
+                      "odCcLimit":       "/requireddocument/od-cc-limit",
+                      "loanAgainstShare": "/requireddocument/loan-against-share",
+                      "goldLoan":        "/requireddocument/gold-loan",
+                      "fdiLoan":         "/requireddocument/fdi",
+                      "npaLoan":         "/requireddocument/npa",
                     };
                     return docRouteMap[active.id] || `/requireddocument?loan=${encodeURIComponent(active.heading)}`;
                   })()}
@@ -220,8 +245,8 @@ const ProductDetails = () => {
                     <path d="M13 7l5 5m0 0l-5 5m5-5H6" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </a>
-                <a
-                  href={`/showdetails/${active.id}`}
+                <Link
+                  to={detailRouteFor(active.id)}
                   className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-125 active:scale-95"
                   style={{
                     color: "var(--brand-yellow)",
@@ -233,7 +258,7 @@ const ProductDetails = () => {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
