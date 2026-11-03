@@ -95,7 +95,7 @@ const Header = () => {
           boxShadow: "0 4px 24px rgba(15,23,42,0.08)",
         }}
       >
-          <div className="hdr-row flex h-24 items-center justify-between px-5 xl:justify-center xl:gap-x-8">
+          <div className="hdr-row flex h-24 items-center justify-between px-5 xl:justify-center xl:gap-x-12 2xl:gap-x-16">
             {/* Logo Section — pinned left */}
             <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
               {logoVideoReady ? (
@@ -162,7 +162,7 @@ const Header = () => {
 
             {/* Navigation Section - Desktop Only, centered */}
             <nav className="order-2 hidden xl:block text-slate-600 font-medium">
-              <ul className="flex items-center text-sm gap-1">
+              <ul className="flex items-center text-[13px] gap-1">
                 {navLinks.map((link) =>
                   link.dropdown ? (
                     <li
@@ -217,7 +217,7 @@ const Header = () => {
                       >
                         {link.dropdown === "loans" ? (
                         <div className="w-160 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
-                          <p className="mb-4 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
+                          <p className="mb-4 text-[10.5px] font-bold uppercase tracking-wider text-emerald-600">
                             Loan Products
                           </p>
                           <div className="grid grid-cols-3 gap-x-6 gap-y-1">
@@ -225,7 +225,7 @@ const Header = () => {
                               <Link
                                 key={item.slug}
                                 to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                                className="loan-item text-[13px] text-slate-600 py-2"
+                                className="loan-item text-[12.5px] text-slate-600 py-2"
                               >
                                 <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
@@ -277,7 +277,7 @@ const Header = () => {
                         setOpenMobileDropdown(openMobileDropdown === link.dropdown ? null : link.dropdown!)
                       }
                       aria-expanded={openMobileDropdown === link.dropdown}
-                      className="w-full text-left flex items-center justify-between px-5 py-4 text-sm uppercase font-semibold hover:bg-slate-50"
+                      className="w-full text-left flex items-center justify-between px-5 py-4 text-[13px] uppercase font-semibold hover:bg-slate-50"
                     >
                       <span className="pointer-events-none">{link.label}</span>
                       <svg
@@ -301,7 +301,7 @@ const Header = () => {
                           <Link
                             key={item.slug}
                             to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                            className="block px-8 py-2.5 text-xs text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
+                            className="block px-8 py-2.5 text-[11.5px] text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
                             onClick={closeMobileMenu}
                           >
                             → {item.label}
@@ -314,7 +314,7 @@ const Header = () => {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className={`block px-5 py-4 text-sm uppercase font-semibold transition-colors ${
+                      className={`block px-5 py-4 text-[13px] uppercase font-semibold transition-colors ${
                         link.href === franchiseeLoginLink.href
                           ? "bg-(--brand-navy) text-white hover:bg-(--brand-dark)"
                           : link.href === applicationStatusLink.href
@@ -341,7 +341,7 @@ const Header = () => {
           align-items: center;
           padding: 10px;
           text-transform: uppercase;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           letter-spacing: .3px;
           color: #334155;
@@ -400,7 +400,7 @@ const Header = () => {
           justify-content: center;
           border-radius: 10px;
           padding: 0 8px;
-          font-size: 12px;
+          font-size: 11.5px;
           font-weight: 750;
           letter-spacing: .02em;
           line-height: 1.2;
@@ -450,7 +450,7 @@ const Header = () => {
           .hdr-row .nav-link {
             padding-left: 9px;
             padding-right: 9px;
-            font-size: 11px;
+            font-size: 10.5px;
           }
         }
 
