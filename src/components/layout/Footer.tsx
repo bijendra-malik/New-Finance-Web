@@ -30,7 +30,7 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "EMI calculator", href: "/emi-calculator" },
       { label: "Eligibility calculator", href: "/eligibility-calculator" },
-      { label: "Check credit score", href: "/credit-score" },
+      { label: "Check credit score", href: "/know-your-score" },
       { label: "Track application", href: "/application-status" },
     ],
   },
