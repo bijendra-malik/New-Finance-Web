@@ -1,5 +1,4 @@
-// Terms checkbox + error banner + submit button shared by loan and franchise forms.
-
+import { Link } from "react-router-dom";
 import { TERMS_OF_USE_URL, PRIVACY_POLICY_URL } from "../../constants/legalLinks";
 import { THEME as C } from "../../constants/theme";
 import { cx } from "../ui/cx";
@@ -48,25 +47,25 @@ export const ConsentBlock = ({
         />
         <span className="text-xs" style={{ color: C.gray }}>
           By continuing, you agree to Indexia Finance{" "}
-          <a
-            href={TERMS_OF_USE_URL}
+          <Link
+            to={TERMS_OF_USE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline"
             style={{ color: C.navy }}
           >
             Terms of Use
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a
-            href={PRIVACY_POLICY_URL}
+          <Link
+            to={PRIVACY_POLICY_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline"
             style={{ color: C.navy }}
           >
             Privacy Policy
-          </a>
+          </Link>
           .
         </span>
       </label>
