@@ -1,6 +1,19 @@
 import type { CSSProperties } from "react";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import {
+  EMAIL_CONTACT,
+  EMAIL_LOANS,
+  OFFICE_ADDRESS_LINES,
+  OFFICE_DISPLAY_NAME,
+  OFFICE_MAP_DIRECTIONS_URL,
+  OFFICE_MAP_EMBED_URL,
+  OFFICE_MAP_QUERY,
+  PHONE_LANDLINE,
+  PHONE_LANDLINE_HREF,
+  PHONE_MOBILE,
+  PHONE_MOBILE_HREF,
+} from "../constants/contact";
 import { socialLinks } from "../constants/socialLinks";
 import useSEO from "../hooks/useSEO";
 
@@ -11,26 +24,21 @@ import useSEO from "../hooks/useSEO";
  */
 
 const PHONE_LINES = [
-  { label: "Landline", number: "+91 11 4629 1155", href: "tel:+911146291155" },
-  { label: "Mobile", number: "86551 68551", href: "tel:+918655168551" },
+  { label: "Landline", number: PHONE_LANDLINE, href: PHONE_LANDLINE_HREF },
+  { label: "Mobile", number: PHONE_MOBILE, href: PHONE_MOBILE_HREF },
 ];
 
-const EMAILS = ["loans@indexiafinance.com", "contactus@indexiafinance.com"];
+const EMAILS = [EMAIL_LOANS, EMAIL_CONTACT];
 
 const OFFICE = {
-  name: "Indexia Finserve Pvt. Ltd. - An Indexia Group Company",
-  addressLines: [
-    "213, Second Floor, Imperial Tower",
-    "Near Gurudwara, C Block Commercial Complex",
-    "Naraina Vihar, New Delhi \u2013 110028",
-  ],
-  phone: { label: "+91 11 4629 1155", href: "tel:+911146291155" },
-  mapQuery:
-    "Indexia Finserve Pvt. Ltd., 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
+  name: OFFICE_DISPLAY_NAME,
+  addressLines: [...OFFICE_ADDRESS_LINES],
+  phone: { label: PHONE_LANDLINE, href: PHONE_LANDLINE_HREF },
+  mapQuery: OFFICE_MAP_QUERY,
 };
 
-const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(OFFICE.mapQuery)}&output=embed`;
-const MAP_DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.mapQuery)}`;
+const MAP_EMBED_URL = OFFICE_MAP_EMBED_URL;
+const MAP_DIRECTIONS_URL = OFFICE_MAP_DIRECTIONS_URL;
 
 const CARD_STYLE = {
   border: "1px solid rgba(6,106,156,0.12)",

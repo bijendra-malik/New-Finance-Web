@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import globeVideo from "../../assets/logo-footer.webm";
+import {
+  EMAIL_CONTACT,
+  OFFICE_MAP_DIRECTIONS_URL,
+  PHONE_LANDLINE,
+  PHONE_LANDLINE_HREF,
+  PHONE_MOBILE,
+  PHONE_MOBILE_HREF,
+} from "../../constants/contact";
 import { socialLinks } from "../../constants/socialLinks";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
 
@@ -41,13 +49,13 @@ const CONTACT_LINES: { label: string; links: { label: string; href: string }[] }
   {
     label: "Call",
     links: [
-      { label: "+91 11 4629 1155", href: "tel:+911146291155" },
-      { label: "86551 68551", href: "tel:+918655168551" },
+      { label: PHONE_LANDLINE, href: PHONE_LANDLINE_HREF },
+      { label: PHONE_MOBILE, href: PHONE_MOBILE_HREF },
     ],
   },
   {
     label: "Email",
-    links: [{ label: "contactus@indexiafinance.com", href: "mailto:contactus@indexiafinance.com" }],
+    links: [{ label: EMAIL_CONTACT, href: `mailto:${EMAIL_CONTACT}` }],
   },
 ];
 
@@ -56,11 +64,6 @@ const LEGAL_LINKS = [
   { label: "Terms of Service", href: "/terms-of-use" },
   { label: "Terms & Conditions", href: "/terms-conditions" },
 ];
-
-/** Google Maps lookup for the registered office shown in the footer. */
-const OFFICE_MAP_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-  "Indexia Finserve Pvt. Ltd., 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
-)}`;
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -197,7 +200,7 @@ const Footer = () => {
                   Office
                 </span>
                 <a
-                  href={OFFICE_MAP_URL}
+                  href={OFFICE_MAP_DIRECTIONS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open the Indexia Finance Naraina Vihar office location in Google Maps"

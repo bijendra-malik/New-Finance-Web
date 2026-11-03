@@ -1,6 +1,14 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
+import {
+  COMPANY_LEGAL_NAME,
+  EMAIL_CONTACT,
+  EMAIL_SUPPORT,
+  OFFICE_ADDRESS,
+  PHONE_LANDLINE,
+  PHONE_MOBILE,
+} from "../constants/contact";
 import useSEO from "../hooks/useSEO";
 
 /**
@@ -14,16 +22,13 @@ import useSEO from "../hooks/useSEO";
 const LAST_UPDATED = "3 November 2026";
 
 const CONTACT_INFO: [string, string][] = [
-  ["Company", "Indexia Finserve Pvt. Ltd. (Indexia Finance) — an Indexia Group company"],
-  [
-    "Office",
-    "213, Second Floor, Imperial Tower, Near Gurudwara, C Block Commercial Complex, Naraina Vihar, New Delhi – 110028",
-  ],
-  ["Phone", "+91 11 4629 1155 (landline) · 86551 68551 (mobile)"],
-  ["Email", "contactus@indexiafinance.com · support@indexiafinance.com"],
+  ["Company", COMPANY_LEGAL_NAME],
+  ["Office", OFFICE_ADDRESS],
+  ["Phone", `${PHONE_LANDLINE} (landline) · ${PHONE_MOBILE} (mobile)`],
+  ["Email", `${EMAIL_CONTACT} · ${EMAIL_SUPPORT}`],
   [
     "Privacy requests and grievances",
-    "contactus@indexiafinance.com — please put “Privacy request” or “Grievance” in the subject line",
+    `${EMAIL_CONTACT} — please put “Privacy request” or “Grievance” in the subject line`,
   ],
 ];
 

@@ -1,6 +1,7 @@
+import { EMAIL_CONTACT } from "../../constants/contact";
 import type { FranchiseIconName } from "./FranchiseIcon";
 
-export const FRANCHISE_EMAIL = "contactus@indexiafinance.com";
+export const FRANCHISE_EMAIL = EMAIL_CONTACT;
 
 export const PARTNER_SHARE = 80;
 export const INDEXIA_SHARE = 20;
