@@ -1,8 +1,7 @@
-import type { IconType } from "react-icons";
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import type { CSSProperties } from "react";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import { socialLinks } from "../constants/socialLinks";
 import useSEO from "../hooks/useSEO";
 
 /**
@@ -19,7 +18,7 @@ const PHONE_LINES = [
 const EMAILS = ["loans@indexiafinance.com", "contactus@indexiafinance.com"];
 
 const OFFICE = {
-  name: "Indexia Finserve Pvt Ltd - An Indexia Group Company",
+  name: "Indexia Finserve Pvt. Ltd. - An Indexia Group Company",
   addressLines: [
     "213, Second Floor, Imperial Tower",
     "Near Gurudwara, C Block Commercial Complex",
@@ -27,57 +26,11 @@ const OFFICE = {
   ],
   phone: { label: "+91 11 4629 1155", href: "tel:+911146291155" },
   mapQuery:
-    "Indexia Finserve Pvt Ltd, 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
+    "Indexia Finserve Pvt. Ltd., 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
 };
 
 const MAP_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(OFFICE.mapQuery)}&output=embed`;
 const MAP_DIRECTIONS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.mapQuery)}`;
-
-interface SocialLink {
-  name: string;
-  handle: string;
-  url: string;
-  icon: IconType;
-  brand: string;
-}
-
-const SOCIAL_LINKS: SocialLink[] = [
-  {
-    name: "Facebook",
-    handle: "Indexia Finance",
-    url: "https://www.facebook.com/IndexiaFin",
-    icon: FaFacebookF,
-    brand: "#1877F2",
-  },
-  {
-    name: "X",
-    handle: "@indexiafinance",
-    url: "https://x.com/FinanceIndexia?s=20",
-    icon: FaXTwitter,
-    brand: "#111827",
-  },
-  {
-    name: "Instagram",
-    handle: "@indexiafinance",
-    url: "https://www.instagram.com/finance.indexia/",
-    icon: FaInstagram,
-    brand: "#E4405F",
-  },
-  {
-    name: "LinkedIn",
-    handle: "Indexia Finance",
-    url: "https://www.linkedin.com/in/indexia-finance",
-    icon: FaLinkedinIn,
-    brand: "#0A66C2",
-  },
-  {
-    name: "YouTube",
-    handle: "Indexia Finance",
-    url: "https://youtube.com/@financeindexia?si=jUrZw2npNHxrmKCL",
-    icon: FaYoutube,
-    brand: "#FF0000",
-  },
-];
 
 const CARD_STYLE = {
   border: "1px solid rgba(6,106,156,0.12)",
@@ -117,7 +70,7 @@ const ContactPage = () => {
       <PageBanner
         breadcrumb="Contact Us"
         title="We're Here to"
-        highlight="Help You"
+        highlight="Serve You"
         tagline="Now, Right Bank will come at your doorstep"
       />
 
@@ -135,7 +88,7 @@ const ContactPage = () => {
                 </h2>
               </div>
               <p className="max-w-xs text-sm leading-relaxed text-slate-500 md:justify-self-end md:pb-1 md:text-right">
-                Share the product and the amount. A loan specialist will take it from there.
+                Tell us what you need — our loan specialists will get back to you.
               </p>
             </div>
           </header>
@@ -165,7 +118,7 @@ const ContactPage = () => {
                     Direct lines
                   </p>
                   <h2 id="contact-desk-heading" className="mt-1 text-xl font-extrabold tracking-tight">
-                    Talk to a person.
+                    Happy to Serve You.
                   </h2>
                   <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/75">
                     Mon–Sat · 9:30 AM – 6:30 PM IST
@@ -233,7 +186,7 @@ const ContactPage = () => {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/75">Follow</p>
                     <ul aria-label="Indexia Finance social profiles" className="flex items-center gap-1.5">
-                      {SOCIAL_LINKS.map((social) => {
+                      {socialLinks.map((social) => {
                         const Icon = social.icon;
                         return (
                           <li key={social.name}>
@@ -243,8 +196,8 @@ const ContactPage = () => {
                               rel="noreferrer"
                               aria-label={`${social.name} — ${social.handle}`}
                               title={`${social.name} — ${social.handle}`}
-                              className="flex h-8 w-8 items-center justify-center rounded-full text-white ring-1 ring-white/20 transition-transform hover:-translate-y-0.5 hover:ring-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
-                              style={{ background: social.brand }}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-(--brand) text-white ring-1 ring-white/20 shadow-[0_6px_16px_rgba(2,16,26,0.25)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-white hover:text-(--brand) hover:ring-white/60 hover:shadow-[0_8px_18px_rgba(2,16,26,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                              style={{ "--brand": social.brand } as CSSProperties}
                             >
                               <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                             </a>
@@ -309,7 +262,8 @@ const ContactPage = () => {
                       label: "Your Message",
                       type: "textarea",
                       required: true,
-                      placeholder: "Briefly describe your requirement",
+                      minLength: 50,
+                      placeholder: "Briefly describe your requirement (minimum 50 characters)",
                     },
                   ]}
                 />
@@ -334,7 +288,7 @@ const ContactPage = () => {
                 Our Office
               </p>
               <h2 id="office-heading" className="mt-1 text-lg font-bold text-gray-800 md:text-xl">
-                Indexia Finserve Pvt Ltd - An Indexia Group Company
+                Indexia Finserve Pvt. Ltd - An Indexia Group Company
               </h2>
             </div>
 
@@ -384,7 +338,7 @@ const ContactPage = () => {
               <div className="min-h-72 lg:col-span-3">
                 <iframe
                   src={MAP_EMBED_URL}
-                  title="Indexia Finserve Pvt Ltd, Naraina Vihar, New Delhi on Google Maps"
+                  title="Indexia Finserve Pvt. Ltd., Naraina Vihar, New Delhi on Google Maps"
                   className="h-full min-h-72 w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
