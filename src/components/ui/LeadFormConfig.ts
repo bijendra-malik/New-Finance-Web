@@ -6,6 +6,8 @@ export interface LeadFieldConfig {
   placeholder?: string;
   options?: readonly string[];
   required?: boolean;
+  /** Minimum number of characters allowed (validated on submit — e.g. textarea messages). */
+  minLength?: number;
   /** Set to false to make the field span both columns of the form grid. */
   half?: boolean;
 }
