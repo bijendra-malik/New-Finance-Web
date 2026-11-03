@@ -1,24 +1,80 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram } from "react-icons/fa";
-import footerBg from "../../assets/bg-footerimg01.webp";
 import globeVideo from "../../assets/logo-footer.webm";
-import { SITE_URL } from "../../constants/siteLinks";
+import { socialLinks } from "../../constants/socialLinks";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
 
+/** Footer link: internal routes use react-router, external links open in a new tab. */
+type FooterLink = { label: string; href: string; external?: boolean };
+
+const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Company",
+    links: [
+      { label: "About Indexia", href: "https://www.indexiagroup.com/about", external: true },
+      { label: "Indexia Group", href: "https://www.indexiagroup.com/", external: true },
+      { label: "Careers", href: "https://www.indexiagroup.com/careers/", external: true },
+      { label: "Contact us", href: "/contact" },
+    ],
+  },
+  {
+    title: "Tools",
+    links: [
+      { label: "EMI calculator", href: "/emi-calculator" },
+      { label: "Eligibility calculator", href: "/eligibility-calculator" },
+      { label: "Check credit score", href: "/credit-score" },
+      { label: "Track application", href: "/application-status" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Global research", href: "/global-research" },
+      { label: "News & knowledge", href: "https://www.indexiagroup.com/news/", external: true },
+      { label: "Become a franchise", href: "/franchise" },
+      { label: "Advertise with us", href: "/advertise-with-us" },
+    ],
+  },
+];
+
+const CONTACT_LINES: { label: string; links: { label: string; href: string }[] }[] = [
+  {
+    label: "Call",
+    links: [
+      { label: "+91 11 4629 1155", href: "tel:+911146291155" },
+      { label: "86551 68551", href: "tel:+918655168551" },
+    ],
+  },
+  {
+    label: "Email",
+    links: [{ label: "contactus@indexiafinance.com", href: "mailto:contactus@indexiafinance.com" }],
+  },
+];
+
+const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms of Service", href: "/terms-of-use" },
+  { label: "Terms & Conditions", href: "/terms-conditions" },
+];
+
+/** Google Maps lookup for the registered office shown in the footer. */
+const OFFICE_MAP_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  "Indexia Finserve Pvt. Ltd., 213, Imperial Tower, C Block Commercial Complex, Naraina Vihar, New Delhi 110028",
+)}`;
+
 const Footer = () => {
+  const year = new Date().getFullYear();
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaAllowed = useHeavyMediaAllowed();
-  // Browsers without IntersectionObserver simply attach the video right away.
+  // The globe clip is several megabytes and purely decorative, so it is only
+  // attached once the footer approaches the viewport.
   const [reachedFooter, setReachedFooter] = useState(
     () => typeof IntersectionObserver === "undefined",
   );
 
-  // The globe clip is ~6 MB and purely decorative, so it is only attached once the
-  // footer approaches the viewport instead of loading on every page.
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v || reachedFooter) return;
+    const video = videoRef.current;
+    if (!video || reachedFooter) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
@@ -28,267 +84,184 @@ const Footer = () => {
       },
       { rootMargin: "600px" },
     );
-    observer.observe(v);
+    observer.observe(video);
     return () => observer.disconnect();
   }, [reachedFooter]);
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !reachedFooter) return;
-    v.defaultMuted = true;
-    v.muted = true;
-    const play = () => { v.play().catch(() => {}); };
+    const video = videoRef.current;
+    if (!video || !reachedFooter) return;
+    video.defaultMuted = true;
+    video.muted = true;
+    const play = () => {
+      video.play().catch(() => {});
+    };
     play();
-    v.addEventListener("pause", play);
-    return () => v.removeEventListener("pause", play);
+    video.addEventListener("pause", play);
+    return () => video.removeEventListener("pause", play);
   }, [reachedFooter]);
 
   return (
-    <>
-    <style>{`
-      .ftr-root {
-        position: relative;
-        overflow: hidden;
-      }
-      .ftr-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, var(--brand-navy-deep) 0%, var(--brand-navy) 60%, var(--brand-navy-light) 100%);
-        z-index: 0;
-      }
-      .ftr-bg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        opacity: 0.07;
-        pointer-events: none;
-        user-select: none;
-        z-index: 0;
-      }
-      .ftr-content { position: relative; z-index: 1; }
-
-      .ftr-link {
-        font-size: 14px;
-        color: rgba(255,255,255,0.58);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: color 0.2s, transform 0.2s;
-        line-height: 2;
-      }
-      .ftr-link:hover {
-        color: var(--brand-yellow);
-        transform: translateX(4px);
-      }
-      .ftr-heading {
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #fff;
-        margin-bottom: 8px;
-      }
-      .ftr-divider {
-        width: 30px;
-        height: 3px;
-        background: linear-gradient(90deg, var(--brand-teal), var(--brand-yellow));
-        border-radius: 2px;
-        margin-bottom: 16px;
-      }
-      .ftr-social {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.18);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        text-decoration: none;
-        transition: background 0.2s, border-color 0.2s, transform 0.2s;
-      }
-      .ftr-social:hover {
-        background: var(--brand-teal);
-        border-color: var(--brand-teal);
-        transform: translateY(-3px);
-      }
-      .ftr-input {
-        flex: 1;
-        padding: 9px 11px;
-        font-size: 13px;
-        border: none;
-        outline: none;
-        background: rgba(255,255,255,0.08);
-        color: #fff;
-        border-radius: 8px 0 0 8px;
-        min-width: 0;
-      }
-      .ftr-input::placeholder { color: rgba(255,255,255,0.35); }
-      .ftr-sub-btn {
-        padding: 9px 14px;
-        background: var(--brand-teal);
-        color: #fff;
-        font-weight: 700;
-        font-size: 12px;
-        border: none;
-        cursor: pointer;
-        border-radius: 0 8px 8px 0;
-        white-space: nowrap;
-        transition: background 0.2s;
-      }
-      .ftr-sub-btn:hover { background: #1e9478; }
-
-      /* ── Responsive: Tablet (640–1023px) ── */
-      @media (max-width: 1023px) {
-        .ftr-main-pad {
-          padding: 48px 24px 48px !important;
-        }
-        .ftr-grid {
-          grid-template-columns: 1fr 1fr !important;
-          gap: 36px 28px !important;
-        }
-        /* Globe col spans both columns and sits at top */
-        .ftr-globe-col {
-          grid-column: 1 / -1;
-          order: -1;
-        }
-        .ftr-bottom-pad {
-          padding: 16px 24px !important;
-        }
-      }
-
-      /* ── Responsive: Mobile (<640px) ── */
-      @media (max-width: 639px) {
-        .ftr-main-pad {
-          padding: 40px 20px 40px !important;
-        }
-        .ftr-grid {
-          grid-template-columns: 1fr !important;
-          gap: 32px 0 !important;
-        }
-        .ftr-globe-col {
-          grid-column: 1 / -1;
-          order: -1;
-        }
-        .ftr-globe-wrap {
-          max-width: 180px !important;
-        }
-        .ftr-bottom-pad {
-          padding: 14px 20px !important;
-          justify-content: center !important;
-          text-align: center !important;
-        }
-        .ftr-bottom-links {
-          justify-content: center !important;
-        }
-      }
-
-      /* ── Globe video: circular porthole with soft-fade edge so the
-         rectangular video frame disappears into the footer bg ── */
-      .ftr-globe-wrap {
-        position: relative;
-        width: 100%;
-        max-width: 260px;
-        aspect-ratio: 1 / 1;
-        margin: 0 auto;
-      }
-      .ftr-globe-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-        -webkit-mask-image: radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%);
-        mask-image: radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%);
-      }
-      .ftr-globe-glow {
-        position: absolute;
-        inset: -14px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(38,174,144,0.25) 0%, rgba(38,174,144,0) 70%);
-        pointer-events: none;
-      }
-    `}</style>
-
-    <footer className="ftr-root">
-      <div className="ftr-overlay" />
-      <img src={footerBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="ftr-bg" />
-
-      {/* Top accent line */}
-      <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
-
-      {/* Main grid */}
+    <footer className="relative overflow-hidden bg-[#04101d] text-white">
+      {/* Layered fintech surface: teal bloom, navy wash and a faint data grid. */}
       <div
-        className="ftr-content ftr-main-pad"
-        style={{ maxWidth: "1280px", margin: "0 auto", padding: "72px 0px 65px", minHeight: "300px" }}
-      >
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(900px 420px at 8% -10%, rgba(38,174,144,0.18), transparent 60%), radial-gradient(760px 420px at 94% 0%, rgba(6,106,156,0.38), transparent 65%), linear-gradient(180deg, #04101d 0%, #061426 55%, #040c17 100%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-70"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/4 h-80 w-80 rounded-full blur-3xl"
+        style={{ background: "rgba(38,174,144,0.12)" }}
+      />
+
+      <div className="relative">
         <div
-          className="ftr-grid"
+          className="h-0.5 w-full"
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 300px 1fr 1.3fr",
-            gap: "32px 40px",
-            alignItems: "start",
+            background:
+              "linear-gradient(90deg, var(--brand-teal), var(--brand-yellow), var(--brand-navy))",
           }}
-        >
+        />
 
-          {/* Col 1: Company */}
-          <div style={{ alignSelf: "start" }}>
-            <p className="ftr-heading">Company</p>
-            <div className="ftr-divider" />
-            <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-              {[
-                { l: "About Us",          h: "#" },
-                { l: "Indexia Group",     h: "#" },
-                { l: "Group Website",     h: "#" },
-                { l: "Advertise With Us", h: "#" },
-              ].map(item => (
-                <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
-                  {item.l}
-                </a>
-              ))}
-            </div>
+        {/* Thin data strip */}
+        <div className="border-y border-white/10">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-2 px-6 py-3.5 font-mono text-[9px] uppercase tracking-[0.18em] text-white/35 md:px-8">
+            <span className="inline-flex items-center gap-2 text-white/50">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-(--brand-teal)" />
+              Lender-led decisions
+            </span>
+            <span>Est. 2012</span>
+            <span>18 loan products</span>
+            <span>New Delhi · India</span>
           </div>
+        </div>
 
-          {/* Col 2: Resources */}
-          <div style={{ alignSelf: "start" }}>
-            <p className="ftr-heading">Resources</p>
-            <div className="ftr-divider" />
-            <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-              {[
-                { l: "Careers",            h: `${SITE_URL}/careers/` },
-                { l: "Product & Services", h: `${SITE_URL}/product-services/` },
-                { l: "Terms of Use",       h: `${SITE_URL}/terms-of-use/` },
-                { l: "Terms & Conditions", h: `${SITE_URL}/terms-conditions/` },
-              ].map(item => (
-                <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
-                  {item.l}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Col 3 (CENTER): Logo + Globe video */}
-          <div className="ftr-globe-col" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "25px", textAlign: "center" }}>
-            <Link to="/" style={{ textDecoration: "none" }}>
-              <div style={{ display: "flex", gap: "3px", alignItems: "baseline" }}>
-                <span style={{ fontSize: "25px", fontWeight: 800, color: "var(--brand-yellow)" }}>Indexia</span>
-                <span style={{ fontSize: "25px", fontWeight: 800, color: "#fff" }}>Finance</span>
-              </div>
+        {/* Main footer */}
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:px-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-stretch lg:gap-12">
+          <div>
+            <Link to="/" aria-label="Indexia Finance home" className="inline-flex items-baseline gap-1.5">
+              <span className="text-[28px] font-extrabold leading-none tracking-tight text-(--brand-yellow)">
+                Indexia
+              </span>
+              <span className="text-[28px] font-extrabold leading-none tracking-tight text-white">
+                Finance
+              </span>
             </Link>
+            <p className="mt-2 font-mono text-[8.5px] uppercase tracking-[0.24em] text-white/30">
+              An Indexia Group company
+            </p>
+            <p className="mt-5 text-[12.5px] leading-6 text-white/50">
+              Loan facilitation for personal, business and secured borrowing — matched to partner
+              banks and NBFCs, with the final decision always with the lender.
+            </p>
 
-            <div className="ftr-globe-wrap">
-              <div className="ftr-globe-glow" />
+            <ul className="mt-6 space-y-2.5">
+              {CONTACT_LINES.map((line) => (
+                <li key={line.label} className="flex items-baseline gap-3">
+                  <span className="w-10 shrink-0 font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25">
+                    {line.label}
+                  </span>
+                  <span className="flex flex-wrap items-baseline text-[12px] font-medium text-white/60">
+                    {line.links.map((item, index) => (
+                      <span key={item.href} className="inline-flex items-baseline">
+                        <a
+                          href={item.href}
+                          aria-label={`${line.label} ${item.label}`}
+                          className="transition-colors hover:text-(--brand-teal) hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                        >
+                          {item.label}
+                        </a>
+                        {index < line.links.length - 1 && (
+                          <span aria-hidden="true" className="px-1.5 text-white/25">·</span>
+                        )}
+                      </span>
+                    ))}
+                  </span>
+                </li>
+              ))}
+              <li className="flex items-baseline gap-3">
+                <span className="w-10 shrink-0 font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/25">
+                  Office
+                </span>
+                <a
+                  href={OFFICE_MAP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open the Indexia Finance Naraina Vihar office location in Google Maps"
+                  className="inline-flex items-center gap-1 text-[12px] font-medium text-white/60 transition-colors hover:text-(--brand-teal) hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                >
+                  Naraina Vihar, New Delhi
+                </a>
+              </li>
+            </ul>
+
+            <div className="mt-7">
+              <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/25">
+                Follow
+              </p>
+              <ul aria-label="Indexia Finance social profiles" className="mt-3 flex items-center gap-2">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <li key={social.name}>
+                      <a
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${social.name} — ${social.handle}`}
+                        title={`${social.name} — ${social.handle}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-(--soc) text-white ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white hover:text-(--soc) hover:shadow-[0_8px_18px_rgba(0,0,0,0.35)] hover:ring-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                        style={{ "--soc": social.brand } as CSSProperties}
+                      >
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <div className="relative h-44 w-44 shrink-0 sm:h-52 sm:w-52 lg:h-56 lg:w-56">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-5 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(38,174,144,0.24) 0%, rgba(38,174,144,0) 70%)",
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 35% 30%, rgba(38,174,144,0.45), rgba(6,106,156,0.15) 55%, transparent 72%)",
+                }}
+              />
               <video
                 ref={videoRef}
-                className="ftr-globe-video"
+                className="relative h-full w-full rounded-full object-cover"
+                style={{
+                  WebkitMaskImage:
+                    "radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%)",
+                  maskImage:
+                    "radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%)",
+                }}
                 src={reachedFooter && mediaAllowed ? globeVideo : undefined}
                 preload="none"
                 autoPlay
@@ -300,80 +273,80 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Col 4: Knowledge */}
-          <div style={{ alignSelf: "start" }}>
-            <p className="ftr-heading">Knowledge</p>
-            <div className="ftr-divider" />
-            <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
-              {[
-                { l: "News & Knowledge",      h: `${SITE_URL}/news/` },
-                { l: "Global Research",        h: `${SITE_URL}/global-research/` },
-                { l: "Security Tips",          h: `${SITE_URL}/security-tips/` },
-                { l: "Track Your Application", h: `${SITE_URL}/track-your-application/` },
-                { l: "Blog",                   h: `${SITE_URL}/blog/` },
-              ].map(item => (
-                <a key={item.l} href={item.h} className="ftr-link">
-                  <span style={{ color: "var(--brand-teal)", fontWeight: 700, fontSize: "14px" }}>›</span>
-                  {item.l}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Col 5: Stay Updated + Socials */}
-          <div style={{ alignSelf: "start" }}>
-            <p className="ftr-heading">Stay Updated</p>
-            <div className="ftr-divider" />
-            <p style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.52)", marginBottom: "12px", lineHeight: 1.65 }}>
-              Subscribe for the latest loan updates and offers.
-            </p>
-            <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.16)", marginBottom: "20px" }}>
-              <label htmlFor="newsletter-email" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
-                Email address for newsletter
-              </label>
-              <input id="newsletter-email" type="email" placeholder="Your email address" className="ftr-input" />
-              <button className="ftr-sub-btn">Subscribe</button>
-            </div>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-              <a href="https://www.facebook.com/indexia.finance.3" aria-label="Facebook" className="ftr-social"><FaFacebookF /></a>
-              <a href="https://www.linkedin.com/in/indexia-finance/" aria-label="LinkedIn" className="ftr-social"><FaLinkedinIn /></a>
-              <a href="https://www.instagram.com/finance.indexia/" aria-label="Instagram" className="ftr-social"><FaInstagram /></a>
-              <a href="https://www.youtube.com/@FinanceIndexia" aria-label="YouTube" className="ftr-social"><FaYoutube /></a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="ftr-content" style={{ borderTop: "1px solid rgba(255,255,255,0.09)" }}>
-        <div style={{
-          maxWidth: "1280px", margin: "0 auto",
-          padding: "18px 0px 18px",
-          display: "flex", flexWrap: "wrap",
-          alignItems: "center", justifyContent: "space-between", gap: "8px",
-        }} className="ftr-bottom-pad">
-          <p style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255, 255, 255, 1)", letterSpacing: "0.06em", textTransform: "uppercase", textAlign: "center" }}>
-              Indexia Finance - An Indexia Group Company
-            </p>
-          <div style={{ display: "flex", gap: "20px" }} className="ftr-bottom-links">
-            {[
-              { l: "Privacy Policy",   h: `${SITE_URL}/privacy-policy/` },
-              { l: "Terms of Service", h: `${SITE_URL}/terms-of-use/` },
-            ].map(t => (
-              <a key={t.l} href={t.h}
-                style={{ fontSize: "12px", color: "rgba(255,255,255,0.38)", textDecoration: "none", transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "var(--brand-yellow)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.38)")}
-              >
-                {t.l}
-              </a>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-9 sm:grid-cols-3 lg:gap-x-6">
+            {FOOTER_COLUMNS.map((column) => (
+              <nav key={column.title} aria-label={column.title} className="min-w-0">
+                <h3 className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-white/35">
+                  {column.title}
+                </h3>
+                <ul className="mt-4">
+                  {column.links.map((link) => (
+                    <li key={link.label}>
+                      {link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group flex items-center justify-between gap-2 border-b border-white/5 py-2 text-[12.5px] text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                        >
+                          <span>{link.label}</span>
+                          <span
+                            aria-hidden="true"
+                            className="text-[10px] text-white/20 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-(--brand-teal)"
+                          >
+                            ↗
+                          </span>
+                        </a>
+                      ) : (
+                        <Link
+                          to={link.href}
+                          className="group flex items-center justify-between gap-2 border-b border-white/5 py-2 text-[12.5px] text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                        >
+                          <span>{link.label}</span>
+                          <span
+                            aria-hidden="true"
+                            className="text-[10px] text-white/20 transition-all duration-300 group-hover:translate-x-1 group-hover:text-(--brand-teal)"
+                          >
+                            →
+                          </span>
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
             ))}
+
+          </div>
+        </div>
+
+        {/* Legal bar */}
+        <div className="border-t border-white/10">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between md:px-8">
+            <p className="text-[11px] text-white/35">
+              © {year} Indexia Finserve Pvt. Ltd. All rights reserved.
+            </p>
+            <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
+              {LEGAL_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-[11px] text-white/40 transition-colors hover:text-(--brand-yellow) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="mx-auto max-w-7xl px-6 pb-7 md:px-8">
+            <p className="border-t border-white/5 pt-4 text-[10.5px] leading-5 text-white/25">
+              Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
+              fees and disbursal are decided by the lending bank or NBFC.
+            </p>
           </div>
         </div>
       </div>
     </footer>
-  </>
   );
 };
 
