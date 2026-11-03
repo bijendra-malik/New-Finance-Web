@@ -199,7 +199,7 @@ const Home = () => {
       </div>
     </div>
 
-    <Suspense fallback={<SectionHolder minHeight="min-h-[697px]" />}>
+    <Suspense fallback={<SectionHolder minHeight="min-h-[540px]" />}>
       <CreditScore />
     </Suspense>
     <Suspense fallback={<SectionHolder minHeight="min-h-[1270px]" />}>
