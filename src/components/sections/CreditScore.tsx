@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 // ── Gauge geometry ────────────────────────────────────────────────────────────
 const CX = 160;
@@ -15,6 +16,7 @@ const GAUGE_SWEEP = GAUGE_END - GAUGE_START; // 260°
 const CIBIL_MIN = 300;
 const CIBIL_MAX = 900;
 const TARGET_SCORE = 750; // exactly 750 shown in center
+const DURATION = 2400; // count-up length in ms
 
 // Position 750 in the 300–900 range → (750-300)/(900-300) = 75%
 const TARGET_PCT = ((TARGET_SCORE - CIBIL_MIN) / (CIBIL_MAX - CIBIL_MIN)) * 100;
@@ -211,23 +213,30 @@ const CreditScore = () => {
   const sectionRef                = useRef<HTMLElement>(null);
   const rafRef                    = useRef<number | null>(null);
   const startRef                  = useRef<number | null>(null);
-  const DURATION = 2400;
+  const pulseTimerRef             = useRef<number | null>(null);
 
-  // Start animation only when section enters viewport
+  // Start the count-up once, when the section first enters the viewport.
   useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && !started) setStarted(true); },
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setStarted(true);
+        observer.disconnect();
+      },
       { threshold: 0.3 }
     );
-    if (sectionRef.current) observer.observe(sectionRef.current);
+    observer.observe(section);
     return () => observer.disconnect();
-  }, [started]);
+  }, []);
 
   // Count-up animation
   useEffect(() => {
     if (!started) return;
     const animate = (ts: number) => {
-      if (!startRef.current) startRef.current = ts;
+      if (startRef.current === null) startRef.current = ts;
       const elapsed  = ts - startRef.current;
       const progress = Math.min(elapsed / DURATION, 1);
       const eased    = 1 - Math.pow(1 - progress, 3);
@@ -237,11 +246,14 @@ const CreditScore = () => {
       } else {
         setDone(true);
         setPulse(true);
-        setTimeout(() => setPulse(false), 1200);
+        pulseTimerRef.current = window.setTimeout(() => setPulse(false), 1200);
       }
     };
     rafRef.current = requestAnimationFrame(animate);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
+    };
   }, [started]);
 
   const arcFill      = animPct / 100;
@@ -251,7 +263,6 @@ const CreditScore = () => {
   const actualScore  = Math.round(CIBIL_MIN + (animPct / 100) * (CIBIL_MAX - CIBIL_MIN));
 
   const { label: ratingLabel, color: ratingColor, comparison } = getRating(animPct);
-  const ratingText = ratingLabel;
 
   const needleAngle = GAUGE_START + arcFill * GAUGE_SWEEP;
   const nTip   = polar(CX, CY, R_OUTER - 8, needleAngle);
@@ -288,7 +299,14 @@ const CreditScore = () => {
           </div>
 
           {/* SVG Gauge */}
-          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} width={SVG_W} height={SVG_H} className="shrink-0 overflow-visible">
+          <svg
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            width={SVG_W}
+            height={SVG_H}
+            className="shrink-0 overflow-visible"
+            role="img"
+            aria-label={`Illustrative credit score gauge from ${CIBIL_MIN} to ${CIBIL_MAX} with a sample score of ${TARGET_SCORE}`}
+          >
             {/* Outer glow ring when done */}
             {done && (
               <circle
@@ -350,7 +368,7 @@ const CreditScore = () => {
             {/* Rating pill */}
             <rect x={CX - 46} y={CY + 22} width="92" height="22" rx="11" fill={ratingColor} opacity="0.15" />
             <text x={CX} y={CY + 37} textAnchor="middle" fontSize="13" fontWeight="bold" fill={ratingColor}>
-              {ratingText}
+              {ratingLabel}
             </text>
 
             {/* Comparison badge — fades in when done */}
@@ -385,29 +403,13 @@ const CreditScore = () => {
         </div>
 
         {/* CTA button */}
-        <a
-          href="#"
-          className="mt-10 block w-full max-w-xs text-center font-bold text-white text-sm md:text-xl mb-2 py-2 rounded-md cursor-pointer select-none"
-          style={{
-            background: "#006699",
-            transition: "background 0.2s, transform 0.15s, box-shadow 0.2s",
-            boxShadow: "0 2px 8px rgba(0,102,153,0.25)",
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "var(--brand-navy)";
-            el.style.transform = "translateY(-2px)";
-            el.style.boxShadow = "0 6px 18px rgba(23,162,134,0.4)";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.background = "#006699";
-            el.style.transform = "translateY(0)";
-            el.style.boxShadow = "0 2px 8px rgba(0,102,153,0.25)";
-          }}
+        <Link
+          to="/know-your-score"
+          className="mt-10 block w-full max-w-xs text-center font-bold text-white text-sm md:text-xl mb-2 py-2 rounded-md cursor-pointer select-none bg-[#006699] shadow-[0_2px_8px_rgba(0,102,153,0.25)] hover:-translate-y-0.5 hover:bg-(--brand-navy) hover:shadow-[0_6px_18px_rgba(23,162,134,0.4)]"
+          style={{ transition: "background 0.2s, transform 0.15s, translate 0.15s, box-shadow 0.2s" }}
         >
           Know Your Score
-        </a>
+        </Link>
 
         {/* Disclaimer */}
         <p className="mt-1 text-[11px] text-slate-400 text-center max-w-xs mb-4">
