@@ -135,7 +135,7 @@ const EMICalculatorPage = () => {
               <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-3" style={serif}>
                 Know your EMI<br className="hidden md:block" /> before you borrow
               </h1>
-              <p className="text-base md:text-lg leading-relaxed" style={{ color: "#C9DCEF" }}>
+              <p className="text-base md:text-lg leading-relaxed" style={{ color: T.onNavyMuted }}>
                 Move the sliders to see your monthly instalment, total interest and full repayment
                 schedule update instantly — no sign-up needed.
               </p>
@@ -149,7 +149,7 @@ const EMICalculatorPage = () => {
                 ].map(s => (
                   <div key={s.v} className="flex items-center gap-2.5 rounded-xl px-4 py-2.5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
                     <span className="text-lg font-bold" style={{ ...serif, color: T.gold }}>{s.k}</span>
-                    <span className="text-xs" style={{ color: "#B9CBE0" }}>{s.v}</span>
+                    <span className="text-xs" style={{ color: T.onNavyMuted }}>{s.v}</span>
                   </div>
                 ))}
               </div>
@@ -231,7 +231,7 @@ const EMICalculatorPage = () => {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <label className="text-sm font-bold" style={{ color: T.ink }}>Loan Amount</label>
-                      <div className="flex items-center gap-1 rounded-lg px-3 py-1.5" style={{ background: T.emeraldSoft }}>
+                      <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.emerald }}>
                         <span className="font-bold text-sm" style={{ color: T.emerald }}>{"\u20B9"}</span>
                         <input
                           type="number"
@@ -255,7 +255,7 @@ const EMICalculatorPage = () => {
                       <label className="text-sm font-bold" style={{ color: T.ink }}>
                         Rate of Interest <span className="font-normal text-xs" style={{ color: T.inkSoft }}>(% p.a.)</span>
                       </label>
-                      <div className="flex items-center gap-1 rounded-lg px-3 py-1.5" style={{ background: T.rustSoft }}>
+                      <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.rust }}>
                         <input
                           type="number" min={1} max={36} step={0.1}
                           value={interestRate}
@@ -277,7 +277,7 @@ const EMICalculatorPage = () => {
                     <div className="flex items-center justify-between mb-3">
                       <label className="text-sm font-bold" style={{ color: T.ink }}>Loan Tenure</label>
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 rounded-lg px-3 py-1.5" style={{ background: T.limeSoft }}>
+                        <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.limeDark }}>
                           <input
                             type="number"
                             min={tenureUnit === "years" ? loan.minTenure : loan.minTenure * 12}
@@ -322,24 +322,24 @@ const EMICalculatorPage = () => {
                 {/* RIGHT — Results */}
                 <div className="lg:col-span-2 p-6 md:p-9 flex flex-col gap-5" style={{ background: T.navy, color: "#fff" }}>
 
-                  <div className="text-center pb-5" style={{ borderBottom: "1px dashed rgba(255,255,255,0.18)" }}>
+                  <div className="text-center pb-5" style={{ borderBottom: `1px dashed ${T.onNavyLine}` }}>
                     <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: T.goldSoft }}>Your Monthly EMI</p>
                     <p className="text-4xl md:text-[2.6rem] font-bold" style={serif}>{fmt(emiAnimated)}</p>
                   </div>
 
-                  <div className="space-y-3 pb-5" style={{ borderBottom: "1px dashed rgba(255,255,255,0.18)" }}>
+                  <div className="space-y-3 pb-5" style={{ borderBottom: `1px dashed ${T.onNavyLine}` }}>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ color: "#B9C0DC" }}>Total Interest Payable</span>
+                      <span className="text-sm" style={{ color: T.onNavyMuted }}>Total Interest Payable</span>
                       <span className="font-bold">{fmt(interestAnimated)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ color: "#B9C0DC" }}>Total of Payments</span>
+                      <span className="text-sm" style={{ color: T.onNavyMuted }}>Total of Payments</span>
                       <span className="font-bold text-base" style={{ color: T.goldSoft }}>{fmt(totalAnimated)}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-center gap-3">
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#B9C0DC" }}>Break-up of Payment</p>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: T.onNavyMuted }}>Break-up of Payment</p>
                     <div className="rounded-2xl p-2" style={{ background: "rgba(255,255,255,0.06)" }}>
                       <DonutChart principal={loanAmount} interest={totalInterest} />
                     </div>
