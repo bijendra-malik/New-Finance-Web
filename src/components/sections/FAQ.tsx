@@ -1,5 +1,6 @@
 // How We Work + FAQ
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Plus, Minus, FileText, BadgeCheck, CreditCard, Files, BarChart3, Wallet, FilePenLine } from "lucide-react";
 import { Check } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -43,7 +44,7 @@ const FAQ = () => {
 
   return (
     <>
-      {/* Bottom CTA Section — How much Loan can you get? */}
+      {/* Bottom CTA Section — Check Loan Eligibility */}
       <div
         className="w-full relative overflow-hidden"
         style={{
@@ -67,7 +68,7 @@ const FAQ = () => {
             className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight"
             style={{ color: C.lime }}
           >
-            How much Loan can you get?
+            Check Loan Eligibility
           </h3>
 
           {/* Description */}
@@ -307,12 +308,13 @@ const FAQ = () => {
                 <p className="text-xs" style={{ color: C.grey }}>
                   Still have questions?
                 </p>
-                <button
+                <Link
+                  to="/faqs"
                   className="px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-95 cursor-pointer"
                   style={{ background: C.lime, color: C.navy }}
                 >
                   View All FAQs →
-                </button>
+                </Link>
               </div>
             </div>
           </div>
