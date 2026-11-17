@@ -30,20 +30,44 @@ const DETAIL_ROUTES: Record<string, string> = {
 
 const detailRouteFor = (id: string): string => DETAIL_ROUTES[id] ?? "/products-services";
 
+const DOC_ROUTES: Record<string, string> = {
+  personal: "/requireddocument/personal-loan",
+  business: "/requireddocument/business-loan",
+  home: "/requireddocument/home-loan",
+  lap: "/requireddocument/loan-against-property",
+  balanceTransfer: "/requireddocument/balance-transfer",
+  vehicleLoan: "/requireddocument/vehicle-loan",
+  creditCard: "/requireddocument/credit-card",
+  educationLoan: "/requireddocument/education-loan",
+  projectLoan: "/requireddocument/project-loan",
+  commercialPurchase: "/requireddocument/commercial-purchase",
+  leaseRentalDiscounting: "/requireddocument/lease-rental",
+  workingCapital: "/requireddocument/working-capital",
+  filmFunding: "/requireddocument/film-funding",
+  odCcLimit: "/requireddocument/od-cc-limit",
+  loanAgainstShare: "/requireddocument/loan-against-share",
+  goldLoan: "/requireddocument/gold-loan",
+  fdiLoan: "/requireddocument/fdi",
+  npaLoan: "/requireddocument/npa",
+};
+
+const docRouteFor = (id: string, heading: string): string =>
+  DOC_ROUTES[id] ?? `/requireddocument?loan=${encodeURIComponent(heading)}`;
+
 const ProductDetails = () => {
-  const [activeId, setActiveId]   = useState(products[0].id);
+  const [activeId, setActiveId] = useState(products[0].id);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [visible, setVisible]     = useState(true);
+  const [visible, setVisible] = useState(true);
   const [displayId, setDisplayId] = useState(products[0].id);
   const [scrollTop, setScrollTop] = useState(0);
   const [sectionVisible, setSectionVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const listRef    = useRef<HTMLDivElement>(null);
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   const ITEM_H = 52;
-  const canScrollUp   = scrollTop > 0;
+  const canScrollUp = scrollTop > 0;
   const canScrollDown = scrollTop < (products.length - VISIBLE_COUNT) * ITEM_H;
 
   // Viewport entry trigger
@@ -80,7 +104,7 @@ const ProductDetails = () => {
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   const active = products.find((p) => p.id === displayId) ?? products[0];
-  const meta   = PRODUCT_META[active.id] ?? { rate: "", tag: "", tagColor: "#22d3ee" };
+  const meta = PRODUCT_META[active.id] ?? { rate: "", tag: "", tagColor: "#22d3ee" };
 
   return (
     <>
@@ -163,190 +187,175 @@ const ProductDetails = () => {
         style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}
       >
         {/* Dark overlay — brand gradient */}
-        <div className="absolute inset-0" style={{ background:"linear-gradient(135deg, rgb(3 37 60 / 88%) 0%, rgb(6 106 156 / 78%) 55%, rgb(38 174 144 / 0%) 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgb(3 37 60 / 88%) 0%, rgb(6 106 156 / 78%) 55%, rgb(38 174 144 / 0%) 100%)" }} />
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-10 md:px-8 py-8 lg:px-10 flex flex-col lg:flex-row md:py-16 gap-10">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-10 md:px-8 lg:px-10 pt-6 pb-8 md:py-10 flex flex-col gap-6">
 
-          {/* LEFT content */}
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-            <div
-              key={displayId}
-              className={visible ? "pd-enter" : ""}
-              style={{ opacity: visible ? 1 : 0, transition: visible ? "none" : "opacity 0.22s ease" }}
+          {/* Section heading + document checklist, on top of the banner */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <a
+              href={docRouteFor(active.id, active.heading)}
+              className="pd-cta inline-flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-white text-xs sm:text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 active:scale-95"
+              style={{
+                background: "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))",
+                boxShadow: "0 4px 16px rgba(38,174,144,0.40)",
+                border: "1px solid rgba(38,174,144,0.45)",
+              }}
             >
-
-              {/* Heading + tag badge */}
-              <div className="flex items-start gap-3 flex-wrap mb-1">
-                <h2
-                  className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
-                  style={{ color: "var(--brand-yellow)" }}
-                >
-                  {active.heading}
-                </h2>
-              </div>
-
-              {/* Accent + rate pill */}
-              <div className="flex items-center gap-3 mb-4 mt-2">
-                <div className="flex gap-1.5">
-                  <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-teal)" }} />
-                  <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-yellow)" }} />
-                </div>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border" style={{ color: "#ffffffff" }}>
-                  {meta.rate}
-                </span>
-              </div>
-
-              <p className="text-sm sm:text-[0.95rem] leading-relaxed max-w-2xl mb-8" style={{ color: "rgba(255,255,255,0.80)" }}>
-                {active.subtitle}
-              </p>
-
-              {/* Features — with hover effect */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-7 mb-10">
-                {active.features.map((feat, i) => (
-                  <FeatureItem key={feat.title} feat={feat} delay={i * 60} visible={visible} />
-                ))}
-              </div>
-
-              {/* Buttons */}
-              <div className="relative z-20 flex items-center gap-4 flex-wrap">
-                <a
-                  href={(() => {
-                    const docRouteMap: Record<string, string> = {
-                      "personal":    "/requireddocument/personal-loan",
-                      "business":    "/requireddocument/business-loan",
-                      "home":        "/requireddocument/home-loan",
-                      "lap":         "/requireddocument/loan-against-property",
-                      "balanceTransfer": "/requireddocument/balance-transfer",
-                      "vehicleLoan":     "/requireddocument/vehicle-loan",
-                      "creditCard":      "/requireddocument/credit-card",
-                      "educationLoan":   "/requireddocument/education-loan",
-                      "projectLoan":     "/requireddocument/project-loan",
-                      "commercialPurchase": "/requireddocument/commercial-purchase",
-                      "leaseRentalDiscounting": "/requireddocument/lease-rental",
-                      "workingCapital":  "/requireddocument/working-capital",
-                      "filmFunding":     "/requireddocument/film-funding",
-                      "odCcLimit":       "/requireddocument/od-cc-limit",
-                      "loanAgainstShare": "/requireddocument/loan-against-share",
-                      "goldLoan":        "/requireddocument/gold-loan",
-                      "fdiLoan":         "/requireddocument/fdi",
-                      "npaLoan":         "/requireddocument/npa",
-                    };
-                    return docRouteMap[active.id] || `/requireddocument?loan=${encodeURIComponent(active.heading)}`;
-                  })()}
-                  className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-white text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 active:scale-95"
-                  style={{
-                    background: "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))",
-                    boxShadow: "0 4px 16px rgba(38,174,144,0.40)",
-                    border: "1px solid rgba(38,174,144,0.45)",
-                  }}
-                >
-                  Required Document
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="M13 7l5 5m0 0l-5 5m5-5H6" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </a>
-                <Link
-                  to={detailRouteFor(active.id)}
-                  className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-125 active:scale-95"
-                  style={{
-                    color: "var(--brand-yellow)",
-                    border: "1px solid rgba(255, 255, 255, 1)",
-                    background: "rgba(242,242,49,0.07)",
-                  }}
-                >
-                  Know More About Your Loan
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Link>
-              </div>
-            </div>
+              List of Documents
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M13 7l5 5m0 0l-5 5m5-5H6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
           </div>
 
-          {/* RIGHT: scrollable button list */}
-          <div className="lg:w-56 flex flex-col gap-0 shrink-0">
+          <div className="flex flex-col lg:flex-row gap-10 w-full min-w-0">
 
-            {/* Up chevron */}
-            <button
-              onClick={() => scrollBy(-1)}
-              className="flex items-center justify-center mb-1 rounded-lg transition-all duration-200"
-              style={{ opacity: canScrollUp ? 1 : 0, pointerEvents: canScrollUp ? "auto" : "none", cursor: "pointer" }}
-              aria-label="Scroll up"
-            >
-              <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M5 15l7-7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            {/* LEFT content */}
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+              <div
+                key={displayId}
+                className={visible ? "pd-enter" : ""}
+                style={{ opacity: visible ? 1 : 0, transition: visible ? "none" : "opacity 0.22s ease" }}
+              >
 
-            {/* Button list */}
-            <div
-              ref={listRef}
-              onScroll={handleListScroll}
-              className="pd-btn-list flex flex-col gap-3 overflow-y-auto"
-              style={{ maxHeight: `${VISIBLE_COUNT * ITEM_H}px` }}
-            >
-              {products.map((p, i) => {
-                const isActive  = p.id === activeId;
-                const isHovered = hoveredId === p.id && !isActive;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => handleSelect(p.id)}
-                    onMouseEnter={() => setHoveredId(p.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    className="pd-product-btn w-full text-left pl-3 pr-8 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap shrink-0 flex items-center gap-2.5"
+                {/* Heading + tag badge */}
+                <div className="flex items-start gap-3 flex-wrap mb-1">
+                  <h2
+                    className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
+                    style={{ color: "var(--brand-yellow)" }}
+                  >
+                    {active.heading}
+                  </h2>
+                </div>
+
+                {/* Accent + rate pill */}
+                <div className="flex items-center gap-3 mb-4 mt-2">
+                  <div className="flex gap-1.5">
+                    <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-teal)" }} />
+                    <div className="h-0.75 w-8 rounded-full" style={{ background: "var(--brand-yellow)" }} />
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border" style={{ color: "#ffffffff" }}>
+                    {meta.rate}
+                  </span>
+                </div>
+
+                <p className="text-sm sm:text-[0.95rem] leading-relaxed max-w-2xl mb-8" style={{ color: "rgba(255,255,255,0.80)" }}>
+                  {active.subtitle}
+                </p>
+
+                {/* Features — with hover effect */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-7 mb-10">
+                  {active.features.map((feat, i) => (
+                    <FeatureItem key={feat.title} feat={feat} delay={i * 60} visible={visible} />
+                  ))}
+                </div>
+
+                {/* Buttons */}
+                <div className="relative z-20 flex items-center gap-4 flex-wrap">
+                  <Link
+                    to={detailRouteFor(active.id)}
+                    className="pd-cta relative z-20 inline-flex items-center gap-2 px-7 py-2.5 rounded-lg font-bold text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-125 active:scale-95"
                     style={{
-                      borderRadius: "10px",
-                      // active: teal bg + dark text | hovered: teal tint + lime text | default: subtle
-                      background: isActive
-                        ? "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))"
-                        : isHovered
-                        ? "rgba(38,174,144,0.15)"
-                        : "rgba(255,255,255,0.04)",
-                      color: isActive
-                        ? "var(--brand-yellow)"           // lime text on active
-                        : isHovered
-                        ? "var(--brand-yellow)"           // teal text on hover
-                        : "rgba(255, 255, 255, 1)", // muted white default
-                      border: isActive
-                        ? "1.5px solid rgba(38,174,144,0.80)"
-                        : isHovered
-                        ? "1.5px solid rgba(38,174,144,0.50)"
-                        : "1.5px solid rgb(242 242 49)",
-                      boxShadow: isActive
-                        ? "0 4px 16px rgba(6,106,156,0.45)"
-                        : isHovered
-                        ? "inset 0 0 0 1px rgba(38,174,144,0.35), inset 0 0 14px rgba(38,174,144,0.18)"
-                        : "none",
-                      /* no transform on hover — the redesign keeps every hover
-                         effect inside the button's own box (see CSS above) */
-                      fontWeight: isActive ? 700 : 500,
-                      opacity: sectionVisible ? 1 : 0,
-                      transitionProperty: "opacity, transform, background, border, box-shadow, color",
-                      transitionDuration: "0.4s, 0.25s, 0.25s, 0.25s, 0.25s, 0.25s",
-                      transitionDelay: sectionVisible ? `${i * 50}ms` : "0ms",
+                      color: "var(--brand-yellow)",
+                      border: "1px solid rgba(255, 255, 255, 1)",
+                      background: "rgba(242,242,49,0.07)",
                     }}
                   >
-                    {/* Product icon */}
-                    {/* <span className="text-base leading-none shrink-0">{PRODUCT_ICON[p.id]}</span> */}
-                    <span className="truncate">{p.label}</span>
-                  </button>
-                );
-              })}
+                    Know More About Your Loan
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            {/* Down chevron */}
-            <button
-              onClick={() => scrollBy(1)}
-              className="flex items-center justify-center rounded-lg mt-1 transition-all duration-200"
-              style={{ opacity: canScrollDown ? 1 : 0, pointerEvents: canScrollDown ? "auto" : "none", cursor: "pointer" }}
-              aria-label="Scroll down"
-            >
-              <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            {/* RIGHT: scrollable button list */}
+            <div className="lg:w-56 flex flex-col gap-0 shrink-0">
 
+              {/* Up chevron */}
+              <button
+                onClick={() => scrollBy(-1)}
+                className="flex items-center justify-center mb-1 rounded-lg transition-all duration-200"
+                style={{ opacity: canScrollUp ? 1 : 0, pointerEvents: canScrollUp ? "auto" : "none", cursor: "pointer" }}
+                aria-label="Scroll up"
+              >
+                <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="M5 15l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {/* Button list */}
+              <div
+                ref={listRef}
+                onScroll={handleListScroll}
+                className="pd-btn-list flex flex-col gap-3 overflow-y-auto"
+                style={{ maxHeight: `${VISIBLE_COUNT * ITEM_H}px` }}
+              >
+                {products.map((p, i) => {
+                  const isActive = p.id === activeId;
+                  const isHovered = hoveredId === p.id && !isActive;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleSelect(p.id)}
+                      onMouseEnter={() => setHoveredId(p.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      className="pd-product-btn w-full text-left pl-3 pr-8 py-2.5 text-sm cursor-pointer select-none whitespace-nowrap shrink-0 flex items-center gap-2.5"
+                      style={{
+                        borderRadius: "10px",
+                        // active: teal bg + dark text | hovered: teal tint + lime text | default: subtle
+                        background: isActive
+                          ? "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))"
+                          : isHovered
+                            ? "rgba(38,174,144,0.15)"
+                            : "rgba(255,255,255,0.04)",
+                        color: isActive
+                          ? "var(--brand-yellow)"           // lime text on active
+                          : isHovered
+                            ? "var(--brand-yellow)"           // teal text on hover
+                            : "rgba(255, 255, 255, 1)", // muted white default
+                        border: isActive
+                          ? "1.5px solid rgba(38,174,144,0.80)"
+                          : isHovered
+                            ? "1.5px solid rgba(38,174,144,0.50)"
+                            : "1.5px solid rgb(242 242 49)",
+                        boxShadow: isActive
+                          ? "0 4px 16px rgba(6,106,156,0.45)"
+                          : isHovered
+                            ? "inset 0 0 0 1px rgba(38,174,144,0.35), inset 0 0 14px rgba(38,174,144,0.18)"
+                            : "none",
+                        /* no transform on hover — the redesign keeps every hover
+                           effect inside the button's own box (see CSS above) */
+                        fontWeight: isActive ? 700 : 500,
+                        opacity: sectionVisible ? 1 : 0,
+                        transitionProperty: "opacity, transform, background, border, box-shadow, color",
+                        transitionDuration: "0.4s, 0.25s, 0.25s, 0.25s, 0.25s, 0.25s",
+                        transitionDelay: sectionVisible ? `${i * 50}ms` : "0ms",
+                      }}
+                    >
+                      {/* Product icon */}
+                      {/* <span className="text-base leading-none shrink-0">{PRODUCT_ICON[p.id]}</span> */}
+                      <span className="truncate">{p.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Down chevron */}
+              <button
+                onClick={() => scrollBy(1)}
+                className="flex items-center justify-center rounded-lg mt-1 transition-all duration-200"
+                style={{ opacity: canScrollDown ? 1 : 0, pointerEvents: canScrollDown ? "auto" : "none", cursor: "pointer" }}
+                aria-label="Scroll down"
+              >
+                <svg className="w-4 h-4" style={{ color: "var(--brand-teal)" }} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+            </div>
           </div>
         </div>
       </section>
