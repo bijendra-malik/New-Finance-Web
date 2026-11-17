@@ -25,6 +25,9 @@ const EMICalculatorPage = lazy(() => import("./pages/EMICalculatorPage"));
 const BeAFranchisorPage = lazy(() => import("./pages/BeAFranchisorPage"));
 const CreditScorePage = lazy(() => import("./pages/CreditScorePage"));
 const KnowYourScorePage = lazy(() => import("./pages/KnowYourScorePage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const CareersPage = lazy(() => import("./pages/CareersPage"));
+const CareersApplyPage = lazy(() => import("./pages/CareersApplyPage"));
 
 // ── Franchisor partner portal ────────────────────────────────────────────────
 const FranchisorDashboardPage = lazy(() => import("./pages/FranchisorDashboardPage"));
@@ -191,6 +194,9 @@ function App() {
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
               <Route path="/credit-score" element={<CreditScorePage />} />
               <Route path="/know-your-score" element={<KnowYourScorePage />} />
+              <Route path="/faqs" element={<FAQPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/careers/apply" element={<CareersApplyPage />} />
 
               {dashboardRoutes.map(([path, element]) => (
                 <Route
