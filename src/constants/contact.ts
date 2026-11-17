@@ -26,3 +26,4 @@ export const PHONE_MOBILE_HREF = "tel:+918655168551";
 export const EMAIL_LOANS = "loans@indexiafinance.com";
 export const EMAIL_CONTACT = "contactus@indexiafinance.com";
 export const EMAIL_SUPPORT = "support@indexiafinance.com";
+export const EMAIL_CAREERS = "hr@indexiafinance.com";
