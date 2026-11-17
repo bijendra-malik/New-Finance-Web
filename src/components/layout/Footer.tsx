@@ -20,18 +20,8 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
     title: "Company",
     links: [
       { label: "About Indexia", href: "https://www.indexiagroup.com/about", external: true },
-      { label: "Indexia Group", href: "https://www.indexiagroup.com/", external: true },
-      { label: "Careers", href: "https://www.indexiagroup.com/careers/", external: true },
+      { label: "Careers", href: "/careers" },
       { label: "Contact us", href: "/contact" },
-    ],
-  },
-  {
-    title: "Tools",
-    links: [
-      { label: "EMI calculator", href: "/emi-calculator" },
-      { label: "Eligibility calculator", href: "/eligibility-calculator" },
-      { label: "Check credit score", href: "/know-your-score" },
-      { label: "Track application", href: "/application-status" },
     ],
   },
   {
@@ -39,7 +29,6 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Global research", href: "/global-research" },
       { label: "News & knowledge", href: "https://www.indexiagroup.com/news/", external: true },
-      { label: "Become a franchise", href: "/franchise" },
       { label: "Advertise with us", href: "/advertise-with-us" },
     ],
   },
@@ -210,32 +199,6 @@ const Footer = () => {
                 </a>
               </li>
             </ul>
-
-            <div className="mt-7">
-              <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/25">
-                Follow
-              </p>
-              <ul aria-label="Indexia Finance social profiles" className="mt-3 flex items-center gap-2">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <li key={social.name}>
-                      <a
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${social.name} — ${social.handle}`}
-                        title={`${social.name} — ${social.handle}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-full bg-(--soc) text-white ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white hover:text-(--soc) hover:shadow-[0_8px_18px_rgba(0,0,0,0.35)] hover:ring-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                        style={{ "--soc": social.brand } as CSSProperties}
-                      >
-                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
           </div>
 
           <div className="flex items-center justify-center">
@@ -276,7 +239,8 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-9 sm:grid-cols-3 lg:gap-x-6">
+          <div className="flex flex-col justify-between gap-8">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-9 lg:gap-x-6">
             {FOOTER_COLUMNS.map((column) => (
               <nav key={column.title} aria-label={column.title} className="min-w-0">
                 <h3 className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-white/35">
@@ -319,7 +283,34 @@ const Footer = () => {
                 </ul>
               </nav>
             ))}
+          </div>
 
+            {/* Social profiles — right side of the footer */}
+            <div className="flex flex-col items-start gap-3 lg:items-end">
+              <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/25">
+                Follow
+              </p>
+              <ul aria-label="Indexia Finance social profiles" className="flex flex-wrap items-center gap-2">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <li key={social.name}>
+                      <a
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${social.name} — ${social.handle}`}
+                        title={`${social.name} — ${social.handle}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-(--soc) text-white ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-1 hover:bg-white hover:text-(--soc) hover:shadow-[0_8px_18px_rgba(0,0,0,0.35)] hover:ring-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                        style={{ "--soc": social.brand } as CSSProperties}
+                      >
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
         </div>
 
