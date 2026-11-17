@@ -1,7 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 import { advanceOnEnter } from "../utils/enterToNext";
+import { DateOfBirthPicker } from "../components/form/FormControls";
+import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
+import type { Continent, Country } from "../api/masters";
+import { useApplyGate } from "../hooks/useApplyGate";
+import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
+import { loanKeyFor } from "../constants/loanSlugs";
+import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
 
 // ── Static data ───────────────────────────────────────────────────────────────
 const loanProducts = [
@@ -9,14 +16,12 @@ const loanProducts = [
   "Balance Transfer", "Vehicle Loan", "Education Loan", "Project Loan",
   "Commercial Purchase", "Working Capital", "Lease Rental Discounting", "Credit Card",
 ];
-const occupations  = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
-const countries    = ["India", "USA", "United Kingdom", "UAE", "Canada", "Australia", "Singapore"];
+const occupations = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface FormData {
-  country: string; product: string; fullName: string;
-  dobDD: string; dobMM: string; dobYYYY: string;
-  mobile: string; email: string; occupation: string;
+  continent: string; country: string; product: string; fullName: string;
+  dob: string; mobile: string; email: string; occupation: string;
   monthlyIncome: string; existingEMI: string; authorized: boolean;
 }
 interface Result { eligible: boolean; maxLoan: string; emi: string; message: string }
@@ -42,35 +47,81 @@ const EligibilityCalculatorPage = () => {
   });
 
   const navigate = useNavigate();
+  const { requestApply, gate } = useApplyGate();
+  const setApplicantPrefill = useSetApplicantPrefill();
+
   const [form, setForm] = useState<FormData>({
-    country: "", product: "", fullName: "",
-    dobDD: "", dobMM: "", dobYYYY: "",
-    mobile: "", email: "", occupation: "",
+    continent: "", country: "", product: "", fullName: "",
+    dob: "", mobile: "", email: "", occupation: "",
     monthlyIncome: "", existingEMI: "", authorized: false,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [result, setResult]  = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
-  const dobDayRef = useRef<HTMLInputElement>(null);
-  const dobMonthRef = useRef<HTMLInputElement>(null);
-  const dobYearRef = useRef<HTMLInputElement>(null);
+
+  // Region comes from the location masters (GET /masters/location/…).
+  const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
+  const [continentsLoading, setContinentsLoading] = useState(true);
+  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(false);
 
   const set = (f: keyof FormData, v: string | boolean) =>
     setForm(p => ({ ...p, [f]: v }));
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchContinents()
+      .then(list => { if (!cancelled) setContinentOptions(list); })
+      .catch(() => { if (!cancelled) setContinentOptions([]); })
+      .finally(() => { if (!cancelled) setContinentsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const picked = continentOptions.find(item => item.name === form.continent);
+    if (!picked) return;
+    let cancelled = false;
+    fetchCountriesByContinent(picked._id)
+      .then(list => { if (!cancelled) setCountryOptions(list); })
+      .catch(() => { if (!cancelled) setCountryOptions([]); })
+      .finally(() => { if (!cancelled) setCountriesLoading(false); });
+    return () => { cancelled = true; };
+  }, [continentOptions, form.continent]);
+
   const validate = () => {
     const e: Partial<Record<keyof FormData, string>> = {};
+    if (!form.continent)                                   e.continent     = "Select a continent";
     if (!form.country)                                     e.country       = "Select a country";
     if (!form.product)                                     e.product       = "Select a loan product";
     if (!form.fullName.trim())                             e.fullName      = "Full name is required";
-    if (!form.dobDD || !form.dobMM || !form.dobYYYY)       e.dobDD         = "Enter complete date of birth";
+    if (!form.dob)                                         e.dob           = "Enter your complete date of birth";
+    else if (!isAtLeastAge(form.dob, 18))                  e.dob           = "You must be at least 18 years old";
+    else if (!isAtMostAge(form.dob, 65))                   e.dob           = "Applicants must be 65 or younger";
     if (!form.mobile.trim())                               e.mobile        = "Mobile number is required";
-    else if (!/^\d{10}$/.test(form.mobile.replace(/\D/g,""))) e.mobile    = "Enter a valid 10-digit number";
+    else if (!MOBILE_REGEX.test(form.mobile))              e.mobile        = "Enter a valid 10-digit number";
+    if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
     if (!form.occupation)                                  e.occupation    = "Select occupation";
     if (!form.monthlyIncome)                               e.monthlyIncome = "Monthly income is required";
     if (!form.authorized)                                  e.authorized    = "Please authorise to proceed";
     setErrors(e);
     return Object.keys(e).length === 0;
+  };
+
+  /** Opens the real application for the product and profile just estimated. */
+  const startApplication = () => {
+    const productId = loanKeyFor(form.product);
+    if (!productId) return;
+    setApplicantPrefill?.({
+      identity: {
+        fullName: form.fullName.trim(),
+        mobile: form.mobile,
+        email: form.email.trim(),
+        dob: form.dob,
+      },
+      note: "Your eligibility details are carried into this application. You can review them there.",
+      authoritative: false,
+    });
+    requestApply(productId);
   };
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
@@ -101,6 +152,7 @@ const EligibilityCalculatorPage = () => {
     `w-full border rounded-xl px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all placeholder:text-gray-400 ${
       errors[field] ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"
     }`;
+  const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-(--header-h)">
@@ -224,11 +276,11 @@ const EligibilityCalculatorPage = () => {
               </button>
               {result.eligible && (
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={startApplication}
                   className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                   style={{ background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)" }}
                 >
-                  Apply Now →
+                  Apply for {form.product} →
                 </button>
               )}
             </div>
@@ -245,105 +297,161 @@ const EligibilityCalculatorPage = () => {
 
             <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} noValidate className="px-6 md:px-8 py-7">
 
-              {/* Row 1: Country | Product | Full Name */}
+              {/* Row 1: Continent | Country | Loan Product */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Country *</label>
-                  <select value={form.country} onChange={e => set("country", e.target.value)} className={fc("country")}>
-                    <option value="">Select</option>
-                    {countries.map(c => <option key={c}>{c}</option>)}
+                  <label htmlFor="elig-continent" className={labelCls}>Continent *</label>
+                  <select
+                    id="elig-continent"
+                    value={form.continent}
+                    onChange={e => {
+                      set("continent", e.target.value);
+                      set("country", "");
+                      setCountryOptions([]);
+                      setCountriesLoading(true);
+                      setErrors(p => ({ ...p, continent: "", country: "" }));
+                    }}
+                    disabled={continentsLoading}
+                    className={fc("continent")}
+                  >
+                    <option value="">{continentsLoading ? "Loading…" : "Select"}</option>
+                    {continentOptions.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+                  </select>
+                  {errors.continent && <p className="text-xs text-red-500 mt-1">{errors.continent}</p>}
+                </div>
+                <div>
+                  <label htmlFor="elig-country" className={labelCls}>Country *</label>
+                  <select
+                    id="elig-country"
+                    value={form.country}
+                    onChange={e => { set("country", e.target.value); setErrors(p => ({ ...p, country: "" })); }}
+                    disabled={!form.continent || countriesLoading}
+                    className={fc("country")}
+                  >
+                    <option value="">
+                      {!form.continent ? "Select a continent first" : countriesLoading ? "Loading…" : "Select"}
+                    </option>
+                    {countryOptions.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
                   </select>
                   {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Loan Product *</label>
-                  <select value={form.product} onChange={e => set("product", e.target.value)} className={fc("product")}>
+                  <label htmlFor="elig-product" className={labelCls}>Loan Product *</label>
+                  <select
+                    id="elig-product"
+                    value={form.product}
+                    onChange={e => { set("product", e.target.value); setErrors(p => ({ ...p, product: "" })); }}
+                    className={fc("product")}
+                  >
                     <option value="">Select</option>
-                    {loanProducts.map(p => <option key={p}>{p}</option>)}
+                    {loanProducts.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                   {errors.product && <p className="text-xs text-red-500 mt-1">{errors.product}</p>}
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Full Name *</label>
-                  <input type="text" placeholder="Enter your full name" value={form.fullName} onChange={e => set("fullName", e.target.value)} className={fc("fullName")} />
-                  {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
-                </div>
               </div>
 
-              {/* Row 2: DOB | Mobile | Email */}
+              {/* Row 2: Full Name | Date of Birth | Mobile */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Date of Birth *</label>
-                  <div className="flex gap-2">
-                    {([ ["dobDD","DD",2], ["dobMM","MM",2], ["dobYYYY","YYYY",4] ] as [keyof FormData, string, number][]).map(([f, ph, ml]) => (
-                      <input key={f} type="text" placeholder={ph} maxLength={ml} value={form[f] as string}
-                        ref={f === "dobDD" ? dobDayRef : f === "dobMM" ? dobMonthRef : dobYearRef}
-                        inputMode="numeric"
-                        autoComplete={f === "dobDD" ? "bday-day" : f === "dobMM" ? "bday-month" : "bday-year"}
-                        onChange={e => {
-                          let digits = e.target.value.replace(/\D/g, "").slice(0, ml);
-                          let advance = false;
-                          if (f === "dobDD" && digits.length === 1 && Number(digits) > 3) {
-                            digits = `0${digits}`;
-                            advance = true;
-                          } else if (f === "dobMM" && digits.length === 1 && Number(digits) > 1) {
-                            digits = `0${digits}`;
-                            advance = true;
-                          } else if (digits.length === ml) {
-                            advance = true;
-                          }
-                          set(f, digits);
-                          if (advance) {
-                            if (f === "dobDD") dobMonthRef.current?.focus();
-                            else if (f === "dobMM") dobYearRef.current?.focus();
-                          }
-                        }}
-                        className={`flex-1 border rounded-xl px-2 py-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-500 transition ${errors.dobDD ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"}`}
-                      />
-                    ))}
-                  </div>
-                  {errors.dobDD && <p className="text-xs text-red-500 mt-1">{errors.dobDD}</p>}
+                  <label htmlFor="elig-name" className={labelCls}>Full Name *</label>
+                  <input
+                    id="elig-name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={form.fullName}
+                    onChange={e => { set("fullName", e.target.value); setErrors(p => ({ ...p, fullName: "" })); }}
+                    className={fc("fullName")}
+                  />
+                  {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mobile Number *</label>
-                  <input type="tel" placeholder="10-digit mobile number" maxLength={10} value={form.mobile} onChange={e => set("mobile", e.target.value.replace(/\D/g, ""))} className={fc("mobile")} />
+                  <label htmlFor="elig-dob-day" className={labelCls}>Date of Birth *</label>
+                  <DateOfBirthPicker
+                    id="elig-dob-day"
+                    value={form.dob}
+                    onChange={v => { set("dob", v); setErrors(p => ({ ...p, dob: "" })); }}
+                    err={errors.dob}
+                    showError={false}
+                  />
+                  {errors.dob && <p className="text-xs text-red-500 mt-1">{errors.dob}</p>}
+                </div>
+                <div>
+                  <label htmlFor="elig-mobile" className={labelCls}>Mobile Number *</label>
+                  <input
+                    id="elig-mobile"
+                    type="tel"
+                    placeholder="10-digit mobile number"
+                    maxLength={10}
+                    value={form.mobile}
+                    onChange={e => { set("mobile", e.target.value.replace(/\D/g, "")); setErrors(p => ({ ...p, mobile: "" })); }}
+                    className={fc("mobile")}
+                  />
                   {errors.mobile && <p className="text-xs text-red-500 mt-1">{errors.mobile}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                    Email Address <span className="normal-case font-normal text-gray-400">(optional)</span>
-                  </label>
-                  <input type="email" placeholder="you@example.com" value={form.email} onChange={e => set("email", e.target.value)} className={fc("email")} />
                 </div>
               </div>
 
-              {/* Row 3: Occupation | Income | EMI */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-6">
+              {/* Row 3: Email | Occupation | Income */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Occupation *</label>
-                  <select value={form.occupation} onChange={e => set("occupation", e.target.value)} className={fc("occupation")}>
+                  <label htmlFor="elig-email" className={labelCls}>
+                    Email Address <span className="normal-case font-normal text-gray-400">(optional)</span>
+                  </label>
+                  <input
+                    id="elig-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={e => { set("email", e.target.value); setErrors(p => ({ ...p, email: "" })); }}
+                    className={fc("email")}
+                  />
+                  {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+                </div>
+                <div>
+                  <label htmlFor="elig-occupation" className={labelCls}>Occupation *</label>
+                  <select
+                    id="elig-occupation"
+                    value={form.occupation}
+                    onChange={e => { set("occupation", e.target.value); setErrors(p => ({ ...p, occupation: "" })); }}
+                    className={fc("occupation")}
+                  >
                     <option value="">Select</option>
-                    {occupations.map(o => <option key={o}>{o}</option>)}
+                    {occupations.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                   {errors.occupation && <p className="text-xs text-red-500 mt-1">{errors.occupation}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Net Monthly Income *</label>
+                  <label htmlFor="elig-income" className={labelCls}>Net Monthly Income *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input type="number" placeholder="e.g. 50000" value={form.monthlyIncome} onChange={e => set("monthlyIncome", e.target.value)}
-                      className={`${fc("monthlyIncome")} pl-7`} />
+                    <input
+                      id="elig-income"
+                      type="number"
+                      placeholder="e.g. 50000"
+                      value={form.monthlyIncome}
+                      onChange={e => { set("monthlyIncome", e.target.value); setErrors(p => ({ ...p, monthlyIncome: "" })); }}
+                      className={`${fc("monthlyIncome")} pl-7`}
+                    />
                   </div>
                   {errors.monthlyIncome && <p className="text-xs text-red-500 mt-1">{errors.monthlyIncome}</p>}
                 </div>
+              </div>
+
+              {/* Row 4: Existing EMI */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-6">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                  <label htmlFor="elig-emi" className={labelCls}>
                     Existing EMI <span className="normal-case font-normal text-gray-400">(if any)</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input type="number" placeholder="e.g. 5000" value={form.existingEMI} onChange={e => set("existingEMI", e.target.value)}
-                      className={`${fc("existingEMI")} pl-7`} />
+                    <input
+                      id="elig-emi"
+                      type="number"
+                      placeholder="e.g. 5000"
+                      value={form.existingEMI}
+                      onChange={e => set("existingEMI", e.target.value)}
+                      className={`${fc("existingEMI")} pl-7`}
+                    />
                   </div>
                 </div>
               </div>
@@ -354,8 +462,12 @@ const EligibilityCalculatorPage = () => {
               {/* Authorise checkbox */}
               <label className="flex items-start gap-3 cursor-pointer mb-7 group">
                 <div className="relative mt-0.5 shrink-0">
-                  <input type="checkbox" checked={form.authorized} onChange={e => set("authorized", e.target.checked)}
-                    className="sr-only peer" />
+                  <input
+                    type="checkbox"
+                    checked={form.authorized}
+                    onChange={e => set("authorized", e.target.checked)}
+                    className="sr-only peer"
+                  />
                   <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all peer-checked:bg-teal-600 peer-checked:border-teal-600 ${errors.authorized ? "border-red-400 bg-red-50/30" : "border-gray-300 group-hover:border-teal-400"}`}>
                     <svg className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                       <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -421,6 +533,9 @@ const EligibilityCalculatorPage = () => {
         )}
 
       </div>
+
+      {/* Registration + application form for the product just estimated */}
+      {gate}
     </div>
   );
 };
