@@ -1,4 +1,5 @@
 import type { CaptchaState } from "../../hooks/useCaptcha";
+import CaptchaQuestion from "./CaptchaQuestion";
 
 interface CaptchaFieldProps {
   captcha: CaptchaState;
@@ -31,7 +32,7 @@ const CaptchaField = ({ captcha, idPrefix = "captcha", className = "" }: Captcha
           {loading ? (
             <span className="text-[11px] font-semibold text-slate-400">Loading…</span>
           ) : challenge?.question ? (
-            <span className="text-sm font-bold tracking-wider text-slate-800">{challenge.question}</span>
+            <CaptchaQuestion question={challenge.question} className="tracking-wider" />
           ) : (
             <button
               type="button"
