@@ -4,7 +4,8 @@ import { advanceOnEnter } from "../../utils/enterToNext";
 
 /**
  * Shared lead/enquiry form used by Franchise Login, Be An Associate and Contact pages.
- * Client-side only for now — no backend endpoint exists yet; shows a success state on submit.
+ * With `onSubmit` the values are sent to the backend; without it the form only
+ * validates and shows its success state.
  */
 
 interface LeadFormProps {
@@ -12,15 +13,25 @@ interface LeadFormProps {
   submitLabel: string;
   successTitle: string;
   successMessage: string;
+  /** Return a string to replace the success message with the API's own text. */
+  onSubmit?: (values: Record<string, string>) => Promise<string | void>;
+  /** Text shown if the submission is refused. */
+  submitErrorMessage?: string;
 }
 
 const inputBase =
   "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-navy)] transition";
 
-const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFormProps) => {
+const LeadForm = ({
+  fields, submitLabel, successTitle, successMessage, onSubmit, submitErrorMessage,
+}: LeadFormProps) => {
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  // The API's own confirmation, shown instead of the static copy when it sends one.
+  const [resultMessage, setResultMessage] = useState("");
 
   const setField = (name: string, v: string) => {
     setValues((p) => ({ ...p, [name]: v }));
@@ -52,9 +63,28 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  const handleSubmit = async (ev: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     ev.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (!validate()) return;
+    if (!onSubmit) {
+      setSubmitted(true);
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const message = await onSubmit(values);
+      if (typeof message === "string" && message.trim()) setResultMessage(message.trim());
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error && error.message
+          ? error.message
+          : submitErrorMessage || "Something went wrong. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -66,7 +96,9 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
           </svg>
         </div>
         <h3 className="mb-2 text-xl font-bold text-gray-800">{successTitle}</h3>
-        <p className="mx-auto text-sm leading-relaxed text-gray-500">{successMessage}</p>
+        <p className="mx-auto text-sm leading-relaxed text-gray-500">
+          {resultMessage || successMessage}
+        </p>
       </div>
     );
   }
@@ -117,12 +149,23 @@ const LeadForm = ({ fields, submitLabel, successTitle, successMessage }: LeadFor
         ))}
       </div>
 
+      {submitError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          <span aria-hidden="true" className="shrink-0">⚠️</span>
+          <span>{submitError}</span>
+        </div>
+      )}
+
       <button
         type="submit"
-        className="w-full rounded-lg py-3 text-sm font-bold text-white transition hover:brightness-110 active:scale-[0.99]"
+        disabled={submitting}
+        className="w-full rounded-lg py-3 text-sm font-bold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
       >
-        {submitLabel}
+        {submitting ? "Sending…" : submitLabel}
       </button>
     </form>
   );
