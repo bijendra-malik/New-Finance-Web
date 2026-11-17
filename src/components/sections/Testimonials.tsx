@@ -1,55 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { BRAND_COLORS, TESTIMONIALS, TRUST_METRICS } from "./testimonialsData";
+import { BRAND_COLORS, GOOGLE_BUSINESS, TESTIMONIALS } from "./testimonialsData";
 import TestimonialCard from "./TestimonialCard";
-
-const TrustMetric = ({
-  icon: Icon,
-  value,
-  label,
-  color,
-  index,
-}: {
-  icon: React.ElementType;
-  value: string;
-  label: string;
-  color: string;
-  index: number;
-}) => {
-  const [hoveredMetric, setHoveredMetric] = useState(false);
-  return (
-  <div
-    className="flex flex-col items-start gap-3 px-5 py-2 rounded-2xl transition-all duration-300 group cursor-pointer relative"
-    style={{
-      background: "#ffffff",
-      border: `1.5px solid ${color}40`,
-      /* inside-the-box hover: tinted ring + glow painted via box-shadow,
-         no scale — the metric card never leaves its grid cell */
-      boxShadow: hoveredMetric
-        ? `0 0 0 3px ${color}25, 0 4px 16px -2px ${color}40`
-        : "0 2px 12px rgba(6,106,156,0.08)",
-      animation: `fadeInLeft 0.6s ease-out ${index * 0.1}s both`,
-    }}
-    onMouseEnter={() => setHoveredMetric(true)}
-    onMouseLeave={() => setHoveredMetric(false)}
-  >
-      <div className="relative z-10 flex items-center gap-4 w-full">
-        <div
-          className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110"
-          style={{ background: `${color}20` }}
-        >
-          <Icon size={24} style={{ color: color, strokeWidth: 1.5 }} />
-        </div>
-        <div className="flex-1">
-          <p className="text-[18px] md:text-[20px] font-black" style={{ color: color }}>
-            {value}
-          </p>
-          <p className="text-[12px] font-semibold" style={{ color: "var(--brand-dark)" }}>{label}</p>
-        </div>
-      </div>
-  </div>
-  );
-};
+import { GoogleG, GoogleStars } from "./googleReviews";
 
 const Testimonials = () => {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -57,52 +10,51 @@ const Testimonials = () => {
   const [canRight, setCanRight] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const updateArrows = () => {
+  const updateCarousel = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
     setCanLeft(el.scrollLeft > 4);
     setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-  };
-
-  const scrollBy = (dir: "left" | "right") => {
-    scrollerRef.current?.scrollBy({
-      left: dir === "left" ? -400 : 400,
-      behavior: "smooth",
-    });
-  };
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = card ? card.offsetWidth + 24 : 340;
+    setActiveIndex(Math.round(el.scrollLeft / step));
+  }, []);
 
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    updateArrows();
-    const timer = setTimeout(updateArrows, 100);
-    el.addEventListener("scroll", updateArrows);
+    updateCarousel();
+    const timer = setTimeout(updateCarousel, 120);
+    el.addEventListener("scroll", updateCarousel, { passive: true });
     return () => {
       clearTimeout(timer);
-      el.removeEventListener("scroll", updateArrows);
+      el.removeEventListener("scroll", updateCarousel);
     };
-  }, []);
+  }, [updateCarousel]);
+
+  const scrollCards = (direction: "left" | "right") => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = card ? card.offsetWidth + 24 : 340;
+    el.scrollBy({ left: direction === "left" ? -step : step, behavior: "smooth" });
+  };
+
+  const arrowClass =
+    "hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:border-[#26ae90] hover:text-[#066a9c] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-700";
 
   return (
-    <section className="w-full py-8 md:py-16 px-4 md:px-8 relative overflow-hidden" style={{ background: "rgb(240, 249, 255)" }}>
+    <section className="relative w-full overflow-hidden bg-[#f0f9ff] px-4 py-12 md:px-8 md:py-16">
       <div
-        className="absolute top-0 left-0 w-full h-0.5 z-20"
+        className="absolute left-0 top-0 z-20 h-0.5 w-full"
         style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))" }}
       />
 
-      {/* Subtle overlay — same bg, just a slight tint for depth */}
-      <div
-        className="absolute inset-0"
-        style={{ background: "rgba(240, 249, 255, 0.6)" }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto">
+      <div className="relative z-10 mx-auto max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-6 md:mb-8">
-          {/* Main Title with Animation */}
+        <div className="text-center">
           <h2
-            className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight animate-fade-in drop-shadow-sm"
+            className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl"
             style={{ color: "var(--brand-navy)" }}
           >
             What Our{" "}
@@ -118,153 +70,102 @@ const Testimonials = () => {
             </span>{" "}
             Say
           </h2>
-
-          {/* Subtitle */}
-          <p className="text-sm md:text-sm mb-0 font-medium" style={{ color: "var(--brand-dark)" }}>
-            Join over{" "}
-            <span className="font-black" style={{ color: BRAND_COLORS.BISLERI_GREEN }}>
-              1,00,000+ satisfied customers
-            </span>{" "}
-            across India
-          </p>
-          <p className="text-xs mx-auto mt-0" style={{ color: BRAND_COLORS.GREY }}>
-            Real stories from real people who trusted us with their financial goals
+          <p className="mt-3 text-sm font-medium text-slate-600">
+            Reviews shown here are taken from our Google Business Profile —{" "}
+            <span className="font-bold" style={{ color: BRAND_COLORS.BISLERI_GREEN }}>
+              nothing written for us
+            </span>
+            .
           </p>
         </div>
 
-        {/* Trust Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-1 md:mb-2 px-4">
-          {TRUST_METRICS.map((metric, idx) => (
-            <TrustMetric key={idx} {...metric} index={idx} />
-          ))}
+        {/* Google rating summary */}
+        <div className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm sm:flex-row sm:gap-6">
+          <div className="text-center">
+            <p className="text-4xl font-black leading-none" style={{ color: "var(--brand-navy)" }}>
+              {GOOGLE_BUSINESS.rating}
+            </p>
+            <div className="mt-1.5 flex justify-center">
+              <GoogleStars value={GOOGLE_BUSINESS.rating} size={15} />
+            </div>
+            <p className="mt-1 text-[11px] font-semibold text-slate-500">
+              {GOOGLE_BUSINESS.reviewCount} Google reviews
+            </p>
+          </div>
+          <div className="hidden h-14 w-px bg-slate-200 sm:block" />
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-[12px] leading-relaxed text-slate-600">
+              Rated {GOOGLE_BUSINESS.rating} out of 5 by {GOOGLE_BUSINESS.reviewCount} customers on
+              Google. As of {GOOGLE_BUSINESS.asOf}.
+            </p>
+            <a
+              href={GOOGLE_BUSINESS.reviewsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#066a9c] px-3 py-1.5 text-[11px] font-bold text-white transition hover:bg-[#0a4b6d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#066a9c]"
+            >
+              <GoogleG size={13} /> Read all reviews on Google
+            </a>
+          </div>
         </div>
 
-        {/* Carousel Section */}
-        <div className="relative">
-          {/* Left Arrow */}
+        {/* Reviews carousel */}
+        <div className="relative mt-8">
           <button
-            onClick={() => scrollBy("left")}
+            onClick={() => scrollCards("left")}
             disabled={!canLeft}
-            aria-label="Scroll left"
-            className="hidden lg:flex absolute -left-12 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center transition-all duration-300 shadow-xl hover:shadow-2xl group"
-            style={{
-              background: canLeft ? BRAND_COLORS.DARK_BLUE : "rgba(255,255,255,0.15)",
-              color: canLeft ? BRAND_COLORS.WHITE : "rgba(255,255,255,0.3)",
-              border: canLeft
-                ? `2px solid ${BRAND_COLORS.BISLERI_GREEN}`
-                : "2px solid transparent",
-              cursor: canLeft ? "pointer" : "not-allowed",
-              transform: canLeft ? "scale(1)" : "scale(0.8)",
-            }}
-            onMouseEnter={(e) => {
-              if (canLeft) {
-                e.currentTarget.style.background = BRAND_COLORS.BISLERI_GREEN;
-                e.currentTarget.style.transform = "scale(1.15)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (canLeft) {
-                e.currentTarget.style.background = BRAND_COLORS.DARK_BLUE;
-                e.currentTarget.style.transform = "scale(1)";
-              }
-            }}
+            aria-label="Previous reviews"
+            className={`${arrowClass} -left-4`}
           >
-            <ChevronLeft size={24} strokeWidth={2.5} />
+            <ChevronLeft size={20} strokeWidth={2.5} />
           </button>
 
-          {/* Scroll Container */}
           <div
             ref={scrollerRef}
-            className="flex gap-6 overflow-x-auto pb-2 pt-5 ml-4 snap-x snap-mandatory scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-3 pt-1 scroll-smooth [&::-webkit-scrollbar]:hidden scrollbar-none"
           >
-            {TESTIMONIALS.map((t, i) => (
-              <TestimonialCard key={t.id} t={t} index={i} />
+            {TESTIMONIALS.map((review, index) => (
+              <TestimonialCard key={review.id} review={review} index={index} />
             ))}
           </div>
 
-          {/* Right Arrow */}
           <button
-            onClick={() => scrollBy("right")}
+            onClick={() => scrollCards("right")}
             disabled={!canRight}
-            aria-label="Scroll right"
-            className="hidden lg:flex absolute -right-8 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center transition-all duration-300 shadow-xl hover:shadow-2xl group"
-            style={{
-              background: canRight ? BRAND_COLORS.DARK_BLUE : "rgba(255,255,255,0.15)",
-              color: canRight ? BRAND_COLORS.WHITE : "rgba(255,255,255,0.3)",
-              border: canRight
-                ? `2px solid ${BRAND_COLORS.BISLERI_GREEN}`
-                : "2px solid transparent",
-              cursor: canRight ? "pointer" : "not-allowed",
-              transform: canRight ? "scale(1)" : "scale(0.8)",
-            }}
-            onMouseEnter={(e) => {
-              if (canRight) {
-                e.currentTarget.style.background = BRAND_COLORS.BISLERI_GREEN;
-                e.currentTarget.style.transform = "scale(1.15)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (canRight) {
-                e.currentTarget.style.background = BRAND_COLORS.DARK_BLUE;
-                e.currentTarget.style.transform = "scale(1)";
-              }
-            }}
+            aria-label="More reviews"
+            className={`${arrowClass} -right-4`}
           >
-            <ChevronRight size={24} strokeWidth={2.5} />
+            <ChevronRight size={20} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Mobile carousel indicators */}
-        <div className="flex lg:hidden justify-center gap-2 mt-8">
-          {TESTIMONIALS.map((_, i) => (
+        {/* Mobile indicators */}
+        <div className="mt-5 flex justify-center gap-2 lg:hidden">
+          {TESTIMONIALS.map((review, index) => (
             <button
-              key={i}
-              className="h-2 rounded-full transition-all duration-300 hover:scale-125"
+              key={review.id}
+              aria-label={`Go to review ${index + 1}`}
+              className="h-2 rounded-full transition-all duration-300"
               style={{
-                width: activeIndex === i ? "16px" : "8px",
-                background:
-                  activeIndex === i
-                    ? BRAND_COLORS.BISLERI_GREEN
-                    : "rgba(255,255,255,0.4)",
+                width: activeIndex === index ? "18px" : "8px",
+                background: activeIndex === index ? BRAND_COLORS.BISLERI_GREEN : "rgba(6,106,156,0.25)",
               }}
-              onClick={() => {
-                scrollerRef.current?.scrollTo({
-                  left: i * 380,
-                  behavior: "smooth",
-                });
-                setActiveIndex(i);
-              }}
+              onClick={() =>
+                scrollerRef.current?.scrollTo({ left: index * 328, behavior: "smooth" })
+              }
             />
           ))}
         </div>
       </div>
 
-      {/* Animations */}
       <style>{`
-        @keyframes slideUpFade {
-          from { opacity: 0; transform: translateY(40px); }
-          /* transform: none (not translateY(0)) — releases the pinned stacking
-             context once the entrance finishes, so hover z-ordering works */
+        @keyframes fadeInLeft {
+          from { opacity: 0; transform: translateX(-16px); }
           to { opacity: 1; transform: none; }
         }
-        @keyframes shimmerBar {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes fadeInLeft {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.4; }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.8s ease-out;
+        @keyframes reviewIn {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: none; }
         }
       `}</style>
     </section>
