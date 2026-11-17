@@ -14,6 +14,7 @@ import {
 import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { EmailOtpUnavailableError, sendEmailOtp, verifyEmailOtp } from "../../api/emailOtp";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
@@ -120,6 +121,26 @@ const ApplicationModal = ({
   const [countryOptions, setCountryOptions] = useState<Country[]>([]);
   const [countriesLoading, setCountriesLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // ── Email OTP — the code is mailed by api/email-otp/* (nodemailer) ──────────
+  const [emailChallenge, setEmailChallenge] = useState<{ email: string; expiresAt: number; signature: string } | null>(null);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpBusy, setEmailOtpBusy] = useState<"" | "send" | "verify">("");
+  const [emailOtpError, setEmailOtpError] = useState("");
+  const [emailOtpNotice, setEmailOtpNotice] = useState("");
+  const [emailOtpUnavailable, setEmailOtpUnavailable] = useState(false);
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const cleanEmail = email.trim().toLowerCase();
+  const emailVerified = verifiedEmail !== "" && verifiedEmail === cleanEmail;
+  const emailOtpSent = !emailVerified && emailChallenge?.email === cleanEmail;
+  // ── Mobile OTP — the code is issued by the backend at registration ─────────
+  const [sentMobile, setSentMobile] = useState("");
+  const [verifiedMobile, setVerifiedMobile] = useState("");
+  const [mobileOtp, setMobileOtp] = useState("");
+  const [mobileOtpBusy, setMobileOtpBusy] = useState<"" | "send" | "verify">("");
+  const [mobileOtpError, setMobileOtpError] = useState("");
+  const [mobileOtpNotice, setMobileOtpNotice] = useState("");
+  const mobileVerified = verifiedMobile !== "" && verifiedMobile === mobile;
+  const mobileOtpSent = !mobileVerified && sentMobile !== "" && sentMobile === mobile;
 
   const setPan = function (v: string) {
     const clean = v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
@@ -136,6 +157,79 @@ const ApplicationModal = ({
 
   // ── Step 1 — Save eligibility details → eligibility test ────────────────────
   const [apiError, setApiError] = useState("");
+
+  const resetEmailOtp = () => {
+    setEmailChallenge(null);
+    setEmailOtp("");
+    setEmailOtpError("");
+    setEmailOtpNotice("");
+  };
+
+  /** Mails a fresh code to the address typed above. */
+  const handleSendEmailOtp = async () => {
+    if (!EMAIL_REGEX.test(cleanEmail)) {
+      setEmailOtpError("Enter a valid email address first");
+      return;
+    }
+    setEmailOtpBusy("send");
+    setEmailOtpError("");
+    setEmailOtpNotice("");
+    try {
+      const response = await sendEmailOtp(cleanEmail, fullName.trim());
+      if (!response.success || !response.challenge) {
+        setEmailOtpError(response.message || "We could not send the OTP just now. Please try again.");
+        return;
+      }
+      setEmailChallenge({ email: cleanEmail, ...response.challenge });
+      setEmailOtp("");
+      setEmailOtpUnavailable(false);
+      setEmailOtpNotice(response.message || "OTP sent to your email.");
+    } catch (err) {
+      if (err instanceof EmailOtpUnavailableError) {
+        // No mail transport on this deployment: do not trap the applicant here.
+        setEmailOtpUnavailable(true);
+        setEmailOtpError(err.message);
+        return;
+      }
+      setEmailOtpError(err instanceof Error ? err.message : "We could not send the OTP just now. Please try again.");
+    } finally {
+      setEmailOtpBusy("");
+    }
+  };
+
+  /** Checks the typed code against the challenge issued for this address. */
+  const handleVerifyEmailOtp = async () => {
+    const code = emailOtp.replace(/\D/g, "");
+    if (!emailChallenge || emailChallenge.email !== cleanEmail) {
+      setEmailOtpError("Request a new OTP for this email address.");
+      return;
+    }
+    if (!/^\d{6}$/.test(code)) {
+      setEmailOtpError("Enter the 6-digit code from your email");
+      return;
+    }
+    setEmailOtpBusy("verify");
+    setEmailOtpError("");
+    setEmailOtpNotice("");
+    try {
+      const response = await verifyEmailOtp(cleanEmail, code, {
+        expiresAt: emailChallenge.expiresAt,
+        signature: emailChallenge.signature,
+      });
+      if (!response.success) {
+        setEmailOtpError(response.message || "That code is not correct. Please try again.");
+        return;
+      }
+      setVerifiedEmail(cleanEmail);
+      setEmailOtp("");
+      setEmailOtpNotice(response.message || "Email verified.");
+      setFieldErrors((p) => ({ ...p, email: "" }));
+    } catch (err) {
+      setEmailOtpError(err instanceof Error ? err.message : "We could not verify the OTP. Please try again.");
+    } finally {
+      setEmailOtpBusy("");
+    }
+  };
   const [detailsBusy, setDetailsBusy] = useState(false);
 
   // ── Step 2 — the OTP gate (POST /auth/personal-loan → POST /auth/verify-otp) ──
@@ -175,6 +269,11 @@ const ApplicationModal = ({
     setPendingDashboard("");
     setSessionWasSignedIn(true);
     setMode(openedAsLogin ? "signin" : "signup");
+    setSentMobile("");
+    setVerifiedMobile("");
+    setMobileOtp("");
+    setMobileOtpError("");
+    setMobileOtpNotice("");
   };
 
   const handleClose = () => {
@@ -290,6 +389,7 @@ const ApplicationModal = ({
     if (!fullName.trim()) e.fullName = "Full name is required";
     else if (!NAME_REGEX.test(fullName.trim())) e.fullName = "Enter a valid full name";
     if (!EMAIL_REGEX.test(email)) e.email = "Enter a valid email address";
+    else if (!emailVerified && !emailOtpUnavailable) e.email = "Verify your email with the OTP sent to it";
     if (!dob) e.dob = "Date of birth is required";
     else if (!isAtLeastAge(dob, 18)) e.dob = "You must be at least 18 years old to apply for a loan";
     else if (!isAtMostAge(dob, 65)) e.dob = "Applicants must be 65 years old or younger";
@@ -352,18 +452,36 @@ const ApplicationModal = ({
     return requestLoanApplyOTP(loanKey, applyIdentity());
   };
 
-  /** Step 1 — save the details and send the apply-flow OTP. */
-  const handleDetailsSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-    e.preventDefault();
-    if (!validateDetails()) return;
+  /** Records that a code is now waiting, either inline or on the verify screen. */
+  const markOtpSent = (dashboardPath: string, inline: boolean) => {
+    setPendingDashboard(dashboardPath);
+    setOtp("");
+    setOtpError("");
+    setResendNotice("");
+    if (inline) {
+      setSentMobile(mobile);
+      setMobileOtp("");
+      setMobileOtpNotice(`OTP sent to +91 ${mobile}.`);
+    } else {
+      setStep("otp");
+    }
+  };
 
+  /**
+   * Saves the details and asks the backend for the mobile OTP. With `inline`
+   * the applicant stays on the details step and enters the code beside the
+   * mobile number instead of switching to the verify screen.
+   */
+  const sendOtpCode = async (inline: boolean) => {
     setApiError("");
-    const productDashboardPath = resolveDashboardPath(productKey);
+    if (inline) setMobileOtpError("");
+
     // Each sign-in remains tied to the product that opened the modal; do not
     // guess a fallback product when that context is missing.
-    const dashboardPath = productDashboardPath;
+    const dashboardPath = resolveDashboardPath(productKey);
     if (!dashboardPath || !loanKey) {
-      setApiError("Application form is not available for this product yet.");
+      const message = "Application form is not available for this product yet.";
+      if (inline) setMobileOtpError(message); else setApiError(message);
       return;
     }
 
@@ -371,7 +489,7 @@ const ApplicationModal = ({
     // product, or after abandoning one — requests a fresh code and replaces the
     // token with the new one, so a stale session can never file the application.
     setSessionWasSignedIn(isLoggedIn);
-    setDetailsBusy(true);
+    if (inline) setMobileOtpBusy("send"); else setDetailsBusy(true);
     try {
       const response = await requestOtp();
       if (!response.success) {
@@ -380,33 +498,28 @@ const ApplicationModal = ({
           try {
             const loginOtp = await requestLoginOTP({ mobile });
             if (!loginOtp.success) {
-              setApiError(loginOtp.message || "We could not send the OTP just now. Please try again.");
+              const message = loginOtp.message || "We could not send the OTP just now. Please try again.";
+              if (inline) setMobileOtpError(message); else setApiError(message);
               return;
             }
             setAlreadyRegistered(true);
-            setPendingDashboard(dashboardPath);
-            setOtp("");
-            setOtpError("");
-            setResendNotice("");
-            setStep("otp");
+            markOtpSent(dashboardPath, inline);
           } catch (loginError) {
-            setApiError(getApiErrorMessage(loginError, "We could not send the OTP just now. Please try again."));
+            const message = getApiErrorMessage(loginError, "We could not send the OTP just now. Please try again.");
+            if (inline) setMobileOtpError(message); else setApiError(message);
           }
           return;
         }
-        setApiError(response.message || "We could not send the OTP just now. Please try again.");
+        const message = response.message || "We could not send the OTP just now. Please try again.";
+        if (inline) setMobileOtpError(message); else setApiError(message);
         return;
       }
-      setPendingDashboard(dashboardPath);
-      setOtp("");
-      setOtpError("");
-      setResendNotice("");
-      setStep("otp");
+      markOtpSent(dashboardPath, inline);
     } catch (err) {
       const blocked = alreadyAppliedError(err);
       if (blocked) {
         const record = readSubmittedApplication(user?._id ?? mobile, loanKey);
-        setApiError("");
+        if (inline) setMobileOtpError(""); else setApiError("");
         setBlockedNotice(
           noticeForBlockedApplication(
             record?.outcome === "rejected",
@@ -416,31 +529,52 @@ const ApplicationModal = ({
         );
         return;
       }
-      setApiError(getApiErrorMessage(err, "We could not send the OTP just now. Please try again."));
+      const message = getApiErrorMessage(err, "We could not send the OTP just now. Please try again.");
+      if (inline) setMobileOtpError(message); else setApiError(message);
     } finally {
-      setDetailsBusy(false);
+      if (inline) setMobileOtpBusy(""); else setDetailsBusy(false);
     }
   };
 
-  /** Step 2 — verify the OTP, store its token, then open the product's form. */
-  const handleOtpVerify = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  /** Step 1 — save the details and send the apply-flow OTP. */
+  const handleDetailsSubmit = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
-    const code = otp.trim();
-    if (!code) { setOtpError("Please enter the OTP"); return; }
-    if (!/^\d{4,8}$/.test(code)) { setOtpError("Enter a valid OTP"); return; }
-    if (!loanKey) { setOtpError("Please start sign-in from the loan product you want to apply for."); return; }
+    if (!validateDetails()) return;
+    // A code already sent beside the mobile number stays valid — open the verify
+    // screen instead of issuing a duplicate.
+    if (mobileOtpSent) { setStep("otp"); return; }
+    await sendOtpCode(false);
+  };
 
-    setOtpBusy(true);
-    setOtpError("");
+  /** Sends the mobile OTP without leaving the details step. */
+  const handleSendMobileOtp = async () => {
+    if (!MOBILE_REGEX.test(mobile)) {
+      setMobileOtpError("Enter a valid 10-digit mobile number first");
+      return;
+    }
+    if (!isLoginMode && !validateDetails()) {
+      setMobileOtpError("Complete the highlighted details, then request the OTP");
+      return;
+    }
+    await sendOtpCode(true);
+  };
+
+  /**
+   * Verifies the mobile code, stores its token, then opens the product's form.
+   * Shared by the verify screen and the inline panel beside the mobile number.
+   */
+  const verifyMobileCode = async (code: string, setError: (message: string) => void) => {
+    if (!loanKey) { setError("Please start sign-in from the loan product you want to apply for."); return; }
     try {
       const response = isLoginMode
         ? await verifyLoginOTP(loanKey, { mobile, otp: code })
         : await verifyOTP({ mobile, otp: code });
       if (!response.success || !response.token || !response.user) {
-        setOtpError("The verification response was incomplete. Check the code and try again.");
+        setError("The verification response was incomplete. Check the code and try again.");
         return;
       }
       login(response.token, response.user);
+      setVerifiedMobile(mobile);
       if (isLoginMode) {
         const pendingDraft = readPendingCreditScoreDraft(response.user._id);
         if (pendingDraft) {
@@ -473,7 +607,7 @@ const ApplicationModal = ({
       const blocked = alreadyAppliedError(err);
       if (blocked) {
         const record = loanKey ? readSubmittedApplication(user?._id ?? mobile, loanKey) : null;
-        setOtpError("");
+        setError("");
         setBlockedNotice(
           noticeForBlockedApplication(
             record?.outcome === "rejected",
@@ -483,10 +617,31 @@ const ApplicationModal = ({
         );
         return;
       }
-      setOtpError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
-    } finally {
-      setOtpBusy(false);
+      setError(getApiErrorMessage(err, "Invalid OTP. Please try again."));
     }
+  };
+
+  /** Step 2 — the verify screen's submit. */
+  const handleOtpVerify = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+    e.preventDefault();
+    const code = otp.trim();
+    if (!code) { setOtpError("Please enter the OTP"); return; }
+    if (!/^\d{4,8}$/.test(code)) { setOtpError("Enter a valid OTP"); return; }
+    setOtpBusy(true);
+    setOtpError("");
+    await verifyMobileCode(code, setOtpError);
+    setOtpBusy(false);
+  };
+
+  /** Verifies the code typed beside the mobile number. */
+  const handleVerifyMobileOtp = async () => {
+    const code = mobileOtp.replace(/\D/g, "");
+    if (!/^\d{4,8}$/.test(code)) { setMobileOtpError("Enter the OTP sent to your mobile"); return; }
+    setMobileOtpBusy("verify");
+    setMobileOtpError("");
+    setMobileOtpNotice("");
+    await verifyMobileCode(code, setMobileOtpError);
+    setMobileOtpBusy("");
   };
 
   const handleOtpResend = async () => {
@@ -708,7 +863,7 @@ const ApplicationModal = ({
                     </div>
                   )}
 
-                  {/* Applicant details — only the mobile number in login mode */}
+                  {/* Applicant details — email and mobile each verify on the spot */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
                     {!isLoginMode && (
                       <Field
@@ -717,39 +872,156 @@ const ApplicationModal = ({
                         placeholder="As per your PAN card" error={fieldErrors.fullName}
                       />
                     )}
-                    <Field
-                      label="Mobile Number" type="tel" name="mobile"
-                      value={mobile} onChange={(v) => { setMobile(v.replace(/\D/g, "").slice(0, 10)); setFieldErrors((p) => ({ ...p, mobile: "" })); }}
-                      placeholder="10-digit mobile number" error={fieldErrors.mobile} maxLength={10}
-                      containerCls={isLoginMode ? "sm:col-span-2" : ""}
-                    />
+                    {!isLoginMode && (
+                      <div>
+                        <label htmlFor="apply-dob-day" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                          Date of Birth <span className="text-red-500 ml-0.5">*</span>
+                        </label>
+                        <DateOfBirthPicker
+                          id="apply-dob-day"
+                          value={dob}
+                          onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
+                          err={fieldErrors.dob}
+                        />
+                      </div>
+                    )}
                     {!isLoginMode && (
                       <>
-                        <Field
-                          label="Email Address" type="email" name="email"
-                          value={email} onChange={(v) => { setEmail(v); setFieldErrors((p) => ({ ...p, email: "" })); }}
-                          placeholder="you@example.com" error={fieldErrors.email}
-                        />
                         <div>
-                          <label htmlFor="apply-dob-day" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
-                            Date of Birth <span className="text-red-500 ml-0.5">*</span>
+                          <label htmlFor="apply-email" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                            Email Address <span className="text-red-500 ml-0.5">*</span>
                           </label>
-                          <DateOfBirthPicker
-                            id="apply-dob-day"
-                            value={dob}
-                            onChange={(v) => { setDob(v); setFieldErrors((p) => ({ ...p, dob: "" })); }}
-                            err={fieldErrors.dob}
-                          />
+                          <div className="flex items-start gap-2">
+                            <input
+                              id="apply-email"
+                              type="email"
+                              name="email"
+                              value={email}
+                              onChange={(event) => {
+                                setEmail(event.target.value);
+                                setFieldErrors((p) => ({ ...p, email: "" }));
+                                resetEmailOtp();
+                              }}
+                              placeholder="you@example.com"
+                              disabled={emailVerified}
+                              autoComplete="email"
+                              className={`min-w-0 flex-1 px-3.5 py-2.5 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal) disabled:bg-(--form-field-bg-disabled) disabled:cursor-not-allowed ${fieldErrors.email ? "border-red-400" : "border-(--form-field-border)"}`}
+                            />
+                            {emailVerified ? (
+                              <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-700">
+                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Verified
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={handleSendEmailOtp}
+                                disabled={emailOtpBusy === "send" || !EMAIL_REGEX.test(cleanEmail)}
+                                className="shrink-0 cursor-pointer rounded-lg border border-(--brand-teal) bg-(--brand-teal-14) px-3 py-2.5 text-xs font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {emailOtpBusy === "send" ? "Sending…" : emailOtpSent ? "Resend OTP" : "Send OTP"}
+                              </button>
+                            )}
+                          </div>
+                          {emailOtpSent && (
+                            <div className="mt-2 space-y-2">
+                              <CodeBoxes
+                                idPrefix="apply-email-otp"
+                                label="Email OTP"
+                                value={emailOtp}
+                                onChange={(v) => { setEmailOtp(v); setEmailOtpError(""); }}
+                                invalid={Boolean(emailOtpError)}
+                                disabled={emailOtpBusy === "verify"}
+                              />
+                              <button
+                                type="button"
+                                onClick={handleVerifyEmailOtp}
+                                disabled={emailOtpBusy === "verify" || emailOtp.length !== 6}
+                                className="w-full cursor-pointer rounded-lg bg-(--brand-navy) px-4 py-2.5 text-xs font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {emailOtpBusy === "verify" ? "Verifying…" : "Verify Email"}
+                              </button>
+                            </div>
+                          )}
+                          {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
+                          {emailOtpError && <p className="text-xs text-red-500 mt-1">{emailOtpError}</p>}
+                          {emailOtpNotice && !emailOtpError && <p className="mt-1 text-xs font-medium text-emerald-600">{emailOtpNotice}</p>}
                         </div>
-                        <Field
-                          label="PAN Number" type="text" name="pan"
-                          value={pan}
+                      </>
+                    )}
+
+                    {/* Mobile — the backend issues the code, entered right here */}
+                    <div className={isLoginMode ? "sm:col-span-2" : ""}>
+                      <label htmlFor="apply-mobile" className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-(--form-dark)">
+                        Mobile Number <span className="text-red-500 ml-0.5">*</span>
+                      </label>
+                      <div className="flex items-start gap-2">
+                        <input
+                          id="apply-mobile"
+                          type="tel"
+                          name="mobile"
+                          autoComplete="tel"
+                          inputMode="numeric"
                           maxLength={10}
-                          onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
-                          placeholder="ABCDE1234F"
-                          error={fieldErrors.pan}
-                          extraCls="uppercase tracking-wider"
+                          value={mobile}
+                          disabled={mobileVerified}
+                          onChange={(event) => {
+                            setMobile(event.target.value.replace(/\D/g, "").slice(0, 10));
+                            setFieldErrors((p) => ({ ...p, mobile: "" }));
+                            setMobileOtp("");
+                            setMobileOtpError("");
+                            setMobileOtpNotice("");
+                          }}
+                          placeholder="10-digit mobile number"
+                          className={`min-w-0 flex-1 px-3.5 py-2.5 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal) disabled:bg-(--form-field-bg-disabled) disabled:cursor-not-allowed ${fieldErrors.mobile ? "border-red-400" : "border-(--form-field-border)"}`}
                         />
+                        {!isLoginMode && (mobileVerified ? (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-700">
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Verified
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleSendMobileOtp}
+                            disabled={mobileOtpBusy === "send" || !MOBILE_REGEX.test(mobile)}
+                            className="shrink-0 cursor-pointer rounded-lg border border-(--brand-teal) bg-(--brand-teal-14) px-3 py-2.5 text-xs font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {mobileOtpBusy === "send" ? "Sending…" : mobileOtpSent ? "Resend OTP" : "Send OTP"}
+                          </button>
+                        ))}
+                      </div>
+                      {!isLoginMode && mobileOtpSent && (
+                        <div className="mt-2 space-y-2">
+                          <CodeBoxes
+                            idPrefix="apply-mobile-otp"
+                            label="Mobile OTP"
+                            value={mobileOtp}
+                            onChange={(v) => { setMobileOtp(v); setMobileOtpError(""); }}
+                            invalid={Boolean(mobileOtpError)}
+                            disabled={mobileOtpBusy === "verify"}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyMobileOtp}
+                            disabled={mobileOtpBusy === "verify" || mobileOtp.length < 4}
+                            className="w-full cursor-pointer rounded-lg bg-(--brand-navy) px-4 py-2.5 text-xs font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {mobileOtpBusy === "verify" ? "Verifying…" : "Verify Mobile"}
+                          </button>
+                        </div>
+                      )}
+                      {fieldErrors.mobile && <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>}
+                      {mobileOtpError && <p className="text-xs text-red-500 mt-1">{mobileOtpError}</p>}
+                      {mobileOtpNotice && !mobileOtpError && <p className="mt-1 text-xs font-medium text-emerald-600">{mobileOtpNotice}</p>}
+                    </div>
+
+                    {!isLoginMode && (
+                      <>
                         <Select
                           label="Continent" name="continent"
                           value={continent}
@@ -775,6 +1047,16 @@ const ApplicationModal = ({
                           disabled={!continent || countriesLoading}
                           onChange={(v) => { setCountry(v); setFieldErrors((p) => ({ ...p, country: "" })); }}
                           error={fieldErrors.country}
+                        />
+                        <Field
+                          label="PAN Number" type="text" name="pan"
+                          value={pan}
+                          maxLength={10}
+                          onChange={(v) => { setPan(v); setFieldErrors((p) => ({ ...p, pan: "" })); }}
+                          placeholder="ABCDE1234F"
+                          error={fieldErrors.pan}
+                          extraCls="uppercase tracking-wider"
+                          containerCls="sm:col-span-2"
                         />
                       </>
                     )}
