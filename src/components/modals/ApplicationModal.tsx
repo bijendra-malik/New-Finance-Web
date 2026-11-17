@@ -13,6 +13,7 @@ import {
 } from "../../api/auth";
 import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
 import type { Continent, Country } from "../../api/masters";
+import { useCaptcha } from "../../hooks/useCaptcha";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { EmailOtpUnavailableError, sendEmailOtp, verifyEmailOtp } from "../../api/emailOtp";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
@@ -24,6 +25,7 @@ import {
   remainingCreditScoreWindow,
 } from "../../utils/applicationFlowState";
 import Button from "../ui/Button";
+import CaptchaField from "../ui/CaptchaField";
 import CodeBoxes from "../ui/CodeBoxes";
 import { advanceOnEnter } from "../../utils/enterToNext";
 import { DateOfBirthPicker } from "../form/FormControls";
@@ -103,6 +105,8 @@ const ApplicationModal = ({
   const navigate = useNavigate();
   const setApplicantPrefill = useSetApplicantPrefill();
   const { login, isLoggedIn, user } = useAuth();
+  // Bot check — solved once per panel, checked before any OTP is requested.
+  const captcha = useCaptcha();
 
   // Sign up (register for a product) vs Sign in (returning customer).
   const openedAsLogin = productName.trim().toLowerCase() === "log in";
@@ -274,6 +278,7 @@ const ApplicationModal = ({
     setMobileOtp("");
     setMobileOtpError("");
     setMobileOtpNotice("");
+    captcha.reset();
   };
 
   const handleClose = () => {
@@ -491,6 +496,11 @@ const ApplicationModal = ({
     setSessionWasSignedIn(isLoggedIn);
     if (inline) setMobileOtpBusy("send"); else setDetailsBusy(true);
     try {
+      const captchaProblem = await captcha.verify();
+      if (captchaProblem) {
+        if (inline) setMobileOtpError(captchaProblem); else setApiError(captchaProblem);
+        return;
+      }
       const response = await requestOtp();
       if (!response.success) {
         if (isAlreadyRegisteredResponse(response)) {
@@ -546,17 +556,45 @@ const ApplicationModal = ({
     await sendOtpCode(false);
   };
 
-  /** Sends the mobile OTP without leaving the details step. */
   const handleSendMobileOtp = async () => {
     if (!MOBILE_REGEX.test(mobile)) {
       setMobileOtpError("Enter a valid 10-digit mobile number first");
       return;
     }
-    if (!isLoginMode && !validateDetails()) {
-      setMobileOtpError("Complete the highlighted details, then request the OTP");
-      return;
+    setMobileOtpBusy("send");
+    setMobileOtpError("");
+    setMobileOtpNotice("");
+    const newNumberNotice =
+      "This number is not registered yet. Add your details and press Continue — we will verify the number then.";
+    try {
+      const captchaProblem = await captcha.verify();
+      if (captchaProblem) {
+        setMobileOtpError(captchaProblem);
+        return;
+      }
+      if (isLoginMode) {
+        await sendOtpCode(true);
+        return;
+      }
+      const response = await requestLoginOTP({ mobile });
+      if (response.success) {
+        switchMode("signin");
+        setAlreadyRegistered(true);
+        setSessionWasSignedIn(isLoggedIn);
+        markOtpSent(resolveDashboardPath(productKey) ?? "", false);
+        return;
+      }
+      setMobileOtpNotice(newNumberNotice);
+    } catch (err) {
+      const message = getApiErrorMessage(err, "We could not check this number just now. Please try again.");
+      if (/not\s+(found|registered|exist)|does not exist|no user|unregistered/i.test(message)) {
+        setMobileOtpNotice(newNumberNotice);
+      } else {
+        setMobileOtpError(message);
+      }
+    } finally {
+      setMobileOtpBusy("");
     }
-    await sendOtpCode(true);
   };
 
   /**
@@ -991,7 +1029,7 @@ const ApplicationModal = ({
                             disabled={mobileOtpBusy === "send" || !MOBILE_REGEX.test(mobile)}
                             className="shrink-0 cursor-pointer rounded-lg border border-(--brand-teal) bg-(--brand-teal-14) px-3 py-2.5 text-xs font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            {mobileOtpBusy === "send" ? "Sending…" : mobileOtpSent ? "Resend OTP" : "Send OTP"}
+                            {mobileOtpBusy === "send" ? "Checking…" : mobileOtpSent ? "Resend OTP" : "Check number"}
                           </button>
                         ))}
                       </div>
@@ -1061,6 +1099,8 @@ const ApplicationModal = ({
                       </>
                     )}
                   </div>
+
+                  <CaptchaField captcha={captcha} idPrefix="apply-captcha" />
 
                   {/* Buttons */}
                   <div className="flex gap-3 pt-2">
