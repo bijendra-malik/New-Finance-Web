@@ -75,8 +75,7 @@ const FranchiseForm = ({
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
   const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
   const [continentsLoading, setContinentsLoading] = useState(true);
-  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [countryData, setCountryData] = useState<{ id: string; list: Country[] } | null>(null);
   const [otpStage, setOtpStage] = useState(false);
   const [entryMobile, setEntryMobile] = useState("");
   const [maskedMobile, setMaskedMobile] = useState("");
@@ -108,30 +107,29 @@ const FranchiseForm = ({
     };
   }, []);
 
-  useEffect(() => {
-    const selectedContinent = continentOptions.find((item) => item.name === values.continent);
-    if (!selectedContinent) {
-      setCountryOptions([]);
-      setCountriesLoading(false);
-      return;
-    }
+  const selectedContinent = continentOptions.find((item) => item.name === values.continent);
 
+  useEffect(() => {
+    if (!selectedContinent) return;
+    const id = selectedContinent._id;
     let cancelled = false;
-    setCountriesLoading(true);
-    fetchCountriesByContinent(selectedContinent._id)
+    fetchCountriesByContinent(id)
       .then((list) => {
-        if (!cancelled) setCountryOptions(list);
+        if (!cancelled) setCountryData({ id, list });
       })
       .catch(() => {
-        if (!cancelled) setCountryOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setCountriesLoading(false);
+        if (!cancelled) setCountryData({ id, list: [] });
       });
     return () => {
       cancelled = true;
     };
-  }, [continentOptions, values.continent]);
+  }, [selectedContinent]);
+
+  const countryOptions =
+    selectedContinent && countryData?.id === selectedContinent._id ? countryData.list : [];
+  const countriesLoading = selectedContinent
+    ? countryData?.id !== selectedContinent._id
+    : false;
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
