@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/forms/LeadForm";
+import { submitContactEnquiry } from "../api/contact";
 import {
   EMAIL_CONTACT,
   EMAIL_LOANS,
@@ -247,6 +248,19 @@ const ContactPage = () => {
                   submitLabel="Send Enquiry"
                   successTitle="Enquiry Sent!"
                   successMessage="Thank you for reaching out. Our team will get back to you shortly."
+                  submitErrorMessage="We could not send your enquiry just now. Please try again or call us on +91 11 4629 1155."
+                  onSubmit={async (values) => {
+                    const response = await submitContactEnquiry({
+                      name: values.name.trim(),
+                      mobile: values.phone.trim(),
+                      email: values.email.trim(),
+                      topic: values.topic,
+                      message: values.message.trim(),
+                      source: "website-contact",
+                    });
+                    // Show whatever the API said, not our placeholder copy.
+                    return response.message;
+                  }}
                   fields={[
                     { name: "name", label: "Full Name", required: true, placeholder: "Your full name" },
                     { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-digit mobile number" },
