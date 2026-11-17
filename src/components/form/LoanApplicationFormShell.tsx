@@ -6,6 +6,8 @@ import { ConsentAndSubmit } from "./SubmitSection";
 import FormPageHeader from "./FormPageHeader";
 import ApplicationReviewModal from "./ApplicationReviewModal";
 import CreditScoreGate from "../loan-eligibility/CreditScoreGate";
+import CaptchaField from "../ui/CaptchaField";
+import type { CaptchaState } from "../../hooks/useCaptcha";
 import { advanceOnEnter } from "../../utils/enterToNext";
 
 export interface SubmittedApplication {
@@ -29,6 +31,7 @@ interface LoanApplicationFormShellProps<TApplication extends SubmittedApplicatio
   onSubmit: (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => void;
   agreed: boolean;
   onAgreedChange: (next: boolean) => void;
+  captcha: CaptchaState;
   apiError: string;
   submitAttempted: boolean;
   invalidCount: number;
@@ -103,6 +106,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
   onSubmit,
   agreed,
   onAgreedChange,
+  captcha,
   apiError,
   submitAttempted,
   invalidCount,
@@ -152,6 +156,9 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
       <form className={`${FORM.maxWidth} mx-auto`} onSubmit={onSubmit} onKeyDown={advanceOnEnter} noValidate>
         <FormPageHeader headline={headline} />
         {children}
+        <div className="mt-6 rounded-(--form-card-radius) border border-slate-300 bg-white px-4 py-3.5">
+          <CaptchaField captcha={captcha} idPrefix="application-captcha" />
+        </div>
         <ConsentAndSubmit
           agreed={agreed}
           onAgreedChange={onAgreedChange}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApplicationSubmit } from "../../hooks/useApplicationSubmit";
+import { useCaptcha } from "../../hooks/useCaptcha";
 import { useTouchedErrors } from "../../hooks/useTouchedErrors";
 import type { SubmittedApplication } from "./LoanApplicationFormShell";
 
@@ -11,12 +12,6 @@ interface LoanApplicationFormArgs<TApplication extends SubmittedApplication, TVa
   onSubmit?: (id: string, app: TApplication) => void;
 }
 
-/**
- * The plumbing every product form repeats: agreed checkbox, touched-field
- * errors, review/submit state, and the props that state feeds to
- * `LoanApplicationFormShell`. Product-specific fields, validation and payload
- * stay in the form.
- */
 export const useLoanApplicationForm = <TApplication extends SubmittedApplication, TValues extends object>({
   form,
   setForm,
@@ -25,6 +20,8 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
   onSubmit,
 }: LoanApplicationFormArgs<TApplication, TValues>) => {
   const [agreed, setAgreed] = useState(false);
+  // Bot check — the applicant answers it before the final review opens.
+  const captcha = useCaptcha();
 
   const allErrors = computeErrors(form) as Partial<Record<Extract<keyof TValues, string>, string>>;
   const { errors, touch, markAllTouched, untouch } = useTouchedErrors<Extract<keyof TValues, string>>(allErrors);
@@ -39,6 +36,16 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
     submit,
     onSubmitSuccess: onSubmit,
   });
+
+  /** The review only opens once the security check has been accepted. */
+  const handleSubmitWithCaptcha = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+    e.preventDefault();
+    void (async () => {
+      const problem = await captcha.verify();
+      if (problem) return;
+      handleSubmit(e);
+    })();
+  };
 
   const set = (field: Extract<keyof TValues, string>, value: TValues[keyof TValues]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -61,7 +68,8 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
       reviewOpen,
       onConfirmReview: () => void confirmReview(),
       onCancelReview: cancelReview,
-      onSubmit: handleSubmit,
+      onSubmit: handleSubmitWithCaptcha,
+      captcha,
       agreed,
       onAgreedChange: setAgreed,
       apiError,
