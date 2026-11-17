@@ -17,6 +17,8 @@ export const T = {
   limeDark: "#8FA916",   // accessible lime for text/borders on light bg
   limeSoft: "#F2FAD1",
   line: "#E2E8E7",
+  onNavyMuted: "#D5E6F3", // readable secondary text on --brand-navy
+  onNavyLine: "rgba(255,255,255,0.18)",
 };
 
 export const serif = { fontFamily: "'Fraunces', Georgia, serif" };

@@ -23,9 +23,10 @@ export function DonutChart({ principal, interest }: { principal: number; interes
           style={{ transition: "stroke-dasharray 0.5s ease" }}
         />
       </svg>
+      {/* The donut sits on the navy results panel, so its labels use light ink. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[11px] font-semibold tracking-wide" style={{ color: T.inkSoft }}>Principal</span>
-        <span className="text-xl font-bold" style={{ ...serif, color: T.navy }}>{(pct * 100).toFixed(1)}%</span>
+        <span className="text-[11px] font-semibold tracking-wide" style={{ color: T.onNavyMuted }}>Principal</span>
+        <span className="text-xl font-bold text-white" style={serif}>{(pct * 100).toFixed(1)}%</span>
       </div>
     </div>
   );
