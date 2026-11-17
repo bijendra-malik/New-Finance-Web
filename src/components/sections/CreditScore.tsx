@@ -278,11 +278,11 @@ const CreditScore = () => {
       {/* Heading */}
       <h2 className="text-center sm:text-2xl md:text-4xl font-extrabold text-slate-700 uppercase tracking-wide mb-2">
         Get Your{" "}
-        <span style={{ color: "#006699" }}>Free Credit Score</span>{" "}
+        <span style={{ color: "#006699" }}>Credit Score</span>{" "}
         and Report
       </h2>
       <p className="text-center text-sm text-slate-400 mb-2">
-        Powered by Equifax · Updated instantly · No impact on score
+        Powered by TransUnion · Updated instantly · No impact on score
       </p>
 
       {/* Main card */}
