@@ -20,7 +20,6 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
   onSubmit,
 }: LoanApplicationFormArgs<TApplication, TValues>) => {
   const [agreed, setAgreed] = useState(false);
-  // Bot check — the applicant answers it before the final review opens.
   const captcha = useCaptcha();
 
   const allErrors = computeErrors(form) as Partial<Record<Extract<keyof TValues, string>, string>>;
@@ -36,16 +35,6 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
     submit,
     onSubmitSuccess: onSubmit,
   });
-
-  /** The review only opens once the security check has been accepted. */
-  const handleSubmitWithCaptcha = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-    e.preventDefault();
-    void (async () => {
-      const problem = await captcha.verify();
-      if (problem) return;
-      handleSubmit(e);
-    })();
-  };
 
   const set = (field: Extract<keyof TValues, string>, value: TValues[keyof TValues]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -67,8 +56,12 @@ export const useLoanApplicationForm = <TApplication extends SubmittedApplication
       values: form,
       reviewOpen,
       onConfirmReview: () => void confirmReview(),
-      onCancelReview: cancelReview,
-      onSubmit: handleSubmitWithCaptcha,
+      onCancelReview: () => {
+        cancelReview();
+        captcha.clearError();
+        captcha.clearVerification();
+      },
+      onSubmit: handleSubmit,
       captcha,
       agreed,
       onAgreedChange: setAgreed,

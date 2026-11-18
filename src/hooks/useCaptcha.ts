@@ -12,11 +12,14 @@ export interface CaptchaState {
   answer: string;
   setAnswer: (value: string) => void;
   error: string;
+  verified: boolean;
   loading: boolean;
   verifying: boolean;
   refresh: () => void;
   verify: () => Promise<string>;
   reset: () => void;
+  clearError: () => void;
+  clearVerification: () => void;
 }
 
 export const useCaptcha = (): CaptchaState => {
@@ -55,6 +58,9 @@ export const useCaptcha = (): CaptchaState => {
     };
   }, [reloadKey]);
 
+  const clearError = useCallback(() => setError(""), []);
+  const clearVerification = useCallback(() => setVerifiedId(""), []);
+
   const refresh = useCallback(() => {
     setAnswer("");
     setError("");
@@ -65,11 +71,17 @@ export const useCaptcha = (): CaptchaState => {
 
   const verify = useCallback(async (): Promise<string> => {
     if (!challenge) {
-      return "The security check is still loading. Please wait a moment and try again.";
+      const message = "The question is still loading. Please wait a moment and try again.";
+      setError(message);
+      return message;
     }
     if (verifiedId === challenge.id) return "";
     const typed = answer.trim();
-    if (!typed) return "Answer the security check to continue.";
+    if (!typed) {
+      const message = "Answer the question to continue.";
+      setError(message);
+      return message;
+    }
 
     setVerifying(true);
     setError("");
@@ -119,11 +131,14 @@ export const useCaptcha = (): CaptchaState => {
       setError("");
     },
     error,
+    verified: Boolean(challenge && verifiedId === challenge.id),
     loading: !loaded,
     verifying,
     refresh,
     verify,
     reset: refresh,
+    clearError,
+    clearVerification,
   };
 };
 

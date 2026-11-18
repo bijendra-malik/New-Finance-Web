@@ -248,6 +248,9 @@ const ApplicationModal = ({
   const [sessionWasSignedIn, setSessionWasSignedIn] = useState(true);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [blockedNotice, setBlockedNotice] = useState<BlockedNotice | null>(null);
+  // The security check is its own step: it opens only once the details are complete.
+  const [captchaOpen, setCaptchaOpen] = useState(false);
+  const [captchaBusy, setCaptchaBusy] = useState(false);
 
   const resetAll = () => {
     setFullName("");
@@ -278,6 +281,8 @@ const ApplicationModal = ({
     setMobileOtp("");
     setMobileOtpError("");
     setMobileOtpNotice("");
+    setCaptchaOpen(false);
+    setCaptchaBusy(false);
     captcha.reset();
   };
 
@@ -303,7 +308,15 @@ const ApplicationModal = ({
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
+      if (e.key !== "Escape") return;
+      // The security check closes first, leaving the details intact.
+      if (captchaOpen) {
+        setCaptchaOpen(false);
+        captcha.clearError();
+        captcha.clearVerification();
+        return;
+      }
+      handleClose();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
@@ -347,6 +360,8 @@ const ApplicationModal = ({
   // The canonical LOAN_SLUGS key names the OTP endpoint (/auth/{loanKey}).
   const loanKey = loanKeyFor(productKey);
   const isLoginMode = mode === "signin";
+  /** The question on screen has already been answered. */
+  const securityVerified = captcha.verified;
 
   const formatAvailableAt = (value?: string): string => {
     if (!value) return "";
@@ -477,7 +492,7 @@ const ApplicationModal = ({
    * the applicant stays on the details step and enters the code beside the
    * mobile number instead of switching to the verify screen.
    */
-  const sendOtpCode = async (inline: boolean) => {
+  const sendOtpCode = async (inline: boolean, withCaptcha = true) => {
     setApiError("");
     if (inline) setMobileOtpError("");
 
@@ -496,10 +511,12 @@ const ApplicationModal = ({
     setSessionWasSignedIn(isLoggedIn);
     if (inline) setMobileOtpBusy("send"); else setDetailsBusy(true);
     try {
-      const captchaProblem = await captcha.verify();
-      if (captchaProblem) {
-        if (inline) setMobileOtpError(captchaProblem); else setApiError(captchaProblem);
-        return;
+      if (withCaptcha) {
+        const captchaProblem = await captcha.verify();
+        if (captchaProblem) {
+          if (inline) setMobileOtpError(captchaProblem); else setApiError(captchaProblem);
+          return;
+        }
       }
       const response = await requestOtp();
       if (!response.success) {
@@ -553,27 +570,37 @@ const ApplicationModal = ({
     // A code already sent beside the mobile number stays valid — open the verify
     // screen instead of issuing a duplicate.
     if (mobileOtpSent) { setStep("otp"); return; }
+    // Every detail is complete — now ask the security check before the OTP is sent.
+    if (!securityVerified) {
+      setCaptchaOpen(true);
+      return;
+    }
     await sendOtpCode(false);
   };
 
-  const handleSendMobileOtp = async () => {
-    if (!MOBILE_REGEX.test(mobile)) {
-      setMobileOtpError("Enter a valid 10-digit mobile number first");
-      return;
-    }
+  /** Answers the security check, then continues with the details submit. */
+  const confirmSecurityCheck = async () => {
+    if (captchaBusy) return;
+    setCaptchaBusy(true);
+    // A wrong or missing answer is reported by useCaptcha, and shown on the field.
+    const problem = await captcha.verify();
+    setCaptchaBusy(false);
+    if (problem) return;
+    setCaptchaOpen(false);
+    await sendOtpCode(false);
+  };
+
+  /** The number check itself, run once the security check has been answered. */
+  const sendMobileOtpCode = async () => {
     setMobileOtpBusy("send");
     setMobileOtpError("");
     setMobileOtpNotice("");
     const newNumberNotice =
       "This number is not registered yet. Add your details and press Continue — we will verify the number then.";
     try {
-      const captchaProblem = await captcha.verify();
-      if (captchaProblem) {
-        setMobileOtpError(captchaProblem);
-        return;
-      }
+      // Looking a number up carries no security check; only Continue does.
       if (isLoginMode) {
-        await sendOtpCode(true);
+        await sendOtpCode(true, false);
         return;
       }
       const response = await requestLoginOTP({ mobile });
@@ -595,6 +622,15 @@ const ApplicationModal = ({
     } finally {
       setMobileOtpBusy("");
     }
+  };
+
+  /** Looks the number up. No security check: that comes after Continue. */
+  const handleSendMobileOtp = async () => {
+    if (!MOBILE_REGEX.test(mobile)) {
+      setMobileOtpError("Enter a valid 10-digit mobile number first");
+      return;
+    }
+    await sendMobileOtpCode();
   };
 
   /**
@@ -1100,8 +1136,6 @@ const ApplicationModal = ({
                     )}
                   </div>
 
-                  <CaptchaField captcha={captcha} idPrefix="apply-captcha" />
-
                   {/* Buttons */}
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" className="flex-1 rounded-lg font-semibold"
@@ -1191,6 +1225,62 @@ const ApplicationModal = ({
           </div>
         </div>
       </div>
+
+      {/* Security check — asked after the details, before the OTP is sent. */}
+      {captchaOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/55 backdrop-blur-sm"
+            style={{ zIndex: 115 }}
+            onClick={() => { setCaptchaOpen(false); captcha.clearError(); captcha.clearVerification(); }}
+          />
+          <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 120 }}>
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="apply-security-check-title"
+              className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
+              <div className="px-5 pt-5">
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-(--brand-navy)">
+                  Before you continue
+                </p>
+                <h3 id="apply-security-check-title" className="mt-1 text-lg font-extrabold text-slate-900">
+                  Security Check
+                </h3>
+                <p className="mt-1 text-[12.5px] leading-5 text-slate-600">
+                  Your details are filled in. Answer the question below and we will send the OTP to
+                  +91 {mobile.replace(/\D/g, "").slice(-10)}.
+                </p>
+              </div>
+
+              <div className="mt-4 px-5">
+                <CaptchaField captcha={captcha} idPrefix="apply-captcha" />
+              </div>
+
+              <div className="mt-5 flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-4 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => { setCaptchaOpen(false); captcha.clearError(); captcha.clearVerification(); }}
+                  disabled={captchaBusy}
+                  className="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void confirmSecurityCheck()}
+                  disabled={captchaBusy || captcha.loading}
+                  className="cursor-pointer rounded-lg px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, var(--brand-teal), var(--brand-navy))" }}
+                >
+                  {captchaBusy ? "Checking…" : "Continue"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>,
     document.body
   );
