@@ -7,6 +7,7 @@ import { T, serif, loanTypes, banks, fmt } from "./emiCalculatorData";
 import { Icon } from "./emiCalculatorIcons";
 import { DonutChart, Slider } from "./emiCalculatorControls";
 import { useCountUp } from "./useCountUp";
+import { digitsOnly, formatIndianNumber } from "../utils/formatters";
 
 const EMICalculatorPage = () => {
   useSEO({
@@ -36,12 +37,19 @@ const EMICalculatorPage = () => {
     setTenureUnit("years");
   };
 
+  // Amount has no upper limit: the slider follows whatever the product allows,
+  // and widens when a larger amount is typed in.
+  const amountSliderMax = Math.max(loan.maxAmt, loanAmount);
+
   const tenureInMonths = tenureUnit === "years" ? loanTenure * 12 : loanTenure;
   const monthlyRate    = interestRate / 12 / 100;
-  const emi = monthlyRate === 0
-    ? loanAmount / tenureInMonths
-    : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, tenureInMonths)) /
-      (Math.pow(1 + monthlyRate, tenureInMonths) - 1);
+  // The amount field is free-entry (no min/max), so guard against empty or zero values.
+  const emi = loanAmount <= 0 || tenureInMonths <= 0
+    ? 0
+    : monthlyRate === 0
+      ? loanAmount / tenureInMonths
+      : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, tenureInMonths)) /
+        (Math.pow(1 + monthlyRate, tenureInMonths) - 1);
 
   const totalPayment  = emi * tenureInMonths;
   const totalInterest = totalPayment - loanAmount;
@@ -234,18 +242,21 @@ const EMICalculatorPage = () => {
                       <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.emerald }}>
                         <span className="font-bold text-sm" style={{ color: T.emerald }}>{"\u20B9"}</span>
                         <input
-                          type="number"
-                          value={loanAmount}
-                          onChange={e => setLoanAmount(Math.min(loan.maxAmt, Math.max(loan.minAmt, Number(e.target.value))))}
-                          className="w-28 text-sm font-bold bg-transparent focus:outline-none"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={formatIndianNumber(String(loanAmount))}
+                          onChange={e => setLoanAmount(Number(digitsOnly(e.target.value)) || 0)}
+                          onBlur={() => setLoanAmount(v => Math.max(0, v))}
+                          className="w-32 text-sm font-bold bg-transparent focus:outline-none"
                           style={{ color: T.emerald }}
                         />
                       </div>
                     </div>
-                    <Slider value={loanAmount} min={loan.minAmt} max={loan.maxAmt} step={loan.minAmt} onChange={setLoanAmount} color={T.emerald} />
+                    <Slider value={loanAmount} min={0} max={amountSliderMax} step={1000} onChange={setLoanAmount} color={T.emerald} />
                     <div className="flex justify-between text-xs mt-1.5" style={{ color: T.inkSoft }}>
-                      <span>{fmt(loan.minAmt)}</span>
-                      <span>{fmt(loan.maxAmt)}</span>
+                      <span>{fmt(0)}</span>
+                      <span>{fmt(amountSliderMax)}</span>
                     </div>
                   </div>
 
@@ -406,7 +417,7 @@ const EMICalculatorPage = () => {
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
                             <div className="flex-1 rounded-full h-1.5 max-w-20 hidden md:block" style={{ background: T.line }}>
-                              <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, (row.balance / loanAmount) * 100)}%`, background: T.gold }} />
+                              <div className="h-1.5 rounded-full" style={{ width: `${loanAmount > 0 ? Math.min(100, (row.balance / loanAmount) * 100) : 0}%`, background: T.gold }} />
                             </div>
                             <span className="font-semibold" style={{ color: T.ink }}>{fmt(Math.round(row.balance))}</span>
                           </div>

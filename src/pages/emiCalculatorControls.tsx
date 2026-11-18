@@ -36,7 +36,9 @@ export function DonutChart({ principal, interest }: { principal: number; interes
 export function Slider({
   value, min, max, step, onChange, color,
 }: { value: number; min: number; max: number; step: number; onChange: (n: number) => void; color: string }) {
-  const pct = ((value - min) / (max - min)) * 100;
+  // A typed value can sit outside the slider range (the input is not clamped),
+  // so keep the fill inside the track instead of blowing past it.
+  const pct = max === min ? 0 : Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   return (
     <input
       type="range"
