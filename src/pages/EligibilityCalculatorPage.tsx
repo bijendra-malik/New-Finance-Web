@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 import { advanceOnEnter } from "../utils/enterToNext";
 import { DateOfBirthPicker } from "../components/form/FormControls";
@@ -7,27 +7,129 @@ import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
 import type { Continent, Country } from "../api/masters";
 import { useApplyGate } from "../hooks/useApplyGate";
 import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
-import { LOAN_SLUGS, loanKeyFor, loanLabelFor } from "../constants/loanSlugs";
-import type { LoanKey } from "../constants/loanSlugs";
+import { loanLabelFor } from "../constants/loanSlugs";
 import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
+import { digitsOnly, formatIndianNumber } from "../utils/formatters";
 
-// ── Static data ───────────────────────────────────────────────────────────────
-const loanProducts: string[] = (Object.keys(LOAN_SLUGS) as LoanKey[])
-  .map((key) => loanLabelFor(key))
-  .filter((label): label is string => Boolean(label));
+// ── Lending model ─────────────────────────────────────────────────────────────
+// FOIR: total EMIs (existing + new) may not exceed 70% of net monthly income.
+const FOIR = 0.7;
+// Below this EMI headroom an application is not worth a lender's review.
+const MIN_HEADROOM = 500;
+// Indicative floor for a sanctionable loan.
+const MIN_LOAN = 50000;
+// Typical retirement ages used to cap the repayment period.
+const RETIREMENT_AGE = { Salaried: 60, default: 65 } as const;
+
+type ProductKey =
+  | "personal" | "business" | "home" | "lap" | "projectLoan" | "vehicleLoan"
+  | "educationLoan" | "commercialPurchase" | "workingCapital"
+  | "leaseRentalDiscounting" | "goldLoan" | "odCcLimit";
+
+interface ProductMeta {
+  key: ProductKey;
+  roi: number;          // annual interest rate, %
+  maxTenureMonths: number;
+  /** Share of the declared asset value the lender will fund, and the field it comes from. */
+  asset?: { field: "propertyValue" | "turnover" | "vehiclePrice"; label: string; hint: string; ltv: number };
+}
+
+const PRODUCTS: readonly ProductMeta[] = [
+  { key: "personal", roi: 12, maxTenureMonths: 60 },
+  { key: "business", roi: 14, maxTenureMonths: 60, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 20% of annual turnover", ltv: 0.2 } },
+  { key: "home", roi: 8, maxTenureMonths: 360, asset: { field: "propertyValue", label: "Property Value", hint: "We can fund up to 90% of the property value", ltv: 0.9 } },
+  { key: "lap", roi: 10.5, maxTenureMonths: 120, asset: { field: "propertyValue", label: "Property Value", hint: "We can fund up to 65% of the property value", ltv: 0.65 } },
+  { key: "projectLoan", roi: 10.5, maxTenureMonths: 60, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 25% of annual turnover", ltv: 0.25 } },
+  { key: "vehicleLoan", roi: 8, maxTenureMonths: 60, asset: { field: "vehiclePrice", label: "On-Road Vehicle Price", hint: "We can fund up to 90% of the on-road price", ltv: 0.9 } },
+  { key: "educationLoan", roi: 6, maxTenureMonths: 120 },
+  { key: "commercialPurchase", roi: 12, maxTenureMonths: 120, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 25% of annual turnover", ltv: 0.25 } },
+  { key: "workingCapital", roi: 12.5, maxTenureMonths: 120, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 20% of annual turnover", ltv: 0.2 } },
+  { key: "leaseRentalDiscounting", roi: 12.5, maxTenureMonths: 120 },
+  { key: "goldLoan", roi: 9, maxTenureMonths: 120 },
+  { key: "odCcLimit", roi: 10, maxTenureMonths: 12 },
+];
+
+const PRODUCT_META: Readonly<Record<ProductKey, ProductMeta>> = PRODUCTS.reduce(
+  (acc, p) => ({ ...acc, [p.key]: p }),
+  {} as Record<ProductKey, ProductMeta>,
+);
+
 const occupations = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface FormData {
   continent: string; country: string; product: string; fullName: string;
   dob: string; mobile: string; email: string; occupation: string;
-  monthlyIncome: string; existingEMI: string; authorized: boolean;
+  monthlyIncome: string; existingEMI: string;
+  propertyValue: string; turnover: string; vehiclePrice: string;
+  authorized: boolean;
 }
-interface Result { eligible: boolean; maxLoan: string; emi: string; message: string }
+
+interface Result {
+  eligible: boolean; loan: number; months: number; emi: number; roi: number;
+  income: number; emiLimit: number; existingEMI: number; headroom: number;
+  assetCap: number | null; assetNote: string | null; message: string;
+}
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
-const fmt = (n: number) =>
-  "₹" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+// Indian digit grouping: 12,34,567 (last three, then pairs).
+const fmt = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
+
+const num = (v: string) => {
+  const parsed = Number.parseFloat(v);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+const ageFrom = (dob: string) => {
+  const born = new Date(`${dob}T00:00:00`);
+  const now = new Date();
+  let age = now.getFullYear() - born.getFullYear();
+  const monthDiff = now.getMonth() - born.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < born.getDate())) age -= 1;
+  return age;
+};
+
+const tenureLabel = (months: number) => {
+  const years = Math.floor(months / 12);
+  const rest = months % 12;
+  const parts: string[] = [];
+  if (years) parts.push(`${years} ${years === 1 ? "year" : "years"}`);
+  if (rest) parts.push(`${rest} ${rest === 1 ? "month" : "months"}`);
+  return parts.join(" ") || "0 months";
+};
+
+/** Present value of a monthly EMI stream — the sanctioned principal at a given rate/tenure. */
+const principalForEmi = (emi: number, annualRate: number, months: number) => {
+  if (months <= 0) return 0;
+  const r = annualRate / 1200;
+  if (r === 0) return emi * months;
+  const growth = Math.pow(1 + r, months);
+  return (emi * (growth - 1)) / (r * growth);
+};
+
+const emiForPrincipal = (principal: number, annualRate: number, months: number) => {
+  if (months <= 0) return 0;
+  const r = annualRate / 1200;
+  if (r === 0) return principal / months;
+  const growth = Math.pow(1 + r, months);
+  return (principal * r * growth) / (growth - 1);
+};
+
+// Amount box that shows Indian grouping (12,34,567) while storing bare digits.
+const AmountInput = ({ id, value, onChange, placeholder, className }: {
+  id: string; value: string; onChange: (v: string) => void; placeholder: string; className: string;
+}) => (
+  <input
+    id={id}
+    type="text"
+    inputMode="numeric"
+    autoComplete="off"
+    placeholder={placeholder}
+    value={formatIndianNumber(value)}
+    onChange={e => onChange(digitsOnly(e.target.value))}
+    className={className}
+  />
+);
 
 // Icon wrappers
 const Icon = ({ d, cls = "w-4 h-4" }: { d: string; cls?: string }) => (
@@ -52,10 +154,12 @@ const EligibilityCalculatorPage = () => {
   const [form, setForm] = useState<FormData>({
     continent: "", country: "", product: "", fullName: "",
     dob: "", mobile: "", email: "", occupation: "",
-    monthlyIncome: "", existingEMI: "", authorized: false,
+    monthlyIncome: "", existingEMI: "",
+    propertyValue: "", turnover: "", vehiclePrice: "",
+    authorized: false,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-  const [result, setResult]  = useState<Result | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Region comes from the location masters (GET /masters/location/…).
@@ -66,6 +170,9 @@ const EligibilityCalculatorPage = () => {
 
   const set = (f: keyof FormData, v: string | boolean) =>
     setForm(p => ({ ...p, [f]: v }));
+
+  const meta: ProductMeta | null = form.product ? PRODUCT_META[form.product as ProductKey] : null;
+  const productLabel = form.product ? (loanLabelFor(form.product) ?? form.product) : "";
 
   useEffect(() => {
     let cancelled = false;
@@ -100,29 +207,111 @@ const EligibilityCalculatorPage = () => {
 
   const validate = () => {
     const e: Partial<Record<keyof FormData, string>> = {};
-    if (!form.continent)                                   e.continent     = "Select a continent";
-    if (!form.country)                                     e.country       = "Select a country";
-    if (!form.product)                                     e.product       = "Select a loan product";
-    if (!form.fullName.trim())                             e.fullName      = "Full name is required";
-    if (!form.dob)                                         e.dob           = "Enter your complete date of birth";
+    if (!form.continent) e.continent = "Select a continent";
+    if (!form.country) e.country = "Select a country";
+    if (!form.product) e.product = "Select a loan product";
+    if (!form.fullName.trim()) e.fullName = "Full name is required";
+    if (!form.dob) e.dob = "Enter your complete date of birth";
     else {
       const dobError = dobErrorFor(form.dob);
-      if (dobError)                                        e.dob           = dobError;
+      if (dobError) e.dob = dobError;
     }
-    if (!form.mobile.trim())                               e.mobile        = "Mobile number is required";
-    else if (!MOBILE_REGEX.test(form.mobile))              e.mobile        = "Enter a valid 10-digit number";
+    if (!form.mobile.trim()) e.mobile = "Mobile number is required";
+    else if (!MOBILE_REGEX.test(form.mobile)) e.mobile = "Enter a valid 10-digit number";
     if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
-    if (!form.occupation)                                  e.occupation    = "Select occupation";
-    if (!form.monthlyIncome)                               e.monthlyIncome = "Monthly income is required";
-    if (!form.authorized)                                  e.authorized    = "Please authorise to proceed";
+    if (!form.occupation) e.occupation = "Select occupation";
+    if (!form.monthlyIncome) e.monthlyIncome = "Monthly income is required";
+    else if (num(form.monthlyIncome) <= 0) e.monthlyIncome = "Enter a valid monthly income";
+    if (form.existingEMI.trim() === "") e.existingEMI = "Enter 0 if you have no existing EMIs";
+    else if (Number.isNaN(Number.parseFloat(form.existingEMI))) e.existingEMI = "Enter a valid amount";
+
+    const asset = meta?.asset;
+    if (asset) {
+      const raw = form[asset.field];
+      if (!raw.trim()) e[asset.field] = `${asset.label} is required`;
+      else if (num(raw) <= 0) e[asset.field] = `Enter a valid ${asset.label.toLowerCase()}`;
+    }
+
+    if (!form.authorized) e.authorized = "Please authorise to proceed";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  /** Runs the FOIR model: 70% EMI cap, product ROI/tenure, LTV caps and retirement age. */
+  const estimate = (): Result => {
+    const product = meta ?? PRODUCT_META.personal;
+    const income = num(form.monthlyIncome);
+    const existingEMI = num(form.existingEMI);
+    const emiLimit = income * FOIR;
+    const headroom = emiLimit - existingEMI;
+    const age = form.dob ? ageFrom(form.dob) : 30;
+    const retirementAge = form.occupation === "Salaried"
+      ? RETIREMENT_AGE.Salaried
+      : RETIREMENT_AGE.default;
+    const yearsToRetirement = Math.max(0, retirementAge - age);
+    const months = Math.min(product.maxTenureMonths, Math.floor(yearsToRetirement * 12));
+
+    const base: Result = {
+      eligible: false, loan: 0, months, emi: 0, roi: product.roi,
+      income, emiLimit, existingEMI, headroom, assetCap: null, assetNote: null, message: "",
+    };
+
+    if (months < 12) {
+      return {
+        ...base,
+        message: `Your age leaves no room for a ${productLabel.toLowerCase()} of at least one year (repayment must end by age ${retirementAge}). A younger co-applicant can help.`,
+      };
+    }
+
+    if (headroom < MIN_HEADROOM) {
+      return {
+        ...base,
+        message: existingEMI > 0
+          ? `Your existing EMIs of ${fmt(existingEMI)} already use ${Math.round((existingEMI / Math.max(income, 1)) * 100)}% of your income. Lenders allow total EMIs of only 70% (${fmt(emiLimit)}), so there is no room for a new EMI. Closing or reducing existing loans is the fastest fix.`
+          : `Your income does not leave enough room for a new EMI. Total EMIs may not exceed 70% of your monthly income.`,
+      };
+    }
+
+    let loan = principalForEmi(headroom, product.roi, months);
+    let assetCap: number | null = null;
+    let assetNote: string | null = null;
+
+    const asset = product.asset;
+    if (asset) {
+      const declared = num(form[asset.field]);
+      if (declared > 0) {
+        assetCap = declared * asset.ltv;
+        assetNote = `${asset.label} ${fmt(declared)} × ${Math.round(asset.ltv * 100)}% = ${fmt(assetCap)}`;
+        loan = Math.min(loan, assetCap);
+      }
+    }
+
+    loan = Math.floor(loan / 1000) * 1000;
+
+    if (loan < MIN_LOAN) {
+      return {
+        ...base,
+        assetCap, assetNote,
+        message: `On these figures your indicative limit is below ${fmt(MIN_LOAN)}, the minimum most lenders will sanction. Increasing income, adding a co-applicant or declaring a higher asset value can raise it.`,
+      };
+    }
+
+    const emi = Math.min(headroom, emiForPrincipal(loan, product.roi, months));
+
+    return {
+      ...base,
+      eligible: true,
+      loan,
+      emi: Math.round(emi),
+      assetCap,
+      assetNote,
+      message: `Great news, ${form.fullName.split(" ")[0] || "there"}! Based on a 70% EMI-to-income limit, you may be eligible for up to ${fmt(loan)} at ${product.roi}% p.a. for ${tenureLabel(months)}.`,
+    };
+  };
+
   /** Opens the real application for the product and profile just estimated. */
   const startApplication = () => {
-    const productId = loanKeyFor(form.product);
-    if (!productId) return;
+    if (!meta) return;
     setApplicantPrefill?.({
       identity: {
         fullName: form.fullName.trim(),
@@ -133,7 +322,7 @@ const EligibilityCalculatorPage = () => {
       note: "Your eligibility details are carried into this application. You can review them there.",
       authoritative: false,
     });
-    requestApply(productId);
+    requestApply(meta.key);
   };
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
@@ -141,28 +330,14 @@ const EligibilityCalculatorPage = () => {
     if (!validate()) return;
     setLoading(true);
     setTimeout(() => {
-      const income   = parseFloat(form.monthlyIncome) || 0;
-      const emi      = parseFloat(form.existingEMI)   || 0;
-      const net      = income - emi;
-      const eligible = net >= 15000;
-      const maxLoan  = Math.floor((net * 0.5 * 60) / 1000) * 1000;
-      const monthEMI = eligible ? Math.round(maxLoan / 60) : 0;
-      setResult({
-        eligible,
-        maxLoan: eligible ? fmt(maxLoan) : "₹0",
-        emi: eligible ? fmt(monthEMI) : "₹0",
-        message: eligible
-          ? `Great news, ${form.fullName.split(" ")[0]}! Based on your profile, you may be eligible for a loan up to ${fmt(maxLoan)}.`
-          : "Your current income or obligations may not meet the minimum eligibility threshold. Try reducing existing EMIs or applying with a co-applicant.",
-      });
+      setResult(estimate());
       setLoading(false);
-    }, 1000);
+    }, 700);
   };
 
   // Field class helper
   const fc = (field: keyof FormData) =>
-    `w-full border rounded-xl px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all placeholder:text-gray-400 ${
-      errors[field] ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"
+    `w-full border rounded-xl px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all placeholder:text-gray-400 ${errors[field] ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"
     }`;
   const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
 
@@ -203,12 +378,10 @@ const EligibilityCalculatorPage = () => {
             <div className="flex items-center justify-center gap-2 mt-6">
               {["Personal Details", "Financial Info", "Get Results"].map((step, i) => (
                 <div key={step} className="flex items-center gap-2">
-                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    i === 0 ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-500"
-                  }`}>
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                      i === 0 ? "bg-white text-teal-600" : "bg-gray-300 text-gray-600"
-                    }`}>{i + 1}</span>
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${i === 0 ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-500"
+                    }`}>
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? "bg-white text-teal-600" : "bg-gray-300 text-gray-600"
+                      }`}>{i + 1}</span>
                     {step}
                   </div>
                   {i < 2 && <div className="w-6 h-px bg-gray-300" />}
@@ -232,9 +405,8 @@ const EligibilityCalculatorPage = () => {
               }}
             >
               {/* Icon */}
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 ${
-                result.eligible ? "bg-emerald-500" : "bg-red-500"
-              }`}>
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 ${result.eligible ? "bg-emerald-500" : "bg-red-500"
+                }`}>
                 {result.eligible ? (
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -249,33 +421,64 @@ const EligibilityCalculatorPage = () => {
               <h2 className={`text-2xl font-extrabold mb-2 ${result.eligible ? "text-emerald-800" : "text-red-800"}`}>
                 {result.eligible ? "You're Eligible! 🎉" : "Not Eligible Yet"}
               </h2>
-              <p className={`text-sm leading-relaxed max-w-sm mx-auto ${result.eligible ? "text-emerald-700" : "text-red-700"}`}>
+              <p className={`text-sm leading-relaxed max-w-md mx-auto ${result.eligible ? "text-emerald-700" : "text-red-700"}`}>
                 {result.message}
               </p>
             </div>
 
-            {/* Stats row */}
+            {/* Result stats: amount, tenure, EMI */}
             {result.eligible && (
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="rounded-xl border border-teal-200 bg-white p-5 text-center shadow-sm">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Max. Loan Amount</p>
-                  <p className="text-2xl md:text-3xl font-extrabold text-teal-700">{result.maxLoan}</p>
-                  <p className="text-xs text-gray-400 mt-1">Estimated eligibility</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Loan Amount</p>
+                  <p className="text-2xl md:text-3xl font-extrabold text-teal-700">{fmt(result.loan)}</p>
+                  <p className="text-xs text-gray-400 mt-1">Indicative sanction</p>
                 </div>
                 <div className="rounded-xl border border-teal-200 bg-white p-5 text-center shadow-sm">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Est. Monthly EMI</p>
-                  <p className="text-2xl md:text-3xl font-extrabold text-teal-700">{result.emi}</p>
-                  <p className="text-xs text-gray-400 mt-1">Over 60 months</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Tenure</p>
+                  <p className="text-2xl md:text-3xl font-extrabold text-teal-700">{tenureLabel(result.months)}</p>
+                  <p className="text-xs text-gray-400 mt-1">At {result.roi}% p.a.</p>
+                </div>
+                <div className="rounded-xl border border-teal-200 bg-white p-5 text-center shadow-sm">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Monthly EMI</p>
+                  <p className="text-2xl md:text-3xl font-extrabold text-teal-700">{fmt(result.emi)}</p>
+                  <p className="text-xs text-gray-400 mt-1">Principal + interest</p>
                 </div>
               </div>
             )}
+
+            {/* How the number was worked out */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5 mb-6">
+              <p className="text-sm font-bold text-gray-800 mb-3">How this was calculated</p>
+              <dl className="space-y-2 text-sm">
+                {[
+                  ["Net monthly income", fmt(result.income)],
+                  [`EMI limit (70% of income)`, fmt(result.emiLimit)],
+                  ["Less existing EMIs", `− ${fmt(result.existingEMI)}`],
+                  ["Available for a new EMI", fmt(result.headroom)],
+                  ["Interest rate", `${result.roi}% p.a.`],
+                  ["Tenure considered", tenureLabel(result.months)],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-baseline justify-between gap-4 border-b border-dashed border-gray-100 pb-2 last:border-0 last:pb-0">
+                    <dt className="text-gray-500">{label}</dt>
+                    <dd className="font-semibold text-gray-800 tabular-nums">{value}</dd>
+                  </div>
+                ))}
+                {result.assetNote && (
+                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gray-100 pb-2">
+                    <dt className="text-gray-500">Asset cap applied</dt>
+                    <dd className="font-semibold text-gray-800 text-right">{result.assetNote}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
 
             {/* Info note */}
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-800">
               <svg className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" />
               </svg>
-              <span>This is an estimate only. Final eligibility is subject to lender verification, credit score, and documentation review.</span>
+              <span>This is an estimate only, using a 70% EMI-to-income limit, the product rate of interest and a tenure capped at your retirement age. Final eligibility is subject to lender policy, credit score, and documentation review.</span>
             </div>
 
             {/* Action buttons */}
@@ -292,7 +495,16 @@ const EligibilityCalculatorPage = () => {
                   className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                   style={{ background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)" }}
                 >
-                  Apply for {form.product} →
+                  Apply for {productLabel} →
+                </button>
+              )}
+              {!result.eligible && (
+                <button
+                  onClick={() => navigate("/how-to-improve-credit-score")}
+                  className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)" }}
+                >
+                  How to improve your credit score →
                 </button>
               )}
             </div>
@@ -352,11 +564,18 @@ const EligibilityCalculatorPage = () => {
                   <select
                     id="elig-product"
                     value={form.product}
-                    onChange={e => { set("product", e.target.value); setErrors(p => ({ ...p, product: "" })); }}
+                    onChange={e => {
+                      set("product", e.target.value);
+                      setErrors(p => ({ ...p, product: "" }));
+                    }}
                     className={fc("product")}
                   >
                     <option value="">Select</option>
-                    {loanProducts.map(p => <option key={p} value={p}>{p}</option>)}
+                    {PRODUCTS.map(p => (
+                      <option key={p.key} value={p.key}>
+                        {loanLabelFor(p.key)} · {p.roi}% · {tenureLabel(p.maxTenureMonths)}
+                      </option>
+                    ))}
                   </select>
                   {errors.product && <p className="text-xs text-red-500 mt-1">{errors.product}</p>}
                 </div>
@@ -435,37 +654,61 @@ const EligibilityCalculatorPage = () => {
                   <label htmlFor="elig-income" className={labelCls}>Net Monthly Income *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input
+                    <AmountInput
                       id="elig-income"
-                      type="number"
-                      placeholder="e.g. 50000"
+                      placeholder="e.g. 50,000"
                       value={form.monthlyIncome}
-                      onChange={e => { set("monthlyIncome", e.target.value); setErrors(p => ({ ...p, monthlyIncome: "" })); }}
+                      onChange={v => { set("monthlyIncome", v); setErrors(p => ({ ...p, monthlyIncome: "" })); }}
                       className={`${fc("monthlyIncome")} pl-7`}
                     />
                   </div>
-                  {errors.monthlyIncome && <p className="text-xs text-red-500 mt-1">{errors.monthlyIncome}</p>}
+                  {errors.monthlyIncome
+                    ? <p className="text-xs text-red-500 mt-1">{errors.monthlyIncome}</p>
+                    : <p className="text-[11px] text-gray-400 mt-1">Take-home after tax</p>}
                 </div>
               </div>
 
-              {/* Row 4: Existing EMI */}
+              {/* Row 4: Existing EMI (mandatory) | product-specific asset value */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-6">
                 <div>
-                  <label htmlFor="elig-emi" className={labelCls}>
-                    Existing EMI <span className="normal-case font-normal text-gray-400">(if any)</span>
-                  </label>
+                  <label htmlFor="elig-emi" className={labelCls}>Existing Monthly EMI *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input
+                    <AmountInput
                       id="elig-emi"
-                      type="number"
-                      placeholder="e.g. 5000"
+                      placeholder="0 if none"
                       value={form.existingEMI}
-                      onChange={e => set("existingEMI", e.target.value)}
+                      onChange={v => { set("existingEMI", v); setErrors(p => ({ ...p, existingEMI: "" })); }}
                       className={`${fc("existingEMI")} pl-7`}
                     />
                   </div>
+                  {errors.existingEMI
+                    ? <p className="text-xs text-red-500 mt-1">{errors.existingEMI}</p>
+                    : <p className="text-[11px] text-gray-400 mt-1">Total EMIs you already pay each month</p>}
                 </div>
+
+                {meta?.asset && (
+                  <div>
+                    <label htmlFor={`elig-${meta.asset.field}`} className={labelCls}>{meta.asset.label} *</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
+                      <AmountInput
+                        id={`elig-${meta.asset.field}`}
+                        placeholder={meta.asset.field === "turnover" ? "e.g. 50,00,000" : "e.g. 40,00,000"}
+                        value={form[meta.asset.field]}
+                        onChange={v => {
+                          const field = meta.asset!.field;
+                          set(field, v);
+                          setErrors(p => ({ ...p, [field]: "" }));
+                        }}
+                        className={`${fc(meta.asset.field)} pl-7`}
+                      />
+                    </div>
+                    {errors[meta.asset.field]
+                      ? <p className="text-xs text-red-500 mt-1">{errors[meta.asset.field]}</p>
+                      : <p className="text-[11px] text-gray-400 mt-1">{meta.asset.hint}</p>}
+                  </div>
+                )}
               </div>
 
               {/* Divider */}
@@ -488,7 +731,9 @@ const EligibilityCalculatorPage = () => {
                 </div>
                 <span className="text-sm text-gray-500 leading-relaxed">
                   I authorise the website and its partner providers to call or SMS me in connection with my application and agree to the{" "}
-                  <span className="text-teal-600 underline">Terms of use</span>.
+                    <Link to="/terms-of-use" className="font-semibold text-(--brand-teal) underline">
+                      Terms of Use
+                    </Link>.
                 </span>
               </label>
               {errors.authorized && <p className="text-xs text-red-500 -mt-5 mb-5 ml-8">{errors.authorized}</p>}
