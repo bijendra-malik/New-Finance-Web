@@ -25,6 +25,7 @@ const EMICalculatorPage = lazy(() => import("./pages/EMICalculatorPage"));
 const BeAFranchisorPage = lazy(() => import("./pages/BeAFranchisorPage"));
 const CreditScorePage = lazy(() => import("./pages/CreditScorePage"));
 const KnowYourScorePage = lazy(() => import("./pages/KnowYourScorePage"));
+const ImproveCreditScorePage = lazy(() => import("./pages/ImproveCreditScorePage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const CareersApplyPage = lazy(() => import("./pages/CareersApplyPage"));
@@ -194,6 +195,7 @@ function App() {
               <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
               <Route path="/credit-score" element={<CreditScorePage />} />
               <Route path="/know-your-score" element={<KnowYourScorePage />} />
+              <Route path="/how-to-improve-credit-score" element={<ImproveCreditScorePage />} />
               <Route path="/faqs" element={<FAQPage />} />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/careers/apply" element={<CareersApplyPage />} />

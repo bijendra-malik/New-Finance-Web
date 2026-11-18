@@ -903,6 +903,19 @@ const ApplicationModal = ({
                     >
                       View my applications
                     </Button>
+                    {blockedNotice.kind === "rejected" && (
+                      <Button
+                        variant="ghost"
+                        className="rounded-lg font-semibold"
+                        onClick={() => {
+                          setBlockedNotice(null);
+                          handleClose();
+                          navigate("/how-to-improve-credit-score");
+                        }}
+                      >
+                        How to improve your credit score
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

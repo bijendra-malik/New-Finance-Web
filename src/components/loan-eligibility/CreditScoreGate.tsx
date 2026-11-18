@@ -236,16 +236,23 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
             </p>
           </div>
 
-          {dashboardPath && (
-            <div className="mt-5">
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Link
+              to="/how-to-improve-credit-score"
+              className="rounded-xl px-5 py-2.5 text-[12.5px] font-bold text-white shadow-sm transition hover:brightness-110"
+              style={{ background: `linear-gradient(135deg, ${C.teal} 0%, ${C.navy} 100%)` }}
+            >
+              How to improve your credit score
+            </Link>
+            {dashboardPath && (
               <Link
                 to={dashboardPath}
                 className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-[12.5px] font-bold text-slate-700 transition hover:bg-slate-50"
               >
                 Back to dashboard
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
     );
