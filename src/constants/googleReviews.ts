@@ -1,19 +1,6 @@
-export const BRAND_COLORS = {
-  BISLERI_GREEN: "#26ae90", // teal-green
-  LIME_GREEN: "#f2f231",    // yellow
-  DARK_BLUE: "#066a9c",     // deep blue
-  GREY: "#7b7b7b",          // neutral grey
-  NAVY_DARK: "#286090",     // medium blue
-  WHITE: "#FFFFFF",
-  LIGHT_BG: "#F8FAFC",
-  lime: "#f2f231",          // same yellow
-};
-
 export const GOOGLE_BUSINESS = {
-  name: "Indexia Finance",
   rating: 4.2,
   reviewCount: 92,
-  asOf: "4 November 2026",
   reviewsUrl: "https://www.google.com/maps/place?q=place_id:ChIJM41tLTfI5zsRd0G2d3VMEXQ",
 } as const;
 
@@ -26,11 +13,11 @@ export interface GoogleReview {
   date: string;
 }
 
-export const TESTIMONIALS: GoogleReview[] = [
+export const GOOGLE_REVIEWS: GoogleReview[] = [
   {
     id: 1,
-    name: "Rajesh Kumar",
-    initials: "RK",
+    name: "Tannu",
+    initials: "T",
     rating: 5,
     quote:
       "Great experience with Indexia Finance! The team was professional, helpful, and made the entire process smooth and hassle-free. Highly recommended!",
@@ -38,16 +25,16 @@ export const TESTIMONIALS: GoogleReview[] = [
   },
   {
     id: 2,
-    name: "Priya Sharma",
-    initials: "PS",
+    name: "Sagar Verma",
+    initials: "SV",
     rating: 5,
     quote: "Best loan provider company& Staff is very helpful corporated.",
     date: "7 Aug 2026",
   },
   {
     id: 3,
-    name: "Amit Patel",
-    initials: "AP",
+    name: "Prerna Negi",
+    initials: "PN",
     rating: 5,
     quote:
       "Good experience and transparent communication, efficient disbursal times, and ability to secure difficult loans.",
@@ -55,19 +42,19 @@ export const TESTIMONIALS: GoogleReview[] = [
   },
   {
     id: 4,
-    name: "Anjali Singh",
-    initials: "AS",
+    name: "Sahil Chaddha",
+    initials: "SC",
     rating: 5,
     quote: "Very informative & useful . I learned lot of this company thank you",
     date: "7 Aug 2026",
   },
   {
     id: 5,
-    name: "Arjun Verma",
-    initials: "AV",
+    name: "Lakshay Sharma",
+    initials: "LS",
     rating: 5,
     quote:
-      "I've had a positive experience with Indexia Finance. Their services are high quality, and I appreciate the…",
+      "I've had a positive experience with Indexia Finance. Their services are high quality, and I appreciate their commitment to customer satisfaction. The team is responsive and professional, always ready to assist with any issues or questions I…",
     date: "13 Aug 2024",
   },
 ];

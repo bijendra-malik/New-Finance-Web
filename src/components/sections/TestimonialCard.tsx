@@ -1,12 +1,11 @@
 /** A single Google review card. */
-import { ArrowUpRight, BadgeCheck } from "lucide-react";
-import { GOOGLE_BUSINESS } from "./testimonialsData";
-import type { GoogleReview } from "./testimonialsData";
+import { ArrowUpRight } from "lucide-react";
+import { GOOGLE_BUSINESS, type GoogleReview } from "../../constants/googleReviews";
 import { GoogleG, GoogleStars } from "./googleReviews";
 
 const TestimonialCard = ({ review, index = 0 }: { review: GoogleReview; index?: number }) => (
   <article
-    className="group flex w-76 shrink-0 snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_40px_-24px_rgba(6,106,156,0.45)] sm:w-84"
+    className="flex w-76 shrink-0 snap-start flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_40px_-24px_rgba(6,106,156,0.45)] sm:w-84"
     style={{ animation: `reviewIn 0.5s ease-out ${index * 0.08}s both` }}
   >
     <header className="flex items-center gap-3">
@@ -36,10 +35,7 @@ const TestimonialCard = ({ review, index = 0 }: { review: GoogleReview; index?: 
       “{review.quote}”
     </blockquote>
 
-    <footer className="mt-5 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-        <BadgeCheck size={13} strokeWidth={2.2} /> Verified
-      </span>
+    <footer className="mt-5 flex justify-end border-t border-slate-100 pt-3">
       <a
         href={GOOGLE_BUSINESS.reviewsUrl}
         target="_blank"
