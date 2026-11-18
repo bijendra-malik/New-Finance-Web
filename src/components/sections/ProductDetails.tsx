@@ -191,22 +191,10 @@ const ProductDetails = () => {
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-10 md:px-8 lg:px-10 pt-6 pb-8 md:py-10 flex flex-col gap-6">
 
-          {/* Section heading + document checklist, on top of the banner */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <a
-              href={docRouteFor(active.id, active.heading)}
-              className="pd-cta inline-flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-white text-xs sm:text-sm cursor-pointer select-none transition-all duration-200 hover:brightness-110 active:scale-95"
-              style={{
-                background: "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))",
-                boxShadow: "0 4px 16px rgba(38,174,144,0.40)",
-                border: "1px solid rgba(38,174,144,0.45)",
-              }}
-            >
+          <div className="flex justify-center">
+            <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
               List of Documents
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M13 7l5 5m0 0l-5 5m5-5H6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
+            </h3>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-10 w-full min-w-0">
@@ -221,12 +209,18 @@ const ProductDetails = () => {
 
                 {/* Heading + tag badge */}
                 <div className="flex items-start gap-3 flex-wrap mb-1">
-                  <h2
-                    className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
-                    style={{ color: "var(--brand-yellow)" }}
+                  <Link
+                    to={docRouteFor(active.id, active.heading)}
+                    className="group inline-flex items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal)"
+                    title={`Documents required for ${active.heading}`}
                   >
-                    {active.heading}
-                  </h2>
+                    <h2
+                      className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight underline decoration-(--brand-teal) decoration-2 underline-offset-4 transition-colors duration-200 group-hover:text-white"
+                      style={{ color: "var(--brand-yellow)" }}
+                    >
+                      {active.heading}
+                    </h2>
+                  </Link>
                 </div>
 
                 {/* Accent + rate pill */}
