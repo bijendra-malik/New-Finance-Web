@@ -6,7 +6,6 @@ import { ConsentAndSubmit } from "./SubmitSection";
 import FormPageHeader from "./FormPageHeader";
 import ApplicationReviewModal from "./ApplicationReviewModal";
 import CreditScoreGate from "../loan-eligibility/CreditScoreGate";
-import CaptchaField from "../ui/CaptchaField";
 import type { CaptchaState } from "../../hooks/useCaptcha";
 import { advanceOnEnter } from "../../utils/enterToNext";
 
@@ -28,7 +27,7 @@ interface LoanApplicationFormShellProps<TApplication extends SubmittedApplicatio
   reviewOpen: boolean;
   onConfirmReview: () => void;
   onCancelReview: () => void;
-  onSubmit: (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => void;
+  onSubmit: (e: { preventDefault: () => void }) => void;
   agreed: boolean;
   onAgreedChange: (next: boolean) => void;
   captcha: CaptchaState;
@@ -156,18 +155,17 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
       <form className={`${FORM.maxWidth} mx-auto`} onSubmit={onSubmit} onKeyDown={advanceOnEnter} noValidate>
         <FormPageHeader headline={headline} />
         {children}
-        <div className="mt-6 rounded-(--form-card-radius) border border-slate-300 bg-white px-4 py-3.5">
-          <CaptchaField captcha={captcha} idPrefix="application-captcha" />
+        <div className="mt-6 rounded-(--form-card-radius) border border-slate-300 bg-white px-4 py-4">
+          <ConsentAndSubmit
+            agreed={agreed}
+            onAgreedChange={onAgreedChange}
+            apiError={apiError}
+            submitAttempted={submitAttempted}
+            invalidCount={invalidCount}
+            isSubmitting={isSubmitting}
+            submitLabel="Proceed"
+          />
         </div>
-        <ConsentAndSubmit
-          agreed={agreed}
-          onAgreedChange={onAgreedChange}
-          apiError={apiError}
-          submitAttempted={submitAttempted}
-          invalidCount={invalidCount}
-          isSubmitting={isSubmitting}
-          submitLabel="Proceed"
-        />
       </form>
 
       <ApplicationReviewModal
@@ -179,6 +177,7 @@ const LoanApplicationFormShell = <TApplication extends SubmittedApplication>({
         tenureYears={tenureYears}
         busy={isSubmitting}
         error={apiError}
+        captcha={captcha}
         onCancel={onCancelReview}
         onEditSection={handleEditSection}
         onConfirm={onConfirmReview}
