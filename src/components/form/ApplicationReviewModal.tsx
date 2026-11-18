@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Modal from "../ui/Modal";
+import CaptchaField from "../ui/CaptchaField";
+import type { CaptchaState } from "../../hooks/useCaptcha";
 import { THEME as C } from "../../constants/theme";
 import type { SuccessSection } from "./successSections";
 import { fmtINR, fmtText, fmtTenure, isBlank } from "./successSections";
@@ -13,6 +15,8 @@ interface ApplicationReviewModalProps {
   tenureYears?: number;
   busy: boolean;
   error?: string;
+  /** The security check: confirmation answers it before submitting. */
+  captcha: CaptchaState;
   onCancel: () => void;
   onEditSection?: (section: SuccessSection) => void;
   onConfirm: () => void;
@@ -113,17 +117,23 @@ const ReviewDialog = ({
   tenureYears,
   busy,
   error,
+  captcha,
   onCancel,
   onEditSection,
   onConfirm,
 }: Omit<ApplicationReviewModalProps, "open">) => {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => headingRef.current?.focus({ preventScroll: true }), 60);
     return () => window.clearTimeout(timer);
   }, []);
+
+  const handleConfirm = async () => {
+    if (busy || captcha.verifying) return;
+    if (await captcha.verify()) return;
+    onConfirm();
+  };
 
   const details = sections
     .map((section) => ({ section, rows: visibleRows(section) }))
@@ -204,19 +214,12 @@ const ReviewDialog = ({
             Once you proceed to the credit-score step, these details are submitted as final and
             cannot be altered. Your credit score can also be entered only once.
           </p>
-          <label className="mt-3 flex cursor-pointer select-none items-start gap-2.5">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={(event) => setConfirmed(event.target.checked)}
-              disabled={busy}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded"
-              style={{ accentColor: C.teal }}
-            />
-            <span className="text-[12px] font-semibold leading-5" style={{ color: C.dark }}>
-              I have reviewed every detail above and confirm that they are accurate and final.
-            </span>
-          </label>
+          <div className="mt-3 border-t pt-3" style={{ borderColor: C.teal1f }}>
+            <p className="mb-2 text-[11.5px] font-semibold" style={{ color: C.dark }}>
+              Complete the check below to proceed — these details are final.
+            </p>
+            <CaptchaField captcha={captcha} idPrefix="application-captcha" />
+          </div>
         </div>
 
         {error && (
@@ -238,13 +241,17 @@ const ReviewDialog = ({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
-            disabled={!confirmed || busy}
+            onClick={() => void handleConfirm()}
+            disabled={busy || !captcha.verified || captcha.verifying || captcha.loading}
             className="flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[12.5px] font-bold text-white shadow-md transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-60"
             style={{ background: `linear-gradient(135deg, ${C.teal} 0%, ${C.navy} 100%)` }}
           >
             {busy && spinner}
-            {busy ? "Submitting your application…" : "Confirm & proceed to credit score"}
+            {busy
+              ? "Submitting your application…"
+              : captcha.verifying
+                ? "Checking…"
+                : "Confirm & proceed to credit score"}
           </button>
         </div>
       </div>
@@ -252,7 +259,6 @@ const ReviewDialog = ({
   );
 };
 
-/** Mounted only while open, so the confirmation checkbox always starts unticked. */
 const ApplicationReviewModal = (props: ApplicationReviewModalProps) =>
   props.open ? <ReviewDialog {...props} /> : null;
 
