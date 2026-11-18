@@ -114,6 +114,11 @@ export const PersonalDetailsSection = ({
           <div id="panNumber"><FieldLabel label={panLabel} required={panRequired}/>
             <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} disabled={isLocked("panNumber")} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
+          <PincodeInputField
+            id="pincode" label="Current Residence Pincode"
+            value={form.pincode} onChange={v=>set("pincode",v)}
+            onResolved={r=>onPincodeResolved(r)} err={errors.pincode} disabled={isLocked("pincode")}
+          />
           <div id="state"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.state} onChange={v=>{
               set("state",v); set("city",""); loadCities(v);
@@ -124,11 +129,6 @@ export const PersonalDetailsSection = ({
               options={residenceCityOptions} placeholder={form.state?"Select city":"Select state first"}
               disabled={!form.state || isLocked("city")} err={errors.city}/>
           </div>
-          <PincodeInputField
-            id="pincode" label="Current Residence Pincode"
-            value={form.pincode} onChange={v=>set("pincode",v)}
-            onResolved={r=>onPincodeResolved(r)} err={errors.pincode} disabled={isLocked("pincode")}
-          />
           <SelectWithOther
             id="residenceStatus" label="Status of Current Residence" required
             value={form.residenceStatus} onChange={v=>{

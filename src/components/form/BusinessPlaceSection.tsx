@@ -32,6 +32,11 @@ export const BusinessPlaceSection = ({
 
   return (
     <>
+      <PincodeInputField
+        id="businessPincode" label={`Current ${entityLabel} Pincode`}
+        value={form.businessPincode} onChange={v=>set("businessPincode",v)}
+        onResolved={r=>onPincodeResolved(r)} err={errors.businessPincode}
+      />
       <div id="businessState"><FieldLabel label={`Current ${entityLabel} State`} required/>
         <SelectField value={form.businessState} onChange={v=>{
           set("businessState",v); set("businessCity",""); loadCities(v);
@@ -41,11 +46,6 @@ export const BusinessPlaceSection = ({
         <SelectField value={form.businessCity} onChange={v=>set("businessCity",v)}
           options={businessCityOptions} placeholder={form.businessState?"Select city":"Select state first"} disabled={!form.businessState} err={errors.businessCity}/>
       </div>
-      <PincodeInputField
-        id="businessPincode" label={`Current ${entityLabel} Pincode`}
-        value={form.businessPincode} onChange={v=>set("businessPincode",v)}
-        onResolved={r=>onPincodeResolved(r)} err={errors.businessPincode}
-      />
       <SelectWithOther
         id="businessPlaceStatus" label={`Status Of ${entityLabel} Place`} required
         value={form.businessPlaceStatus} onChange={v=>{

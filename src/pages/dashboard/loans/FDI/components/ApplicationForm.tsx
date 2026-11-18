@@ -359,6 +359,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <TextField type="number" value={form.collateralPropertyAge} onChange={v=>set("collateralPropertyAge",v.replace(/\D/g,""))}
               placeholder="In Years" err={errors.collateralPropertyAge}/>
           </div>
+          <PincodeInputField
+            id="collateralPropertyPincode" label="Collateral Property Pincode" required={collateralRequired}
+            value={form.collateralPropertyPincode} onChange={v=>set("collateralPropertyPincode",v)}
+ onResolved={r=>onPincodeResolved("collateralProperty",r)} err={errors.collateralPropertyPincode}
+          />
           <div id="collateralPropertyState"><FieldLabel label="Collateral Property State" required={collateralRequired}/>
             <SelectField value={form.collateralPropertyState} onChange={v=>{
               set("collateralPropertyState",v); set("collateralPropertyCity",""); loadCities(v);
@@ -368,11 +373,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <SelectField value={form.collateralPropertyCity} onChange={v=>set("collateralPropertyCity",v)}
               options={collateralPropertyCityOptions} placeholder={form.collateralPropertyState?"Select city":"Select state first"} disabled={!form.collateralPropertyState} err={errors.collateralPropertyCity}/>
           </div>
-          <PincodeInputField
-            id="collateralPropertyPincode" label="Collateral Property Pincode" required={collateralRequired}
-            value={form.collateralPropertyPincode} onChange={v=>set("collateralPropertyPincode",v)}
- onResolved={r=>onPincodeResolved("collateralProperty",r)} err={errors.collateralPropertyPincode}
-          />
         </div>
       </FormCard>
 

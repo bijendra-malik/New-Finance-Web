@@ -359,6 +359,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <TextField type="number" value={form.buyingPropertyAge} onChange={v=>set("buyingPropertyAge",v.replace(/\D/g,""))}
               placeholder="In Years" err={errors.buyingPropertyAge}/>
           </div>
+          <PincodeInputField
+            id="buyingPropertyPincode" label="Buying Property Pincode"
+            value={form.buyingPropertyPincode} onChange={v=>set("buyingPropertyPincode",v)}
+ onResolved={r=>onPincodeResolved("buyingProperty",r)} err={errors.buyingPropertyPincode}
+          />
           <div id="buyingPropertyState"><FieldLabel label="Buying Property State" required/>
             <SelectField value={form.buyingPropertyState} onChange={v=>{
               set("buyingPropertyState",v); set("buyingPropertyCity",""); loadCities(v);
@@ -368,11 +373,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <SelectField value={form.buyingPropertyCity} onChange={v=>set("buyingPropertyCity",v)}
               options={buyingPropertyCityOptions} placeholder={form.buyingPropertyState?"Select city":"Select state first"} disabled={!form.buyingPropertyState} err={errors.buyingPropertyCity}/>
           </div>
-          <PincodeInputField
-            id="buyingPropertyPincode" label="Buying Property Pincode"
-            value={form.buyingPropertyPincode} onChange={v=>set("buyingPropertyPincode",v)}
- onResolved={r=>onPincodeResolved("buyingProperty",r)} err={errors.buyingPropertyPincode}
-          />
         </div>
       </FormCard>
 

@@ -692,6 +692,11 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
           <div id="parentPanNumber"><FieldLabel label="PAN Card Number" required/>
             <TextField value={form.parentPanNumber} onChange={v=>set("parentPanNumber",formatPAN(v))} placeholder="ABCDE1234F" maxLength={10} err={errors.parentPanNumber} extraCls="uppercase tracking-widest"/>
           </div>
+          <PincodeInputField
+            id="parentPincode" label="Current Residence Pincode"
+            value={form.parentPincode} onChange={v=>set("parentPincode",v)}
+ onResolved={r=>onPincodeResolved("parent",r)} err={errors.parentPincode}
+          />
           <div id="parentState"><FieldLabel label="Current Residence State" required/>
             <SelectField value={form.parentState} onChange={v=>{
               set("parentState",v); set("parentCity",""); loadCities(v);
@@ -701,11 +706,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <SelectField value={form.parentCity} onChange={v=>set("parentCity",v)}
               options={parentCityOptions} placeholder={form.parentState?"Select city":"Select state first"} disabled={!form.parentState} err={errors.parentCity}/>
           </div>
-          <PincodeInputField
-            id="parentPincode" label="Current Residence Pincode"
-            value={form.parentPincode} onChange={v=>set("parentPincode",v)}
- onResolved={r=>onPincodeResolved("parent",r)} err={errors.parentPincode}
-          />
           <SelectWithOther
             id="parentResidenceStatus" label="Status of Current Residence" required
             value={form.parentResidenceStatus} onChange={v=>{
