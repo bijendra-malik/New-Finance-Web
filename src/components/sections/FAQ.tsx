@@ -68,7 +68,7 @@ const FAQ = () => {
             className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight"
             style={{ color: C.lime }}
           >
-            Check Loan Eligibility
+            Check Your Loan Eligibility
           </h3>
 
           {/* Description */}
@@ -82,7 +82,7 @@ const FAQ = () => {
             {[
               ["Instant Eligibility Check",  "Know if you qualify in seconds"],
               ["Quick Approval in 48 Hours", "Get funds directly to your account"],
-              ["Transparent Pricing",        "No hidden charges or surprises"],
+              ["Transparent Process",        "Clear steps at every stage"],
             ].map(([title, desc]) => (
               <li
                 key={title}
@@ -112,7 +112,7 @@ const FAQ = () => {
               boxShadow: "0 10px 26px rgba(240,180,10,0.32)",
             }}
           >
-            Check Your Loan Eligibility
+            Check Here
           </button>
         </div>
       </div>
