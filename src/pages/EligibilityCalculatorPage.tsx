@@ -7,15 +7,14 @@ import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
 import type { Continent, Country } from "../api/masters";
 import { useApplyGate } from "../hooks/useApplyGate";
 import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
-import { loanKeyFor } from "../constants/loanSlugs";
+import { LOAN_SLUGS, loanKeyFor, loanLabelFor } from "../constants/loanSlugs";
+import type { LoanKey } from "../constants/loanSlugs";
 import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
 
 // ── Static data ───────────────────────────────────────────────────────────────
-const loanProducts = [
-  "Personal Loan", "Business Loan", "Home Loan", "Loan Against Property",
-  "Balance Transfer", "Vehicle Loan", "Education Loan", "Project Loan",
-  "Commercial Purchase", "Working Capital", "Lease Rental Discounting", "Credit Card",
-];
+const loanProducts: string[] = (Object.keys(LOAN_SLUGS) as LoanKey[])
+  .map((key) => loanLabelFor(key))
+  .filter((label): label is string => Boolean(label));
 const occupations = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -88,6 +87,17 @@ const EligibilityCalculatorPage = () => {
     return () => { cancelled = true; };
   }, [continentOptions, form.continent]);
 
+  /** Age rules for the date of birth: 18 to 65 years, never in the future. */
+  const dobErrorFor = (dob: string): string => {
+    if (!dob) return "";
+    const born = new Date(`${dob}T00:00:00`);
+    if (Number.isNaN(born.getTime())) return "Enter your complete date of birth";
+    if (born > new Date()) return "Date of birth cannot be in the future";
+    if (!isAtLeastAge(dob, 18)) return "You must be at least 18 years old";
+    if (!isAtMostAge(dob, 65)) return "Applicants must be 65 or younger";
+    return "";
+  };
+
   const validate = () => {
     const e: Partial<Record<keyof FormData, string>> = {};
     if (!form.continent)                                   e.continent     = "Select a continent";
@@ -95,8 +105,10 @@ const EligibilityCalculatorPage = () => {
     if (!form.product)                                     e.product       = "Select a loan product";
     if (!form.fullName.trim())                             e.fullName      = "Full name is required";
     if (!form.dob)                                         e.dob           = "Enter your complete date of birth";
-    else if (!isAtLeastAge(form.dob, 18))                  e.dob           = "You must be at least 18 years old";
-    else if (!isAtMostAge(form.dob, 65))                   e.dob           = "Applicants must be 65 or younger";
+    else {
+      const dobError = dobErrorFor(form.dob);
+      if (dobError)                                        e.dob           = dobError;
+    }
     if (!form.mobile.trim())                               e.mobile        = "Mobile number is required";
     else if (!MOBILE_REGEX.test(form.mobile))              e.mobile        = "Enter a valid 10-digit number";
     if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
@@ -184,7 +196,7 @@ const EligibilityCalculatorPage = () => {
               Check Your Loan Eligibility
             </h1>
             <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto">
-              Fill in a few details — takes under 2 minutes — and get an instant estimate.
+              Check how much loan you can get — it takes under 2 minutes and needs no documents.
             </p>
 
             {/* Progress pills */}
@@ -357,7 +369,7 @@ const EligibilityCalculatorPage = () => {
                   <input
                     id="elig-name"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="Name as per PAN card"
                     value={form.fullName}
                     onChange={e => { set("fullName", e.target.value); setErrors(p => ({ ...p, fullName: "" })); }}
                     className={fc("fullName")}
@@ -369,7 +381,7 @@ const EligibilityCalculatorPage = () => {
                   <DateOfBirthPicker
                     id="elig-dob-day"
                     value={form.dob}
-                    onChange={v => { set("dob", v); setErrors(p => ({ ...p, dob: "" })); }}
+                    onChange={v => { set("dob", v); setErrors(p => ({ ...p, dob: dobErrorFor(v) })); }}
                     err={errors.dob}
                     showError={false}
                   />
