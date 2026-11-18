@@ -66,6 +66,8 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
   const [dismissedIds, setDismissedIds] = useState<string[]>(() =>
     readStoredIds(DISMISSED_KEY_PREFIX, franchiseId),
   );
+  /** The notification whose delete is waiting for confirmation. */
+  const [pendingDelete, setPendingDelete] = useState<UpdateItem | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<UpdateItem[]>(() => {
@@ -110,7 +112,10 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     };
   }, [open]);
 
-  const toggle = () => setOpen((wasOpen) => !wasOpen);
+  const toggle = () => {
+    setPendingDelete(null);
+    setOpen((wasOpen) => !wasOpen);
+  };
 
   const markRead = (id: string) => {
     if (readIds.includes(id)) return;
@@ -131,7 +136,13 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     writeStoredIds(DISMISSED_KEY_PREFIX, franchiseId, next);
   };
 
+  const confirmDelete = () => {
+    if (pendingDelete) dismiss(pendingDelete.id);
+    setPendingDelete(null);
+  };
+
   const goTo = (target: Target) => {
+    setPendingDelete(null);
     setOpen(false);
     onOpenSection(target);
   };
@@ -258,8 +269,9 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                       )}
                       <button
                         type="button"
-                        onClick={() => dismiss(item.id)}
+                        onClick={() => setPendingDelete(item)}
                         title="Delete notification"
+                        aria-haspopup="dialog"
                         aria-label={`Delete “${item.title}”`}
                         className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                       >
@@ -272,6 +284,46 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                 );
               })}
             </ul>
+          )}
+
+          {/* Confirmation before anything is deleted from this list. */}
+          {pendingDelete && (
+            <div
+              role="alertdialog"
+              aria-labelledby="franchise-delete-confirm-title"
+              aria-describedby="franchise-delete-confirm-detail"
+              className="border-t border-red-100 bg-red-50 px-4 py-3"
+            >
+              <p id="franchise-delete-confirm-title" className="text-[12.5px] font-extrabold text-red-700">
+                Delete this notification?
+              </p>
+              <p
+                id="franchise-delete-confirm-detail"
+                className="mt-0.5 truncate text-[11.5px] font-semibold text-slate-600"
+              >
+                {pendingDelete.title}
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                It disappears from your updates list. The application and customer records are not
+                affected.
+              </p>
+              <div className="mt-2.5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(null)}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11.5px] font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDelete}
+                  className="rounded-lg bg-red-600 px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           )}
 
           <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5">
