@@ -137,8 +137,14 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(!draft.leasePropertyCity) e.leasePropertyCity="Lease property city is required";
     if(!draft.leasePropertyPincode) e.leasePropertyPincode="Lease property pincode is required";
     else if(!/^[1-9]\d{5}$/.test(draft.leasePropertyPincode)) e.leasePropertyPincode="Enter valid 6-digit pincode";
-    if(draft.leasePropertyMarketValue>1000000000) e.leasePropertyMarketValue="Market value cannot exceed ₹1,00,00,00,000";
-    if(parseInt(draft.leasePropertyAge)>150) e.leasePropertyAge="Property age cannot exceed 150 years";
+    if(!draft.monthlyLeaseIncome) e.monthlyLeaseIncome="Monthly lease income is required";
+    if(!draft.totalLeaseAmount) e.totalLeaseAmount="Total amount to be received from the lease is required";
+    if(!draft.leasePropertyDuration) e.leasePropertyDuration="Lease property duration is required";
+    else if(parseInt(draft.leasePropertyDuration)<=0) e.leasePropertyDuration="Enter a duration of at least 1 year";
+    if(!draft.leasePropertyMarketValue) e.leasePropertyMarketValue="Lease property market value is required";
+    else if(draft.leasePropertyMarketValue>1000000000) e.leasePropertyMarketValue="Market value cannot exceed ₹1,00,00,00,000";
+    if(!draft.leasePropertyAge) e.leasePropertyAge="Lease property age is required";
+    else if(parseInt(draft.leasePropertyAge)>150) e.leasePropertyAge="Property age cannot exceed 150 years";
 
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
@@ -343,21 +349,26 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
             options={masters.leaseRentalTenureYears} maxYears={LEASE_RENTAL_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
-          <div id="monthlyLeaseIncome"><FieldLabel label="Monthly Income Through Lease"/>
-            <AmountField value={form.monthlyLeaseIncome} onChange={v=>set("monthlyLeaseIncome",v.replace(/\D/g,""))} placeholder="Enter Amount in INR"/>
+          <div id="monthlyLeaseIncome"><FieldLabel label="Monthly Income Through Lease" required/>
+            <AmountField value={form.monthlyLeaseIncome} onChange={v=>set("monthlyLeaseIncome",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.monthlyLeaseIncome}/>
           </div>
-          <div id="totalLeaseAmount"><FieldLabel label="Total Amount To Be Received From Lease"/>
-            <AmountField value={form.totalLeaseAmount} onChange={v=>set("totalLeaseAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR"/>
+          <div id="totalLeaseAmount"><FieldLabel label="Total Amount To Be Received From Lease" required/>
+            <AmountField value={form.totalLeaseAmount} onChange={v=>set("totalLeaseAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.totalLeaseAmount}/>
           </div>
-          <div id="leasePropertyDuration"><FieldLabel label="Lease Property Duration"/>
-            <TextField type="number" value={form.leasePropertyDuration} onChange={v=>set("leasePropertyDuration",v.replace(/\D/g,""))} placeholder="In years"/>
+          <div id="leasePropertyDuration"><FieldLabel label="Lease Property Duration" required/>
+            <TextField type="number" value={form.leasePropertyDuration} onChange={v=>set("leasePropertyDuration",v.replace(/\D/g,""))} placeholder="In years" err={errors.leasePropertyDuration}/>
           </div>
-          <div id="leasePropertyMarketValue"><FieldLabel label="Lease Property Market Value (Approx)"/>
-            <AmountField value={form.leasePropertyMarketValue===0?"":String(form.leasePropertyMarketValue)} onChange={v=>set("leasePropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR"/>
+          <div id="leasePropertyMarketValue"><FieldLabel label="Lease Property Market Value (Approx)" required/>
+            <AmountField value={form.leasePropertyMarketValue===0?"":String(form.leasePropertyMarketValue)} onChange={v=>set("leasePropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.leasePropertyMarketValue}/>
           </div>
-          <div id="leasePropertyAge"><FieldLabel label="Lease Property Age"/>
-            <TextField type="number" value={form.leasePropertyAge} onChange={v=>set("leasePropertyAge",v.replace(/\D/g,""))} placeholder="In Years"/>
+          <div id="leasePropertyAge"><FieldLabel label="Lease Property Age" required/>
+            <TextField type="number" value={form.leasePropertyAge} onChange={v=>set("leasePropertyAge",v.replace(/\D/g,""))} placeholder="In Years" err={errors.leasePropertyAge}/>
           </div>
+          <PincodeInputField
+            id="leasePropertyPincode" label="Lease Property Pincode"
+            value={form.leasePropertyPincode} onChange={v=>set("leasePropertyPincode",v)}
+ onResolved={r=>onPincodeResolved("leaseProperty",r)} err={errors.leasePropertyPincode}
+          />
           <div id="leasePropertyState"><FieldLabel label="Lease Property State" required/>
             <SelectField value={form.leasePropertyState} onChange={v=>{
               set("leasePropertyState",v); set("leasePropertyCity",""); loadCities(v);
@@ -367,11 +378,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
             <SelectField value={form.leasePropertyCity} onChange={v=>set("leasePropertyCity",v)}
               options={leasePropertyCityOptions} placeholder={form.leasePropertyState?"Select city":"Select state first"} disabled={!form.leasePropertyState} err={errors.leasePropertyCity}/>
           </div>
-          <PincodeInputField
-            id="leasePropertyPincode" label="Lease Property Pincode"
-            value={form.leasePropertyPincode} onChange={v=>set("leasePropertyPincode",v)}
- onResolved={r=>onPincodeResolved("leaseProperty",r)} err={errors.leasePropertyPincode}
-          />
         </div>
       </FormCard>
 

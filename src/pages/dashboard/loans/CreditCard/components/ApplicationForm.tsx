@@ -118,7 +118,9 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     const e:Partial<Record<keyof FormData,string>> = {};
     // Pincode ↔ State/City consistency (15) and duplicate-application detection (16) are enforced server-side; the frontend validates the pincode format itself below.
 
-    if(draft.applyForBank===OTHER_OPTION&&!draft.applyForBankOther.trim()) e.applyForBankOther="Please mention bank name";
+    if(!draft.hasActiveCard) e.hasActiveCard="Select whether you have an active credit card";
+    if(!draft.applyForBank) e.applyForBank="Select the bank you wish to apply for";
+    else if(draft.applyForBank===OTHER_OPTION&&!draft.applyForBankOther.trim()) e.applyForBankOther="Please mention bank name";
     if(!draft.existingEMI.trim()) e.existingEMI="Existing Total EMI is required (enter 0 if none)";
     if(!draft.existingLoanAmount.trim()) e.existingLoanAmount="Existing Loan Amount is required (enter 0 if none)";
     else if(parseInt(draft.existingEMI)>parseInt(draft.existingLoanAmount)) e.existingEMI="Existing Total EMI cannot be greater than Existing Loan Amount (Total)";
@@ -303,11 +305,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       {/* CREDIT CARD DETAILS */}
       <FormCard title="Credit Card Details" subtitle="Tell us about your credit card preferences">
         <div className={FORM.grid}>
-          <div id="hasActiveCard"><FieldLabel label="Do You Have Any Active Credit Card at Present?"/>
-            <SelectField value={form.hasActiveCard} onChange={v=>set("hasActiveCard",v)} options={masters.yesNo} placeholder="Select"/>
+          <div id="hasActiveCard"><FieldLabel label="Do You Have Any Active Credit Card at Present?" required />
+            <SelectField value={form.hasActiveCard} onChange={v=>set("hasActiveCard",v)} options={masters.yesNo} placeholder="Select" err={errors.hasActiveCard}/>
           </div>
           <SelectWithOther
-            id="applyForBank" label="Wish to Apply for (Bank Name)"
+            id="applyForBank" label="Wish to Apply for (Bank Name)" required
             value={form.applyForBank} onChange={v=>{
               set("applyForBank",v);
               if(v!==OTHER_OPTION) set("applyForBankOther","");
