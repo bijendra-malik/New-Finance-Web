@@ -9,7 +9,6 @@ import ApplicantPrefillProvider from "./context/ApplicantPrefillProvider";
 import Home from "./pages/Home";
 import NotFoundPage from "./pages/NotFoundPage";
 
-const Login = lazy(() => import("./pages/auth/Login"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const AdvertiseWithUsPage = lazy(() => import("./pages/AdvertiseWithUsPage"));
 const ProductsServicesPage = lazy(() => import("./pages/ProductsServicesPage"));
@@ -166,7 +165,7 @@ function App() {
               <Routes>
               <Route path="/" element={<Home />} />
 
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
 
               <Route path="/requireddocument" element={<RequiredDocumentLandingPage />} />
               <Route path="/requireddocument/:slug" element={<RequiredDocumentDetailPage />} />

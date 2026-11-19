@@ -318,7 +318,8 @@ export const useApplicationModalForm = ({
     country,
   });
 
-// (POST /auth/{loanKey}); the sign-in flow hits POST /auth/login/request-otp.
+/** Asks for the OTP: apply registers the product (POST /auth/{loanKey}),
+   * sign-in hits POST /auth/login/request-otp. A resend uses the same call. */
   const requestOtp = (): Promise<AuthActionResponse> => {
     if (!loanKey) {
       return Promise.reject(new Error("This product cannot be applied for yet."));

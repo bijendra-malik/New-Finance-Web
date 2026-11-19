@@ -1,3 +1,4 @@
+import { LOAN_SLUGS, loanKeyFor } from "./loanSlugs";
 import type { LoanKey } from "./loanSlugs";
 
 export interface LoanRouteEntry {
@@ -118,8 +119,17 @@ export const LOAN_ROUTES: Readonly<Record<LoanKey, LoanRouteEntry>> = {
   },
 };
 
-export const loanRouteFor = (key: string): LoanRouteEntry | null =>
-  key in LOAN_ROUTES ? LOAN_ROUTES[key as LoanKey] : null;
+const KEY_BY_SLUG = Object.fromEntries(
+  Object.entries(LOAN_SLUGS).map(([key, slug]) => [slug, key]),
+) as Readonly<Record<string, LoanKey>>;
+
+export const loanRouteFor = (product: string): LoanRouteEntry | null => {
+  const key =
+    product in LOAN_ROUTES
+      ? (product as LoanKey)
+      : loanKeyFor(product) ?? KEY_BY_SLUG[product] ?? null;
+  return key ? LOAN_ROUTES[key] : null;
+};
 
 export const loanLabelFor = (key: string | null | undefined): string | null =>
   key && key in LOAN_ROUTES ? LOAN_ROUTES[key as LoanKey].label : null;
