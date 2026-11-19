@@ -1,6 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { LOAN_ROUTES } from "../../constants/loanRoutes";
+import type { LoanKey } from "../../constants/loanSlugs";
+
+const LOAN_MENU_ORDER: LoanKey[] = [
+  "personal",
+  "business",
+  "home",
+  "lap",
+  "balanceTransfer",
+  "projectLoan",
+  "vehicleLoan",
+  "educationLoan",
+  "creditCard",
+  "commercialPurchase",
+  "workingCapital",
+  "leaseRentalDiscounting",
+  "odCcLimit",
+  "loanAgainstShare",
+  "filmFunding",
+  "npaLoan",
+  "goldLoan",
+  "fdiLoan",
+];
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
@@ -17,47 +40,7 @@ const Header = () => {
   const drawerRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const showDetailsMap: Record<string, string> = {
-    personalloan:       "/showdetails/personal-loan",
-    businessloan:       "/showdetails/business-loan",
-    homeloan:           "/showdetails/home-loan",
-    loanagainstproperty:"/showdetails/loanAP-loan",
-    balancetransfer:    "/showdetails/balance-loan",
-    projectloan:        "/showdetails/project-loan",
-    Vehicleloan:        "/showdetails/vehicle-loan",
-    educationloan:      "/showdetails/education-loan",
-    creditcard:         "/showdetails/credit-card",
-    commercialpurchase: "/showdetails/commercial-purchase",
-    workingcapital:     "/showdetails/working-capital",
-    leaserental:        "/showdetails/lease-rental",
-    odcclimit:          "/showdetails/od-cc-limit",
-    loanagainstshare:   "/showdetails/loan-against-share",
-    filmloanfunding:    "/showdetails/film-funding",
-    npalloan:           "/showdetails/npa",
-    goldloan:           "/showdetails/gold-loan",
-    fdi:                "/showdetails/fdi",
-  };
-
-  const loanProducts = [
-    { label: "Personal Loan",            slug: "personalloan" },
-    { label: "Business Loan",            slug: "businessloan" },
-    { label: "Home Loan",                slug: "homeloan" },
-    { label: "Loan Against Property",    slug: "loanagainstproperty" },
-    { label: "Balance Transfer",         slug: "balancetransfer" },
-    { label: "Project Loan",             slug: "projectloan" },
-    { label: "Vehicle Loan",             slug: "Vehicleloan" },
-    { label: "Education Loan",           slug: "educationloan" },
-    { label: "Credit Card",              slug: "creditcard" },
-    { label: "Commercial Purchase",      slug: "commercialpurchase" },
-    { label: "Working Capital",          slug: "workingcapital" },
-    { label: "Lease Rental Discounting", slug: "leaserental" },
-    { label: "OD CC Limit",              slug: "odcclimit" },
-    { label: "Loan Against Share",       slug: "loanagainstshare" },
-    { label: "Film Funding",             slug: "filmloanfunding" },
-    { label: "NPA",                      slug: "npalloan" },
-    { label: "Gold Loan",                slug: "goldloan" },
-    { label: "FDI",                      slug: "fdi" },
-  ];
+  const loanProducts = LOAN_MENU_ORDER.map((key) => ({ key, ...LOAN_ROUTES[key] }));
 
   const { pathname } = useLocation();
   const isRouteActive = (href: string, match?: string) =>
@@ -265,8 +248,8 @@ const Header = () => {
                           <div className="grid grid-cols-3 gap-x-6 gap-y-1">
                             {loanProducts.map((item) => (
                               <Link
-                                key={item.slug}
-                                to={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                                key={item.key}
+                                to={item.detail}
                                 onClick={() => setOpenDropdown(null)}
                                 className="loan-item text-[12.5px] text-slate-600 py-2"
                               >
@@ -352,8 +335,8 @@ const Header = () => {
                       <div className="bg-slate-50 border-l-4 border-emerald-500 pl-0">
                         {loanProducts.map((item) => (
                           <Link
-                            key={item.slug}
-                            to={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                            key={item.key}
+                            to={item.detail}
                             className="block border-b border-slate-100 px-8 py-3 text-xs font-medium text-slate-600 transition-colors last:border-b-0 hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                             onClick={closeMobileMenu}
                           >

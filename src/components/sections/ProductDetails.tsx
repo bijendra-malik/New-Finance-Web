@@ -4,55 +4,14 @@ import bgImage from "../../assets/copyright-free.webp";
 import ApplicationModal from "../modals/LazyApplicationModal";
 
 import { products, PRODUCT_META, VISIBLE_COUNT } from "./productDetailsData";
+import { loanRouteFor } from "../../constants/loanRoutes";
 import type { Feature } from "./productDetailsData";
 
-// Product ids differ from the /showdetails/:slug routes used by App.tsx.
-const DETAIL_ROUTES: Record<string, string> = {
-  personal: "/showdetails/personal-loan",
-  business: "/showdetails/business-loan",
-  home: "/showdetails/home-loan",
-  lap: "/showdetails/loanAP-loan",
-  balanceTransfer: "/showdetails/balance-loan",
-  vehicleLoan: "/showdetails/vehicle-loan",
-  creditCard: "/showdetails/credit-card",
-  educationLoan: "/showdetails/education-loan",
-  projectLoan: "/showdetails/project-loan",
-  commercialPurchase: "/showdetails/commercial-purchase",
-  leaseRentalDiscounting: "/showdetails/lease-rental",
-  workingCapital: "/showdetails/working-capital",
-  filmFunding: "/showdetails/film-funding",
-  odCcLimit: "/showdetails/od-cc-limit",
-  loanAgainstShare: "/showdetails/loan-against-share",
-  goldLoan: "/showdetails/gold-loan",
-  fdiLoan: "/showdetails/fdi",
-  npaLoan: "/showdetails/npa",
-};
-
-const detailRouteFor = (id: string): string => DETAIL_ROUTES[id] ?? "/products-services";
-
-const DOC_ROUTES: Record<string, string> = {
-  personal: "/requireddocument/personal-loan",
-  business: "/requireddocument/business-loan",
-  home: "/requireddocument/home-loan",
-  lap: "/requireddocument/loan-against-property",
-  balanceTransfer: "/requireddocument/balance-transfer",
-  vehicleLoan: "/requireddocument/vehicle-loan",
-  creditCard: "/requireddocument/credit-card",
-  educationLoan: "/requireddocument/education-loan",
-  projectLoan: "/requireddocument/project-loan",
-  commercialPurchase: "/requireddocument/commercial-purchase",
-  leaseRentalDiscounting: "/requireddocument/lease-rental",
-  workingCapital: "/requireddocument/working-capital",
-  filmFunding: "/requireddocument/film-funding",
-  odCcLimit: "/requireddocument/od-cc-limit",
-  loanAgainstShare: "/requireddocument/loan-against-share",
-  goldLoan: "/requireddocument/gold-loan",
-  fdiLoan: "/requireddocument/fdi",
-  npaLoan: "/requireddocument/npa",
-};
+const detailRouteFor = (id: string): string =>
+  loanRouteFor(id)?.detail ?? "/products-services";
 
 const docRouteFor = (id: string, heading: string): string =>
-  DOC_ROUTES[id] ?? `/requireddocument?loan=${encodeURIComponent(heading)}`;
+  loanRouteFor(id)?.documents ?? `/requireddocument?loan=${encodeURIComponent(heading)}`;
 
 const ProductDetails = () => {
   const [activeId, setActiveId] = useState(products[0].id);

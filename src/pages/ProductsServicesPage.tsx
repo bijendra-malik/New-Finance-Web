@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
 import useSEO from "../hooks/useSEO";
+import { LOAN_ROUTES } from "../constants/loanRoutes";
+import type { LoanKey } from "../constants/loanSlugs";
 
 /**
  * Product & Services — a landing page for the full funding range, with the
@@ -61,23 +63,23 @@ const HIGHLIGHTS: Highlight[] = [
   },
 ];
 
-const OTHER_PRODUCTS = [
-  { label: "Personal Loan",            slug: "personal-loan" },
-  { label: "Business Loan",            slug: "business-loan" },
-  { label: "Home Loan",                slug: "home-loan" },
-  { label: "Loan Against Property",    slug: "loanAP-loan" },
-  { label: "Balance Transfer",         slug: "balance-loan" },
-  { label: "Project Loan",             slug: "project-loan" },
-  { label: "Vehicle Loan",             slug: "vehicle-loan" },
-  { label: "Education Loan",           slug: "education-loan" },
-  { label: "Credit Card",              slug: "credit-card" },
-  { label: "Commercial Purchase",      slug: "commercial-purchase" },
-  { label: "Working Capital",          slug: "working-capital" },
-  { label: "Lease Rental Discounting", slug: "lease-rental" },
-  { label: "OD CC Limit",              slug: "od-cc-limit" },
-  { label: "Loan Against Share",       slug: "loan-against-share" },
-  { label: "Film Funding",             slug: "film-funding" },
-  { label: "Gold Loan",                slug: "gold-loan" },
+const OTHER_PRODUCTS: LoanKey[] = [
+  "personal",
+  "business",
+  "home",
+  "lap",
+  "balanceTransfer",
+  "projectLoan",
+  "vehicleLoan",
+  "educationLoan",
+  "creditCard",
+  "commercialPurchase",
+  "workingCapital",
+  "leaseRentalDiscounting",
+  "odCcLimit",
+  "loanAgainstShare",
+  "filmFunding",
+  "goldLoan",
 ];
 
 const ProductsServicesPage = () => {
@@ -192,18 +194,21 @@ const ProductsServicesPage = () => {
               </p>
             </div>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {OTHER_PRODUCTS.map((product) => (
-                <li key={product.slug}>
-                  <Link
-                    to={`/showdetails/${product.slug}`}
-                    className="flex items-center justify-between gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
-                    style={{ border: "1px solid rgba(6,106,156,0.12)" }}
-                  >
-                    {product.label}
-                    <span aria-hidden="true" className="text-(--brand-teal)">›</span>
-                  </Link>
-                </li>
-              ))}
+              {OTHER_PRODUCTS.map((key) => {
+                const product = LOAN_ROUTES[key];
+                return (
+                  <li key={key}>
+                    <Link
+                      to={product.detail}
+                      className="flex items-center justify-between gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
+                      style={{ border: "1px solid rgba(6,106,156,0.12)" }}
+                    >
+                      {product.label}
+                      <span aria-hidden="true" className="text-(--brand-teal)">›</span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </div>

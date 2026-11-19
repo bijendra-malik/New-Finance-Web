@@ -1,3 +1,5 @@
+import { loanRouteFor } from "../../constants/loanRoutes";
+
 /** Loan type → dashboard route, keyed by the marketing name. */
 const dashboardRoutes: Readonly<Record<string, string>> = {
   "Personal Loan": "/dashboard/personalloan",
@@ -24,28 +26,6 @@ const dashboardRoutes: Readonly<Record<string, string>> = {
   FDI: "/dashboard/fdi",
 };
 
-/** Homepage globe ids do not always match the dashboard route slug. */
-const productIdRoutes: Readonly<Record<string, string>> = {
-  personal: "/dashboard/personalloan",
-  business: "/dashboard/businessloan",
-  home: "/dashboard/homeloan",
-  lap: "/dashboard/loanagainstproperty",
-  balanceTransfer: "/dashboard/balancetransfer",
-  vehicleLoan: "/dashboard/Vehicleloan",
-  creditCard: "/dashboard/creditcard",
-  educationLoan: "/dashboard/educationloan",
-  projectLoan: "/dashboard/projectloan",
-  commercialPurchase: "/dashboard/commercialpurchase",
-  leaseRentalDiscounting: "/dashboard/leaserental",
-  workingCapital: "/dashboard/workingcapital",
-  filmFunding: "/dashboard/filmfunding",
-  odCcLimit: "/dashboard/odcclimit",
-  loanAgainstShare: "/dashboard/loanagainstshare",
-  goldLoan: "/dashboard/goldloan",
-  fdiLoan: "/dashboard/fdi",
-  npaLoan: "/dashboard/npa",
-};
-
 /** The dashboard route for a product, or undefined when it has none yet. */
 export const resolveDashboardPath = (productKey: string): string | undefined =>
-  productIdRoutes[productKey] ?? dashboardRoutes[productKey];
+  loanRouteFor(productKey)?.dashboard ?? dashboardRoutes[productKey];
