@@ -142,12 +142,13 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">After analyzing your details</p>
                   <h2 id="eligibility-result-title" className="mt-1 text-xl font-extrabold text-emerald-950 sm:text-2xl">
-                    Your application is eligible for this loan
+                    Congratulation! You are eligible for this loan.
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-emerald-900">
-                    We are pleased to inform you that your application is eligible for this loan.
-                    We have forwarded it to the banks and NBFCs with which you are most compatible
-                    and which offer you the highest chances of disbursement.
+                    Kindly allow us 2-3 working days to complete the due diligence process.
+                  </p>
+                  <p className="mt-1.5 text-sm leading-6 text-emerald-900">
+                    Our team will contact you shortly.
                   </p>
                 </div>
               </div>
