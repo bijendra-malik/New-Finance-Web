@@ -8,6 +8,7 @@ import { OTHER_OPTION, MORE_THAN_TENURE_OPTION } from "../../constants/masters";
 
 export { MORE_THAN_TENURE_OPTION };
 import { toISODate, digitsOnly, formatIndianNumber } from "../../utils/formatters";
+import { PINCODE_REGEX } from "../../utils/validation";
 import { verifyPincode } from "../../api/masters";
 import type { PincodeVerification } from "../../api/masters";
 
@@ -582,7 +583,6 @@ interface PincodeInputFieldProps {
 const sanitizePincode = (raw: string) =>
   raw.replace(/\D/g, "").replace(/^0+/, "").slice(0, 6);
 
-const PINCODE_REGEX = /^[1-9]\d{5}$/;
 const DEBOUNCE_MS = 600;
 
 interface PincodeFeedback {
