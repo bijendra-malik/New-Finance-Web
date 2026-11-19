@@ -1,6 +1,6 @@
 import { MORE_THAN_TENURE_OPTION, OTHER_OPTION } from "../constants/masters";
 import type { LoanAmountRange } from "../constants/masters";
-import { formatIndianNumber } from "./formatters";
+import { formatIndianNumber, toISODate } from "./formatters";
 
 export const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,98}$/;
 export const COMPANY_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9 .,'&()/-]{0,99}$/;
@@ -23,9 +23,6 @@ export const ageOn = (dob: string, today = new Date()): number => {
   return age;
 };
 
-const toIsoDate = (date: Date): string =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
 /** True only for a real date at or past `minAge` (loan applicants must be 18+). */
 export const isAtLeastAge = (dob: string, minAge = 18, today = new Date()): boolean => {
   const age = ageOn(dob, today);
@@ -40,11 +37,11 @@ export const isAtMostAge = (dob: string, maxAge = 65, today = new Date()): boole
 
 /** Latest date of birth that still satisfies `minAge` — for a date input's max. */
 export const latestDobForAge = (minAge = 18, today = new Date()): string =>
-  toIsoDate(new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()));
+  toISODate(new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate()));
 
 /** Earliest date of birth that still satisfies `maxAge` — for a date input's min. */
 export const earliestDobForAge = (maxAge = 65, today = new Date()): string =>
-  toIsoDate(new Date(today.getFullYear() - maxAge - 1, today.getMonth(), today.getDate() + 1));
+  toISODate(new Date(today.getFullYear() - maxAge - 1, today.getMonth(), today.getDate() + 1));
 
 export interface TenureDraft {
   loanTenureYears: number;
