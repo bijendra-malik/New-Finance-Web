@@ -15,7 +15,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { PAN_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
+import { PAN_REGEX, MOBILE_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
@@ -240,7 +240,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     if(!draft.fullName.trim()) e.fullName="Name is required";
     else if(!NAME_REGEX.test(draft.fullName.trim())) e.fullName="Name must be at least 2 characters and contain only letters, spaces, dots or hyphens";
     if(!draft.mobile.trim()) e.mobile="Mobile is required";
-    else if(!/^\d{10}$/.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number";
+    else if(!MOBILE_REGEX.test(draft.mobile)) e.mobile="Enter a valid 10-digit mobile number";
     if(!draft.email.trim()) e.email="Email is required";
     else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) e.email="Enter valid email";
     if(!draft.dob) e.dob="Date of birth is required";
@@ -266,7 +266,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     else if(draft.parentRelationship===OTHER_OPTION&&!draft.parentRelationshipOther.trim()) e.parentRelationshipOther="Please mention relationship";
     if(!draft.parentFullName.trim()) e.parentFullName="Name is required";
     if(!draft.parentMobile.trim()) e.parentMobile="Mobile is required";
-    else if(!/^\d{10}$/.test(draft.parentMobile)) e.parentMobile="Enter valid 10-digit number";
+    else if(!MOBILE_REGEX.test(draft.parentMobile)) e.parentMobile="Enter valid 10-digit number";
     if(!draft.parentEmail.trim()) e.parentEmail="Email is required";
     else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.parentEmail)) e.parentEmail="Enter valid email";
     if(!draft.parentDob) e.parentDob="Date of birth is required";
