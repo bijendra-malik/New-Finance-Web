@@ -5,8 +5,10 @@ import type { Continent, Country } from "../api/masters";
 export const useLocationMasters = (continent: string) => {
   const [continents, setContinents] = useState<Continent[]>([]);
   const [continentsLoading, setContinentsLoading] = useState(true);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [countriesFor, setCountriesFor] = useState<{ continent: string; list: Country[] }>({
+    continent: "",
+    list: [],
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -26,30 +28,26 @@ export const useLocationMasters = (continent: string) => {
   }, []);
 
   useEffect(() => {
-    if (!continent) {
-      setCountries([]);
-      setCountriesLoading(false);
-      return;
-    }
+    if (!continent) return;
     const picked = continents.find((item) => item.name === continent);
     if (!picked) return;
     let cancelled = false;
-    setCountries([]);
-    setCountriesLoading(true);
     fetchCountriesByContinent(picked._id)
       .then((list) => {
-        if (!cancelled) setCountries(list);
+        if (!cancelled) setCountriesFor({ continent, list });
       })
       .catch(() => {
-        if (!cancelled) setCountries([]);
-      })
-      .finally(() => {
-        if (!cancelled) setCountriesLoading(false);
+        if (!cancelled) setCountriesFor({ continent, list: [] });
       });
     return () => {
       cancelled = true;
     };
   }, [continents, continent]);
 
-  return { continents, countries, continentsLoading, countriesLoading };
+  return {
+    continents,
+    countries: countriesFor.continent === continent ? countriesFor.list : [],
+    continentsLoading,
+    countriesLoading: continent !== "" && countriesFor.continent !== continent,
+  };
 };
