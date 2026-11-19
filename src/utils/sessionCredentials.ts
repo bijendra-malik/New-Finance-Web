@@ -2,9 +2,9 @@ import { clearSubmittedApplications, clearPendingCreditScoreDraft } from "./appl
 import { clearAllCredentials } from "./credentialStorage";
 import { clearStoredFranchiseSession } from "./franchiseSession";
 import { resetSessionCaches } from "./sessionReset";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "./authStorageKeys";
 
-export const AUTH_TOKEN_KEY = "token";
-export const AUTH_USER_KEY = "user";
+export { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "./authStorageKeys";
 
 const removeKey = (key: string): void => {
   try {

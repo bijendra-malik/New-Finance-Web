@@ -1,3 +1,5 @@
+import { AUTH_USER_KEY } from "./authStorageKeys";
+
 export type Role = "Customer" | "Franchise";
 
 export type LockableField =
@@ -13,7 +15,7 @@ const valueOf = (user: StoredUser, key: string): string | undefined => {
 
 export const accountFieldDefaults = (): Partial<Record<LockableField, string>> => {
   try {
-    const raw = localStorage.getItem("user");
+    const raw = localStorage.getItem(AUTH_USER_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return {};

@@ -1,3 +1,5 @@
+import { AUTH_TOKEN_KEY } from "./authStorageKeys";
+
 export interface FranchiseSession {
   franchiseId: string;
   name?: string;
@@ -48,7 +50,7 @@ export const readFranchiseSession = (): FranchiseSession | null => {
 };
 
 export const isFranchiseSignedIn = (): boolean =>
-  Boolean(readFranchiseSession() && readValue("token"));
+  Boolean(readFranchiseSession() && readValue(AUTH_TOKEN_KEY));
 
 export const saveFranchiseSession = (session: FranchiseSession): void => {
   writeValue(SESSION_KEY, JSON.stringify(session));

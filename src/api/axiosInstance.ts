@@ -6,6 +6,7 @@ import {
 } from "./franchiseFiling";
 import { emitAuthCleared } from "../utils/authEvents";
 import { purgeSessionCredentials } from "../utils/sessionCredentials";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../utils/authStorageKeys";
 import { rememberPendingCreditScoreDraft } from "../utils/applicationFlowState";
 
 const axiosInstance = axios.create({
@@ -24,7 +25,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -81,7 +82,7 @@ axiosInstance.interceptors.response.use(
     // created ID back to the endpoint.
     if (isLoanApply && typeof requestBody?.product === "string" && draftId) {
       try {
-        const rawUser = localStorage.getItem("user");
+        const rawUser = localStorage.getItem(AUTH_USER_KEY);
         const user = rawUser ? JSON.parse(rawUser) as { _id?: unknown } : null;
         if (typeof user?._id === "string" && user._id) {
           const createdAt =
