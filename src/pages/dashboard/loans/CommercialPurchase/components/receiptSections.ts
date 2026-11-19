@@ -1,3 +1,4 @@
+import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
 import type { CommercialPurchaseApplication } from "./ApplicationForm";
 
@@ -7,7 +8,7 @@ export const buildProductSections = (app: CommercialPurchaseApplication) =>
       title: "Property Details",
       rows: [
         { label: "Property Type", value: resolveOther(app.buyingPropertyType, app.buyingPropertyTypeOther) },
-        { label: "Market Value", value: app.buyingPropertyMarketValue ? `₹${app.buyingPropertyMarketValue.toLocaleString("en-IN")}` : undefined },
+        { label: "Market Value", value: app.buyingPropertyMarketValue ? formatINR(app.buyingPropertyMarketValue) : undefined },
         { label: "Property Age", value: app.buyingPropertyAge ? `${app.buyingPropertyAge.toLocaleString("en-IN")} years` : undefined },
         { label: "Location", value: [app.buyingPropertyCity, app.buyingPropertyState].filter(Boolean).join(", ") || undefined },
         { label: "Pincode", value: app.buyingPropertyPincode },

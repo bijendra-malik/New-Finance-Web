@@ -1,3 +1,4 @@
+import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, fmtDate, resolveOther } from "../../../../../components/form/successSections";
 import type { EducationLoanApplication } from "./ApplicationForm";
 
@@ -13,7 +14,7 @@ export const buildProductSections = (app: EducationLoanApplication) =>
         { label: "Institute", value: app.instituteName },
         { label: "Enrollment Status", value: resolveOther(app.enrollmentStatus, app.enrollmentStatusOther) },
         { label: "Course Duration", value: app.courseDuration ? `${app.courseDuration.toLocaleString("en-IN")} years` : undefined },
-        { label: "Course Cost", value: app.educationCost ? `₹${app.educationCost.toLocaleString("en-IN")}` : undefined },
+        { label: "Course Cost", value: app.educationCost ? formatINR(app.educationCost) : undefined },
       ],
     },
     extraSections: [{

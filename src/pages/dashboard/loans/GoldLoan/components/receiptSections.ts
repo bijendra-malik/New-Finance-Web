@@ -1,3 +1,4 @@
+import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
 import type { GoldLoanApplication } from "./ApplicationForm";
 
@@ -13,7 +14,7 @@ export const buildProductSections = (app: GoldLoanApplication) =>
         { label: "Other Materials", value: app.typeOfLoan === "Jewellery" && app.jewelryOtherMaterials?.length
           ? app.jewelryOtherMaterials.map(m => `${m.name}: ${m.weight.toLocaleString("en-IN")} g`).join(", ")
           : undefined },
-        { label: "Market Value", value: app.collateralPropertyMarketValue ? `₹${app.collateralPropertyMarketValue.toLocaleString("en-IN")}` : undefined },
+        { label: "Market Value", value: app.collateralPropertyMarketValue ? formatINR(app.collateralPropertyMarketValue) : undefined },
       ],
     },
 

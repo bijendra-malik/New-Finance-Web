@@ -1,3 +1,4 @@
+import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
 import type { WorkingCapitalApplication } from "./ApplicationForm";
 
@@ -7,7 +8,7 @@ export const buildProductSections = (app: WorkingCapitalApplication) =>
       title: "Collateral Property Details",
       rows: [
         { label: "Property Type", value: resolveOther(app.collateralPropertyType, app.collateralPropertyTypeOther) },
-        { label: "Market Value", value: app.collateralPropertyMarketValue ? `₹${app.collateralPropertyMarketValue.toLocaleString("en-IN")}` : undefined },
+        { label: "Market Value", value: app.collateralPropertyMarketValue ? formatINR(app.collateralPropertyMarketValue) : undefined },
         { label: "Property Age", value: app.collateralPropertyAge ? `${app.collateralPropertyAge.toLocaleString("en-IN")} years` : undefined },
         { label: "Location", value: [app.collateralPropertyCity, app.collateralPropertyState].filter(Boolean).join(", ") || undefined },
         { label: "Pincode", value: app.collateralPropertyPincode },
