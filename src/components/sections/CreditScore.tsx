@@ -87,44 +87,44 @@ const getRating = (p: number): { label: string; color: string; comparison: numbe
 // ── Label icon definitions (static, icons don't need translation) ─────────────
 const labelIcons = {
   paymentHistory: (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#4a90d9" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="var(--brand-navy)" strokeWidth="2">
       <circle cx="12" cy="12" r="9" />
       <path d="M8 12l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   ageType: (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#4a90d9" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="var(--brand-navy)" strokeWidth="2">
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
     </svg>
   ),
   utilization: (
     <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-      <path d="M12 2 A10 10 0 0 1 22 12 L12 12 Z" fill="#4a90d9" opacity="0.85" />
-      <path d="M12 2 A10 10 0 1 0 22 12 L12 12 Z" fill="#d0e8f8" />
-      <circle cx="12" cy="12" r="10" stroke="#4a90d9" fill="none" strokeWidth="1.5" />
-      <line x1="12" y1="12" x2="12" y2="2" stroke="#4a90d9" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="12" y1="12" x2="22" y2="12" stroke="#4a90d9" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M12 2 A10 10 0 0 1 22 12 L12 12 Z" fill="var(--brand-navy)" opacity="0.85" />
+      <path d="M12 2 A10 10 0 1 0 22 12 L12 12 Z" fill="var(--brand-teal-20)" />
+      <circle cx="12" cy="12" r="10" stroke="var(--brand-navy)" fill="none" strokeWidth="1.5" />
+      <line x1="12" y1="12" x2="12" y2="2" stroke="var(--brand-navy)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="12" y1="12" x2="22" y2="12" stroke="var(--brand-navy)" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   totalBalances: (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#4a90d9" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="var(--brand-navy)" strokeWidth="2">
       <path d="M12 3l7 7H5l7-7z" strokeLinejoin="round" />
       <rect x="5" y="10" width="14" height="11" rx="1" />
       <path d="M9 21v-6h6v6" strokeLinejoin="round" />
     </svg>
   ),
   recentBehavior: (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#4a90d9" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="var(--brand-navy)" strokeWidth="2">
       <polyline points="2,17 7,12 11,15 16,9 22,13" strokeLinecap="round" strokeLinejoin="round" />
       <line x1="2" y1="20" x2="22" y2="20" strokeLinecap="round" />
     </svg>
   ),
   availableCredit: (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="#4a90d9" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="var(--brand-navy)" strokeWidth="2">
       <rect x="2" y="6" width="20" height="13" rx="2" />
       <path d="M2 10h20" strokeLinecap="round" />
-      <circle cx="7" cy="15" r="1.5" fill="#4a90d9" />
+      <circle cx="7" cy="15" r="1.5" fill="var(--brand-navy)" />
     </svg>
   ),
 };
@@ -160,7 +160,7 @@ const LabelItem = ({
       onMouseLeave={() => setShow(false)}
     >
       {align === "left" && (
-        <span className="text-xs text-slate-600 font-medium text-right leading-tight transition-colors duration-200 group-hover:text-[#006699]">
+        <span className="text-xs text-slate-600 font-medium text-right leading-tight transition-colors duration-200 group-hover:text-(--brand-navy)">
           {text}
         </span>
       )}
@@ -178,7 +178,7 @@ const LabelItem = ({
       </div>
 
       {align === "right" && (
-        <span className="text-xs text-slate-600 font-medium leading-tight transition-colors duration-200 group-hover:text-[#006699]">
+        <span className="text-xs text-slate-600 font-medium leading-tight transition-colors duration-200 group-hover:text-(--brand-navy)">
           {text}
         </span>
       )}
@@ -273,15 +273,17 @@ const CreditScore = () => {
   const rightLabels = labelDefs.filter((l) => l.side === "right");
 
   return (
-    <section ref={sectionRef} className="w-full bg-[#f0f9ff] py-8 md:py-16 px-0 overflow-visible border-t border-gray-200">
+    <section
+      ref={sectionRef}
+      className="section-shell w-full overflow-visible border-t border-slate-200/70 bg-(--surface-tint) px-4 sm:px-6"
+    >
 
       {/* Heading */}
-      <h2 className="text-center sm:text-2xl md:text-4xl font-extrabold text-slate-700 uppercase tracking-wide mb-2">
-        Get Your{" "}
-        <span style={{ color: "#006699" }}>Credit Score</span>{" "}
-        and Report
+      <p className="section-eyebrow mb-2 text-center">Credit health</p>
+      <h2 className="mx-auto max-w-2xl text-center text-2xl font-extrabold tracking-tight text-slate-800 sm:text-3xl md:text-4xl">
+        Get Your <span style={{ color: "var(--brand-navy)" }}>Credit Score</span> and Report
       </h2>
-      <p className="text-center text-sm text-slate-400 mb-2">
+      <p className="mt-2 text-center text-sm text-slate-500">
         Powered by TransUnion · Updated instantly · No impact on score
       </p>
 
@@ -374,8 +376,8 @@ const CreditScore = () => {
             {/* Comparison badge — fades in when done */}
             {done && (
               <>
-                <rect x={CX - 68} y={CY + 50} width="136" height="20" rx="10" fill="#006699" opacity="0.1" />
-                <text x={CX} y={CY + 64} textAnchor="middle" fontSize="10" fill="#006699" fontWeight="600">
+                <rect x={CX - 68} y={CY + 50} width="136" height="20" rx="10" fill="var(--brand-navy)" opacity="0.1" />
+                <text x={CX} y={CY + 64} textAnchor="middle" fontSize="10" fill="var(--brand-navy)" fontWeight="600">
                   {`Better than ${comparison}% of users`}
                 </text>
               </>
@@ -391,7 +393,7 @@ const CreditScore = () => {
         </div>
 
         {/* Mobile labels */}
-        <div className="sm:hidden grid grid-cols-2 gap-3 w-full mt-6 px-10">
+        <div className="mt-6 grid w-full grid-cols-2 gap-3 px-4 sm:hidden">
           {labelDefs.map((l) => (
             <div key={l.text} className="flex items-center gap-2">
               <div className="shrink-0 w-7 h-7 rounded-full bg-white shadow flex items-center justify-center">
@@ -405,8 +407,7 @@ const CreditScore = () => {
         {/* CTA button */}
         <Link
           to="/know-your-score"
-          className="mt-10 block w-full max-w-xs text-center font-bold text-white text-sm md:text-xl mb-2 py-2 rounded-md cursor-pointer select-none bg-[#006699] shadow-[0_2px_8px_rgba(0,102,153,0.25)] hover:-translate-y-0.5 hover:bg-(--brand-navy) hover:shadow-[0_6px_18px_rgba(23,162,134,0.4)]"
-          style={{ transition: "background 0.2s, transform 0.15s, translate 0.15s, box-shadow 0.2s" }}
+          className="mt-9 flex w-full max-w-xs items-center justify-center rounded-xl bg-(--brand-navy) px-6 py-3 text-center text-sm font-bold text-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:bg-(--brand-navy-deep) hover:shadow-md active:scale-[.99] md:text-base"
         >
           Know Your Score
         </Link>

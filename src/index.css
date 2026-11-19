@@ -1,21 +1,62 @@
 @import "tailwindcss";
 
-/* ── Brand colour tokens ─────────────────────────────────────────────────────
-   Dark Blue = #111184 · bisleri green = #26ae90 · lime green = #f2f231
-   dark shade of blue = #066a9c · grey = #7b7b7b · green = #008738
-*/
 :root {
   --header-h: 96px;
   --subnav-h: 52px;
 
-/* Layering scale */
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --container-max: 80rem;
+  --container-pad: clamp(1rem, 4vw, 2rem);
+  --section-y: clamp(2.5rem, 5vw, 4.5rem);
+
+  /* ── Radii ──────────────────────────────────────────────────────────── */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-pill: 999px;
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 8px 24px -12px rgba(15, 23, 42, 0.18);
+  --shadow-lg: 0 24px 48px -28px rgba(6, 106, 156, 0.42);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --surface-page: #ffffff;
+  --surface-muted: #f6f9fc;
+  --surface-tint: #eef7fb;
+  --border-subtle: #e4eaf1;
+  --text-strong: #0f172a;
+  --text-body: #475569;
+  --text-muted: #64748b;
+
+  /* ── Layering scale ─────────────────────────────────────────────────── */
   --z-base: 0;
   --z-raised: 10;
   --z-hero: 20;
+  --z-sticky: 20;
+  --z-dropdown: 30;
   --z-header: 40;
   --z-backdrop: 50;
   --z-modal: 60;
   --z-popover: 70;
+  --z-toast: 80;
 
   --brand-teal: #26ae90;
   --brand-navy: #066a9c;
@@ -71,6 +112,104 @@
   --form-field-radius: 0.75rem;
   --form-field-pad-x: 1rem;
   --form-field-pad-y: 0.625rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--surface-page);
+    color: var(--text-body);
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--brand-teal-33);
+    color: #04283a;
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--brand-teal);
+    outline-offset: 2px;
+  }
+}
+
+.section-shell {
+  position: relative;
+  width: 100%;
+  padding-block: var(--section-y);
+}
+
+.section-inner {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.section-eyebrow {
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-teal);
+}
+
+.section-title {
+  font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+
+.section-lead {
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ── Skip link ──────────────────────────────────────────────────────────── */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: var(--z-toast);
+  transform: translateY(-200%);
+  border-radius: var(--radius-md);
+  background: var(--brand-navy);
+  padding: 0.6rem 1rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline-color: #fff;
 }
 
 .auth-popup-card {

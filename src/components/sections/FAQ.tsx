@@ -103,26 +103,21 @@ const FAQ = () => {
           </ul>
 
           {/* Button */}
-          <button
-            onClick={() => window.location.href = "/eligibility-calculator"}
-            className="mt-9 px-9 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer whitespace-nowrap"
-            style={{
-              background: C.lime,
-              color: C.navy,
-              boxShadow: "0 10px 26px rgba(240,180,10,0.32)",
-            }}
+          <Link
+            to="/eligibility-calculator"
+            className="mt-9 inline-flex items-center justify-center whitespace-nowrap rounded-full bg-(--brand-yellow) px-9 py-4 text-lg font-bold text-(--brand-navy) shadow-[0_10px_26px_rgba(242,242,49,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:scale-[.99]"
           >
             Check Here
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* SECTION 1 — How We Work + FAQ */}
-      <section className="relative w-full bg-slate-50 border-y border-slate-200/60 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-16">
+      <section className="section-shell relative w-full overflow-hidden border-y border-slate-200/60 bg-(--surface-muted)">
+        <div className="section-inner">
 
           {/* Heading */}
-          <div className="text-center mb-6 md:mb-10">
+          <div className="mb-8 text-center md:mb-12">
             <h2
               id="how-we-work-title"
               className="text-3xl md:text-4xl font-extrabold tracking-tight"
@@ -140,7 +135,7 @@ const FAQ = () => {
 
             {/* LEFT — Process steps */}
             <div
-              className="rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-2 sm:p-5"
+              className="rounded-2xl border border-slate-200/80 bg-white p-2 shadow-xs sm:p-5"
               onMouseLeave={() => setHoverStep(null)}
             >
               <div className="flex items-center gap-2.5 px-3 pt-1 pb-3">
@@ -235,7 +230,7 @@ const FAQ = () => {
 
             {/* RIGHT — FAQ */}
             <div
-              className="rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-2 sm:p-5"
+              className="rounded-2xl border border-slate-200/80 bg-white p-2 shadow-xs sm:p-5"
               onMouseLeave={() => setHoverFAQ(null)}
             >
               <div className="flex items-center gap-2.5 px-3 pt-1 pb-3">

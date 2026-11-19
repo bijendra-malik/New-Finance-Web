@@ -12,7 +12,7 @@ const TestimonialCard = ({ review, index = 0 }: { review: GoogleReview; index?: 
       <span
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white shadow-sm"
         style={{
-          background: "linear-gradient(135deg, #4285F4, #26ae90)",
+          background: "linear-gradient(135deg, var(--brand-navy), var(--brand-teal))",
         }}
         aria-hidden="true"
       >
@@ -40,7 +40,7 @@ const TestimonialCard = ({ review, index = 0 }: { review: GoogleReview; index?: 
         href={GOOGLE_BUSINESS.reviewsUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 rounded text-[11px] font-semibold text-[#066a9c] transition-colors hover:text-[#0a4b6d] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#066a9c]"
+        className="inline-flex items-center gap-1 rounded text-[11px] font-semibold text-(--brand-navy) transition-colors hover:text-(--brand-navy-deep) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--brand-navy)"
       >
         View on Google <ArrowUpRight size={13} strokeWidth={2.2} />
       </a>

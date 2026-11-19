@@ -13,9 +13,15 @@ const WebsiteLayout = ({ children }: Props) => {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
       <Header />
 
-      <main>{children}</main>
+      <main id="main-content" tabIndex={-1} className="outline-none">
+        {children}
+      </main>
 
       {!isDashboard && <Footer />}
     </>

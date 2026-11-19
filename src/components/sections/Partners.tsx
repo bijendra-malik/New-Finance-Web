@@ -109,27 +109,28 @@ const Partners = () => {
   const sectionRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={sectionRef} className="w-full bg-slate-50 py-8 md:py-16 overflow-hidden">
+    <section ref={sectionRef} className="section-shell w-full overflow-hidden bg-(--surface-muted)">
 
       {/* Heading — two lines only */}
-      <div className="text-center mb-8 px-4">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-800 leading-snug">
+      <div className="mx-auto mb-8 max-w-3xl px-4 text-center">
+        <p className="section-eyebrow mb-2">Our lending network</p>
+        <h2 className="text-2xl font-extrabold leading-snug tracking-tight text-slate-800 sm:text-3xl md:text-4xl">
           Trusted by India's Leading Institutions —{" "}
-          <span className="bg-linear-to-r from-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-(--brand-teal) to-(--brand-navy) bg-clip-text text-transparent">
             Our Business Partners
           </span>
         </h2>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
           43+ top banks &amp; NBFCs bringing you the best loan offers at the lowest rates
         </p>
       </div>
 
       {/* Row 1 — scrolls LEFT */}
-      <div className="relative mb-10">
-        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to right, #f8fafc, transparent)" }} />
-        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to left, #f8fafc, transparent)" }} />
+      <div className="relative mb-8">
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none sm:w-24"
+          style={{ background: "linear-gradient(to right, var(--surface-muted), transparent)" }} />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none sm:w-24"
+          style={{ background: "linear-gradient(to left, var(--surface-muted), transparent)" }} />
         <div className="flex" style={{ animation: "scrollLeft 40s linear infinite", width: "max-content" }}>
           {[...ROW1, ...ROW1].map((logo, i) => <LogoCard key={`r1-${i}`} logo={logo} />)}
         </div>
@@ -137,10 +138,10 @@ const Partners = () => {
 
       {/* Row 2 — scrolls RIGHT */}
       <div className="relative mb-6">
-        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to right, #f8fafc, transparent)" }} />
-        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(to left, #f8fafc, transparent)" }} />
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none sm:w-24"
+          style={{ background: "linear-gradient(to right, var(--surface-muted), transparent)" }} />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none sm:w-24"
+          style={{ background: "linear-gradient(to left, var(--surface-muted), transparent)" }} />
         <div className="flex" style={{ animation: "scrollRight 35s linear infinite", width: "max-content" }}>
           {[...ROW2, ...ROW2].map((logo, i) => <LogoCard key={`r2-${i}`} logo={logo} />)}
         </div>

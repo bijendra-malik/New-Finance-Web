@@ -50,10 +50,10 @@ const Testimonials = () => {
   };
 
   const arrowClass =
-    "hidden lg:flex absolute top-1/2 -translate-y-1/2 z-20 h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:border-[#26ae90] hover:text-[#066a9c] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-700";
+    "absolute top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition hover:border-(--brand-teal) hover:text-(--brand-navy) hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-700 lg:flex";
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#f0f9ff] px-4 py-12 md:px-8 md:py-16">
+    <section className="section-shell relative w-full overflow-hidden bg-(--surface-tint) px-4 sm:px-6">
       <div
         className="absolute left-0 top-0 z-20 h-0.5 w-full"
         style={{ background: "linear-gradient(90deg, var(--brand-navy), var(--brand-teal), var(--brand-yellow))" }}
@@ -62,8 +62,9 @@ const Testimonials = () => {
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center">
+          <p className="section-eyebrow mb-2">Customer reviews</p>
           <h2
-            className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl"
+            className="text-2xl font-extrabold tracking-tight sm:text-3xl md:text-4xl"
             style={{ color: "var(--brand-navy)" }}
           >
             What Our{" "}

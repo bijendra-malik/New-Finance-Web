@@ -6,18 +6,21 @@ export type ButtonVariant = "primary" | "teal" | "outline" | "ghost" | "danger" 
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "text-white bg-linear-to-br from-(--brand-navy) to-(--brand-dark) hover:shadow-lg",
-  teal: "text-white bg-linear-to-br from-(--brand-teal) to-(--brand-navy) hover:shadow-lg",
-  outline: "border border-slate-300 text-slate-600 bg-white hover:bg-slate-50",
-  ghost: "text-slate-600 hover:bg-slate-100",
+  primary:
+    "text-white bg-(--brand-navy) shadow-xs hover:bg-(--brand-navy-deep) hover:shadow-md active:bg-(--brand-navy-deep)",
+  teal:
+    "text-white bg-(--brand-teal) shadow-xs hover:bg-(--brand-navy) hover:shadow-md active:bg-(--brand-navy)",
+  outline:
+    "border border-slate-300 text-slate-700 bg-white hover:border-(--brand-teal) hover:bg-(--brand-teal-14) hover:text-(--brand-navy)",
+  ghost: "text-slate-700 hover:bg-slate-100 hover:text-(--brand-navy)",
   danger: "border border-red-200 bg-red-50 text-red-600 hover:bg-red-100",
   link: "text-(--brand-navy) font-semibold hover:underline px-0!",
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs rounded-lg",
-  md: "px-4 py-2.5 text-sm rounded-xl",
-  lg: "px-6 py-3 text-base rounded-xl",
+  sm: "min-h-8 px-3 py-1.5 text-xs rounded-lg",
+  md: "min-h-10 px-4 py-2.5 text-sm rounded-xl",
+  lg: "min-h-12 px-6 py-3 text-base rounded-xl",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -46,7 +49,8 @@ const Button = ({
     disabled={disabled || loading}
     className={cx(
       "inline-flex items-center justify-center gap-2 font-bold transition-all duration-200 cursor-pointer",
-      "focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1",
+      "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal) focus-visible:ring-offset-2",
+      "active:scale-[0.99]",
       "disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none",
       VARIANTS[variant],
       SIZES[size],

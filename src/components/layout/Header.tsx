@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import WebmLogo from "../../assets/main-logo.webm";
 import LogoAlphaWebp from "../../assets/main-logo-alpha.webp";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
@@ -63,6 +64,32 @@ const Header = () => {
       : href === "/"
         ? pathname === "/"
         : pathname === href || pathname.startsWith(`${href}/`);
+
+  // The drawer is a modal surface: Escape closes it and the page behind it
+  // must not scroll while it is open.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        setOpenMobileDropdown(null);
+      }
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [mobileMenuOpen]);
+
+  // Never leave a menu open over the next page.
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setOpenMobileDropdown(null);
+    setOpenDropdown(null);
+  }, [pathname]);
 
   type NavItem = { label: string; href: string; dropdown?: string; match?: string };
 
@@ -136,27 +163,14 @@ const Header = () => {
                 </Link>
               </div>
               <button
+                type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex items-center justify-center w-10 h-10 cursor-pointer z-60 xl:hidden"
-                aria-label="Toggle Menu"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-900/5 xl:hidden"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-nav"
               >
-              <div className="relative w-6 h-6">
-                <span
-                  className={`absolute w-6 h-0.5 bg-slate-600 transition-all duration-300 ${
-                    mobileMenuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-1"
-                  }`}
-                ></span>
-                <span
-                  className={`absolute w-6 h-0.5 bg-slate-600 top-1/2 -translate-y-1/2 transition-all duration-300 ${
-                    mobileMenuOpen ? "opacity-0" : "opacity-100"
-                  }`}
-                ></span>
-                <span
-                  className={`absolute w-6 h-0.5 bg-slate-600 transition-all duration-300 ${
-                    mobileMenuOpen ? "-rotate-45 bottom-1 translate-y-0" : "bottom-1"
-                  }`}
-                ></span>
-              </div>
+                {mobileMenuOpen ? <X size={22} strokeWidth={2.2} /> : <Menu size={22} strokeWidth={2.2} />}
               </button>
             </div>
 
@@ -170,6 +184,12 @@ const Header = () => {
                       className="relative"
                       onMouseEnter={() => setOpenDropdown(link.dropdown!)}
                       onMouseLeave={() => setOpenDropdown(null)}
+                      onFocus={() => setOpenDropdown(link.dropdown!)}
+                      onBlur={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                          setOpenDropdown(null);
+                        }
+                      }}
                     >
                       {/* Non-clickable dropdown trigger — opens on hover (desktop) */}
                       <span
@@ -216,8 +236,8 @@ const Header = () => {
                         }`}
                       >
                         {link.dropdown === "loans" ? (
-                        <div className="w-160 rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 p-6">
-                          <p className="mb-4 text-[10.5px] font-bold uppercase tracking-wider text-emerald-600">
+                        <div className="w-[min(40rem,calc(100vw-3rem))] rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl">
+                          <p className="mb-4 text-[10.5px] font-bold uppercase tracking-[0.16em] text-(--brand-teal)">
                             Loan Products
                           </p>
                           <div className="grid grid-cols-3 gap-x-6 gap-y-1">
@@ -259,14 +279,20 @@ const Header = () => {
       {/* Mobile Menu Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 top-(--header-h) bg-black/30 z-30 xl:hidden"
+          aria-hidden="true"
+          className="fixed inset-0 top-(--header-h) bg-slate-950/40 backdrop-blur-[2px] xl:hidden"
+          style={{ zIndex: "calc(var(--z-header) - 1)" }}
           onClick={closeMobileMenu}
-        ></div>
+        />
       )}
 
       {/* Mobile Menu - Slides from right */}
       {mobileMenuOpen && (
-        <div className="xl:hidden fixed top-(--header-h) right-0 bottom-0 w-80 bg-white/98 backdrop-blur-md z-60 overflow-y-auto shadow-2xl">
+        <div
+          id="mobile-nav"
+          className="mobile-drawer fixed right-0 top-(--header-h) bottom-0 w-[min(20rem,calc(100vw-2.5rem))] overflow-y-auto border-l border-slate-200/80 bg-white shadow-2xl xl:hidden"
+          style={{ zIndex: "var(--z-header)" }}
+        >
           <nav className="text-slate-600 font-medium">
             <ul className="flex flex-col divide-y divide-slate-200">
               {[...navLinks, franchiseeLoginLink, applicationStatusLink].map((link) =>
@@ -277,7 +303,7 @@ const Header = () => {
                         setOpenMobileDropdown(openMobileDropdown === link.dropdown ? null : link.dropdown!)
                       }
                       aria-expanded={openMobileDropdown === link.dropdown}
-                      className="w-full text-left flex items-center justify-between px-5 py-4 text-[13px] uppercase font-semibold hover:bg-slate-50"
+                      className="flex min-h-13 w-full items-center justify-between px-5 py-4 text-left text-xs font-bold uppercase tracking-[0.06em] text-slate-700 transition-colors hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                     >
                       <span className="pointer-events-none">{link.label}</span>
                       <svg
@@ -301,7 +327,7 @@ const Header = () => {
                           <Link
                             key={item.slug}
                             to={showDetailsMap[item.slug] ?? `/${item.slug}`}
-                            className="block px-8 py-2.5 text-[11.5px] text-slate-600 hover:text-white hover:bg-(--brand-teal) border-b border-slate-100 last:border-b-0"
+                            className="block border-b border-slate-100 px-8 py-3 text-xs font-medium text-slate-600 transition-colors last:border-b-0 hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                             onClick={closeMobileMenu}
                           >
                             → {item.label}
@@ -314,12 +340,12 @@ const Header = () => {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className={`block px-5 py-4 text-[13px] uppercase font-semibold transition-colors ${
+                      className={`flex min-h-13 items-center px-5 py-4 text-xs uppercase font-bold tracking-[0.06em] transition-colors ${
                         link.href === franchiseeLoginLink.href
-                          ? "bg-(--brand-navy) text-white hover:bg-(--brand-dark)"
+                          ? "mt-3 rounded-xl bg-(--brand-navy) text-white hover:bg-(--brand-navy-deep)"
                           : link.href === applicationStatusLink.href
-                            ? "bg-(--brand-teal-14) text-(--brand-navy) hover:bg-(--brand-teal) hover:text-white"
-                            : "hover:bg-slate-50"
+                            ? "mb-3 rounded-xl bg-(--brand-teal-14) text-(--brand-navy) hover:bg-(--brand-teal) hover:text-white"
+                            : "text-slate-700 hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                       }`}
                       aria-current={isRouteActive(link.href) ? "page" : undefined}
                       onClick={closeMobileMenu}
@@ -391,6 +417,14 @@ const Header = () => {
         .nav-link.is-active::after {
           transform: scaleY(1);
           opacity: 1;
+        }
+
+        .mobile-drawer {
+          animation: drawerIn .24s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes drawerIn {
+          from { opacity: 0; transform: translateX(16px); }
+          to   { opacity: 1; transform: none; }
         }
 
         .header-action {
@@ -466,7 +500,10 @@ const Header = () => {
         }
 
         .loan-item:hover {
-          color: #059669;
+          color: var(--brand-navy);
+          background: var(--brand-teal-14);
+          border-radius: 8px;
+          box-shadow: -8px 0 0 var(--brand-teal-14), 8px 0 0 var(--brand-teal-14);
         }
 
         .arrow-icon {
