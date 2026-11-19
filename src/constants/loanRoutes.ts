@@ -120,3 +120,6 @@ export const LOAN_ROUTES: Readonly<Record<LoanKey, LoanRouteEntry>> = {
 
 export const loanRouteFor = (key: string): LoanRouteEntry | null =>
   key in LOAN_ROUTES ? LOAN_ROUTES[key as LoanKey] : null;
+
+export const loanLabelFor = (key: string | null | undefined): string | null =>
+  key && key in LOAN_ROUTES ? LOAN_ROUTES[key as LoanKey].label : null;

@@ -22,8 +22,8 @@ import { useCaptcha } from "../../hooks/useCaptcha";
 import { useEmailOtp } from "../../hooks/useEmailOtp";
 import { useLocationMasters } from "../../hooks/useLocationMasters";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
-import { loanRouteFor } from "../../constants/loanRoutes";
+import { loanKeyFor } from "../../constants/loanSlugs";
+import { loanLabelFor, loanRouteFor } from "../../constants/loanRoutes";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
   clearPendingCreditScoreDraft,

@@ -6,7 +6,7 @@ import { DateOfBirthPicker } from "../components/form/FormControls";
 import { useApplyGate } from "../hooks/useApplyGate";
 import { useLocationMasters } from "../hooks/useLocationMasters";
 import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
-import { loanLabelFor } from "../constants/loanSlugs";
+import { loanLabelFor } from "../constants/loanRoutes";
 import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
 import { digitsOnly, formatIndianNumber, formatINRRounded as fmt } from "../utils/formatters";
 

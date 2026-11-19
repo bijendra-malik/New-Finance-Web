@@ -22,27 +22,6 @@ export const LOAN_SLUGS = {
 
 export type LoanKey = keyof typeof LOAN_SLUGS;
 
-const LOAN_LABELS: Readonly<Record<LoanKey, string>> = {
-  personal: "Personal Loan",
-  business: "Business Loan",
-  home: "Home Loan",
-  lap: "Loan Against Property",
-  balanceTransfer: "Balance Transfer",
-  vehicleLoan: "Vehicle Loan",
-  creditCard: "Credit Card",
-  educationLoan: "Education Loan",
-  projectLoan: "Project Loan",
-  commercialPurchase: "Commercial Purchase",
-  leaseRentalDiscounting: "Lease Rental Discounting",
-  workingCapital: "Working Capital",
-  filmFunding: "Film Funding",
-  odCcLimit: "OD CC Limit",
-  loanAgainstShare: "Loan Against Share",
-  goldLoan: "Gold Loan",
-  fdiLoan: "FDI",
-  npaLoan: "NPA",
-};
-
 const LOAN_KEY_ALIASES: Readonly<Record<string, LoanKey>> = {
   "Personal Loan": "personal",
   "Business Loan": "business",
@@ -74,7 +53,3 @@ export const loanKeyFor = (product: string): LoanKey | null =>
   product in LOAN_SLUGS
     ? (product as LoanKey)
     : LOAN_KEY_ALIASES[product] ?? null;
-
-/** Display label for a canonical loan key. */
-export const loanLabelFor = (loanKey: string | null | undefined): string | null =>
-  loanKey && loanKey in LOAN_LABELS ? LOAN_LABELS[loanKey as LoanKey] : null;
