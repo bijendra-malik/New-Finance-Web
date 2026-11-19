@@ -251,7 +251,7 @@ const ReviewDialog = ({
               ? "Submitting your application…"
               : captcha.verifying
                 ? "Checking…"
-                : "Confirm & proceed to credit score"}
+                : "Confirm & Proceed"}
           </button>
         </div>
       </div>
