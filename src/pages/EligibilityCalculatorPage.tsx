@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useSEO from "../hooks/useSEO";
 import { advanceOnEnter } from "../utils/enterToNext";
 import { DateOfBirthPicker } from "../components/form/FormControls";
-import { fetchContinents, fetchCountriesByContinent } from "../api/masters";
-import type { Continent, Country } from "../api/masters";
 import { useApplyGate } from "../hooks/useApplyGate";
+import { useLocationMasters } from "../hooks/useLocationMasters";
 import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
 import { loanLabelFor } from "../constants/loanSlugs";
 import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
@@ -161,36 +160,18 @@ const EligibilityCalculatorPage = () => {
   const [loading, setLoading] = useState(false);
 
   // Region comes from the location masters (GET /masters/location/…).
-  const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
-  const [continentsLoading, setContinentsLoading] = useState(true);
-  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
+  const {
+    continents: continentOptions,
+    countries: countryOptions,
+    continentsLoading,
+    countriesLoading,
+  } = useLocationMasters(form.continent);
 
   const set = (f: keyof FormData, v: string | boolean) =>
     setForm(p => ({ ...p, [f]: v }));
 
   const meta: ProductMeta | null = form.product ? PRODUCT_META[form.product as ProductKey] : null;
   const productLabel = form.product ? (loanLabelFor(form.product) ?? form.product) : "";
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchContinents()
-      .then(list => { if (!cancelled) setContinentOptions(list); })
-      .catch(() => { if (!cancelled) setContinentOptions([]); })
-      .finally(() => { if (!cancelled) setContinentsLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    const picked = continentOptions.find(item => item.name === form.continent);
-    if (!picked) return;
-    let cancelled = false;
-    fetchCountriesByContinent(picked._id)
-      .then(list => { if (!cancelled) setCountryOptions(list); })
-      .catch(() => { if (!cancelled) setCountryOptions([]); })
-      .finally(() => { if (!cancelled) setCountriesLoading(false); });
-    return () => { cancelled = true; };
-  }, [continentOptions, form.continent]);
 
   /** Age rules for the date of birth: 18 to 65 years, never in the future. */
   const dobErrorFor = (dob: string): string => {
@@ -504,8 +485,6 @@ const EligibilityCalculatorPage = () => {
                     onChange={e => {
                       set("continent", e.target.value);
                       set("country", "");
-                      setCountryOptions([]);
-                      setCountriesLoading(true);
                       setErrors(p => ({ ...p, continent: "", country: "" }));
                     }}
                     disabled={continentsLoading}
