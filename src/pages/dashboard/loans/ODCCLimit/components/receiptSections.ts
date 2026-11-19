@@ -1,6 +1,6 @@
 import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
-import type { ODCCLimitApplication } from "./ApplicationForm";
+import type { ODCCLimitApplication } from "../../../../../api/loanApplications/ODCCLimit";
 
 export const buildProductSections = (app: ODCCLimitApplication) =>
   buildSuccessSections(app, {

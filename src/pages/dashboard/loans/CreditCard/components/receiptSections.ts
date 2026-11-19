@@ -1,5 +1,5 @@
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
-import type { CreditCardApplication } from "./ApplicationForm";
+import type { CreditCardApplication } from "../../../../../api/loanApplications/CreditCard";
 
 export const buildProductSections = (app: CreditCardApplication) =>
   buildSuccessSections(app, {

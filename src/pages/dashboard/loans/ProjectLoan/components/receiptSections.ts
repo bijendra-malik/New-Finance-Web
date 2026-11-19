@@ -1,6 +1,6 @@
 import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, fmtDate, resolveOther } from "../../../../../components/form/successSections";
-import type { ProjectLoanApplication } from "./ApplicationForm";
+import type { ProjectLoanApplication } from "../../../../../api/loanApplications/ProjectLoan";
 
 export const buildProductSections = (app: ProjectLoanApplication) =>
   buildSuccessSections(app, {

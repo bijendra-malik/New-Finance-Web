@@ -1,6 +1,6 @@
 import { formatINR } from "../../../../../utils/formatters";
 import { buildSuccessSections, fmtList, resolveOther } from "../../../../../components/form/successSections";
-import type { NPAApplication } from "./ApplicationForm";
+import type { NPAApplication } from "../../../../../api/loanApplications/NPA";
 
 export const buildProductSections = (app: NPAApplication) =>
   buildSuccessSections(app, {
