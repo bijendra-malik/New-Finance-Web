@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import WebmLogo from "../../assets/main-logo.webm";
@@ -14,6 +14,8 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const showDetailsMap: Record<string, string> = {
     personalloan:       "/showdetails/personal-loan",
@@ -65,22 +67,47 @@ const Header = () => {
         ? pathname === "/"
         : pathname === href || pathname.startsWith(`${href}/`);
 
-  // The drawer is a modal surface: Escape closes it and the page behind it
-  // must not scroll while it is open.
   useEffect(() => {
     if (!mobileMenuOpen) return;
+
+    const getFocusable = () =>
+      Array.from(
+        drawerRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+
+    const focusTimer = window.setTimeout(() => getFocusable()[0]?.focus(), 40);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMobileMenuOpen(false);
         setOpenMobileDropdown(null);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = getFocusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
+
     return () => {
+      window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
+      menuButtonRef.current?.focus();
     };
   }, [mobileMenuOpen]);
 
@@ -164,6 +191,7 @@ const Header = () => {
               </div>
               <button
                 type="button"
+                ref={menuButtonRef}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-slate-700 transition-colors hover:bg-slate-900/5 xl:hidden"
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -290,6 +318,10 @@ const Header = () => {
       {mobileMenuOpen && (
         <div
           id="mobile-nav"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site navigation"
           className="mobile-drawer fixed right-0 top-(--header-h) bottom-0 w-[min(20rem,calc(100vw-2.5rem))] overflow-y-auto border-l border-slate-200/80 bg-white shadow-2xl xl:hidden"
           style={{ zIndex: "var(--z-header)" }}
         >
