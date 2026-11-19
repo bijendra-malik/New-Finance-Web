@@ -14,7 +14,7 @@ import { PersonalDetailsSection } from "../../../../../components/form/PersonalD
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
-import { COMPANY_NAME_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
+import { PAN_REGEX, GSTIN_REGEX, COMPANY_NAME_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 
@@ -114,7 +114,6 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
 
 // ── Shared validation constants (used by computeErrors below) ──
-  const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
@@ -137,7 +136,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       const lastYearGstBase = Math.max(draft.lastYearTurnover, draft.currentYearTurnover, draft.priorYearTurnover);
       if(lastYearGstBase>=4000000&&!draft.gstNumber.trim()) e.gstNumber="GST number is required for annual turnover of ₹40 lakh or more";
       if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
-      else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
+      else if(!PAN_REGEX.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
       if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
       else if(draft.natureOfBusiness===OTHER_OPTION&&!draft.natureOfBusinessOther.trim()) e.natureOfBusinessOther="Please mention nature of business";
       if(!draft.industryType) e.industryType="Industry type is required";

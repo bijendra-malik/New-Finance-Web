@@ -10,7 +10,7 @@ import { useLoanApplicationForm } from "../../../../../components/form/useLoanAp
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
-import { COMPANY_NAME_REGEX, GSTIN_REGEX, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
+import { PAN_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
 import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PillMultiSelect, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyNPA } from "../../../../../api/loanApplications";
@@ -207,7 +207,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       const lastYearGstBase = Math.max(draft.lastYearTurnover, draft.currentYearTurnover, draft.priorYearTurnover);
       if(lastYearGstBase>=4000000&&!draft.gstNumber.trim()) e.gstNumber="GST number is required for annual turnover of ₹40 lakh or more";
       if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
-      else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
+      else if(!PAN_REGEX.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
       if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
       else if(draft.natureOfBusiness===OTHER_OPTION&&!draft.natureOfBusinessOther.trim()) e.natureOfBusinessOther="Please mention nature of business";
       if(!draft.industryType) e.industryType="Industry type is required";

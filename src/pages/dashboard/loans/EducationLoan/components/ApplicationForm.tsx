@@ -15,7 +15,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
+import { PAN_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
@@ -193,7 +193,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       const lastYearGstBase = Math.max(draft.lastYearTurnover, draft.currentYearTurnover, draft.priorYearTurnover);
       if(lastYearGstBase>=4000000&&!draft.gstNumber.trim()) e.gstNumber="GST number is required for annual turnover of ₹40 lakh or more";
       if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
-      else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
+      else if(!PAN_REGEX.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
       if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
       else if(draft.natureOfBusiness===OTHER_OPTION&&!draft.natureOfBusinessOther.trim()) e.natureOfBusinessOther="Please mention nature of business";
       if(!draft.industryType) e.industryType="Industry type is required";
@@ -253,7 +253,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
         if(dobDate<ageCeiling) e.dob="Maximum application age is 70 years for this loan";
       }
     }
-    if(draft.panNumber.trim()&&!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.panNumber.toUpperCase())) e.panNumber="Invalid PAN format";
+    if(draft.panNumber.trim()&&!PAN_REGEX.test(draft.panNumber.toUpperCase())) e.panNumber="Invalid PAN format";
     if(!draft.state) e.state="State is required";
     if(!draft.city) e.city="City is required";
     if(!draft.pincode) e.pincode="Pincode is required";
@@ -282,7 +282,7 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
       }
     }
     if(!draft.parentPanNumber.trim()) e.parentPanNumber="PAN is required";
-    else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.parentPanNumber.toUpperCase())) e.parentPanNumber="Invalid PAN format";
+    else if(!PAN_REGEX.test(draft.parentPanNumber.toUpperCase())) e.parentPanNumber="Invalid PAN format";
     if(!draft.parentState) e.parentState="State is required";
     if(!draft.parentCity) e.parentCity="City is required";
     if(!draft.parentPincode) e.parentPincode="Pincode is required";

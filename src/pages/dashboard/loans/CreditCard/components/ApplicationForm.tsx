@@ -9,7 +9,7 @@ import { useLoanApplicationForm } from "../../../../../components/form/useLoanAp
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
+import { PAN_REGEX, GSTIN_REGEX, stripOther, validatePersonalDetails, COMPANY_NAME_REGEX } from "../../../../../utils/validation";
 import { FieldLabel, FormCard, SelectField, SelectWithOther } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
 import { applyCreditCard } from "../../../../../api/loanApplications";
@@ -151,7 +151,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       const lastYearGstBase = Math.max(draft.lastYearTurnover, draft.currentYearTurnover, draft.priorYearTurnover);
       if(lastYearGstBase>=4000000&&!draft.gstNumber.trim()) e.gstNumber="GST number is required for annual turnover of ₹40 lakh or more";
       if(!draft.companyPanNumber.trim()) e.companyPanNumber="Company PAN Number is required";
-      else if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
+      else if(!PAN_REGEX.test(draft.companyPanNumber.toUpperCase())) e.companyPanNumber="Invalid PAN format";
       if(!draft.natureOfBusiness) e.natureOfBusiness="Nature of business is required";
       else if(draft.natureOfBusiness===OTHER_OPTION&&!draft.natureOfBusinessOther.trim()) e.natureOfBusinessOther="Please mention nature of business";
       if(!draft.industryType) e.industryType="Industry type is required";
