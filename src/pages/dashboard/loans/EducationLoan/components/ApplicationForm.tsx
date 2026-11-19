@@ -15,7 +15,7 @@ import { AmountField, DateField, DateOfBirthPicker, FieldError, FieldLabel, Form
 import { buildProductSections } from "./receiptSections";
 import { applyEducationLoan } from "../../../../../api/loanApplications";
 import type { EducationLoanApplication } from "../../../../../api/loanApplications";
-import { PAN_REGEX, MOBILE_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
+import { PAN_REGEX, MOBILE_REGEX, NAME_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validateTenure } from "../../../../../utils/validation";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's EducationLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { EducationLoanApplication } from "../../../../../api/loanApplications";
@@ -142,9 +142,6 @@ const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoan
     setForm(p=>({...p, transactionBanks:[...p.transactionBanks, value]}));
   const removeTransactionBank = (idx:number) =>
     setForm(p=>({...p, transactionBanks:p.transactionBanks.filter((_,i)=>i!==idx)}));
-
-// ── Shared validation constants (used by computeErrors below) ──
-  const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{0,98}$/;
 
   const computeErrors = (draft:FormData = form) => {
     const e:Partial<Record<keyof FormData,string>> = {};
