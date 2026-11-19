@@ -11,6 +11,9 @@ export const formatMoney = (
   return `${sign}₹${Math.abs(value).toLocaleString("en-IN", options)}`;
 };
 
+export const formatINR = (value: number): string =>
+  `₹${value.toLocaleString("en-IN")}`;
+
 export const formatTimestamp = (value?: string | null): string | undefined => {
   if (!value) return undefined;
   const parsed = new Date(value);
