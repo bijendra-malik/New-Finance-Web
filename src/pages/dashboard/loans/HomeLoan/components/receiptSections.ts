@@ -1,5 +1,5 @@
 import { buildSuccessSections, resolveOther } from "../../../../../components/form/successSections";
-import type { HomeLoanApplication } from "../../../../../api/loanApplications/homeLoan";
+import type { HomeLoanApplication } from "../../../../../api/loanApplications/HomeLoan";
 
 export const buildProductSections = (app: HomeLoanApplication) =>
   buildSuccessSections(app, {

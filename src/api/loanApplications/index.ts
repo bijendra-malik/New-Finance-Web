@@ -1,8 +1,8 @@
 // Loan-application API layer — one file per product plus shared contracts.
 export * from "./shared";
-export * from "./personalLoan";
-export * from "./businessLoan";
-export * from "./homeLoan";
+export * from "./PersonalLoan";
+export * from "./BusinessLoan";
+export * from "./HomeLoan";
 export * from "./BalanceTransfer";
 export * from "./VehicleLoan";
 export * from "./CommercialPurchase";
