@@ -12,6 +12,7 @@ import {
 } from "../constants/careers";
 import { submitCareerApplication } from "../api/careers";
 import { EMAIL_CAREERS, PHONE_LANDLINE, PHONE_LANDLINE_HREF } from "../constants/contact";
+import { EMAIL_REGEX } from "../utils/validation";
 
 interface FormState {
   fullName: string;
@@ -22,7 +23,6 @@ interface FormState {
   about: string;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_RESUME_MB = Math.round(RESUME_MAX_BYTES / (1024 * 1024));
 
 const readAsBase64 = (file: File): Promise<string> =>
@@ -113,7 +113,7 @@ const CareersApplyPage = () => {
   const validate = () => {
     const next: Partial<Record<keyof FormState | "resume", string>> = {};
     if (form.fullName.trim().length < 2) next.fullName = "Enter your full name";
-    if (!EMAIL_RE.test(form.email.trim())) next.email = "Enter a valid email address";
+    if (!EMAIL_REGEX.test(form.email.trim())) next.email = "Enter a valid email address";
     if (form.phone.replace(/\D/g, "").length !== 10) next.phone = "Enter a valid 10-digit phone number";
     if (!form.experience) next.experience = "Choose your experience level";
     if (!form.role) next.role = "Choose the role you are applying for";
