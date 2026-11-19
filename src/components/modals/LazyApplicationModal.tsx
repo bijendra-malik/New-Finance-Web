@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import type { ApplicationModalProps } from "./ApplicationModal";
+import type { ApplicationModalProps } from "./applicationModalHelpers";
 
 const ApplicationModal = lazy(() => import("./ApplicationModal"));
 
