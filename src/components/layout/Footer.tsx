@@ -134,7 +134,7 @@ const Footer = () => {
         font-weight: 600;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.45);
+        color: rgba(255,255,255,0.7);
       }
       .ftr-strip li { display: flex; align-items: center; gap: 9px; }
       .ftr-strip-dot {
@@ -144,7 +144,7 @@ const Footer = () => {
         background: var(--brand-teal);
         box-shadow: 0 0 0 3px rgba(38,174,144,0.18);
       }
-      .ftr-strip-first { color: rgba(255,255,255,0.62); }
+      .ftr-strip-first { color: rgba(255,255,255,0.85); }
 
       /* ── Main grid ── */
       .ftr-main {
@@ -169,7 +169,7 @@ const Footer = () => {
         font-weight: 600;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.4);
+        color: rgba(255,255,255,0.68);
       }
       .ftr-desc {
         margin-top: 16px;
@@ -187,7 +187,7 @@ const Footer = () => {
         font-weight: 600;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.38);
+        color: rgba(255,255,255,0.68);
       }
       .ftr-value {
         font-size: 12.5px;
@@ -224,10 +224,10 @@ const Footer = () => {
       /* Link columns */
       .ftr-heading {
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.45);
+        color: #ffffff;
       }
       .ftr-links { margin-top: 14px; display: flex; flex-direction: column; }
       .ftr-link {
@@ -278,7 +278,7 @@ const Footer = () => {
         margin-bottom: 8px;
         font-size: 12.5px;
         line-height: 1.6;
-        color: rgba(255,255,255,0.52);
+        color: rgba(255,255,255,0.78);
       }
       .ftr-sub { display: flex; justify-content: flex-end; }
       .ftr-sub-row {
@@ -337,7 +337,7 @@ const Footer = () => {
       .ftr-disclaimer {
         font-size: 11.5px;
         line-height: 1.7;
-        color: rgba(255,255,255,0.32);
+        color: rgba(255,255,255,0.6);
         padding-bottom: 18px;
       }
 
