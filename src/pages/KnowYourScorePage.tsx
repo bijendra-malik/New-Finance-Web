@@ -80,7 +80,7 @@ const FAQS = [
   {
     question: "Does this page check my credit report?",
     answer:
-      "No. It only uses the score you enter. We do not pull a credit-bureau report, and entering a score here does not affect it.",
+      "Yes. We run a soft CIBIL check through Experian/TransUnion. A soft enquiry does not affect your credit score.",
   },
   {
     question: "What is considered a good credit score?",
@@ -168,6 +168,7 @@ const KnowYourScorePage = () => {
   });
 
   const [score, setScore] = useState("");
+  const [openFaq, setOpenFaq] = useState<string | null>(FAQS[0].question);
   const parsedScore = Number(score);
   const hasScore = score.length > 0;
   const isValid = hasScore && isValidScore(parsedScore);
@@ -292,8 +293,8 @@ const KnowYourScorePage = () => {
                       className="mt-0.5 h-4 w-4 shrink-0 text-(--brand-teal)"
                       aria-hidden="true"
                     />
-                    This page only uses the number you enter. It does not pull your credit
-                    report or affect your score.
+                    We run a soft CIBIL check through Experian/TransUnion. A soft enquiry does
+                    not affect your credit score.
                   </p>
                 </div>
               </div>
@@ -382,6 +383,15 @@ const KnowYourScorePage = () => {
                           aria-hidden="true"
                         />
                       </Link>
+                      {(band === "poor" || band === "average") && (
+                        <Link
+                          to="/how-to-improve-credit-score"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-(--brand-teal) bg-white px-4 py-2.5 text-[12.5px] font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                        >
+                          How to improve your score
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                      )}
                       <Link
                         to="/contact"
                         className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/70 px-4 py-2.5 text-[12.5px] font-bold text-slate-700 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
@@ -464,23 +474,44 @@ const KnowYourScorePage = () => {
             </header>
 
             <div className="space-y-3">
-              {FAQS.map(({ question, answer }) => (
-                <details
-                  key={question}
-                  className="group rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-slate-300 open:shadow-[0_8px_24px_-18px_rgba(6,106,156,0.45)]"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-slate-800 [&::-webkit-details-marker]:hidden">
-                    {question}
-                    <span
-                      aria-hidden="true"
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg leading-none text-slate-500 transition group-open:rotate-45"
+              {FAQS.map(({ question, answer }, index) => {
+                const isOpen = openFaq === question;
+                return (
+                  <div
+                    key={question}
+                    className={`rounded-2xl border bg-white px-5 py-4 transition ${
+                      isOpen
+                        ? "border-slate-300 shadow-[0_8px_24px_-18px_rgba(6,106,156,0.45)]"
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={`score-faq-panel-${index}`}
+                      onClick={() => setOpenFaq(isOpen ? null : question)}
+                      className="flex w-full cursor-pointer items-center justify-between gap-4 text-left text-sm font-bold text-slate-800"
                     >
-                      +
-                    </span>
-                  </summary>
-                  <p className="mt-3 pr-8 text-[12.5px] leading-6 text-slate-500">{answer}</p>
-                </details>
-              ))}
+                      {question}
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg leading-none text-slate-500 transition-transform duration-300 ${
+                          isOpen ? "rotate-45" : ""
+                        }`}
+                      >
+                        +
+                      </span>
+                    </button>
+                    <div
+                      id={`score-faq-panel-${index}`}
+                      className="overflow-hidden transition-all duration-300"
+                      style={{ maxHeight: isOpen ? "240px" : "0px", opacity: isOpen ? 1 : 0 }}
+                    >
+                      <p className="mt-3 pr-8 text-[12.5px] leading-6 text-slate-500">{answer}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
