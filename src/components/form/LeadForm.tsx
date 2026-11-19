@@ -2,20 +2,12 @@ import { useState } from "react";
 import { type LeadFieldConfig, validateTel, validateEmail } from "../ui/LeadFormConfig";
 import { advanceOnEnter } from "../../utils/enterToNext";
 
-/**
- * Shared lead/enquiry form used by Franchise Login, Be An Associate and Contact pages.
- * With `onSubmit` the values are sent to the backend; without it the form only
- * validates and shows its success state.
- */
-
 interface LeadFormProps {
   fields: LeadFieldConfig[];
   submitLabel: string;
   successTitle: string;
   successMessage: string;
-  /** Return a string to replace the success message with the API's own text. */
   onSubmit?: (values: Record<string, string>) => Promise<string | void>;
-  /** Text shown if the submission is refused. */
   submitErrorMessage?: string;
 }
 
@@ -30,7 +22,6 @@ const LeadForm = ({
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  // The API's own confirmation, shown instead of the static copy when it sends one.
   const [resultMessage, setResultMessage] = useState("");
 
   const setField = (name: string, v: string) => {
