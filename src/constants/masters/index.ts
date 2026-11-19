@@ -99,5 +99,3 @@ export type Masters = {
   banks: readonly string[];
   states: readonly string[];
 };
-
-export type MasterKey = keyof Masters;

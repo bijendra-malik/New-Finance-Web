@@ -1,16 +1,5 @@
 export type Role = "Customer" | "Franchise";
 
-export interface AccountProfile {
-  name: string;
-  role: Role;
-  country: string;
-  countryIso: string;
-  phone: string;
-  email: string;
-  dob?: string;
-  pan?: string;
-}
-
 export type LockableField =
   | "fullName" | "mobile" | "email" | "dob" | "panNumber"
   | "state" | "city" | "pincode" | "residenceStatus" | "residenceStatusOther";
