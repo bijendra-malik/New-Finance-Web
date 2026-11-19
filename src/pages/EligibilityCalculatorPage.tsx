@@ -268,8 +268,8 @@ const EligibilityCalculatorPage = () => {
       return {
         ...base,
         message: existingEMI > 0
-          ? `Your existing EMIs of ${fmt(existingEMI)} already use ${Math.round((existingEMI / Math.max(income, 1)) * 100)}% of your income. Lenders allow total EMIs of only 70% (${fmt(emiLimit)}), so there is no room for a new EMI. Closing or reducing existing loans is the fastest fix.`
-          : `Your income does not leave enough room for a new EMI. Total EMIs may not exceed 70% of your monthly income.`,
+          ? `Your existing EMIs of ${fmt(existingEMI)} already take up a large share of your monthly income, so there is no room for a new EMI. Closing or reducing existing loans is the fastest fix.`
+          : `Your income does not leave enough room for a new EMI. Increasing your income or adding a co-applicant can help.`,
       };
     }
 
@@ -306,7 +306,7 @@ const EligibilityCalculatorPage = () => {
       emi: Math.round(emi),
       assetCap,
       assetNote,
-      message: `Great news, ${form.fullName.split(" ")[0] || "there"}! Based on a 70% EMI-to-income limit, you may be eligible for up to ${fmt(loan)} at ${product.roi}% p.a. for ${tenureLabel(months)}.`,
+      message: `Great news, ${form.fullName.split(" ")[0] || "there"}! You may be eligible for up to ${fmt(loan)} at ${product.roi}% p.a. for ${tenureLabel(months)}.`,
     };
   };
 
@@ -448,38 +448,12 @@ const EligibilityCalculatorPage = () => {
               </div>
             )}
 
-            {/* How the number was worked out */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 mb-6">
-              <p className="text-sm font-bold text-gray-800 mb-3">How this was calculated</p>
-              <dl className="space-y-2 text-sm">
-                {[
-                  ["Net monthly income", fmt(result.income)],
-                  [`EMI limit (70% of income)`, fmt(result.emiLimit)],
-                  ["Less existing EMIs", `− ${fmt(result.existingEMI)}`],
-                  ["Available for a new EMI", fmt(result.headroom)],
-                  ["Interest rate", `${result.roi}% p.a.`],
-                  ["Tenure considered", tenureLabel(result.months)],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex items-baseline justify-between gap-4 border-b border-dashed border-gray-100 pb-2 last:border-0 last:pb-0">
-                    <dt className="text-gray-500">{label}</dt>
-                    <dd className="font-semibold text-gray-800 tabular-nums">{value}</dd>
-                  </div>
-                ))}
-                {result.assetNote && (
-                  <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gray-100 pb-2">
-                    <dt className="text-gray-500">Asset cap applied</dt>
-                    <dd className="font-semibold text-gray-800 text-right">{result.assetNote}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-
             {/* Info note */}
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-800">
               <svg className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" />
               </svg>
-              <span>This is an estimate only, using a 70% EMI-to-income limit, the product rate of interest and a tenure capped at your retirement age. Final eligibility is subject to lender policy, credit score, and documentation review.</span>
+              <span>This is an estimate only, based on the product rate of interest and a tenure capped at your retirement age. Final eligibility is subject to lender policy, credit score, and documentation review.</span>
             </div>
 
             {/* Action buttons */}
