@@ -214,12 +214,15 @@ const FAQ = () => {
                         </button>
 
                         <div
-                          className="overflow-hidden transition-all duration-300"
-                          style={{ maxHeight: active ? "200px" : "0px", opacity: active ? 1 : 0 }}
+                          aria-hidden={!active}
+                          className="grid transition-all duration-300"
+                          style={{ gridTemplateRows: active ? "1fr" : "0fr", opacity: active ? 1 : 0 }}
                         >
-                          <p className="px-1 pb-4 pr-6 text-sm leading-relaxed" style={{ color: C.grey }}>
-                            {step.desc}
-                          </p>
+                          <div className="overflow-hidden">
+                            <p className="px-1 pb-4 pr-6 text-sm leading-relaxed" style={{ color: C.grey }}>
+                              {step.desc}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -287,12 +290,15 @@ const FAQ = () => {
                       </button>
 
                       <div
-                        className="overflow-hidden transition-all duration-300"
-                        style={{ maxHeight: active ? "200px" : "0px", opacity: active ? 1 : 0 }}
+                        aria-hidden={!active}
+                        className="grid transition-all duration-300"
+                        style={{ gridTemplateRows: active ? "1fr" : "0fr", opacity: active ? 1 : 0 }}
                       >
-                        <p className="pl-10 pr-4 pb-4 pt-0 text-sm leading-relaxed border-t" style={{ borderColor: "rgba(38,174,144,0.16)", color: C.grey }}>
-                          {item.a}
-                        </p>
+                        <div className="overflow-hidden">
+                          <p className="pl-10 pr-4 pb-4 pt-0 text-sm leading-relaxed border-t" style={{ borderColor: "rgba(38,174,144,0.16)", color: C.grey }}>
+                            {item.a}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );
