@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { LOAN_ROUTES } from "../../constants/loanRoutes";
 import type { LoanKey } from "../../constants/loanSlugs";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 const LOAN_MENU_ORDER: LoanKey[] = [
   "personal",
@@ -82,18 +83,17 @@ const Header = () => {
       }
     };
 
-    const previousOverflow = document.body.style.overflow;
     const menuButton = menuButtonRef.current;
-    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
 
     return () => {
       window.clearTimeout(focusTimer);
-      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
       menuButton?.focus();
     };
   }, [mobileMenuOpen]);
+
+  useBodyScrollLock(mobileMenuOpen);
 
   type NavItem = { label: string; href: string; dropdown?: string; match?: string };
 

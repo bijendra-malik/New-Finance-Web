@@ -2,21 +2,16 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cx } from "./cx";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 interface ModalProps {
   open: boolean;
   onClose: () => void;
-  /** id of the element that labels the dialog. */
   labelledBy: string;
   children: ReactNode;
-  /** Tailwind max-width class for the panel. */
   maxWidth?: string;
 }
 
-/**
- * Portal-rendered dialog with backdrop, Escape handling and body scroll lock.
- * Portalled to <body> so an ancestor stacking context can't trap it under the header.
- */
 const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg" }: ModalProps) => {
   useEffect(() => {
     if (!open) return;
@@ -24,13 +19,10 @@ const Modal = ({ open, onClose, labelledBy, children, maxWidth = "max-w-lg" }: M
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useBodyScrollLock(open);
 
   if (!open) return null;
 

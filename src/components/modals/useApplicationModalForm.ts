@@ -18,6 +18,7 @@ import {
   verifyOTP,
   type AuthActionResponse,
 } from "../../api/auth";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useCaptcha } from "../../hooks/useCaptcha";
 import { useEmailOtp } from "../../hooks/useEmailOtp";
 import { useLocationMasters } from "../../hooks/useLocationMasters";
@@ -216,14 +217,7 @@ export const useApplicationModalForm = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   });
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
   const productKey = activeProduct?.id ?? productName;
   const loanKey = loanKeyFor(productKey);
