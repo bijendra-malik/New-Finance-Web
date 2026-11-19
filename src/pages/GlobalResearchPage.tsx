@@ -2,12 +2,6 @@ import { Link } from "react-router-dom";
 import PageBanner from "../components/common/PageBanner";
 import useSEO from "../hooks/useSEO";
 
-/**
- * Global Research — mirrored from indexiafinance.com/global-research: who we
- * are & what we do, publication coverage, client interaction and portal access,
- * plus a highlight that we serve in 72 countries.
- */
-
 const PUBLICATIONS = [
   "Economic Research",
   "Global Thematic Research",
