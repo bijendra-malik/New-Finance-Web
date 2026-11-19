@@ -21,7 +21,6 @@ interface NotificationBellProps {
 }
 
 const READ_KEY_PREFIX = "indexia_franchise_updates_read:";
-const DISMISSED_KEY_PREFIX = "indexia_franchise_updates_dismissed:";
 const MAX_STORED_IDS = 200;
 
 const readStoredIds = (prefix: string, franchiseId: string): string[] => {
@@ -63,15 +62,9 @@ const relativeTime = (iso?: string): string => {
 const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: NotificationBellProps) => {
   const [open, setOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>(() => readStoredIds(READ_KEY_PREFIX, franchiseId));
-  const [dismissedIds, setDismissedIds] = useState<string[]>(() =>
-    readStoredIds(DISMISSED_KEY_PREFIX, franchiseId),
-  );
-  /** The notification whose delete is waiting for confirmation. */
-  const [pendingDelete, setPendingDelete] = useState<UpdateItem | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<UpdateItem[]>(() => {
-    const dismissed = new Set(dismissedIds);
     const loanUpdates = loans.map((loan) => ({      id: `loan-${loanApplicationNo(loan)}`,
       target: "loans" as const,
       title: `${loanProductName(loan)} · ${loanStatus(loan)}`,
@@ -88,10 +81,10 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     }));
 
     return [...loanUpdates, ...customerUpdates]
-      .filter((item) => !dismissed.has(item.id) && timeValue(item.at) > 0)
+      .filter((item) => timeValue(item.at) > 0)
       .sort((a, b) => timeValue(b.at) - timeValue(a.at))
       .slice(0, 8);
-  }, [loans, customers, dismissedIds]);
+  }, [loans, customers]);
 
   const readSet = useMemo(() => new Set(readIds), [readIds]);
   const unreadCount = items.filter((item) => !readSet.has(item.id)).length;
@@ -112,10 +105,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     };
   }, [open]);
 
-  const toggle = () => {
-    setPendingDelete(null);
-    setOpen((wasOpen) => !wasOpen);
-  };
+  const toggle = () => setOpen((wasOpen) => !wasOpen);
 
   const markRead = (id: string) => {
     if (readIds.includes(id)) return;
@@ -130,19 +120,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
     writeStoredIds(READ_KEY_PREFIX, franchiseId, next);
   };
 
-  const dismiss = (id: string) => {
-    const next = [...dismissedIds, id];
-    setDismissedIds(next);
-    writeStoredIds(DISMISSED_KEY_PREFIX, franchiseId, next);
-  };
-
-  const confirmDelete = () => {
-    if (pendingDelete) dismiss(pendingDelete.id);
-    setPendingDelete(null);
-  };
-
   const goTo = (target: Target) => {
-    setPendingDelete(null);
     setOpen(false);
     onOpenSection(target);
   };
@@ -267,63 +245,11 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                           </svg>
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => setPendingDelete(item)}
-                        title="Delete notification"
-                        aria-haspopup="dialog"
-                        aria-label={`Delete “${item.title}”`}
-                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                      >
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                        </svg>
-                      </button>
                     </span>
                   </li>
                 );
               })}
             </ul>
-          )}
-
-          {/* Confirmation before anything is deleted from this list. */}
-          {pendingDelete && (
-            <div
-              role="alertdialog"
-              aria-labelledby="franchise-delete-confirm-title"
-              aria-describedby="franchise-delete-confirm-detail"
-              className="border-t border-red-100 bg-red-50 px-4 py-3"
-            >
-              <p id="franchise-delete-confirm-title" className="text-[12.5px] font-extrabold text-red-700">
-                Delete this notification?
-              </p>
-              <p
-                id="franchise-delete-confirm-detail"
-                className="mt-0.5 truncate text-[11.5px] font-semibold text-slate-600"
-              >
-                {pendingDelete.title}
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                It disappears from your updates list. The application and customer records are not
-                affected.
-              </p>
-              <div className="mt-2.5 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPendingDelete(null)}
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[11.5px] font-bold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmDelete}
-                  className="rounded-lg bg-red-600 px-3 py-1.5 text-[11.5px] font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
           )}
 
           <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5">
