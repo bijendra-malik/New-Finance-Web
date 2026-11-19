@@ -17,9 +17,9 @@ import { useAuth } from "../context/authContext";
 type Notice = { tone: "info" | "warn" | "error"; title: string; body: string } | null;
 
 const PORTAL_POINTS = [
-  "Check your franchise agreement status at a glance",
+  "Check your franchisee agreement status at a glance",
   "Keep plan, renewal and agreement details in one place",
-  "Track leads submitted under your franchise agreement",
+  "Track leads submitted under your franchisee agreement",
   "Review payout statements for successfully disbursed cases",
 ];
 
@@ -27,7 +27,7 @@ const DEFAULT_NOTICE: Notice = {
   tone: "info",
   title: "Portal access is invitation-based",
   body:
-    "Sign in with your franchisee ID and the PAN number from your franchise application. " +
+    "Sign in with your franchisee ID and the PAN number from your franchisee application. " +
     "Write to the franchise team if you need access.",
 };
 
@@ -35,7 +35,7 @@ const FranchiseLoginPage = () => {
   useSEO({
     title: "Franchisee Login",
     description:
-      "Franchisee login for the Indexia Finance franchise partner portal. New here? Apply for a franchise or submit a franchise enquiry.",
+      "Franchisee login for the Indexia Finance franchise partner portal. New here? Apply for a franchisee or submit a franchise enquiry.",
     path: "/franchise-login",
   });
 
@@ -180,13 +180,13 @@ const FranchiseLoginPage = () => {
                   Not a franchisee yet?
                 </h3>
                 <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">
-                  Review the franchise business model, plan fees and the 80:20 payout structure, then apply.
+                  Review the franchisee business model, plan fees and the 80:20 payout structure, then apply.
                 </p>
                 <Link
                   to="/franchise"
                   className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-(--brand-navy) hover:underline"
                 >
-                  View the franchise opportunity →
+                  View the franchisee opportunity →
                 </Link>
               </div>
             </div>
@@ -205,8 +205,7 @@ const FranchiseLoginPage = () => {
                     <FranchiseIcon name="lock" filled className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">Franchisee Verification</h2>
-                    <p className="text-[12.5px] text-slate-500">For registered franchise partners only</p>
+                    <h2 className="text-xl font-bold text-slate-800">For registered franchisee partners only</h2>
                   </div>
                 </div>
 
@@ -278,7 +277,7 @@ const FranchiseLoginPage = () => {
                     />
                     {errors.panNumber && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.panNumber}</p>}
                     <p id="franchise-pan-hint" className="mt-1 text-[11px] text-slate-400">
-                      Your password is the PAN number used in your franchise application.
+                      Your password is the PAN number used in your franchisee application.
                     </p>
                   </div>
 
@@ -289,7 +288,7 @@ const FranchiseLoginPage = () => {
                     loading={submitting}
                     style={{ background: "linear-gradient(135deg,var(--brand-navy) 0%,var(--brand-dark) 100%)" }}
                   >
-                    {submitting ? "Verifying…" : "Sign in"}
+                    {submitting ? "Verifying…" : "Log in →"}
                   </Button>
                 </form>
 
@@ -300,7 +299,7 @@ const FranchiseLoginPage = () => {
                       setNotice({
                         tone: "info",
                         title: "Password reset",
-                        body: `Your password is the PAN number from your franchise application. Write to ${FRANCHISE_EMAIL} if it needs to be re-issued.`,
+                        body: `Your password is the PAN number from your franchisee application. Write to ${FRANCHISE_EMAIL} if it needs to be re-issued.`,
                       })
                     }
                     className="cursor-pointer text-[12.5px] font-semibold text-(--brand-navy) hover:underline focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44) rounded"
@@ -317,7 +316,7 @@ const FranchiseLoginPage = () => {
               </div>
 
               <p className="mt-4 text-center text-[11.5px] leading-relaxed text-slate-400">
-                Looking to apply for a franchise instead?{" "}
+                Looking to apply for a franchisee instead?{" "}
                 <Link to="/franchise" className="font-semibold text-(--brand-navy) hover:underline">
                   Go to the franchisee application
                 </Link>
@@ -327,7 +326,7 @@ const FranchiseLoginPage = () => {
                   to="/franchise-application-status"
                   className="font-semibold text-(--brand-navy) hover:underline"
                 >
-                  Check your franchise application status
+                  Check your franchisee application status
                 </Link>
                 .
               </p>
