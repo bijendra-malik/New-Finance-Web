@@ -14,6 +14,9 @@ export const formatMoney = (
 export const formatINR = (value: number): string =>
   `₹${value.toLocaleString("en-IN")}`;
 
+export const formatINRRounded = (value: number): string =>
+  `₹${Math.round(value).toLocaleString("en-IN")}`;
+
 export const formatTimestamp = (value?: string | null): string | undefined => {
   if (!value) return undefined;
   const parsed = new Date(value);

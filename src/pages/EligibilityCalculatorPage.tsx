@@ -9,7 +9,7 @@ import { useApplyGate } from "../hooks/useApplyGate";
 import { useSetApplicantPrefill } from "../context/applicantPrefillContext";
 import { loanLabelFor } from "../constants/loanSlugs";
 import { EMAIL_REGEX, MOBILE_REGEX, isAtLeastAge, isAtMostAge } from "../utils/validation";
-import { digitsOnly, formatIndianNumber } from "../utils/formatters";
+import { digitsOnly, formatIndianNumber, formatINRRounded as fmt } from "../utils/formatters";
 
 // ── Lending model ─────────────────────────────────────────────────────────────
 // FOIR: total EMIs (existing + new) may not exceed 70% of net monthly income.
@@ -72,8 +72,6 @@ interface Result {
 }
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
-// Indian digit grouping: 12,34,567 (last three, then pairs).
-const fmt = (n: number) => "₹" + Math.round(n).toLocaleString("en-IN");
 
 const num = (v: string) => {
   const parsed = Number.parseFloat(v);

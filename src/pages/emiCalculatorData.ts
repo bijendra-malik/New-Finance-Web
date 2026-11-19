@@ -1,5 +1,6 @@
 /** EMI calculator design tokens, loan-type config and formatting helpers. */
 import { LOAN_AMOUNT_RANGES } from "../constants/masters";
+import { formatINRRounded } from "../utils/formatters";
 
 export const T = {
   navy: "var(--brand-navy)",       // deep blue — primary dark, headers, hero
@@ -47,4 +48,4 @@ export const banks = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-export const fmt = (n: number) => "\u20B9" + Math.round(n).toLocaleString("en-IN");
+export const fmt = formatINRRounded;
