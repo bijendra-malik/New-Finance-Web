@@ -93,7 +93,7 @@ const ContactPage = () => {
                   Contact / Loan help desk
                 </p>
                 <h2 className="mt-2 max-w-2xl text-3xl font-extrabold leading-[1.05] tracking-tight text-slate-900 md:text-4xl">
-                  Loans begin with a <span className="text-(--brand-teal)">conversation.</span>
+                  Let Us Know About <span className="text-(--brand-teal)">Your Query</span>
                 </h2>
               </div>
               <p className="max-w-xs text-sm leading-relaxed text-slate-500 md:justify-self-end md:pb-1 md:text-right">
@@ -127,7 +127,7 @@ const ContactPage = () => {
                     Direct lines
                   </p>
                   <h2 id="contact-desk-heading" className="mt-1 text-xl font-extrabold tracking-tight">
-                    Happy to Serve You.
+                    Happy to Serve You at Your Doorstep.
                   </h2>
                   <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/75">
                     Mon–Sat · 9:30 AM – 6:30 PM IST
