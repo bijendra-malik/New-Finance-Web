@@ -1,4 +1,6 @@
 // Shared field-configuration shape + tiny validators.
+import { EMAIL_REGEX, MOBILE_REGEX } from "../../utils/validation";
+
 export interface LeadFieldConfig {
   name: string;
   label: string;
@@ -13,7 +15,7 @@ export interface LeadFieldConfig {
 }
 
 export const validateTel = (v: string): string | undefined =>
-  v && !/^\d{10}$/.test(v) ? "Enter a valid 10-digit number" : undefined;
+  v && !MOBILE_REGEX.test(v) ? "Enter a valid 10-digit number" : undefined;
 
 export const validateEmail = (v: string): string | undefined =>
-  v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "Enter a valid email" : undefined;
+  v && !EMAIL_REGEX.test(v) ? "Enter a valid email" : undefined;
