@@ -191,10 +191,24 @@ const ProductDetails = () => {
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-10 md:px-8 lg:px-10 pt-6 pb-8 md:py-10 flex flex-col gap-6">
 
-          <div className="flex justify-center">
-            <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-[0.18em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
-              List of Documents
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1 backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--brand-teal)" }} aria-hidden="true" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-white/85">
+                Product-wise checklist
+              </span>
+            </span>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]">
+              List of <span style={{ color: "var(--brand-yellow)" }}>Documents</span>
             </h3>
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <span className="h-0.5 w-10 rounded-full" style={{ background: "linear-gradient(90deg, transparent, var(--brand-teal))" }} />
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--brand-yellow)" }} />
+              <span className="h-0.5 w-10 rounded-full" style={{ background: "linear-gradient(90deg, var(--brand-teal), transparent)" }} />
+            </div>
+            <p className="max-w-xl text-xs sm:text-sm text-white/70">
+              Pick a product to see exactly what to keep ready before you apply.
+            </p>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-10 w-full min-w-0">
