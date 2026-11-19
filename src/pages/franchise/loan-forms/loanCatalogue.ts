@@ -38,4 +38,3 @@ export const productFor = (key: string | null | undefined): LoanProduct | null =
   key ? LOAN_PRODUCTS.find((product) => product.key === key) ?? null : null;
 
 /** Display name for a product key, falling back to the key itself. */
-export const productNameFor = (key: string): string => productFor(key)?.name ?? key;
