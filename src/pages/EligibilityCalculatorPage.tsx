@@ -45,7 +45,7 @@ const PRODUCTS: readonly ProductMeta[] = [
   { key: "commercialPurchase", roi: 12, maxTenureMonths: 120, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 25% of annual turnover", ltv: 0.25 } },
   { key: "workingCapital", roi: 12.5, maxTenureMonths: 120, asset: { field: "turnover", label: "Annual Business Turnover", hint: "We can fund up to 20% of annual turnover", ltv: 0.2 } },
   { key: "leaseRentalDiscounting", roi: 12.5, maxTenureMonths: 120 },
-  { key: "goldLoan", roi: 9, maxTenureMonths: 120 },
+  { key: "goldLoan", roi: 9, maxTenureMonths: 12 },
   { key: "odCcLimit", roi: 10, maxTenureMonths: 12 },
 ];
 
@@ -54,7 +54,7 @@ const PRODUCT_META: Readonly<Record<ProductKey, ProductMeta>> = PRODUCTS.reduce(
   {} as Record<ProductKey, ProductMeta>,
 );
 
-const occupations = ["Salaried", "Self-Employed", "Business Owner", "Freelancer", "Student", "Retired"];
+const occupations = ["Salaried", "Self-Employed", "Business Owner"];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface FormData {
@@ -218,7 +218,8 @@ const EligibilityCalculatorPage = () => {
     }
     if (!form.mobile.trim()) e.mobile = "Mobile number is required";
     else if (!MOBILE_REGEX.test(form.mobile)) e.mobile = "Enter a valid 10-digit number";
-    if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
+    if (!form.email.trim()) e.email = "Email address is required";
+    else if (!EMAIL_REGEX.test(form.email.trim())) e.email = "Enter a valid email address";
     if (!form.occupation) e.occupation = "Select occupation";
     if (!form.monthlyIncome) e.monthlyIncome = "Monthly income is required";
     else if (num(form.monthlyIncome) <= 0) e.monthlyIncome = "Enter a valid monthly income";
@@ -573,7 +574,7 @@ const EligibilityCalculatorPage = () => {
                     <option value="">Select</option>
                     {PRODUCTS.map(p => (
                       <option key={p.key} value={p.key}>
-                        {loanLabelFor(p.key)} · {p.roi}% · {tenureLabel(p.maxTenureMonths)}
+                        {loanLabelFor(p.key)}
                       </option>
                     ))}
                   </select>
@@ -624,9 +625,7 @@ const EligibilityCalculatorPage = () => {
               {/* Row 3: Email | Occupation | Income */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-5 mb-5">
                 <div>
-                  <label htmlFor="elig-email" className={labelCls}>
-                    Email Address <span className="normal-case font-normal text-gray-400">(optional)</span>
-                  </label>
+                  <label htmlFor="elig-email" className={labelCls}>Email Address *</label>
                   <input
                     id="elig-email"
                     type="email"
@@ -656,15 +655,13 @@ const EligibilityCalculatorPage = () => {
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
                     <AmountInput
                       id="elig-income"
-                      placeholder="e.g. 50,000"
+                      placeholder="Take-home after deductions"
                       value={form.monthlyIncome}
                       onChange={v => { set("monthlyIncome", v); setErrors(p => ({ ...p, monthlyIncome: "" })); }}
                       className={`${fc("monthlyIncome")} pl-7`}
                     />
                   </div>
-                  {errors.monthlyIncome
-                    ? <p className="text-xs text-red-500 mt-1">{errors.monthlyIncome}</p>
-                    : <p className="text-[11px] text-gray-400 mt-1">Take-home after tax</p>}
+                  {errors.monthlyIncome && <p className="text-xs text-red-500 mt-1">{errors.monthlyIncome}</p>}
                 </div>
               </div>
 
