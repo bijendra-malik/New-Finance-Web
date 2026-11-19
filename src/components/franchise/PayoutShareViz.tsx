@@ -2,8 +2,7 @@
 
 import { ShareSplitBar } from "./ShareSplit";
 import { INDEXIA_SHARE, PARTNER_SHARE } from "./franchiseData";
-
-const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+import { formatINR } from "../../utils/formatters";
 
 interface WorkedExampleProps {
   total: number;
@@ -20,7 +19,7 @@ const WorkedExample = ({ total }: WorkedExampleProps) => {
         style={{ background: "var(--brand-navy-14)" }}
       >
         <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-(--brand-navy)">
-          If an eligible case pays out {inr(total)}
+          If an eligible case pays out {formatINR(total)}
         </span>
         <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Illustrative
@@ -32,7 +31,7 @@ const WorkedExample = ({ total }: WorkedExampleProps) => {
           Franchise Partner — {PARTNER_SHARE}%
         </span>
         <span className="text-lg font-extrabold" style={{ color: "var(--brand-teal)" }}>
-          {inr(partnerAmount)}
+          {formatINR(partnerAmount)}
         </span>
       </div>
       <div className="flex items-center justify-between border-t border-dashed border-slate-200 px-4 py-3">
@@ -41,7 +40,7 @@ const WorkedExample = ({ total }: WorkedExampleProps) => {
           Indexia Finance — {INDEXIA_SHARE}%
         </span>
         <span className="text-lg font-extrabold" style={{ color: "var(--brand-navy)" }}>
-          {inr(indexiaAmount)}
+          {formatINR(indexiaAmount)}
         </span>
       </div>
     </div>
