@@ -338,7 +338,7 @@ const EligibilityCalculatorPage = () => {
 
   // Field class helper
   const fc = (field: keyof FormData) =>
-    `w-full border rounded-xl px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all placeholder:text-gray-400 ${errors[field] ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"
+    `w-full border rounded-xl px-4 py-3 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-(--brand-teal) focus:border-(--brand-teal) transition-all placeholder:text-gray-400 ${errors[field] ? "border-red-400 bg-red-50/30" : "border-gray-200 hover:border-gray-300"
     }`;
   const labelCls = "block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide";
 
@@ -347,8 +347,8 @@ const EligibilityCalculatorPage = () => {
 
       {/* Top nav bar */}
       <div
-        className="sticky top-0 z-20 flex items-center gap-3 px-6 py-4 shadow-sm"
-        style={{ background: "linear-gradient(90deg, #0f766e 0%, #059669 100%)" }}
+        className="sticky top-(--header-h) z-20 flex items-center gap-3 px-6 py-4 shadow-sm"
+        style={{ background: "linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
       >
         <button
           onClick={() => navigate(-1)}
@@ -468,7 +468,7 @@ const EligibilityCalculatorPage = () => {
                 <button
                   onClick={startApplication}
                   className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
-                  style={{ background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)" }}
+                  style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
                 >
                   Apply for {productLabel} →
                 </button>
@@ -477,7 +477,7 @@ const EligibilityCalculatorPage = () => {
                 <button
                   onClick={() => navigate("/how-to-improve-credit-score")}
                   className="flex-1 px-6 py-3 rounded-xl text-sm font-bold text-white cursor-pointer transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
-                  style={{ background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)" }}
+                  style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
                 >
                   How to improve your credit score →
                 </button>
@@ -715,7 +715,7 @@ const EligibilityCalculatorPage = () => {
                   type="submit"
                   disabled={loading}
                   className="relative inline-flex items-center justify-center gap-3 px-12 py-3.5 rounded-xl font-bold text-white text-base cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg"
-                  style={{ background: "linear-gradient(135deg, #0f766e 0%, #059669 100%)", minWidth: "240px", boxShadow: "0 6px 24px rgba(15,118,110,0.4)" }}
+                  style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)", minWidth: "240px", boxShadow: "0 6px 24px rgba(6,106,156,0.32)" }}
                 >
                   {loading ? (
                     <>
