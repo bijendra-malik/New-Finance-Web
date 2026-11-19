@@ -517,12 +517,12 @@ const KnowYourScorePage = () => {
         </section>
 
         {/* ── Closing CTA ────────────────────────────────────────────────── */}
-        <section className="bg-[#f0f9ff] px-6 py-12 md:px-8 md:py-16">
+        <section className="bg-(--surface-tint) px-6 py-12 md:px-8 md:py-16">
           <div
             className="mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-3xl px-6 py-8 text-white sm:px-10 md:flex-row md:items-center md:justify-between"
             style={{
               background:
-                "linear-gradient(135deg, #06364c 0%, #075a79 55%, #0b7a78 100%)",
+                "linear-gradient(135deg, #072338 0%, var(--brand-navy) 55%, #0f7f7a 100%)",
             }}
           >
             <div className="relative">
