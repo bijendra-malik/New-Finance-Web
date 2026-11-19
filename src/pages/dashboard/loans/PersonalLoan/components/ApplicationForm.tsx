@@ -84,7 +84,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       if (!draft.companyType) e.companyType = "Company type is required";
       else if (draft.companyType === OTHER_OPTION && !draft.companyTypeOther.trim()) e.companyTypeOther = "Please mention company type";
       if (!draft.monthlyNetSalary) e.monthlyNetSalary = "Monthly net salary is required";
-      else if (draft.monthlyNetSalary < 21000) e.monthlyNetSalary = "Monthly net salary must be at least ₹21,000";
+      else if (draft.monthlyNetSalary < 12000) e.monthlyNetSalary = "Monthly net salary must be at least ₹21,000";
       // 70% FOIR rule — total EMI must stay under 70% of net salary.
       else if (parseInt(draft.existingEMI) >= draft.monthlyNetSalary * 0.7)
         e.existingEMI = `Total monthly EMI should not be more than ₹${formatIndianNumber(String(Math.floor(draft.monthlyNetSalary * 0.7)))}`;

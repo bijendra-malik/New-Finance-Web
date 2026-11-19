@@ -133,7 +133,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       if(!draft.companyType) e.companyType="Company type is required";
       else if(draft.companyType===OTHER_OPTION&&!draft.companyTypeOther.trim()) e.companyTypeOther="Please mention company type";
       if(!draft.monthlyNetSalary) e.monthlyNetSalary="Monthly net salary is required";
-      else if(draft.monthlyNetSalary<21000) e.monthlyNetSalary="Monthly net salary must be at least ₹21,000";
+      else if(draft.monthlyNetSalary<12000) e.monthlyNetSalary="Monthly net salary must be at least ₹21,000";
       if(!draft.salaryReceivedAs) e.salaryReceivedAs="Select how salary is received";
       else if(draft.salaryReceivedAs!=="Cash"){
         if(!draft.salaryBankName) e.salaryBankName="Select salary bank name";
