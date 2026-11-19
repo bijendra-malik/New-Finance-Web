@@ -23,6 +23,7 @@ import { useEmailOtp } from "../../hooks/useEmailOtp";
 import { useLocationMasters } from "../../hooks/useLocationMasters";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
+import { loanRouteFor } from "../../constants/loanRoutes";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
   clearPendingCreditScoreDraft,
@@ -30,7 +31,6 @@ import {
   readSubmittedApplication,
   remainingCreditScoreWindow,
 } from "../../utils/applicationFlowState";
-import { resolveDashboardPath } from "./applicationModalRoutes";
 import {
   alreadyAppliedError,
   formatDay,
@@ -351,7 +351,7 @@ export const useApplicationModalForm = ({
     setApiError("");
     if (inline) setMobileOtpError("");
 
-    const dashboardPath = resolveDashboardPath(productKey);
+    const dashboardPath = loanRouteFor(productKey)?.dashboard;
     if (!dashboardPath || !loanKey) {
       const message = "Application form is not available for this product yet.";
       if (inline) setMobileOtpError(message);
@@ -467,7 +467,7 @@ export const useApplicationModalForm = ({
         switchMode("signin");
         setAlreadyRegistered(true);
         setSessionWasSignedIn(isLoggedIn);
-        markOtpSent(resolveDashboardPath(productKey) ?? "", false);
+        markOtpSent(loanRouteFor(productKey)?.dashboard ?? "", false);
         return;
       }
       setMobileOtpNotice(newNumberNotice);
@@ -517,7 +517,7 @@ export const useApplicationModalForm = ({
           } else {
             resetAll();
             onClose();
-            const draftDashboard = resolveDashboardPath(pendingDraft.loanKey);
+            const draftDashboard = loanRouteFor(pendingDraft.loanKey)?.dashboard;
             navigate(draftDashboard ?? "/credit-score", {
               state: draftDashboard
                 ? undefined
