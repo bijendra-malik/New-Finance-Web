@@ -411,17 +411,17 @@ const CreditScore = () => {
           Know Your Score
         </Link>
 
+        {/* Disclaimer */}
+        <p className="mt-1 text-[11px] text-slate-400 text-center max-w-xs mb-4">
+          Checking your own credit score doesn't affect it.
+        </p>
+
         <Link
           to="/how-to-improve-credit-score"
           className="mt-3 text-[12.5px] font-bold text-(--brand-navy) underline decoration-(--brand-teal) decoration-2 underline-offset-4 transition-colors hover:text-(--brand-teal) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-44) rounded"
         >
           How to improve your credit score →
         </Link>
-
-        {/* Disclaimer */}
-        <p className="mt-1 text-[11px] text-slate-400 text-center max-w-xs mb-4">
-          Checking your own credit score doesn't affect it.
-        </p>
       </div>
     </section>
   );
