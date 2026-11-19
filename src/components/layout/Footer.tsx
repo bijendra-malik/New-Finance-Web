@@ -1,9 +1,9 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 import footerBg from "../../assets/bg-footerimg01.webp";
 import globeVideo from "../../assets/logo-footer.webm";
 import { SITE_URL } from "../../constants/siteLinks";
+import { socialLinks } from "../../constants/socialLinks";
 import { useHeavyMediaAllowed } from "../../hooks/useHeavyMediaAllowed";
 
 const Footer = () => {
@@ -103,8 +103,8 @@ const Footer = () => {
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.18);
+        background: var(--soc, rgba(255,255,255,0.08));
+        border: 1px solid var(--soc, rgba(255,255,255,0.18));
         color: #fff;
         display: flex;
         align-items: center;
@@ -114,8 +114,9 @@ const Footer = () => {
         transition: background 0.2s, border-color 0.2s, transform 0.2s;
       }
       .ftr-social:hover {
-        background: var(--brand-teal);
-        border-color: var(--brand-teal);
+        background: #fff;
+        border-color: var(--soc, var(--brand-teal));
+        color: var(--soc, var(--brand-teal));
         transform: translateY(-3px);
       }
       .ftr-input {
@@ -335,10 +336,23 @@ const Footer = () => {
               <button className="ftr-sub-btn">Subscribe</button>
             </div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-              <a href="https://www.facebook.com/indexia.finance.3" aria-label="Facebook" className="ftr-social"><FaFacebookF /></a>
-              <a href="https://www.linkedin.com/in/indexia-finance/" aria-label="LinkedIn" className="ftr-social"><FaLinkedinIn /></a>
-              <a href="https://www.instagram.com/finance.indexia/" aria-label="Instagram" className="ftr-social"><FaInstagram /></a>
-              <a href="https://www.youtube.com/@FinanceIndexia" aria-label="YouTube" className="ftr-social"><FaYoutube /></a>
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${social.name} — ${social.handle}`}
+                    title={`${social.name} — ${social.handle}`}
+                    className="ftr-social"
+                    style={{ "--soc": social.brand } as CSSProperties}
+                  >
+                    <Icon aria-hidden="true" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
