@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import PageBanner from "../components/common/PageBanner";
-import LeadForm from "../components/forms/LeadForm";
+import LeadForm from "../components/form/LeadForm";
 import { submitContactEnquiry } from "../api/contact";
 import {
   EMAIL_CONTACT,

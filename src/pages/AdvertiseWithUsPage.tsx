@@ -1,5 +1,5 @@
 import PageBanner from "../components/common/PageBanner";
-import LeadForm from "../components/forms/LeadForm";
+import LeadForm from "../components/form/LeadForm";
 import useSEO from "../hooks/useSEO";
 
 /**
