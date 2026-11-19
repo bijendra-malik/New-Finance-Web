@@ -2,7 +2,6 @@ import { useRef, useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import footerBg from "../../assets/bg-footerimg01.webp";
 import globeVideo from "../../assets/logo-footer.webm";
-import { SITE_URL } from "../../constants/siteLinks";
 import { socialLinks } from "../../constants/socialLinks";
 import {
   EMAIL_CONTACT,
@@ -17,12 +16,11 @@ const COMPANY_LINKS = [
   { l: "About Us", h: "https://www.indexiagroup.com/finance", external: true },
   { l: "Indexia Group", h: "https://www.indexiagroup.com/", external: true },
   { l: "Careers", h: "/careers", external: false },
-  { l: "Contact us", h: "/contact", external: false },
 ];
 
 const RESOURCE_LINKS = [
-  { l: "Global research", h: `${SITE_URL}/global-research/`, external: true },
-  { l: "News & knowledge", h: `${SITE_URL}/news/`, external: true },
+  { l: "Global research", h: "/global-research", external: false },
+  { l: "News & knowledge", h: "https://www.indexiagroup.com/news", external: true },
   { l: "Advertise with us", h: "/advertise-with-us", external: false },
 ];
 
