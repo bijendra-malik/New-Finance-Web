@@ -3,13 +3,8 @@ import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import { Link } from "react-router-dom";
 import { useMasters } from "../../hooks/useMasters";
-import {
-  fetchContinents,
-  fetchCountriesByContinent,
-  verifyPincode,
-  type Continent,
-  type Country,
-} from "../../api/masters";
+import { verifyPincode } from "../../api/masters";
+import { useLocationMasters } from "../../hooks/useLocationMasters";
 import { buildMailtoUrl } from "../../utils/mailto";
 import { advanceOnEnter } from "../../utils/enterToNext";
 import { getApiErrorMessage, getApiFieldErrors } from "../../utils/apiError";
@@ -73,9 +68,12 @@ const FranchiseForm = ({
   const [step, setStep] = useState(0);
   const [verifiedLocation, setVerifiedLocation] = useState<VerifiedLocation | null>(null);
   const [pincodeStatus, setPincodeStatus] = useState<"idle" | "verifying" | "notFound" | "error">("idle");
-  const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
-  const [continentsLoading, setContinentsLoading] = useState(true);
-  const [countryData, setCountryData] = useState<{ id: string; list: Country[] } | null>(null);
+  const {
+    continents: continentOptions,
+    continentsLoading,
+    countries: countryOptions,
+    countriesLoading,
+  } = useLocationMasters(values.continent);
   const [otpStage, setOtpStage] = useState(false);
   const [entryMobile, setEntryMobile] = useState("");
   const [maskedMobile, setMaskedMobile] = useState("");
@@ -89,47 +87,6 @@ const FranchiseForm = ({
 
   const packageId = packageIdProp || values.packageId || selectedPlanCode;
   const selectedPlan: FranchisePlan | undefined = plans.find((p) => p.id === packageId);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchContinents()
-      .then((list) => {
-        if (!cancelled) setContinentOptions(list);
-      })
-      .catch(() => {
-        if (!cancelled) setContinentOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setContinentsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const selectedContinent = continentOptions.find((item) => item.name === values.continent);
-
-  useEffect(() => {
-    if (!selectedContinent) return;
-    const id = selectedContinent._id;
-    let cancelled = false;
-    fetchCountriesByContinent(id)
-      .then((list) => {
-        if (!cancelled) setCountryData({ id, list });
-      })
-      .catch(() => {
-        if (!cancelled) setCountryData({ id, list: [] });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedContinent]);
-
-  const countryOptions =
-    selectedContinent && countryData?.id === selectedContinent._id ? countryData.list : [];
-  const countriesLoading = selectedContinent
-    ? countryData?.id !== selectedContinent._id
-    : false;
 
   const stateOptions = masters.states;
   const businessTypeOptions = masters.businessTypes;
