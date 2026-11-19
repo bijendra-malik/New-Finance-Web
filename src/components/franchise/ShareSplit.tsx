@@ -1,6 +1,5 @@
 import { PARTNER_SHARE, INDEXIA_SHARE } from "./franchiseData";
-
-const inr = (n: number) => `\u20B9${n.toLocaleString("en-IN")}`;
+import { formatINR } from "../../utils/formatters";
 
 interface ShareSplitProps {
   partner?: number;
@@ -52,7 +51,7 @@ export const ShareSplitBar = ({
               <p className="mt-1 text-lg font-extrabold text-slate-800">
                 {Math.round((r.value / total) * 100)}%
                 {r.amount !== undefined && (
-                  <span className="ml-2 text-sm font-semibold text-slate-400">({inr(r.amount)})</span>
+                  <span className="ml-2 text-sm font-semibold text-slate-400">({formatINR(r.amount)})</span>
                 )}
               </p>
             </div>
