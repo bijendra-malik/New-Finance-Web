@@ -100,6 +100,7 @@ const Header = () => {
     };
 
     const previousOverflow = document.body.style.overflow;
+    const menuButton = menuButtonRef.current;
     document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
 
@@ -107,16 +108,9 @@ const Header = () => {
       window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
-      menuButtonRef.current?.focus();
+      menuButton?.focus();
     };
   }, [mobileMenuOpen]);
-
-  // Never leave a menu open over the next page.
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    setOpenMobileDropdown(null);
-    setOpenDropdown(null);
-  }, [pathname]);
 
   type NavItem = { label: string; href: string; dropdown?: string; match?: string };
 
@@ -273,6 +267,7 @@ const Header = () => {
                               <Link
                                 key={item.slug}
                                 to={showDetailsMap[item.slug] ?? `/${item.slug}`}
+                                onClick={() => setOpenDropdown(null)}
                                 className="loan-item text-[12.5px] text-slate-600 py-2"
                               >
                                 <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
