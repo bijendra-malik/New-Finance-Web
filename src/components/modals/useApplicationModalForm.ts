@@ -18,11 +18,10 @@ import {
   verifyOTP,
   type AuthActionResponse,
 } from "../../api/auth";
-import { fetchContinents, fetchCountriesByContinent } from "../../api/masters";
-import type { Continent, Country } from "../../api/masters";
 import { useCaptcha } from "../../hooks/useCaptcha";
+import { useEmailOtp } from "../../hooks/useEmailOtp";
+import { useLocationMasters } from "../../hooks/useLocationMasters";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { EmailOtpUnavailableError, sendEmailOtp, verifyEmailOtp } from "../../api/emailOtp";
 import { loanKeyFor, loanLabelFor } from "../../constants/loanSlugs";
 import { markApplySessionPending } from "../../utils/applySession";
 import {
@@ -61,25 +60,28 @@ export const useApplicationModalForm = ({
   const [pan, __setPan] = useState("");
   const [continent, setContinent] = useState("");
   const [country, setCountry] = useState("");
-  const [continentOptions, setContinentOptions] = useState<Continent[]>([]);
-  const [continentsLoading, setContinentsLoading] = useState(true);
-  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
-  const [countriesLoading, setCountriesLoading] = useState(false);
+  const {
+    continents: continentOptions,
+    countries: countryOptions,
+    continentsLoading,
+    countriesLoading,
+  } = useLocationMasters(continent);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [emailChallenge, setEmailChallenge] = useState<{
-    email: string;
-    expiresAt: number;
-    signature: string;
-  } | null>(null);
-  const [emailOtp, setEmailOtp] = useState("");
-  const [emailOtpBusy, setEmailOtpBusy] = useState<"" | "send" | "verify">("");
-  const [emailOtpError, setEmailOtpError] = useState("");
-  const [emailOtpNotice, setEmailOtpNotice] = useState("");
-  const [emailOtpUnavailable, setEmailOtpUnavailable] = useState(false);
-  const [verifiedEmail, setVerifiedEmail] = useState("");
-  const cleanEmail = email.trim().toLowerCase();
-  const emailVerified = verifiedEmail !== "" && verifiedEmail === cleanEmail;
-  const emailOtpSent = !emailVerified && emailChallenge?.email === cleanEmail;
+  const {
+    cleanEmail,
+    verified: emailVerified,
+    sent: emailOtpSent,
+    unavailable: emailOtpUnavailable,
+    code: emailOtp,
+    setCode: setEmailOtp,
+    busy: emailOtpBusy,
+    error: emailOtpError,
+    setError: setEmailOtpError,
+    notice: emailOtpNotice,
+    send: handleSendEmailOtp,
+    verify: verifyEmailCode,
+    reset: resetEmailOtp,
+  } = useEmailOtp({ email, fullName });
   const [sentMobile, setSentMobile] = useState("");
   const [verifiedMobile, setVerifiedMobile] = useState("");
   const [mobileOtp, setMobileOtp] = useState("");
@@ -125,85 +127,13 @@ export const useApplicationModalForm = ({
   const selectContinent = (name: string) => {
     setContinent(name);
     setCountry("");
-    setCountryOptions([]);
-    setCountriesLoading(true);
     setFieldErrors((p) => ({ ...p, continent: "", country: "" }));
   };
 
-  const resetEmailOtp = () => {
-    setEmailChallenge(null);
-    setEmailOtp("");
-    setEmailOtpError("");
-    setEmailOtpNotice("");
-  };
+  /** Verify the emailed code and clear the field error once it is accepted. */
+  const handleVerifyEmailOtp = () =>
+    verifyEmailCode(() => setFieldErrors((p) => ({ ...p, email: "" })));
 
-  /** Mails a fresh code to the address typed above. */
-  const handleSendEmailOtp = async () => {
-    if (!EMAIL_REGEX.test(cleanEmail)) {
-      setEmailOtpError("Enter a valid email address first");
-      return;
-    }
-    setEmailOtpBusy("send");
-    setEmailOtpError("");
-    setEmailOtpNotice("");
-    try {
-      const response = await sendEmailOtp(cleanEmail, fullName.trim());
-      if (!response.success || !response.challenge) {
-        setEmailOtpError(response.message || "We could not send the OTP just now. Please try again.");
-        return;
-      }
-      setEmailChallenge({ email: cleanEmail, ...response.challenge });
-      setEmailOtp("");
-      setEmailOtpUnavailable(false);
-      setEmailOtpNotice(response.message || "OTP sent to your email.");
-    } catch (err) {
-      if (err instanceof EmailOtpUnavailableError) {
-        setEmailOtpUnavailable(true);
-        setEmailOtpError(err.message);
-        return;
-      }
-      setEmailOtpError(
-        err instanceof Error ? err.message : "We could not send the OTP just now. Please try again.",
-      );
-    } finally {
-      setEmailOtpBusy("");
-    }
-  };
-
-  const handleVerifyEmailOtp = async () => {
-    const code = emailOtp.replace(/\D/g, "");
-    if (!emailChallenge || emailChallenge.email !== cleanEmail) {
-      setEmailOtpError("Request a new OTP for this email address.");
-      return;
-    }
-    if (!/^\d{6}$/.test(code)) {
-      setEmailOtpError("Enter the 6-digit code from your email");
-      return;
-    }
-    setEmailOtpBusy("verify");
-    setEmailOtpError("");
-    setEmailOtpNotice("");
-    try {
-      const response = await verifyEmailOtp(cleanEmail, code, {
-        expiresAt: emailChallenge.expiresAt,
-        signature: emailChallenge.signature,
-      });
-      if (!response.success) {
-        setEmailOtpError(response.message || "That code is not correct. Please try again.");
-        return;
-      }
-      setVerifiedEmail(cleanEmail);
-      setEmailOtp("");
-      setEmailOtpNotice(response.message || "Email verified.");
-      setFieldErrors((p) => ({ ...p, email: "" }));
-    } catch (err) {
-      setEmailOtpError(
-        err instanceof Error ? err.message : "We could not verify the OTP. Please try again.",
-      );
-    } finally {
-      setEmailOtpBusy("");
-    }
-  };
   const [detailsBusy, setDetailsBusy] = useState(false);
 
   // ── Step 2 — the OTP gate (POST /auth/personal-loan → POST /auth/verify-otp) ──
@@ -228,8 +158,6 @@ export const useApplicationModalForm = ({
     __setPan("");
     setContinent("");
     setCountry("");
-    setCountryOptions([]);
-    setCountriesLoading(false);
     setFieldErrors({});
     setApiError("");
     setDetailsBusy(false);
@@ -296,42 +224,6 @@ export const useApplicationModalForm = ({
       document.body.style.overflow = previous;
     };
   }, [isOpen]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchContinents()
-      .then((list) => {
-        if (!cancelled) setContinentOptions(list);
-      })
-      .catch(() => {
-        if (!cancelled) setContinentOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setContinentsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    const picked = continentOptions.find((item) => item.name === continent);
-    if (!picked) return;
-    let cancelled = false;
-    fetchCountriesByContinent(picked._id)
-      .then((list) => {
-        if (!cancelled) setCountryOptions(list);
-      })
-      .catch(() => {
-        if (!cancelled) setCountryOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setCountriesLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [continentOptions, continent]);
 
   const productKey = activeProduct?.id ?? productName;
   const loanKey = loanKeyFor(productKey);
