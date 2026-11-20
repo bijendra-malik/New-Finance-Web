@@ -128,13 +128,6 @@ const AmountInput = ({ id, value, onChange, placeholder, className }: {
   />
 );
 
-// Icon wrappers
-const Icon = ({ d, cls = "w-4 h-4" }: { d: string; cls?: string }) => (
-  <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-    <path d={d} strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 // ── Main component ────────────────────────────────────────────────────────────
 const EligibilityCalculatorPage = () => {
   useSEO({
@@ -323,21 +316,6 @@ const EligibilityCalculatorPage = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-teal-50/40 to-emerald-50/30 mt-(--header-h)">
-
-      {/* Top nav bar */}
-      <div
-        className="sticky top-(--header-h) z-20 flex items-center gap-3 px-6 py-4 shadow-sm"
-        style={{ background: "linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-teal) 100%)" }}
-      >
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 transition cursor-pointer"
-          aria-label="Go back"
-        >
-          <Icon d="M15 19l-7-7 7-7" cls="w-4 h-4 text-white" />
-        </button>
-        <span className="text-white font-semibold text-sm tracking-wide">Loan Eligibility Calculator</span>
-      </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
