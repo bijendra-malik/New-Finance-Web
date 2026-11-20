@@ -17,25 +17,17 @@ import { useAuth } from "../context/authContext";
 type Notice = { tone: "info" | "warn" | "error"; title: string; body: string } | null;
 
 const PORTAL_POINTS = [
-  "Check your franchisee agreement status at a glance",
+  "Check your Franchisee agreement status at a glance",
   "Keep plan, renewal and agreement details in one place",
-  "Track leads submitted under your franchisee agreement",
+  "Track leads submitted under your Franchisee agreement",
   "Review payout statements for successfully disbursed cases",
 ];
-
-const DEFAULT_NOTICE: Notice = {
-  tone: "info",
-  title: "Portal access is invitation-based",
-  body:
-    "Sign in with your franchisee ID and the PAN number from your franchisee application. " +
-    "Write to the franchise team if you need access.",
-};
 
 const FranchiseLoginPage = () => {
   useSEO({
     title: "Franchisee Login",
     description:
-      "Franchisee login for the Indexia Finance franchise partner portal. New here? Apply for a franchisee or submit a franchise enquiry.",
+      "Franchisee login for the Indexia Finance franchise partner portal. New here? Apply for a Franchisee or submit a franchise enquiry.",
     path: "/franchise-login",
   });
 
@@ -93,7 +85,7 @@ const FranchiseLoginPage = () => {
         setNotice({
           tone: "warn",
           title: "Verification incomplete",
-          body: "Your account was verified but no franchisee ID was returned. Please contact the franchise team.",
+          body: "Your account was verified but no Franchisee ID was returned. Please contact the franchise team.",
         });
         return;
       }
@@ -101,7 +93,7 @@ const FranchiseLoginPage = () => {
         setNotice({
           tone: "warn",
           title: "Sign-in failed",
-          body: "The franchisee ID does not match the PAN on this account. Check both details and try again.",
+          body: "The Franchisee ID does not match the PAN on this account. Check both details and try again.",
         });
         return;
       }
@@ -144,13 +136,13 @@ const FranchiseLoginPage = () => {
         breadcrumb="Franchisee Login"
         title="Franchisee"
         highlight="Login"
-        tagline="Partner portal access for Indexia Finance franchisees"
+        tagline="Partner portal access for Registered Franchisees"
       />
 
       <div className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 md:px-8">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:items-start">
-            {/* Left — an overview of the franchisee portal */}
+            {/* Left — an overview of the Franchisee portal */}
             <div className="lg:col-span-2">
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
                 Franchisee Portal
@@ -177,16 +169,16 @@ const FranchiseLoginPage = () => {
 
               <div className="mt-8 rounded-2xl p-5" style={{ background: "var(--brand-navy-14)" }}>
                 <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-(--brand-navy)">
-                  Not a franchisee yet?
+                  Not a Franchisee yet?
                 </h3>
                 <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">
-                  Review the franchisee business model, plan fees and the 80:20 payout structure, then apply.
+                  Review the Franchisee business model, plan fees and the 80:20 payout structure, then apply.
                 </p>
                 <Link
                   to="/franchise"
                   className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-(--brand-navy) hover:underline"
                 >
-                  View the franchisee opportunity →
+                  View the Franchisee opportunity →
                 </Link>
               </div>
             </div>
@@ -205,36 +197,9 @@ const FranchiseLoginPage = () => {
                     <FranchiseIcon name="lock" filled className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800">For registered franchisee partners only</h2>
+                    <h2 className="text-xl font-bold text-slate-800">For Registered Franchisee Partners Only</h2>
                   </div>
                 </div>
-
-                {/* Portal status — stated up front, not after a failed attempt */}
-                {notice && (
-                  <div
-                    role="status"
-                    className="mt-6 rounded-xl border px-4 py-3.5"
-                    style={
-                      notice.tone === "error"
-                        ? { background: "#fef2f2", borderColor: "#fecaca" }
-                        : notice.tone === "warn"
-                          ? { background: "#fff8e6", borderColor: "rgba(224,168,0,0.45)" }
-                          : { background: "var(--brand-navy-14)", borderColor: "var(--brand-navy-44)" }
-                    }
-                  >
-                    <p className="text-[12.5px] font-bold text-slate-700">{notice.title}</p>
-                    <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{notice.body}</p>
-                    {notice.tone !== "info" && (
-                      <a
-                        href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisee portal access request")}`}
-                        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
-                      >
-                        <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
-                        {FRANCHISE_EMAIL}
-                      </a>
-                    )}
-                  </div>
-                )}
 
                 <form onSubmit={handleSubmit} onKeyDown={advanceOnEnter} noValidate className="mt-6 space-y-5">
                   <div>
@@ -248,7 +213,7 @@ const FranchiseLoginPage = () => {
                         setFranchiseId(e.target.value.toUpperCase());
                         setErrors((p) => ({ ...p, franchiseId: undefined }));
                       }}
-                      placeholder="FRN000003"
+                      placeholder="IFFDN0001"
                       autoComplete="username"
                       className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-(--brand-navy) ${
                         errors.franchiseId ? "border-red-400 bg-red-50/40" : "border-slate-300"
@@ -277,7 +242,7 @@ const FranchiseLoginPage = () => {
                     />
                     {errors.panNumber && <p className="mt-1 text-[11.5px] font-medium text-red-500">{errors.panNumber}</p>}
                     <p id="franchise-pan-hint" className="mt-1 text-[11px] text-slate-400">
-                      Your password is the PAN number used in your franchisee application.
+                      Your password is the PAN number used in your Franchisee application.
                     </p>
                   </div>
 
@@ -292,33 +257,38 @@ const FranchiseLoginPage = () => {
                   </Button>
                 </form>
 
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setNotice({
-                        tone: "info",
-                        title: "Password reset",
-                        body: `Your password is the PAN number from your franchisee application. Write to ${FRANCHISE_EMAIL} if it needs to be re-issued.`,
-                      })
+                {/* Portal status — shown below the sign-in action */}
+                {notice && (
+                  <div
+                    role="status"
+                    className="mt-5 rounded-xl border px-4 py-3.5"
+                    style={
+                      notice.tone === "error"
+                        ? { background: "#fef2f2", borderColor: "#fecaca" }
+                        : notice.tone === "warn"
+                          ? { background: "#fff8e6", borderColor: "rgba(224,168,0,0.45)" }
+                          : { background: "var(--brand-navy-14)", borderColor: "var(--brand-navy-44)" }
                     }
-                    className="cursor-pointer text-[12.5px] font-semibold text-(--brand-navy) hover:underline focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44) rounded"
                   >
-                    Forgot Password?
-                  </button>
-                  <Link
-                    to="/franchise#become-a-franchisor"
-                    className="cursor-pointer text-[12.5px] font-semibold text-(--brand-navy) hover:underline rounded focus:outline-none focus:ring-2 focus:ring-(--brand-navy-44)"
-                  >
-                    Become a Franchisee →
-                  </Link>
-                </div>
+                    <p className="text-[12.5px] font-bold text-slate-700">{notice.title}</p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{notice.body}</p>
+                    {notice.tone !== "info" && (
+                      <a
+                        href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent("Franchisee portal access request")}`}
+                        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-(--brand-navy) hover:underline"
+                      >
+                        <FranchiseIcon name="mail" className="h-3.5 w-3.5" />
+                        {FRANCHISE_EMAIL}
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               <p className="mt-4 text-center text-[11.5px] leading-relaxed text-slate-400">
-                Looking to apply for a franchisee instead?{" "}
+                Looking to apply for a Franchisee instead?{" "}
                 <Link to="/franchise" className="font-semibold text-(--brand-navy) hover:underline">
-                  Go to the franchisee application
+                  Go to the Be A Franchisee Application
                 </Link>
                 . <br />
                 Waiting for approval?{" "}
@@ -326,7 +296,7 @@ const FranchiseLoginPage = () => {
                   to="/franchise-application-status"
                   className="font-semibold text-(--brand-navy) hover:underline"
                 >
-                  Check your franchisee application status
+                  Check your Franchisee application status
                 </Link>
                 .
               </p>
@@ -354,7 +324,7 @@ const FranchiseLoginPage = () => {
             </h2>
             <p className="mt-1 text-[13px] leading-relaxed text-slate-600">
               {welcome?.name ? `Welcome back, ${welcome.name}. ` : "Welcome back. "}
-              Your franchisee dashboard is opening now — you can also continue to it right away.
+              Your Franchisee dashboard is opening now — you can also continue to it right away.
             </p>
           </div>
         </div>
@@ -370,6 +340,14 @@ const FranchiseLoginPage = () => {
       </Modal>
     </>
   );
+};
+
+const DEFAULT_NOTICE: Notice = {
+  tone: "info",
+  title: "Portal access is invitation-based",
+  body:
+    "Sign in with your Franchisee ID and the PAN number from your Franchisee application. " +
+    "Write to the franchise team if you need access.",
 };
 
 export default FranchiseLoginPage;
