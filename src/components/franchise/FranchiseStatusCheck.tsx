@@ -149,7 +149,7 @@ const FranchiseStatusCheck = () => {
         </span>
         <div>
           <h2 id="franchise-status-title" className="text-xl font-bold text-slate-800">
-            Franchise Application Status
+            Franchisee Application Status
           </h2>
           <p className="text-[12.5px] text-slate-500">
             Already applied? Track it here — no portal login needed.
@@ -164,7 +164,7 @@ const FranchiseStatusCheck = () => {
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Application status</p>
                 <h3 className="mt-1 text-xl font-extrabold text-(--brand-navy)">
-                  {result.franchise?.name?.trim() || "Franchise application"}
+                  {result.franchise?.name?.trim() || "Franchisee application"}
                 </h3>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-bold ${tone.className}`}>{tone.label}</span>

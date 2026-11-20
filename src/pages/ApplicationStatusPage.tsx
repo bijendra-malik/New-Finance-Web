@@ -34,12 +34,12 @@ const ApplicationStatusPage = () => {
         description: "Enter your customer ID, PAN and registered mobile number. We send a one-time password to that mobile first, so the application details are only shown to you.",
         note: "Your customer ID was issued with your application (for example CUST000001).",
         switchLead: "Applied to become a franchisee instead?",
-        switchAction: "Check your franchise application status",
+        switchAction: "Check your franchisee application status",
         switchTo: "franchise" as const,
       }
     : {
-        eyebrow: "Franchise application support",
-        heading: "Follow your franchise application.",
+        eyebrow: "Franchisee application support",
+        heading: "Follow your franchisee application.",
         description: "Enter the mobile number and PAN used in your franchise application. We send a one-time password to that mobile before showing its latest update.",
         note: "Portal sign-in opens once your agreement is approved. You can check its status here at any time.",
         switchLead: "Checking a customer loan application instead?",
@@ -121,7 +121,7 @@ const ApplicationStatusPage = () => {
                     : "text-slate-500 hover:bg-slate-50 hover:text-(--brand-navy)"
                 }`}
               >
-                Franchise application
+                Franchisee application
               </button>
             </div>
 

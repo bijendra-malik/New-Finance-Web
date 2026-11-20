@@ -427,17 +427,10 @@ const CustomerStatusLookup = () => {
           </button>
           <div className="flex gap-3 text-slate-500">
             <a
-              href={`mailto:contact@indexiafinance.com?subject=${encodeURIComponent("Application status help")}`}
-              className="font-semibold text-(--brand-navy) hover:underline"
-            >
-              Not your mobile?
-            </a>
-            <span aria-hidden="true">·</span>
-            <a
               href="/franchise-application-status"
               className="font-semibold text-(--brand-navy) hover:underline"
             >
-              Franchise application status
+              Franchisee application status
             </a>
           </div>
         </div>
