@@ -347,7 +347,7 @@ const DEFAULT_NOTICE: Notice = {
   title: "Portal access is invitation-based",
   body:
     "Sign in with your Franchisee ID and the PAN number from your Franchisee application. " +
-    "Write to the franchise team if you need access.",
+    "Write to the franchise team if you need support.",
 };
 
 export default FranchiseLoginPage;
