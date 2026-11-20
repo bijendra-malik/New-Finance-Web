@@ -32,7 +32,7 @@ const ApplicationStatusPage = () => {
         eyebrow: "Customer application support",
         heading: "Your application, with a clear next step.",
         description: "Enter your customer ID, PAN and registered mobile number. We send a one-time password to that mobile first, so the application details are only shown to you.",
-        note: "Your customer ID was issued with your application (for example CUST000001).",
+        note: "Your customer ID was issued with your application (for example IFCDN000001).",
         switchLead: "Applied to become a Franchisee instead?",
         switchAction: "Check your Franchisee application status",
         switchTo: "franchise" as const,
