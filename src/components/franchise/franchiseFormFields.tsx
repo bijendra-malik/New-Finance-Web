@@ -27,7 +27,7 @@ export interface FranchiseFieldsProps {
   errors: Partial<Record<FieldKey, string>>;
   set: (key: FieldKey, value: string) => void;
   fid: (name: string) => string;
-  /** True for the franchisee application, which words a few fields differently. */
+  /** True for the Franchisee application, which words a few fields differently. */
   isFranchisee: boolean;
   presentation: FranchiseFormPresentation;
   businessTypeOptions: readonly string[];

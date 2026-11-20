@@ -16,7 +16,7 @@ const BeAFranchisorPage = () => {
   useSEO({
     title: "Be a Franchisee",
     description:
-      "Become an Indexia Finance franchisee — published plans with clear fees and validity, an 80:20 payout share on eligible disbursed cases, and access to partner banks and NBFCs.",
+      "Become an Indexia Finance Franchisee — published plans with clear fees and validity, an 80:20 payout share on eligible disbursed cases, and access to partner banks and NBFCs.",
     path: "/franchise",
   });
 

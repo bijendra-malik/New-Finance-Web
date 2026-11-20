@@ -1,4 +1,4 @@
-// The products a franchisee can file, and the labels the portal shows for them.
+// The products a Franchisee can file, and the labels the portal shows for them.
 // Every product's `key` is also the slug the filing dashboard is opened with
 // (/franchisor-dashboard/apply/<key>), so it must match PRODUCT_FORMS in
 // productForms.ts and the backend's product key.

@@ -44,7 +44,7 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     id: "02",
     icon: "user-plus",
     title: "Franchisee Code",
-    desc: "After reviewing your details, Indexia Finance will provide you with a franchisee code, user ID and password.",
+    desc: "After reviewing your details, Indexia Finance will provide you with a Franchisee code, user ID and password.",
   },
   {
     id: "03",
@@ -76,7 +76,7 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     id: "07",
     icon: "share",
     title: "Payout to the Franchisee",
-    desc: "Following successful loan disbursement, the payout will be credited to the franchisee by the 10th of every month, as per the applicable payout terms.",
+    desc: "Following successful loan disbursement, the payout will be credited to the Franchisee by the 10th of every month, as per the applicable payout terms.",
   },
 ];
 
@@ -95,7 +95,7 @@ export interface FranchisePlan {
 
 export const AGREEMENT_FEE = "\u20B930,000 + GST";
 export const AGREEMENT_FEE_NOTE =
-  "\u20B930,000 + GST franchisee agreement fee is adjustable against payout under the monthly plan, subject to applicable terms.";
+  "\u20B930,000 + GST Franchisee agreement fee is adjustable against payout under the monthly plan, subject to applicable terms.";
 
 export const BENEFITS = [
   { icon: "network", title: "Access to Banks & NBFCs", desc: "Place eligible customer cases with a wide panel of partner banks and NBFCs from a single desk." },
@@ -135,6 +135,6 @@ export const FRANCHISE_FAQS = [
   },
   {
     q: "How do I become a Franchisee?",
-    a: "Use the \u201CApply for a Franchise\u201D form with your name, mobile number, email address, PAN number, state and city. Our team reviews the details and issues your franchisee code, user ID and password.",
+    a: "Use the \u201CApply for a Franchise\u201D form with your name, mobile number, email address, PAN number, state and city. Our team reviews the details and issues your Franchisee code, user ID and password.",
   },
 ];

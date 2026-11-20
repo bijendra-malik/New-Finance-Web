@@ -202,7 +202,7 @@ const FranchiseStatusCheck = () => {
 
           {result.canLogin ? (
             <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-              Your franchisee access is active. Sign in above with your franchisee ID and registered mobile number.
+              Your Franchisee access is active. Sign in above with your Franchisee ID and registered mobile number.
             </p>
           ) : (
             <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">

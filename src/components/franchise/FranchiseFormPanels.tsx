@@ -37,7 +37,7 @@ export const SubmittedPanel = ({
       <p className="mx-auto text-sm leading-relaxed text-slate-600">
         Your mobile number is verified and your franchise application has been received. Our team
         will review your details — once approved, sign in with your{" "}
-        <strong>franchisee ID and the PAN number from this application</strong>.
+        <strong>Franchisee ID and the PAN number from this application</strong>.
       </p>
 
       <dl className="mx-auto mt-6 space-y-1.5 rounded-xl border border-emerald-200 bg-white p-4 text-left text-[12.5px]">
@@ -67,7 +67,7 @@ export const SubmittedPanel = ({
         ) : (
         <span
           aria-disabled="true"
-          title="Sign in to access the franchisee portal"
+          title="Sign in to access the Franchisee portal"
           className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white/60"
           style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
         >
@@ -86,7 +86,7 @@ interface EnquiryReadyPanelProps {
   onSubmitAnother: () => void;
 }
 
-/** Non-franchisee enquiry: the email draft is open, the applicant sends it themselves. */
+/** Non-Franchisee enquiry: the email draft is open, the applicant sends it themselves. */
 export const EnquiryReadyPanel = ({ values, mailtoHref, onSubmitAnother }: EnquiryReadyPanelProps) => (
   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center">
     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--brand-teal)">
@@ -165,7 +165,7 @@ export const OtpStagePanel = ({
     <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--brand-teal)">Verify your mobile</p>
     <h3 className="mt-2 text-xl font-extrabold text-(--brand-navy)">One step left — confirm your OTP</h3>
     <p className="mt-2 text-[13px] leading-relaxed text-slate-600">
-      Your application has been received. Enter the OTP sent to your registered mobile number to verify your franchisee access.
+      Your application has been received. Enter the OTP sent to your registered mobile number to verify your Franchisee access.
     </p>
     <div className="mt-5">
       <OtpEntryPanel

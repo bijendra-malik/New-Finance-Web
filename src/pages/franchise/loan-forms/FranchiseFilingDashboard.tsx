@@ -105,7 +105,7 @@ const FranchiseFilingDashboard = () => {
   useSEO({
     title: product ? `File a ${product.name} — Franchisee Dashboard` : "Filing a loan — Franchisee Dashboard",
     description:
-      "File a loan application for a registered client from the Indexia Finance franchisee workspace: pick the client, fill the product form, then enter the credit score to submit.",
+      "File a loan application for a registered client from the Indexia Finance Franchisee workspace: pick the client, fill the product form, then enter the credit score to submit.",
     path: `/franchisor-dashboard/apply/${productKey}`,
   });
 
@@ -114,7 +114,7 @@ const FranchiseFilingDashboard = () => {
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customersError, setCustomersError] = useState<string | null>(null);
   const [pickedCustomer, setPickedCustomer] = useState<FranchiseCustomer | null>(null);
-  /** A step the franchisee navigated to themselves; null means "follow the flow". */
+  /** A step the Franchisee navigated to themselves; null means "follow the flow". */
   const [view, setView] = useState<StepKey | null>(null);
   const [proceededHere, setProceededHere] = useState(false);
   const [finalized, setFinalized] = useState(false);

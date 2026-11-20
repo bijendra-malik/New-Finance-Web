@@ -5,7 +5,7 @@ import type { ApplicantPrefill } from "./applicantPrefillContext";
 /**
  * Supplies the identity a hosted application form should fill and lock — used by
  * the franchisor portal so a form applies for the selected client rather than the
- * signed-in franchisee.
+ * signed-in Franchisee.
  */
 export const ApplicantPrefillProvider = ({
   value,

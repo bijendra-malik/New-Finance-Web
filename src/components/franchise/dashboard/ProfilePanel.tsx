@@ -24,7 +24,7 @@ const locationLabel = (profile: FranchiseAccount | null): string | undefined => 
 };
 
 /**
- * My Details section: the franchisee's own profile and the key facts of the
+ * My Details section: the Franchisee's own profile and the key facts of the
  * franchise account. The live profile wins; the stored session covers the
  * fields the service has not reported yet.
  */

@@ -12,7 +12,7 @@ import FranchiseIcon from "./FranchiseIcon";
  * previewing them here was what made the page read as repeating itself.
  */
 interface FranchiseHeroProps {
-  /** Opens the franchisee application popup. */
+  /** Opens the Franchisee application popup. */
   onApply: () => void;
 }
 
@@ -85,7 +85,7 @@ const FranchiseHero = ({ onApply }: FranchiseHeroProps) => {
               ) : (
                 <span
                   aria-disabled="true"
-                  title="Sign in to access the franchisee portal"
+                  title="Sign in to access the Franchisee portal"
                   className="cursor-not-allowed font-bold text-white/45"
                 >
                   Sign in first to reach your dashboard

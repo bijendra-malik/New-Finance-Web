@@ -1,6 +1,6 @@
 /**
  * Static shape of the franchise application form: the field values it collects,
- * the franchisee step order, and the API↔form field mapping.
+ * the Franchisee step order, and the API↔form field mapping.
  *
  * Kept out of the component so the form itself reads as behaviour rather than
  * a wall of literal definitions.

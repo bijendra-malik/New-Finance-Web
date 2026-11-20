@@ -297,7 +297,7 @@ const FranchiseForm = ({
     void submitApplication(current);
   };
 
-  // ── OTP verification for the franchisee application ──────────────────────
+  // ── OTP verification for the Franchisee application ──────────────────────
   const verifyEntryOtp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!/^\d{6}$/.test(otp)) {
@@ -389,7 +389,7 @@ const FranchiseForm = ({
           ) : (
           <span
             aria-disabled="true"
-            title="Sign in to access the franchisee portal"
+            title="Sign in to access the Franchisee portal"
             className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white/60"
             style={{ background: "linear-gradient(135deg,var(--brand-navy),var(--brand-dark))", opacity: 0.6 }}
           >
@@ -585,7 +585,7 @@ const FranchiseForm = ({
         )}
       </div>
 
-      {/* Selected plan summary — franchisee only, rendered from the shared PlanSummary module. */}
+      {/* Selected plan summary — Franchisee only, rendered from the shared PlanSummary module. */}
       {isFranchisee && !isStepped && planSummaryBlock}
 
       {/* Consent declaration — a required checkbox, shown with the submit control. */}

@@ -1,4 +1,4 @@
-// Tenure math for the franchisee dashboard's current plan.
+// Tenure math for the Franchisee dashboard's current plan.
 //
 // The franchise service reports the plan a partner is on (duration in months)
 // and the dates around the agreement. Nothing reports an explicit expiry date,

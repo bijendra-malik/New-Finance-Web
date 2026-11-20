@@ -3,7 +3,7 @@ import FranchiseIcon from "./FranchiseIcon";
 import useFranchisorLoginAccess from "../../hooks/useFranchisorLoginAccess";
 
 interface FranchiseCTAProps {
-  /** Opens the franchisee application popup. */
+  /** Opens the Franchisee application popup. */
   onApply: () => void;
 }
 
@@ -65,7 +65,7 @@ const FranchiseCTA = ({ onApply }: FranchiseCTAProps) => {
         ) : (
           <span
             aria-disabled="true"
-            title="Sign in to access the franchisee portal"
+            title="Sign in to access the Franchisee portal"
             className="cursor-not-allowed font-bold text-white/45"
           >
             Franchisee Login — sign in first

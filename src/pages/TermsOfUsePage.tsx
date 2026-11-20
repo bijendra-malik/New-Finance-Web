@@ -288,7 +288,7 @@ const TermsOfUsePage = () => {
               Indexia Finance helps you apply for loans offered by banks, non-banking
               financial companies (NBFCs) and other lenders, check your initial
               eligibility, track your application, and apply to partner with us as a
-              franchisee. Loan applications submitted through this website are assessed
+              Franchisee. Loan applications submitted through this website are assessed
               and decided by the lender, not by us.
             </p>
             <p>

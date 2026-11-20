@@ -33,13 +33,13 @@ const ApplicationStatusPage = () => {
         heading: "Your application, with a clear next step.",
         description: "Enter your customer ID, PAN and registered mobile number. We send a one-time password to that mobile first, so the application details are only shown to you.",
         note: "Your customer ID was issued with your application (for example CUST000001).",
-        switchLead: "Applied to become a franchisee instead?",
-        switchAction: "Check your franchisee application status",
+        switchLead: "Applied to become a Franchisee instead?",
+        switchAction: "Check your Franchisee application status",
         switchTo: "franchise" as const,
       }
     : {
         eyebrow: "Franchisee application support",
-        heading: "Follow your franchisee application.",
+        heading: "Follow your Franchisee application.",
         description: "Enter the mobile number and PAN used in your franchise application. We send a one-time password to that mobile before showing its latest update.",
         note: "Portal sign-in opens once your agreement is approved. You can check its status here at any time.",
         switchLead: "Checking a customer loan application instead?",

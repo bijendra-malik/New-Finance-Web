@@ -228,7 +228,7 @@ const PrivacyPolicyPage = () => {
             <p className="mt-3 text-sm leading-7 text-gray-600 md:text-[15px]">
               This privacy policy sets out how Indexia Finance uses and protects any
               information that you give us when you use this website, apply for a loan
-              or apply to partner with us as a franchisee.
+              or apply to partner with us as a Franchisee.
             </p>
             <p className="mt-3 text-sm leading-7 text-gray-600 md:text-[15px]">
               Indexia Finance is committed to ensuring that your privacy is protected.
@@ -293,7 +293,7 @@ const PrivacyPolicyPage = () => {
             <p>
               We help you apply for loans offered by banks, non-banking financial
               companies (NBFCs) and other lenders, check your initial eligibility, track
-              your application, and apply to partner with us as a franchisee. Loan
+              your application, and apply to partner with us as a Franchisee. Loan
               applications are assessed and decided by the lender, not by us.
             </p>
           </Section>

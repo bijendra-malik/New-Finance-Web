@@ -144,7 +144,7 @@ const ApplicationDetailsModal = ({ open, loan, onClose }: ApplicationDetailsModa
                     id="filed-details-heading"
                     className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400"
                   >
-                    Details filed by franchisee
+                    Details filed by Franchisee
                   </h3>
                   <p className="text-[11px] font-semibold text-slate-400">
                     {fieldCount} field{fieldCount === 1 ? "" : "s"}

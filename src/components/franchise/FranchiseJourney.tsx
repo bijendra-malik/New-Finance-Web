@@ -4,12 +4,12 @@ import { JOURNEY_STEPS } from "./franchiseData";
 
 /**
  * One journey, told once: application through to the payout landing with the
- * franchisee.
+ * Franchisee.
  *
- * The seven steps follow the franchisee's own sequence — apply, receive the
- * franchisee code, file the customer application, get it placed with the right
+ * The seven steps follow the Franchisee's own sequence — apply, receive the
+ * Franchisee code, file the customer application, get it placed with the right
  * bank or NBFC, then the lender decision, disbursement and payout. Steps whose
- * outcome is not in the franchisee's hands are marked, so approval and
+ * outcome is not in the Franchisee's hands are marked, so approval and
  * disbursement are not read as things the franchise controls.
  */
 const FranchiseJourney = () => (
@@ -50,7 +50,7 @@ const FranchiseJourney = () => (
 
           {step.external && (
             <p className="mt-4 text-[10.5px] font-bold uppercase tracking-widest text-(--brand-navy)">
-              Outside the franchisee&apos;s control
+              Outside the Franchisee&apos;s control
             </p>
           )}
         </li>

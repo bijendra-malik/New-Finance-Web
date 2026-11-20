@@ -45,7 +45,7 @@ const FranchisorDashboardPage = () => {
   useSEO({
     title: "Franchisee Dashboard — Customers, Loans & Applications",
     description:
-      "The Indexia Finance franchisee dashboard: agreement status, registered customers, every loan application filed under your franchise, and filing for a client — all in one workspace.",
+      "The Indexia Finance Franchisee dashboard: agreement status, registered customers, every loan application filed under your franchise, and filing for a client — all in one workspace.",
     path: "/franchisor-dashboard",
   });
 
@@ -190,7 +190,7 @@ const FranchisorDashboardPage = () => {
           breadcrumb="Franchisee Dashboard"
           title="Franchisee"
           highlight="Dashboard"
-          tagline="Partner workspace for Indexia Finance franchisees"
+          tagline="Partner workspace for Indexia Finance Franchisees"
         />
         <div className="bg-white">
           <div className="mx-auto max-w-3xl px-6 py-14 md:px-8">
@@ -232,7 +232,7 @@ const FranchisorDashboardPage = () => {
                   to="/franchise"
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-base font-bold text-slate-600 transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33) focus:ring-offset-1"
                 >
-                  Not a franchisee yet? Apply
+                  Not a Franchisee yet? Apply
                 </Link>
               </div>
             </div>
