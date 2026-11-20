@@ -353,21 +353,6 @@ const EligibilityCalculatorPage = () => {
             <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto">
               Check how much loan you can get — it takes under 2 minutes and needs no documents.
             </p>
-
-            {/* Progress pills */}
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {["Personal Details", "Financial Info", "Get Results"].map((step, i) => (
-                <div key={step} className="flex items-center gap-2">
-                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${i === 0 ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-500"
-                    }`}>
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? "bg-white text-teal-600" : "bg-gray-300 text-gray-600"
-                      }`}>{i + 1}</span>
-                    {step}
-                  </div>
-                  {i < 2 && <div className="w-6 h-px bg-gray-300" />}
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -679,9 +664,9 @@ const EligibilityCalculatorPage = () => {
                 </div>
                 <span className="text-sm text-gray-500 leading-relaxed">
                   I authorise the website and its partner providers to call or SMS me in connection with my application and agree to the{" "}
-                    <Link to="/terms-of-use" className="font-semibold text-(--brand-teal) underline">
-                      Terms of Use
-                    </Link>.
+                  <Link to="/terms-of-use" className="font-semibold text-(--brand-teal) underline">
+                    Terms of Use
+                  </Link>.
                 </span>
               </label>
               {errors.authorized && <p className="text-xs text-red-500 -mt-5 mb-5 ml-8">{errors.authorized}</p>}
