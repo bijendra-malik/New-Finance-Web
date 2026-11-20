@@ -7,6 +7,8 @@ import CustomerRegistry from "../components/franchise/dashboard/CustomerRegistry
 import AllLoansSection from "../components/franchise/dashboard/AllLoansSection";
 import PlanPanel from "../components/franchise/dashboard/PlanPanel";
 import NotificationBell from "../components/franchise/dashboard/NotificationBell";
+import NotificationsPanel from "../components/franchise/dashboard/NotificationsPanel";
+import { useNotificationReadState } from "../components/franchise/dashboard/franchiseNotifications";
 import ProfilePanel from "../components/franchise/dashboard/ProfilePanel";
 import LoanFormsMenu from "./franchise/loan-forms/LoanFormsMenu";
 import { FRANCHISE_EMAIL } from "../components/franchise/franchiseData";
@@ -69,6 +71,8 @@ const FranchisorDashboardPage = () => {
 
   const [notice, setNotice] = useState<string | null>(null);
   const [applyForCustomer, setApplyForCustomer] = useState<FranchiseCustomer | null>(null);
+
+  const { readIds, markRead, markAllRead } = useNotificationReadState(session?.franchiseId ?? "");
 
   const section = resolveSection(searchParams.get("section"));
 
@@ -371,8 +375,11 @@ const FranchisorDashboardPage = () => {
               <NotificationBell
                 loans={loans}
                 customers={customers}
-                franchiseId={session.franchiseId}
+                readIds={readIds}
+                onMarkRead={markRead}
+                onMarkAllRead={markAllRead}
                 onOpenSection={goToSection}
+                onViewAll={() => goToSection("notifications")}
               />
             </header>
 
@@ -443,6 +450,20 @@ const FranchisorDashboardPage = () => {
                   loading={loadingLoans}
                   error={loansError}
                   onReload={() => void loadLoans()}
+                />
+              )}
+
+              {section === "notifications" && (
+                <NotificationsPanel
+                  loans={loans}
+                  customers={customers}
+                  loading={loadingLoans || loadingCustomers}
+                  error={loansError ?? customersError}
+                  onReload={() => void refreshAll()}
+                  readIds={readIds}
+                  onMarkRead={markRead}
+                  onMarkAllRead={markAllRead}
+                  onOpenSection={goToSection}
                 />
               )}
 

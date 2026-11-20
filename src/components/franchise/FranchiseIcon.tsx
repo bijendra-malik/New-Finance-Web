@@ -7,7 +7,7 @@ export type FranchiseIconName =
   | "network" | "products" | "share" | "plans" | "opportunity" | "support" | "digital" | "scale"
   | "join" | "lead" | "process"
   | "unsecured" | "secured"
-  | "check" | "shield" | "rupee" | "clock" | "doc" | "lock" | "mail" | "phone" | "user" | "handshake" | "search" | "user-plus" | "layers" | "pen-line";
+  | "check" | "shield" | "rupee" | "clock" | "doc" | "lock" | "mail" | "phone" | "user" | "handshake" | "search" | "user-plus" | "layers" | "pen-line" | "bell";
 
 const PATHS: Record<FranchiseIconName, React.ReactNode> = {
   network: (
@@ -178,6 +178,12 @@ const PATHS: Record<FranchiseIconName, React.ReactNode> = {
     <>
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M6 9a6 6 0 0 1 12 0c0 4.2 1.4 5.7 2 6.2.4.4.2 1.3-.6 1.3H4.6c-.8 0-1-.9-.6-1.3C4.6 14.7 6 13.2 6 9z" />
+      <path d="M10 19.5a2.2 2.2 0 0 0 4 0" />
     </>
   ),
 };

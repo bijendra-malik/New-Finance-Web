@@ -1,92 +1,39 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FranchiseIcon from "../FranchiseIcon";
-import { formatDate, loanApplicationNo, loanCustomerName, loanProductName, loanStatus, loanSubmittedAt, loanUpdatedAt } from "./franchiseFormat";
+import {
+  NOTIFICATION_ICON,
+  relativeTime,
+  useFranchiseNotifications,
+  type NotificationTarget,
+} from "./franchiseNotifications";
 import type { FranchiseCustomer, FranchiseCustomerLoan } from "../../../api/franchiseCustomers";
 
-type Target = "loans" | "customers";
-
-interface UpdateItem {
-  id: string;
-  target: Target;
-  title: string;
-  detail: string;
-  at?: string;
-}
+const PREVIEW_COUNT = 10;
 
 interface NotificationBellProps {
   loans: FranchiseCustomerLoan[];
   customers: FranchiseCustomer[];
-  franchiseId: string;
-  onOpenSection: (section: Target) => void;
+  readIds: string[];
+  onMarkRead: (id: string) => void;
+  onMarkAllRead: (ids: string[]) => void;
+  onOpenSection: (target: NotificationTarget) => void;
+  onViewAll: () => void;
 }
 
-const READ_KEY_PREFIX = "indexia_franchise_updates_read:";
-const MAX_STORED_IDS = 200;
-
-const readStoredIds = (prefix: string, franchiseId: string): string[] => {
-  try {
-    const raw = localStorage.getItem(`${prefix}${franchiseId}`);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeStoredIds = (prefix: string, franchiseId: string, ids: string[]): void => {
-  try {
-    localStorage.setItem(`${prefix}${franchiseId}`, JSON.stringify(ids.slice(-MAX_STORED_IDS)));
-  } catch {
-    // a full browser should not break the dashboard
-  }
-};
-
-const timeValue = (iso?: string): number => {
-  if (!iso) return 0;
-  const time = new Date(iso).getTime();
-  return Number.isNaN(time) ? 0 : time;
-};
-
-const relativeTime = (iso?: string): string => {
-  const time = timeValue(iso);
-  if (!time) return "";
-  const diff = Date.now() - time;
-  if (diff < 60_000) return "Just now";
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
-  if (diff < 172_800_000) return "Yesterday";
-  if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)}d ago`;
-  return formatDate(iso);
-};
-
-const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: NotificationBellProps) => {
+const NotificationBell = ({
+  loans,
+  customers,
+  readIds,
+  onMarkRead,
+  onMarkAllRead,
+  onOpenSection,
+  onViewAll,
+}: NotificationBellProps) => {
   const [open, setOpen] = useState(false);
-  const [readIds, setReadIds] = useState<string[]>(() => readStoredIds(READ_KEY_PREFIX, franchiseId));
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const items = useMemo<UpdateItem[]>(() => {
-    const loanUpdates = loans.map((loan) => ({      id: `loan-${loanApplicationNo(loan)}`,
-      target: "loans" as const,
-      title: `${loanProductName(loan)} · ${loanStatus(loan)}`,
-      detail: [loanCustomerName(loan), loanApplicationNo(loan)].filter(Boolean).join(" · "),
-      at: loanUpdatedAt(loan) ?? loanSubmittedAt(loan),
-    }));
-
-    const customerUpdates = customers.map((customer) => ({
-      id: `customer-${customer._id}`,
-      target: "customers" as const,
-      title: "New customer registered",
-      detail: [customer.fullName, customer.mobile].filter(Boolean).join(" · "),
-      at: customer.createdAt,
-    }));
-
-    return [...loanUpdates, ...customerUpdates]
-      .filter((item) => timeValue(item.at) > 0)
-      .sort((a, b) => timeValue(b.at) - timeValue(a.at))
-      .slice(0, 8);
-  }, [loans, customers]);
-
-  const readSet = useMemo(() => new Set(readIds), [readIds]);
+  const items = useFranchiseNotifications(loans, customers).slice(0, PREVIEW_COUNT);
+  const readSet = new Set(readIds);
   const unreadCount = items.filter((item) => !readSet.has(item.id)).length;
 
   useEffect(() => {
@@ -107,20 +54,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
 
   const toggle = () => setOpen((wasOpen) => !wasOpen);
 
-  const markRead = (id: string) => {
-    if (readIds.includes(id)) return;
-    const next = [...readIds, id];
-    setReadIds(next);
-    writeStoredIds(READ_KEY_PREFIX, franchiseId, next);
-  };
-
-  const markAllRead = () => {
-    const next = Array.from(new Set([...readIds, ...items.map((item) => item.id)]));
-    setReadIds(next);
-    writeStoredIds(READ_KEY_PREFIX, franchiseId, next);
-  };
-
-  const goTo = (target: Target) => {
+  const goTo = (target: NotificationTarget) => {
     setOpen(false);
     onOpenSection(target);
   };
@@ -148,7 +82,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
         onClick={toggle}
         aria-expanded={open}
         aria-controls="franchise-updates-panel"
-        aria-label={unreadCount > 0 ? `Updates, ${unreadCount} unread` : "Updates"}
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
       >
         {bellIcon}
@@ -171,16 +105,13 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
         >
           <div className="border-b border-slate-100 px-4 py-3">
             <h2 id="franchise-updates-heading" className="text-[13px] font-extrabold text-slate-800">
-              Latest updates
+              Latest notifications
             </h2>
-            <p className="mt-0.5 text-[11.5px] text-slate-500">
-              Newest customer registrations and loan changes first.
-            </p>
           </div>
 
           {items.length === 0 ? (
             <p className="px-4 py-8 text-center text-[12px] leading-relaxed text-slate-500">
-              No updates yet. Registrations and loan status changes will appear here.
+              No notifications yet. Registrations and loan status changes will appear here.
             </p>
           ) : (
             <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
@@ -191,7 +122,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                     <button
                       type="button"
                       onClick={() => {
-                        markRead(item.id);
+                        onMarkRead(item.id);
                         goTo(item.target);
                       }}
                       className="flex min-w-0 flex-1 items-start gap-3 text-left focus:outline-none focus-visible:bg-slate-50"
@@ -201,10 +132,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                         style={{ background: "var(--brand-navy-14)", color: "var(--brand-navy)" }}
                         aria-hidden="true"
                       >
-                        <FranchiseIcon
-                          name={item.target === "loans" ? "layers" : "user-plus"}
-                          className="h-4 w-4"
-                        />
+                        <FranchiseIcon name={NOTIFICATION_ICON[item.kind]} className="h-4 w-4" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-start gap-2">
@@ -235,7 +163,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
                       {unread && (
                         <button
                           type="button"
-                          onClick={() => markRead(item.id)}
+                          onClick={() => onMarkRead(item.id)}
                           title="Mark as read"
                           aria-label={`Mark “${item.title}” as read`}
                           className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-(--brand-teal-14) hover:text-(--brand-navy) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
@@ -255,7 +183,7 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
           <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5">
             <button
               type="button"
-              onClick={markAllRead}
+              onClick={() => onMarkAllRead(items.map((item) => item.id))}
               disabled={unreadCount === 0}
               className="text-[12px] font-bold text-slate-500 transition hover:text-(--brand-navy) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33) disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -263,10 +191,13 @@ const NotificationBell = ({ loans, customers, franchiseId, onOpenSection }: Noti
             </button>
             <button
               type="button"
-              onClick={() => goTo("loans")}
+              onClick={() => {
+                setOpen(false);
+                onViewAll();
+              }}
               className="text-[12px] font-bold text-(--brand-navy) hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
             >
-              View all applications →
+              View all notifications →
             </button>
           </div>
         </div>

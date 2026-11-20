@@ -2,7 +2,7 @@
 
 import type { FranchiseIconName } from "../FranchiseIcon";
 
-export type Section = "overview" | "customers" | "loans" | "apply" | "profile" | "plan";
+export type Section = "overview" | "customers" | "loans" | "notifications" | "apply" | "profile" | "plan";
 
 export const SECTIONS: { id: Section; label: string; icon: FranchiseIconName; description: string }[] = [
   {
@@ -22,6 +22,12 @@ export const SECTIONS: { id: Section; label: string; icon: FranchiseIconName; de
     label: "All Loans",
     icon: "layers",
     description: "Every application filed under your franchise ID, with its live status.",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    icon: "bell",
+    description: "Every customer registration and loan status change under your franchise.",
   },
   {
     id: "apply",
@@ -47,6 +53,7 @@ export const resolveSection = (raw: string | null): Section => {
   if (
     raw === "customers" ||
     raw === "loans" ||
+    raw === "notifications" ||
     raw === "apply" ||
     raw === "overview" ||
     raw === "profile" ||
