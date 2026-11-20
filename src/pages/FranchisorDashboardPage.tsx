@@ -72,7 +72,7 @@ const FranchisorDashboardPage = () => {
   const [notice, setNotice] = useState<string | null>(null);
   const [applyForCustomer, setApplyForCustomer] = useState<FranchiseCustomer | null>(null);
 
-  const { readIds, markRead, markAllRead } = useNotificationReadState(session?.franchiseId ?? "");
+  const { readState, markRead, markAllRead } = useNotificationReadState(session?.franchiseId ?? "");
 
   const section = resolveSection(searchParams.get("section"));
 
@@ -373,9 +373,7 @@ const FranchisorDashboardPage = () => {
               </div>
 
               <NotificationBell
-                loans={loans}
-                customers={customers}
-                readIds={readIds}
+                readState={readState}
                 onMarkRead={markRead}
                 onMarkAllRead={markAllRead}
                 onOpenSection={goToSection}
@@ -455,12 +453,7 @@ const FranchisorDashboardPage = () => {
 
               {section === "notifications" && (
                 <NotificationsPanel
-                  loans={loans}
-                  customers={customers}
-                  loading={loadingLoans || loadingCustomers}
-                  error={loansError ?? customersError}
-                  onReload={() => void refreshAll()}
-                  readIds={readIds}
+                  readState={readState}
                   onMarkRead={markRead}
                   onMarkAllRead={markAllRead}
                   onOpenSection={goToSection}
