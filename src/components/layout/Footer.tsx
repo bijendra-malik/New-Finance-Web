@@ -32,6 +32,10 @@ const LEGAL_LINKS = [
   { l: "Terms & Conditions", h: "/terms-conditions" },
 ];
 
+const CONTAINER = "mx-auto w-full max-w-[80rem] px-5 sm:px-6";
+const LINK_BASE =
+  "flex items-center justify-between gap-4 py-[9px] text-[14.5px] text-white/[0.86] no-underline transition-colors hover:text-[var(--brand-yellow)]";
+
 const Footer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaAllowed = useHeavyMediaAllowed();
@@ -70,466 +74,260 @@ const Footer = () => {
     const inner = (
       <>
         <span>{item.l}</span>
-        <span className="ftr-arrow" aria-hidden="true">{item.external ? "↗" : "→"}</span>
+        <span
+          aria-hidden="true"
+          className="text-[12px] text-white/30 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-(--brand-yellow)"
+        >
+          {item.external ? "↗" : "→"}
+        </span>
       </>
     );
     return item.external ? (
-      <a key={item.l} href={item.h} target="_blank" rel="noreferrer" className="ftr-link">
+      <a key={item.l} href={item.h} target="_blank" rel="noreferrer" className={`group ${LINK_BASE}`}>
         {inner}
       </a>
     ) : (
-      <Link key={item.l} to={item.h} className="ftr-link">
+      <Link key={item.l} to={item.h} className={`group ${LINK_BASE}`}>
         {inner}
       </Link>
     );
   };
 
   return (
-    <>
-      <style>{`
-      .ftr-root {
-        position: relative;
-        overflow: hidden;
-      }
-      .ftr-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, var(--brand-navy-deep) 0%, var(--brand-navy) 60%, var(--brand-navy-light) 100%);
-        z-index: 0;
-      }
-      .ftr-bg {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        opacity: 0.07;
-        pointer-events: none;
-        user-select: none;
-        z-index: 0;
-      }
-      .ftr-content { position: relative; z-index: 1; }
-      .ftr-inner {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding-left: 24px;
-        padding-right: 24px;
-      }
+    <footer className="relative overflow-hidden bg-(--brand-navy-deep)">
+      {/* Background colour wash + image */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,var(--brand-navy)_60%,var(--brand-navy-light)_100%)]"
+      />
+      <img
+        src={footerBg}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full select-none object-cover object-center opacity-[0.07]"
+      />
 
-      /* ── Top strip ── */
-      .ftr-strip-wrap {
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-      }
-      .ftr-strip {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px 40px;
-        padding: 20px 0 14px;
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.7);
-      }
-      .ftr-strip li { display: flex; align-items: center; gap: 9px; }
-      .ftr-strip-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--brand-teal);
-        box-shadow: 0 0 0 3px rgba(38,174,144,0.18);
-      }
-      .ftr-strip-first { color: rgba(255,255,255,0.85); }
+      {/* Top accent line */}
+      <div className="relative z-1 h-0.75 w-full bg-[linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))]" />
 
-      /* ── Main grid ── */
-      .ftr-main {
-        display: grid;
-        grid-template-columns: 1.6fr 1fr 0.72fr 0.95fr;
-        gap: 32px;
-        align-items: start;
-        padding: 30px 0 26px;
-      }
+      {/* Top strip */}
+      <div className="relative z-1">
+        <div className={CONTAINER}>
+          <div className="border-b border-white/8">
+            <ul className="flex flex-wrap items-center gap-x-10 gap-y-2 pb-3.5 pt-5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white/70 max-sm:gap-x-5 max-sm:gap-y-2 max-sm:pb-3 max-sm:pt-4.5">
+              {TOP_STRIP.map((item, i) => (
+                <li
+                  key={item}
+                  className={`flex items-center gap-2.25 ${i === 0 ? "text-white/85" : ""}`}
+                >
+                  {i === 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 rounded-full bg-(--brand-teal) shadow-[0_0_0_3px_var(--brand-teal-33)]"
+                    />
+                  )}
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
 
-      .ftr-brand {
-        display: flex;
-        align-items: baseline;
-        gap: 6px;
-        text-decoration: none;
-      }
-      .ftr-brand-y { font-size: 27px; font-weight: 800; color: var(--brand-yellow); }
-      .ftr-brand-w { font-size: 27px; font-weight: 800; color: #fff; }
-      .ftr-group {
-        margin-top: 10px;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.68);
-      }
-      .ftr-desc {
-        margin-top: 16px;
-        max-width: 440px;
-        font-size: 15px;
-        line-height: 1.7;
-        color: rgba(255,255,255,0.74);
-      }
+      {/* Main */}
+      <div className="relative z-1">
+        <div className={CONTAINER}>
+          <div className="grid grid-cols-1 gap-6 py-5.5 md:grid-cols-2 md:gap-x-8 md:gap-y-7 md:py-5.5 lg:grid-cols-[1.6fr_1fr_0.72fr_0.95fr] lg:gap-8 lg:pb-6.5 lg:pt-7.5">
+            {/* Brand + contact */}
+            <div className="md:col-span-2 lg:col-span-1">
+              <Link to="/" className="inline-flex items-baseline gap-1.5 no-underline">
+                <span className="text-[27px] font-extrabold text-(--brand-yellow)">Indexia</span>
+                <span className="text-[27px] font-extrabold text-white">Finance</span>
+              </Link>
+              <p className="mt-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/68">
+                An Indexia Group Company
+              </p>
 
-      .ftr-contact { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
-      .ftr-contact-row { display: flex; align-items: baseline; gap: 14px; }
-      .ftr-label {
-        min-width: 52px;
-        font-size: 11.5px;
-        font-weight: 600;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.68);
-      }
-      .ftr-value {
-        font-size: 13px;
-        color: rgba(255,255,255,0.88);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .ftr-value:hover { color: var(--brand-yellow); }
+              <p className="mt-4 max-w-110 text-[15px] leading-[1.7] text-white/74 max-sm:text-sm">
+                Services for investors, FDI entities, NBFCs, and banks, facilitating secured and
+                unsecured borrowing solutions aligned with partner policies. Final approval rests
+                solely with the lender.
+              </p>
 
-      /* Globe */
-      .ftr-globe-wrap {
-        position: relative;
-        width: 100%;
-        max-width: 232px;
-        aspect-ratio: 1 / 1;
-        margin: 0 auto;
-      }
-      .ftr-globe-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-        -webkit-mask-image: radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%);
-        mask-image: radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%);
-      }
-      .ftr-globe-glow {
-        position: absolute;
-        inset: -14px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(38,174,144,0.25) 0%, rgba(38,174,144,0) 70%);
-        pointer-events: none;
-      }
+              <div className="mt-5.5 flex flex-col gap-2.5">
+                <div className="flex items-baseline gap-3.5">
+                  <span className="min-w-13 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/68">
+                    Call
+                  </span>
+                  <span>
+                    <a
+                      href={PHONE_LANDLINE_HREF}
+                      className="text-[13px] text-white/88 no-underline transition-colors hover:text-(--brand-yellow)"
+                    >
+                      {PHONE_LANDLINE}
+                    </a>
+                    <span className="text-white/40"> · </span>
+                    <a
+                      href={PHONE_MOBILE_HREF}
+                      className="text-[13px] text-white/88 no-underline transition-colors hover:text-(--brand-yellow)"
+                    >
+                      {PHONE_MOBILE}
+                    </a>
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-3.5">
+                  <span className="min-w-13 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/68">
+                    Email
+                  </span>
+                  <a
+                    href={`mailto:${EMAIL_CONTACT}`}
+                    className="text-[13px] text-white/88 no-underline transition-colors hover:text-(--brand-yellow)"
+                  >
+                    {EMAIL_CONTACT}
+                  </a>
+                </div>
+                <div className="flex items-baseline gap-3.5">
+                  <span className="min-w-13 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/68">
+                    Office
+                  </span>
+                  <span className="cursor-default text-[13px] text-white/88">
+                    Naraina Vihar, New Delhi
+                  </span>
+                </div>
+              </div>
+            </div>
 
-      /* Link columns */
-      .ftr-heading {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #ffffff;
-      }
-      .ftr-links { margin-top: 14px; display: flex; flex-direction: column; }
-      .ftr-link {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 9px 0;
-        font-size: 14.5px;
-        color: rgba(255,255,255,0.86);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .ftr-link:hover { color: var(--brand-yellow); }
-      .ftr-arrow { font-size: 12px; color: rgba(255,255,255,0.3); transition: color 0.2s, transform 0.2s; }
-      .ftr-link:hover .ftr-arrow { color: var(--brand-yellow); transform: translate(2px, -2px); }
+            {/* Globe */}
+            <div className="md:col-span-2 lg:col-span-1">
+              <div className="relative mx-auto aspect-square w-full max-w-42.5 md:max-w-50 lg:max-w-58">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-3.5 rounded-full bg-[radial-gradient(circle,var(--brand-teal-40)_0%,transparent_70%)]"
+                />
+                <video
+                  ref={videoRef}
+                  className="h-full w-full rounded-full object-cover"
+                  style={{
+                    maskImage:
+                      "radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%)",
+                    WebkitMaskImage:
+                      "radial-gradient(circle, #000 58%, rgba(0,0,0,0.35) 72%, transparent 88%)",
+                  }}
+                  src={reachedFooter && mediaAllowed ? globeVideo : undefined}
+                  preload="none"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  aria-hidden="true"
+                />
+              </div>
+            </div>
 
-      /* Follow + subscribe */
-      .ftr-subscribe {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px 32px;
-        padding: 20px 0;
-        border-top: 1px solid rgba(255,255,255,0.09);
-      }
-      .ftr-follow { display: flex; align-items: center; gap: 18px; }
-      .ftr-socials { display: flex; gap: 10px; }
-      .ftr-social {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        background: var(--soc, rgba(255,255,255,0.08));
-        border: 1px solid var(--soc, rgba(255,255,255,0.18));
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        text-decoration: none;
-        transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
-      }
-      .ftr-social:hover {
-        transform: translateY(-3px);
-        background: #ffffff;
-        border-color: var(--soc, #ffffff);
-        color: var(--soc, #ffffff);
-      }
+            {/* Company */}
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-white">Company</p>
+              <div className="mt-3.5 flex flex-col">{COMPANY_LINKS.map(renderLink)}</div>
+            </div>
 
-      .ftr-sub-wrap { text-align: right; }
-      .ftr-sub-note {
-        margin-bottom: 8px;
-        font-size: 12.5px;
-        line-height: 1.6;
-        color: rgba(255,255,255,0.78);
-      }
-      .ftr-sub { display: flex; justify-content: flex-end; }
-      .ftr-sub-row {
-        display: flex;
-        width: 100%;
-        max-width: 280px;
-        border: 1px solid rgba(255,255,255,0.16);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .ftr-input {
-        flex: 1;
-        padding: 9px 11px;
-        font-size: 13px;
-        border: none;
-        outline: none;
-        background: rgba(255,255,255,0.08);
-        color: #fff;
-        min-width: 0;
-      }
-      .ftr-input::placeholder { color: rgba(255,255,255,0.35); }
-      .ftr-sub-btn {
-        padding: 9px 14px;
-        background: var(--brand-teal);
-        color: #fff;
-        font-weight: 700;
-        font-size: 12px;
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background 0.2s;
-      }
-      .ftr-sub-btn:hover { background: #1e9478; }
-
-      /* Bottom */
-      .ftr-bottom {
-        border-top: 1px solid rgba(255,255,255,0.09);
-      }
-      .ftr-bottom-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 16px 0;
-      }
-      .ftr-copy { font-size: 12.5px; color: rgba(255,255,255,0.6); }
-      .ftr-legal { display: flex; flex-wrap: wrap; gap: 26px; }
-      .ftr-legal a {
-        font-size: 12.5px;
-        color: rgba(255,255,255,0.6);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .ftr-legal a:hover { color: var(--brand-yellow); }
-      .ftr-disclaimer {
-        font-size: 11.5px;
-        line-height: 1.7;
-        color: rgba(255,255,255,0.6);
-        padding-bottom: 18px;
-      }
-
-      /* ── Responsive: Tablet (640–1023px) ── */
-      @media (max-width: 1023px) {
-        .ftr-main {
-          grid-template-columns: 1fr 1fr;
-          gap: 28px 32px;
-          padding: 26px 0 22px;
-        }
-        .ftr-brand-col { grid-column: 1 / -1; }
-        .ftr-globe-col { grid-column: 1 / -1; }
-        .ftr-globe-wrap { max-width: 200px; }
-        .ftr-subscribe { flex-direction: column; align-items: flex-start; }
-        .ftr-sub-wrap { text-align: left; width: 100%; }
-        .ftr-sub { justify-content: flex-start; }
-        .ftr-sub-row { margin: 0; }
-      }
-
-      /* ── Responsive: Mobile (<640px) ── */
-      @media (max-width: 639px) {
-        .ftr-inner { padding-left: 20px; padding-right: 20px; }
-        .ftr-strip { gap: 8px 20px; padding: 18px 0 12px; }
-        .ftr-main { grid-template-columns: 1fr; gap: 24px; padding: 22px 0; }
-        .ftr-globe-wrap { max-width: 170px; }
-        .ftr-desc { font-size: 14px; }
-        .ftr-bottom-row { justify-content: center; text-align: center; }
-        .ftr-legal { justify-content: center; gap: 18px; }
-        .ftr-disclaimer { text-align: center; }
-      }
-    `}</style>
-
-      <footer className="ftr-root">
-        <div className="ftr-overlay" />
-        <img src={footerBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="ftr-bg" />
-
-        {/* Top accent line */}
-        <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
-
-        {/* Top strip */}
-        <div className="ftr-content">
-          <div className="ftr-inner">
-            <div className="ftr-strip-wrap">
-              <ul className="ftr-strip">
-                {TOP_STRIP.map((item, i) => (
-                  <li key={item} className={i === 0 ? "ftr-strip-first" : undefined}>
-                    {i === 0 && <span className="ftr-strip-dot" aria-hidden="true" />}
-                    {item}
-                  </li>
-                ))}
-              </ul>
+            {/* Resources */}
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-white">Resources</p>
+              <div className="mt-3.5 flex flex-col">{RESOURCE_LINKS.map(renderLink)}</div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Main */}
-        <div className="ftr-content">
-          <div className="ftr-inner">
-            <div className="ftr-main">
-
-              {/* Brand + contact */}
-              <div className="ftr-brand-col">
-                <Link to="/" className="ftr-brand" style={{ textDecoration: "none" }}>
-                  <span className="ftr-brand-y">Indexia</span>
-                  <span className="ftr-brand-w">Finance</span>
-                </Link>
-                <p className="ftr-group">An Indexia Group Company</p>
-
-                <p className="ftr-desc">
-                  Services for investors, FDI entities, NBFCs, and banks, facilitating secured and unsecured borrowing solutions aligned with partner policies. Final approval rests solely with the lender.
-                </p>
-
-                <div className="ftr-contact">
-                  <div className="ftr-contact-row">
-                    <span className="ftr-label">Call</span>
-                    <span>
-                      <a href={PHONE_LANDLINE_HREF} className="ftr-value">{PHONE_LANDLINE}</a>
-                      <span style={{ color: "rgba(255,255,255,0.4)" }}> · </span>
-                      <a href={PHONE_MOBILE_HREF} className="ftr-value">{PHONE_MOBILE}</a>
-                    </span>
-                  </div>
-                  <div className="ftr-contact-row">
-                    <span className="ftr-label">Email</span>
-                    <a href={`mailto:${EMAIL_CONTACT}`} className="ftr-value">{EMAIL_CONTACT}</a>
-                  </div>
-                  <div className="ftr-contact-row">
-                    <span className="ftr-label">Office</span>
-                    <span className="ftr-value" style={{ cursor: "default" }}>Naraina Vihar, New Delhi</span>
-                  </div>
-                </div>
+      {/* Follow + subscribe */}
+      <div className="relative z-1">
+        <div className={CONTAINER}>
+          <div className="flex flex-col items-start gap-4 border-t border-white/9 py-5 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-x-8">
+            <div className="flex items-center gap-4.5">
+              <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-white">Follow</p>
+              <div className="flex gap-2.5">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${social.name} — ${social.handle}`}
+                      title={`${social.name} — ${social.handle}`}
+                      className="flex h-8.5 w-8.5 items-center justify-center rounded-full border text-[13px] text-white transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.75 hover:bg-white hover:text-(--soc)"
+                      style={
+                        {
+                          "--soc": social.brand,
+                          backgroundColor: "var(--soc)",
+                          borderColor: "var(--soc)",
+                        } as CSSProperties
+                      }
+                    >
+                      <Icon aria-hidden="true" />
+                    </a>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* Globe */}
-              <div className="ftr-globe-col">
-                <div className="ftr-globe-wrap">
-                  <div className="ftr-globe-glow" />
-                  <video
-                    ref={videoRef}
-                    className="ftr-globe-video"
-                    src={reachedFooter && mediaAllowed ? globeVideo : undefined}
-                    preload="none"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    aria-hidden="true"
+            <div className="w-full text-left lg:w-auto lg:text-right">
+              <p className="mb-2 text-[12.5px] leading-[1.6] text-white/78">
+                Subscribe for the latest loan updates and offers.
+              </p>
+              <form className="flex justify-start lg:justify-end" onSubmit={(e) => e.preventDefault()}>
+                <label htmlFor="newsletter-email" className="sr-only">
+                  Email address for newsletter
+                </label>
+                <div className="flex w-full max-w-70 overflow-hidden rounded-lg border border-white/16">
+                  <input
+                    id="newsletter-email"
+                    type="email"
+                    placeholder="Your email address"
+                    className="min-w-0 flex-1 border-none bg-white/8 px-2.75 py-2.25 text-[13px] text-white outline-none placeholder:text-white/35"
                   />
+                  <button
+                    type="submit"
+                    className="cursor-pointer whitespace-nowrap border-none bg-(--brand-teal) px-3.5 py-2.25 text-[12px] font-bold text-white transition-colors hover:brightness-95"
+                  >
+                    Subscribe
+                  </button>
                 </div>
-              </div>
-
-              {/* Company */}
-              <div>
-                <p className="ftr-heading">Company</p>
-                <div className="ftr-links">{COMPANY_LINKS.map(renderLink)}</div>
-              </div>
-
-              {/* Resources */}
-              <div>
-                <p className="ftr-heading">Resources</p>
-                <div className="ftr-links">{RESOURCE_LINKS.map(renderLink)}</div>
-              </div>
-
+              </form>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Follow + subscribe */}
-        <div className="ftr-content">
-          <div className="ftr-inner">
-            <div className="ftr-subscribe">
-              <div className="ftr-follow">
-                <p className="ftr-heading">Follow</p>
-                <div className="ftr-socials">
-                  {socialLinks.map((social) => {
-                    const Icon = social.icon;
-                    return (
-                      <a
-                        key={social.name}
-                        href={social.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`${social.name} — ${social.handle}`}
-                        title={`${social.name} — ${social.handle}`}
-                        className="ftr-social"
-                        style={{ "--soc": social.brand } as CSSProperties}
-                      >
-                        <Icon aria-hidden="true" />
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="ftr-sub-wrap">
-                <p className="ftr-sub-note">
-                  Subscribe for the latest loan updates and offers.
-                </p>
-                <form className="ftr-sub" onSubmit={(e) => e.preventDefault()}>
-                  <label htmlFor="newsletter-email" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
-                    Email address for newsletter
-                  </label>
-                  <div className="ftr-sub-row">
-                    <input id="newsletter-email" type="email" placeholder="Your email address" className="ftr-input" />
-                    <button type="submit" className="ftr-sub-btn">Subscribe</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="ftr-content ftr-bottom">
-          <div className="ftr-inner">
-            <div className="ftr-bottom-row">
-              <p className="ftr-copy">© 2026 Indexia Finserve Pvt. Ltd. All rights reserved.</p>
-              <nav className="ftr-legal" aria-label="Legal">
-                {LEGAL_LINKS.map((t) => (
-                  <Link key={t.l} to={t.h}>{t.l}</Link>
-                ))}
-              </nav>
-            </div>
-            <p className="ftr-disclaimer">
-              Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
-              fees and disbursal are decided by the lending bank or NBFC.
+      {/* Bottom bar */}
+      <div className="relative z-1 border-t border-white/9">
+        <div className={CONTAINER}>
+          <div className="flex flex-wrap items-center justify-between gap-3 py-4 max-sm:justify-center max-sm:text-center">
+            <p className="text-[12.5px] text-white/60">
+              © 2026 Indexia Finserve Pvt. Ltd. All rights reserved.
             </p>
+            <nav aria-label="Legal" className="flex flex-wrap gap-6.5 max-sm:justify-center max-sm:gap-4.5">
+              {LEGAL_LINKS.map((t) => (
+                <Link
+                  key={t.l}
+                  to={t.h}
+                  className="text-[12.5px] text-white/60 no-underline transition-colors hover:text-(--brand-yellow)"
+                >
+                  {t.l}
+                </Link>
+              ))}
+            </nav>
           </div>
+          <p className="pb-4.5 text-[11.5px] leading-[1.7] text-white/60 max-sm:text-center">
+            Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
+            fees and disbursal are decided by the lending bank or NBFC.
+          </p>
         </div>
-      </footer>
-    </>
+      </div>
+    </footer>
   );
 };
 
