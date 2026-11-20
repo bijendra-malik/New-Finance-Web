@@ -28,7 +28,7 @@ const TOP_STRIP = ["Lender-led decisions", "Est. 2012", "18 loan products", "New
 
 const LEGAL_LINKS = [
   { l: "Privacy Policy", h: "/privacy-policy" },
-  { l: "Terms of Service", h: "/terms-of-use" },
+  { l: "Terms of Use", h: "/terms-of-use" },
   { l: "Terms & Conditions", h: "/terms-conditions" },
 ];
 
@@ -63,7 +63,7 @@ const Footer = () => {
     if (!v || !reachedFooter) return;
     v.defaultMuted = true;
     v.muted = true;
-    const play = () => { v.play().catch(() => {}); };
+    const play = () => { v.play().catch(() => { }); };
     play();
     v.addEventListener("pause", play);
     return () => v.removeEventListener("pause", play);
@@ -89,7 +89,7 @@ const Footer = () => {
 
   return (
     <>
-    <style>{`
+      <style>{`
       .ftr-root {
         position: relative;
         overflow: hidden;
@@ -183,14 +183,14 @@ const Footer = () => {
       .ftr-contact-row { display: flex; align-items: baseline; gap: 14px; }
       .ftr-label {
         min-width: 52px;
-        font-size: 10.5px;
+        font-size: 11.5px;
         font-weight: 600;
         letter-spacing: 0.16em;
         text-transform: uppercase;
         color: rgba(255,255,255,0.68);
       }
       .ftr-value {
-        font-size: 12.5px;
+        font-size: 13px;
         color: rgba(255,255,255,0.88);
         text-decoration: none;
         transition: color 0.2s;
@@ -269,9 +269,14 @@ const Footer = () => {
         justify-content: center;
         font-size: 13px;
         text-decoration: none;
-        transition: transform 0.2s, filter 0.2s;
+        transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
       }
-      .ftr-social:hover { transform: translateY(-3px); filter: brightness(1.15); }
+      .ftr-social:hover {
+        transform: translateY(-3px);
+        background: #ffffff;
+        border-color: var(--soc, #ffffff);
+        color: var(--soc, #ffffff);
+      }
 
       .ftr-sub-wrap { text-align: right; }
       .ftr-sub-note {
@@ -370,164 +375,163 @@ const Footer = () => {
       }
     `}</style>
 
-    <footer className="ftr-root">
-      <div className="ftr-overlay" />
-      <img src={footerBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="ftr-bg" />
+      <footer className="ftr-root">
+        <div className="ftr-overlay" />
+        <img src={footerBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="ftr-bg" />
 
-      {/* Top accent line */}
-      <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
+        {/* Top accent line */}
+        <div className="ftr-content" style={{ height: "3px", background: "linear-gradient(90deg,var(--brand-navy),var(--brand-teal),var(--brand-yellow))" }} />
 
-      {/* Top strip */}
-      <div className="ftr-content">
-        <div className="ftr-inner">
-          <div className="ftr-strip-wrap">
-            <ul className="ftr-strip">
-              {TOP_STRIP.map((item, i) => (
-                <li key={item} className={i === 0 ? "ftr-strip-first" : undefined}>
-                  {i === 0 && <span className="ftr-strip-dot" aria-hidden="true" />}
-                  {item}
-                </li>
-              ))}
-            </ul>
+        {/* Top strip */}
+        <div className="ftr-content">
+          <div className="ftr-inner">
+            <div className="ftr-strip-wrap">
+              <ul className="ftr-strip">
+                {TOP_STRIP.map((item, i) => (
+                  <li key={item} className={i === 0 ? "ftr-strip-first" : undefined}>
+                    {i === 0 && <span className="ftr-strip-dot" aria-hidden="true" />}
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main */}
-      <div className="ftr-content">
-        <div className="ftr-inner">
-          <div className="ftr-main">
+        {/* Main */}
+        <div className="ftr-content">
+          <div className="ftr-inner">
+            <div className="ftr-main">
 
-            {/* Brand + contact */}
-            <div className="ftr-brand-col">
-              <Link to="/" className="ftr-brand" style={{ textDecoration: "none" }}>
-                <span className="ftr-brand-y">Indexia</span>
-                <span className="ftr-brand-w">Finance</span>
-              </Link>
-              <p className="ftr-group">An Indexia Group Company</p>
+              {/* Brand + contact */}
+              <div className="ftr-brand-col">
+                <Link to="/" className="ftr-brand" style={{ textDecoration: "none" }}>
+                  <span className="ftr-brand-y">Indexia</span>
+                  <span className="ftr-brand-w">Finance</span>
+                </Link>
+                <p className="ftr-group">An Indexia Group Company</p>
 
-              <p className="ftr-desc">
-                Loan facilitation for personal, business and secured borrowing — matched to
-                partner banks and NBFCs, with the final decision always with the lender.
-              </p>
+                <p className="ftr-desc">
+                  Services for investors, FDI entities, NBFCs, and banks, facilitating secured and unsecured borrowing solutions aligned with partner policies. Final approval rests solely with the lender.
+                </p>
 
-              <div className="ftr-contact">
-                <div className="ftr-contact-row">
-                  <span className="ftr-label">Call</span>
-                  <span>
-                    <a href={PHONE_LANDLINE_HREF} className="ftr-value">{PHONE_LANDLINE}</a>
-                    <span style={{ color: "rgba(255,255,255,0.4)" }}> · </span>
-                    <a href={PHONE_MOBILE_HREF} className="ftr-value">{PHONE_MOBILE}</a>
-                  </span>
-                </div>
-                <div className="ftr-contact-row">
-                  <span className="ftr-label">Email</span>
-                  <a href={`mailto:${EMAIL_CONTACT}`} className="ftr-value">{EMAIL_CONTACT}</a>
-                </div>
-                <div className="ftr-contact-row">
-                  <span className="ftr-label">Office</span>
-                  <span className="ftr-value" style={{ cursor: "default" }}>Naraina Vihar, New Delhi</span>
+                <div className="ftr-contact">
+                  <div className="ftr-contact-row">
+                    <span className="ftr-label">Call</span>
+                    <span>
+                      <a href={PHONE_LANDLINE_HREF} className="ftr-value">{PHONE_LANDLINE}</a>
+                      <span style={{ color: "rgba(255,255,255,0.4)" }}> · </span>
+                      <a href={PHONE_MOBILE_HREF} className="ftr-value">{PHONE_MOBILE}</a>
+                    </span>
+                  </div>
+                  <div className="ftr-contact-row">
+                    <span className="ftr-label">Email</span>
+                    <a href={`mailto:${EMAIL_CONTACT}`} className="ftr-value">{EMAIL_CONTACT}</a>
+                  </div>
+                  <div className="ftr-contact-row">
+                    <span className="ftr-label">Office</span>
+                    <span className="ftr-value" style={{ cursor: "default" }}>Naraina Vihar, New Delhi</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Globe */}
-            <div className="ftr-globe-col">
-              <div className="ftr-globe-wrap">
-                <div className="ftr-globe-glow" />
-                <video
-                  ref={videoRef}
-                  className="ftr-globe-video"
-                  src={reachedFooter && mediaAllowed ? globeVideo : undefined}
-                  preload="none"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-
-            {/* Company */}
-            <div>
-              <p className="ftr-heading">Company</p>
-              <div className="ftr-links">{COMPANY_LINKS.map(renderLink)}</div>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <p className="ftr-heading">Resources</p>
-              <div className="ftr-links">{RESOURCE_LINKS.map(renderLink)}</div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* Follow + subscribe */}
-      <div className="ftr-content">
-        <div className="ftr-inner">
-          <div className="ftr-subscribe">
-            <div className="ftr-follow">
-              <p className="ftr-heading">Follow</p>
-              <div className="ftr-socials">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={social.name}
-                      href={social.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`${social.name} — ${social.handle}`}
-                      title={`${social.name} — ${social.handle}`}
-                      className="ftr-social"
-                      style={{ "--soc": social.brand } as CSSProperties}
-                    >
-                      <Icon aria-hidden="true" />
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="ftr-sub-wrap">
-              <p className="ftr-sub-note">
-                Subscribe for the latest loan updates and offers.
-              </p>
-              <form className="ftr-sub" onSubmit={(e) => e.preventDefault()}>
-                <label htmlFor="newsletter-email" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
-                  Email address for newsletter
-                </label>
-                <div className="ftr-sub-row">
-                  <input id="newsletter-email" type="email" placeholder="Your email address" className="ftr-input" />
-                  <button type="submit" className="ftr-sub-btn">Subscribe</button>
+              {/* Globe */}
+              <div className="ftr-globe-col">
+                <div className="ftr-globe-wrap">
+                  <div className="ftr-globe-glow" />
+                  <video
+                    ref={videoRef}
+                    className="ftr-globe-video"
+                    src={reachedFooter && mediaAllowed ? globeVideo : undefined}
+                    preload="none"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    aria-hidden="true"
+                  />
                 </div>
-              </form>
+              </div>
+
+              {/* Company */}
+              <div>
+                <p className="ftr-heading">Company</p>
+                <div className="ftr-links">{COMPANY_LINKS.map(renderLink)}</div>
+              </div>
+
+              {/* Resources */}
+              <div>
+                <p className="ftr-heading">Resources</p>
+                <div className="ftr-links">{RESOURCE_LINKS.map(renderLink)}</div>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div className="ftr-content ftr-bottom">
-        <div className="ftr-inner">
-          <div className="ftr-bottom-row">
-            <p className="ftr-copy">© 2026 Indexia Finserve Pvt. Ltd. All rights reserved.</p>
-            <nav className="ftr-legal" aria-label="Legal">
-              {LEGAL_LINKS.map((t) => (
-                <Link key={t.l} to={t.h}>{t.l}</Link>
-              ))}
-            </nav>
+        {/* Follow + subscribe */}
+        <div className="ftr-content">
+          <div className="ftr-inner">
+            <div className="ftr-subscribe">
+              <div className="ftr-follow">
+                <p className="ftr-heading">Follow</p>
+                <div className="ftr-socials">
+                  {socialLinks.map((social) => {
+                    const Icon = social.icon;
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`${social.name} — ${social.handle}`}
+                        title={`${social.name} — ${social.handle}`}
+                        className="ftr-social"
+                        style={{ "--soc": social.brand } as CSSProperties}
+                      >
+                        <Icon aria-hidden="true" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="ftr-sub-wrap">
+                <p className="ftr-sub-note">
+                  Subscribe for the latest loan updates and offers.
+                </p>
+                <form className="ftr-sub" onSubmit={(e) => e.preventDefault()}>
+                  <label htmlFor="newsletter-email" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
+                    Email address for newsletter
+                  </label>
+                  <div className="ftr-sub-row">
+                    <input id="newsletter-email" type="email" placeholder="Your email address" className="ftr-input" />
+                    <button type="submit" className="ftr-sub-btn">Subscribe</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
-          <p className="ftr-disclaimer">
-            Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
-            fees and disbursal are decided by the lending bank or NBFC.
-          </p>
         </div>
-      </div>
-    </footer>
+
+        {/* Bottom bar */}
+        <div className="ftr-content ftr-bottom">
+          <div className="ftr-inner">
+            <div className="ftr-bottom-row">
+              <p className="ftr-copy">© 2026 Indexia Finserve Pvt. Ltd. All rights reserved.</p>
+              <nav className="ftr-legal" aria-label="Legal">
+                {LEGAL_LINKS.map((t) => (
+                  <Link key={t.l} to={t.h}>{t.l}</Link>
+                ))}
+              </nav>
+            </div>
+            <p className="ftr-disclaimer">
+              Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
+              fees and disbursal are decided by the lending bank or NBFC.
+            </p>
+          </div>
+        </div>
+      </footer>
     </>
   );
 };
