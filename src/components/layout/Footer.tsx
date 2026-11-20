@@ -19,9 +19,9 @@ const COMPANY_LINKS = [
 ];
 
 const RESOURCE_LINKS = [
-  { l: "Global research", h: "/global-research", external: false },
-  { l: "News & knowledge", h: "https://www.indexiagroup.com/news", external: true },
-  { l: "Advertise with us", h: "/advertise-with-us", external: false },
+  { l: "Global Research", h: "/global-research", external: false },
+  { l: "News & Knowledge", h: "https://www.indexiagroup.com/news", external: true },
+  { l: "Advertise With Us", h: "/advertise-with-us", external: false },
 ];
 
 const TOP_STRIP = ["Lender-led decisions", "Est. 2012", "18 loan products", "New Delhi · India"];
@@ -35,13 +35,10 @@ const LEGAL_LINKS = [
 const Footer = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaAllowed = useHeavyMediaAllowed();
-  // Browsers without IntersectionObserver simply attach the video right away.
   const [reachedFooter, setReachedFooter] = useState(
     () => typeof IntersectionObserver === "undefined",
   );
 
-  // The globe clip is ~6 MB and purely decorative, so it is only attached once the
-  // footer approaches the viewport instead of loading on every page.
   useEffect(() => {
     const v = videoRef.current;
     if (!v || reachedFooter) return;

@@ -97,8 +97,8 @@ const CareersPage = () => {
           {/* Open roles */}
           <section aria-labelledby="open-roles" className="mb-14">
             <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h3 id="open-roles" className="text-lg font-bold text-slate-900">
-                Open roles
+              <h3 id="open-roles" className="text-lg font-bold text-(--brand-navy)">
+                Open Roles
               </h3>
               <p className="text-xs text-slate-500">
                 {CAREER_ROLES.length} openings · {OFFICE_ADDRESS_LINES[2]}
@@ -112,7 +112,7 @@ const CareersPage = () => {
                   className="flex flex-col gap-3 border-b border-slate-100 px-5 py-5 last:border-0 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <h4 className="text-[15px] font-bold text-slate-900">{role.title}</h4>
+                    <h4 className="text-[15px] font-bold text-(--brand-teal)">{role.title}</h4>
                     <p className="mt-1 text-sm leading-relaxed text-slate-600">{role.summary}</p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {[role.team, role.location, role.type].map((tag) => (

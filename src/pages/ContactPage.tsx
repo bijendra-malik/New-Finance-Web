@@ -18,18 +18,15 @@ import {
 import { socialLinks } from "../constants/socialLinks";
 import useSEO from "../hooks/useSEO";
 
-/**
- * Contact Us — a single navy direct-lines panel beside a squared enquiry
- * sheet, followed by the registered office address and map. Contact channels
- * share one panel so the page does not repeat the same card four times.
- */
-
 const PHONE_LINES = [
   { label: "Landline", number: PHONE_LANDLINE, href: PHONE_LANDLINE_HREF },
   { label: "Mobile", number: PHONE_MOBILE, href: PHONE_MOBILE_HREF },
 ];
 
-const EMAILS = [EMAIL_LOANS, EMAIL_CONTACT];
+const EMAILS = [
+  { label: "Loan queries", email: EMAIL_LOANS },
+  { label: "General queries", email: EMAIL_CONTACT },
+];
 
 const OFFICE = {
   name: OFFICE_DISPLAY_NAME,
@@ -123,13 +120,13 @@ const ContactPage = () => {
 
               <div className="relative flex flex-1 flex-col">
                 <div className="border-b border-white/15 px-6 py-5">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--brand-yellow)">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-(--brand-yellow)">
                     Direct lines
                   </p>
-                  <h2 id="contact-desk-heading" className="mt-1 text-xl font-extrabold tracking-tight">
+                  <h2 id="contact-desk-heading" className="mt-1 text-2xl font-extrabold tracking-tight">
                     Happy to Serve You at Your Doorstep.
                   </h2>
-                  <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-white/75">
+                  <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-white/75">
                     Mon–Sat · 9:30 AM – 6:30 PM IST
                   </p>
                 </div>
@@ -137,9 +134,9 @@ const ContactPage = () => {
                 <section aria-labelledby="contact-call-heading" className="border-b border-white/15 px-6 py-5">
                   <h3
                     id="contact-call-heading"
-                    className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/85"
+                    className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white/85"
                   >
-                    <PhoneIcon className="h-3.5 w-3.5 text-(--brand-teal)" />
+                    <PhoneIcon className="h-4 w-4 text-(--brand-teal)" />
                     Call
                   </h3>
                   <ul className="mt-3 space-y-1">
@@ -149,10 +146,10 @@ const ContactPage = () => {
                           href={line.href}
                           className="group flex items-baseline justify-between gap-3 rounded-sm py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
                         >
-                          <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/80">
+                          <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/80">
                             {line.label}
                           </span>
-                          <span className="text-[15px] font-bold tracking-tight text-white transition-colors group-hover:text-(--brand-yellow)">
+                          <span className="text-[18px] font-bold tracking-tight text-white transition-colors group-hover:text-(--brand-yellow)">
                             {line.number}
                           </span>
                         </a>
@@ -164,20 +161,25 @@ const ContactPage = () => {
                 <section aria-labelledby="contact-write-heading" className="px-6 py-5">
                   <h3
                     id="contact-write-heading"
-                    className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/85"
+                    className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white/85"
                   >
-                    <MailIcon className="h-3.5 w-3.5 text-(--brand-teal)" />
-                    Write
+                    <MailIcon className="h-4 w-4 text-(--brand-teal)" />
+                    Write to Us
                   </h3>
                   <ul className="mt-3 space-y-1">
-                    {EMAILS.map((email) => (
+                    {EMAILS.map(({ label, email }) => (
                       <li key={email}>
                         <a
                           href={`mailto:${email}`}
-                          className="group flex items-center justify-between gap-3 rounded-sm py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
+                          className="group flex items-start justify-between gap-3 rounded-sm py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
                         >
-                          <span className="min-w-0 break-all text-[12px] font-semibold text-white/85 transition-colors group-hover:text-(--brand-yellow)">
-                            {email}
+                          <span className="min-w-0">
+                            <span className="block font-mono text-[11px] uppercase tracking-[0.16em] text-white/80">
+                              {label}
+                            </span>
+                            <span className="mt-1 block break-all text-[14px] font-semibold text-white/85 transition-colors group-hover:text-(--brand-yellow)">
+                              {email}
+                            </span>
                           </span>
                           <span
                             aria-hidden="true"
@@ -193,7 +195,7 @@ const ContactPage = () => {
 
                 <div className="mt-auto border-t border-white/15 px-6 py-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/75">Follow</p>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/75">Follow Us</p>
                     <ul aria-label="Indexia Finance social profiles" className="flex items-center gap-1.5">
                       {socialLinks.map((social) => {
                         const Icon = social.icon;

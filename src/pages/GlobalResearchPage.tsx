@@ -48,7 +48,7 @@ const GlobalResearchPage = () => {
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--brand-navy)">
               Who we are & what we do
             </p>
-            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+            <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-(--brand-teal) md:text-3xl">
               Global Research – Who we are & what we do
             </h2>
             <div className="mt-4 space-y-4 text-sm leading-7 text-gray-600 md:text-[15px]">
