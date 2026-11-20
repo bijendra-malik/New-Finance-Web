@@ -194,7 +194,7 @@ const Home = () => {
         )}
       </button>
 
-      <div className="absolute" style={{ left: 10, right: 10, bottom: 10, zIndex: 10 }}>
+      <div className="absolute inset-x-2.5 bottom-2.5 z-10 max-sm:bottom-14">
         <LoanProducts />
       </div>
     </div>

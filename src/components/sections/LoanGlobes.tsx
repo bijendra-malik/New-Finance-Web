@@ -108,15 +108,15 @@ export const GlobeEarth = () => (
 
 // ── Colored 4-segment Ring ────────────────────────────────────────────────────
 let ringCounter = 0;
-export const ColoredRing = ({ colors, size = 128 }: { colors: string[]; size?: number }) => {
+export const ColoredRing = ({ colors }: { colors: string[] }) => {
   const [uid] = useState(() => `ring-${++ringCounter}`);
   const [c1, c2, c3, c4] = colors;
   return (
     <>
       <svg
         viewBox="0 0 128 128"
-        width={size}
-        height={size}
+        width="100%"
+        height="100%"
         className="absolute inset-0 pointer-events-none color-ring-spin"
         style={{ zIndex: 2 }}
       >

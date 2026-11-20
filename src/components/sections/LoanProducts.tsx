@@ -56,21 +56,16 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
     >
       {/* Globe circle */}
       <div
+        className="lp-globe"
         style={{
-          position: "relative",
-          width: 110,
-          height: 110,
-          borderRadius: "50%",
           transform: hovered ? "scale(1.08)" : "scale(1)",
-          transition: "transform 0.3s ease",
-          flexShrink: 0,
         }}
       >
         {/* Layer 1 — Globe background */}
         <div
           style={{
             position: "absolute",
-            inset: 5,
+            inset: "4.5%",
             borderRadius: "50%",
             overflow: "hidden",
             zIndex: 1,
@@ -81,7 +76,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
 
         {/* Layer 2 — 4-color ring */}
         <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}>
-          <ColoredRing colors={ringColors} size={110} />
+          <ColoredRing colors={ringColors} />
         </div>
 
         {/* Layer 3 — Center text, always on top inside the circle */}
@@ -106,18 +101,16 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
-              width: "100%",
-              maxWidth: 80,
-              minHeight: 31,
+              width: "78%",
               padding: 0,
-              gap: 4,
+              gap: "0.25em",
             }}
           >
             {hovered ? (
               <span
                 style={{
                   color: "#ffffff",
-                  fontSize: 12,
+                  fontSize: "max(8px, 10.9cqw)",
                   fontWeight: 800,
                   letterSpacing: 0.2,
                   lineHeight: 1.35,
@@ -131,7 +124,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
                 <span
                   style={{
                     color: "var(--brand-dark)",
-                    fontSize: 10.5,
+                    fontSize: "max(7px, 9.6cqw)",
                     fontWeight: 800,
                     letterSpacing: 0.2,
                     lineHeight: 1.2,
@@ -148,7 +141,7 @@ const LoanCard = (props: LoanItem & { onApplyClick?: (productId: string) => void
                     flexShrink: 0,
                     color: "var(--brand-navy-light)",
                     fontFamily: "Georgia, serif",
-                    fontSize: 11.5,
+                    fontSize: "max(7.5px, 10.4cqw)",
                     fontWeight: 700,
                     letterSpacing: 0.5,
                     lineHeight: 1,
@@ -188,21 +181,7 @@ const LoanProducts = () => {
   return (
     <>
       <section className="relative w-full my-0 py-0">
-        <div
-          aria-hidden
-          className="absolute top-0 bottom-0 pointer-events-none"
-          style={{
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "min(100% - 20px, 1200px)",
-            borderRadius: 9999,
-            background: "var(--brand-blue-200)",
-            backdropFilter: "blur(5px)",
-            WebkitBackdropFilter: "blur(5px)",
-            zIndex: 0,
-          }}
-        />
-        {/* Clip container: same width as the slab. */}
+        {/* Pill: background, gradient border and clipping all live on this one element */}
         <div
           className="relative mx-auto overflow-hidden lp-ring"
           style={{ width: "min(100% - 20px, 1200px)", borderRadius: 9999 }}
@@ -210,6 +189,25 @@ const LoanProducts = () => {
         <style>{`
           div::-webkit-scrollbar {
             display: none;
+          }
+          /* Pill background — same box as the gradient border, so it can never
+             spill past the rounded ends at any viewport size. */
+          .lp-ring {
+            background: var(--brand-blue-200);
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+          }
+          /* Product globe: fluid so it shrinks with the slide, text scales with it */
+          .lp-globe {
+            position: relative;
+            width: 100%;
+            max-width: 110px;
+            aspect-ratio: 1 / 1;
+            margin-inline: auto;
+            flex-shrink: 0;
+            border-radius: 50%;
+            container-type: inline-size;
+            transition: transform 0.3s ease;
           }
           /* Gradient border ring — 3px, all four brand colors */
           .lp-ring::before {
@@ -318,10 +316,10 @@ const LoanProducts = () => {
             </svg>
           </button>
           </div>
-        </div>
 
-        {/* MOBILE: buttons + "Swipe to see more" below the same swiper */}
-        <div className="md:hidden flex items-center justify-center gap-3 mt-1 px-4">
+        {/* MOBILE: buttons + "Swipe to see more" — kept inside the pill so the
+            background and gradient border always wrap the whole control group */}
+        <div className="md:hidden flex items-center justify-center gap-3 px-4 pb-2">
           <button
             onClick={goPrev}
             disabled={!canScrollLeft}
@@ -389,6 +387,7 @@ const LoanProducts = () => {
               <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+        </div>
         </div>
       </section>
 
