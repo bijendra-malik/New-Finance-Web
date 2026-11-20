@@ -96,7 +96,7 @@ const ContactPage = () => {
                   Let Us Know About <span className="text-(--brand-teal)">Your Query</span>
                 </h2>
               </div>
-              <p className="max-w-xs text-sm leading-relaxed text-slate-500 md:justify-self-end md:pb-1 md:text-right">
+              <p className="text-sm leading-relaxed text-slate-500 md:justify-self-end md:pb-1 md:text-right">
                 Tell us what you need — our loan specialists will get back to you.
               </p>
             </div>
