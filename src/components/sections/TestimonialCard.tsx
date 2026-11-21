@@ -31,7 +31,7 @@ const TestimonialCard = ({ review }: { review: GoogleReview }) => (
       <div className="min-w-0">
         <p className="truncate text-[13.5px] font-bold text-slate-900">{review.name}</p>
         <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-slate-500">
-          <GoogleG size={11} /> Google review
+          <GoogleG size={12} /> Google review
         </p>
       </div>
       <a
