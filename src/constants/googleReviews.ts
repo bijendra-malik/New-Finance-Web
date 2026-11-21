@@ -1,60 +1,34 @@
 export const GOOGLE_BUSINESS = {
   rating: 4.2,
-  reviewCount: 92,
-  reviewsUrl: "https://www.google.com/maps/place?q=place_id:ChIJM41tLTfI5zsRd0G2d3VMEXQ",
+  reviewCount: 94,
+  reviewsUrl: "https://www.google.com/search?gs_ssp=eJwFwTEOgCAMBdC4mhiv4OJMa5HfcARvARQJC4sLx_e9dXPNMTdF_kyZlnjSlFxRVHBZMDWRSBOe2RfcQA6egWfvw-rs6Xj7SKPUH6nGFBE&q=indexia+finance&ie=UTF-8#lrd=0x3be7c8372d6d8d33:0x74114c7577b64177,1,,,,",
 } as const;
 
 export interface GoogleReview {
   id: number;
   name: string;
-  initials: string;
+  avatar: string;
   rating: number;
   quote: string;
-  date: string;
+  reviewUrl: string;
 }
 
 export const GOOGLE_REVIEWS: GoogleReview[] = [
   {
     id: 1,
-    name: "Tannu",
-    initials: "T",
+    name: "Anuj James",
+    avatar: "/testimonials/Anuj-James.jpg",
     rating: 5,
     quote:
-      "Great experience with Indexia Finance! The team was professional, helpful, and made the entire process smooth and hassle-free. Highly recommended!",
-    date: "14 Jul 2026",
+      "Truly exceptional experience with the team. Well qualified team of professionals who understand customer needs and provide tailor made solutions. Could not have asked for more courteous, product equipped professionals.\n\nAll the Best and continue to deliver world class experience!!!!",
+    reviewUrl: "https://www.google.com/maps/contrib/107098837853301951035/place/ChIJM41tLTfI5zsRd0G2d3VMEXQ/@28.6259154,77.1014415,13z/data=!4m6!1m5!8m4!1e1!2s107098837853301951035!3m1!1e1?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MTExOC4xIKXMDSoASAFQAw%3D%3D",
   },
   {
     id: 2,
-    name: "Sagar Verma",
-    initials: "SV",
+    name: "Kulmeetsingh Bajaj",
+    avatar: "/testimonials/Kulmeetsingh-Bajaj.jpg",
     rating: 5,
-    quote: "Best loan provider company& Staff is very helpful corporated.",
-    date: "7 Aug 2026",
-  },
-  {
-    id: 3,
-    name: "Prerna Negi",
-    initials: "PN",
-    rating: 5,
-    quote:
-      "Good experience and transparent communication, efficient disbursal times, and ability to secure difficult loans.",
-    date: "11 Jul 2026",
-  },
-  {
-    id: 4,
-    name: "Sahil Chaddha",
-    initials: "SC",
-    rating: 5,
-    quote: "Very informative & useful . I learned lot of this company thank you",
-    date: "7 Aug 2026",
-  },
-  {
-    id: 5,
-    name: "Lakshay Sharma",
-    initials: "LS",
-    rating: 5,
-    quote:
-      "I've had a positive experience with Indexia Finance. Their services are high quality, and I appreciate their commitment to customer satisfaction. The team is responsive and professional, always ready to assist with any issues or questions I…",
-    date: "13 Aug 2024",
+    quote: "Very good experience and very quick response 💯👍",
+    reviewUrl: "https://www.google.com/maps/contrib/109908637747716239568/place/ChIJM41tLTfI5zsRd0G2d3VMEXQ/@28.6259154,77.1426402,17z/data=!4m6!1m5!8m4!1e1!2s109908637747716239568!3m1!1e1?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MTExOC4xIKXMDSoASAFQAw%3D%3D",
   },
 ];
