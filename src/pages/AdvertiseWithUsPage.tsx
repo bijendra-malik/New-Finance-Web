@@ -1,12 +1,11 @@
+import { GalleryHorizontal, Type } from "lucide-react";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/form/LeadForm";
 import useSEO from "../hooks/useSEO";
-
-/**
- * Advertise With Us — content mirrored from indexiafinance.com/advertise-with-us:
- * intro on online advertising, ad options (text + banner), standard banner
- * specifications and an advertising-enquiry form.
- */
+import startingImage from "../assets/advertise-with-us/starting-img.png";
+import textAdsImage from "../assets/advertise-with-us/text-ads.png";
+import bannerAdsImage from "../assets/advertise-with-us/banner-ads.png";
+import bannerSizesImage from "../assets/advertise-with-us/banner-specifications.png";
 
 const INTRO_PARAGRAPHS = [
   "More than 4 Billion people of the world use the internet to stay connected and informed. Since the early 1990's there has been an exponential increase in the growth of online advertising, which has evolved into a standard for any size organisation whether small or large.",
@@ -18,24 +17,39 @@ const INTRO_PARAGRAPHS = [
 const AD_OPTIONS = [
   {
     title: "Text Ads",
+    icon: Type,
+    image: textAdsImage,
+    alt: "Illustration of a text ad headline and call to action in an Indexia Finance browser window",
     desc: "Let IndexiaFinance.com make money for you. Place a text Ad. Text ads are the most basic type of ad on the Internet. It usually allows a headline, some text, and a call to action with a URL.",
   },
   {
     title: "Banner Ads",
+    icon: GalleryHorizontal,
+    image: bannerAdsImage,
+    alt: "Banner ads from the 1990s to today, how rich media beats plain text links, and why banners work",
     desc: "Banner ads have been around since the start of Internet time. They are basically like text ads, except that they use pictures and rich media to get the point across. If you are looking for an effective way to advertise your website, a banner ad is far more effective. They have to be in a standard size.",
   },
 ];
 
-const BANNER_SPECS: { size: string; weight: string }[] = [
-  { size: "728 x 90 px",  weight: "35 KB" },
-  { size: "300 x 250 px", weight: "35 KB" },
-  { size: "250 x 250 px", weight: "35 KB" },
-  { size: "120 x 240 px", weight: "30 KB" },
-  { size: "180 x 150 px", weight: "20 KB" },
-  { size: "125 x 125 px", weight: "20 KB" },
-  { size: "120 x 90 px",  weight: "20 KB" },
-  { size: "120 x 60 px",  weight: "20 KB" },
+const BANNER_SPECS: { width: number; height: number; weightKb: number }[] = [
+  { width: 728, height: 90, weightKb: 35 },
+  { width: 300, height: 250, weightKb: 35 },
+  { width: 250, height: 250, weightKb: 35 },
+  { width: 120, height: 240, weightKb: 30 },
+  { width: 180, height: 150, weightKb: 20 },
+  { width: 125, height: 125, weightKb: 20 },
+  { width: 120, height: 90, weightKb: 20 },
+  { width: 120, height: 60, weightKb: 20 },
 ];
+
+const BANNER_WEIGHT_GROUPS = BANNER_SPECS.reduce<
+  { weightKb: number; sizes: { width: number; height: number }[] }[]
+>((groups, { width, height, weightKb }) => {
+  const group = groups.find((entry) => entry.weightKb === weightKb);
+  if (group) group.sizes.push({ width, height });
+  else groups.push({ weightKb, sizes: [{ width, height }] });
+  return groups;
+}, []);
 
 const AdvertiseWithUsPage = () => {
   useSEO({
@@ -57,21 +71,40 @@ const AdvertiseWithUsPage = () => {
       <div className="bg-white">
         <div className="mx-auto max-w-6xl px-6 py-12 md:px-8">
           {/* Intro — mirrored from the original Advertise page */}
-          <section aria-labelledby="advertise-intro-heading" className="max-w-4xl">
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--brand-navy)">
-              Advertise
-            </p>
-            <h2
-              id="advertise-intro-heading"
-              className="mt-2 mb-5 text-2xl font-extrabold leading-tight text-slate-900 md:text-3xl"
-            >
-              Reach the right audience at the right cost
-            </h2>
-            <div className="space-y-4 text-sm leading-7 text-gray-600 md:text-[15px]">
-              {INTRO_PARAGRAPHS.map((para) => (
-                <p key={para.slice(0, 24)}>{para}</p>
-              ))}
+          <section
+            aria-labelledby="advertise-intro-heading"
+            className="grid items-start gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12"
+          >
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--brand-navy)">
+                Advertise
+              </p>
+              <h2
+                id="advertise-intro-heading"
+                className="mt-2 mb-5 text-2xl font-extrabold leading-tight text-slate-900 md:text-3xl"
+              >
+                Reach the right audience at the right cost
+              </h2>
+              <div className="space-y-4 text-sm leading-7 text-gray-600 md:text-[15px]">
+                {INTRO_PARAGRAPHS.map((para) => (
+                  <p key={para.slice(0, 24)}>{para}</p>
+                ))}
+              </div>
             </div>
+
+            <figure className="lg:sticky lg:top-24">
+              <img
+                src={startingImage}
+                alt="A phone showing the Indexia Finance site, with the message: place your ad on this site"
+                width={1254}
+                height={1254}
+                loading="lazy"
+                className="w-full rounded-2xl object-cover shadow-[0_24px_48px_-32px_rgba(6,106,156,0.55)] ring-1 ring-slate-200"
+              />
+              <figcaption className="mt-3 text-xs leading-5 text-slate-500">
+                Your ad in front of a finance-focused audience.
+              </figcaption>
+            </figure>
           </section>
 
           {/* Ad options */}
@@ -83,34 +116,40 @@ const AdvertiseWithUsPage = () => {
               Ad options on <span className="text-(--brand-teal)">IndexiaFinance.com</span>
             </h2>
             <div className="grid gap-6 md:grid-cols-2">
-              {AD_OPTIONS.map((option) => (
+              {AD_OPTIONS.map((option) => {
+                const Icon = option.icon;
+
+                return (
                 <div
                   key={option.title}
-                  className="rounded-2xl p-6"
+                  className="overflow-hidden rounded-2xl bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_-32px_rgba(6,106,156,0.45)]"
                   style={{
                     border: "1px solid rgba(6,106,156,0.12)",
                     boxShadow: "0 2px 12px rgba(6,106,156,0.06)",
                   }}
                 >
-                  <div className="mb-3 flex items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="flex h-10 w-10 items-center justify-center rounded-xl text-white"
-                      style={{ background: "linear-gradient(135deg, var(--brand-teal), var(--brand-navy))" }}
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path
-                          d="M11 5.882V19.24a1.76 1.76 0 01-3.177.918l-2.9-3.646a1.76 1.76 0 01.02-2.215l3.056-3.804A1.76 1.76 0 0111 5.882zM21 8.5v7.5a2 2 0 01-2 2h-1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    <h3 className="text-lg font-bold text-gray-800">{option.title}</h3>
+                  <img
+                    src={option.image}
+                    alt={option.alt}
+                    loading="lazy"
+                    className="aspect-video w-full border-b border-slate-100 bg-white object-contain"
+                  />
+                  <div className="p-6">
+                    <div className="mb-3 flex items-center gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl text-white"
+                        style={{ background: "linear-gradient(135deg, var(--brand-teal), var(--brand-navy))" }}
+                      >
+                        <Icon className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+                      </span>
+                      <h3 className="text-lg font-bold text-gray-800">{option.title}</h3>
+                    </div>
+                    <p className="text-sm leading-7 text-gray-600">{option.desc}</p>
                   </div>
-                  <p className="text-sm leading-7 text-gray-600">{option.desc}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -125,31 +164,54 @@ const AdvertiseWithUsPage = () => {
             <p className="mb-6 text-sm text-gray-500">
               Size &amp; weight, all in 72 dpi.
             </p>
-            <div className="overflow-hidden rounded-2xl" style={{ border: "1px solid rgba(6,106,156,0.12)" }}>
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr
-                    style={{
-                      background: "linear-gradient(90deg, rgba(6,106,156,0.06), rgba(39,174,144,0.06))",
-                    }}
-                  >
-                    <th scope="col" className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
-                      Size
-                    </th>
-                    <th scope="col" className="px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy)">
-                      Weight
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {BANNER_SPECS.map((spec) => (
-                    <tr key={spec.size} className="border-t border-slate-100">
-                      <td className="px-5 py-3 font-semibold text-gray-700">{spec.size}</td>
-                      <td className="px-5 py-3 text-gray-500">{spec.weight}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <figure className="mb-6">
+              <img
+                src={bannerSizesImage}
+                alt="Banner ads mocked up in the eight standard sizes, from 728 x 90 to 120 x 60 pixels"
+                width={1536}
+                height={1024}
+                loading="lazy"
+                className="w-full rounded-2xl border border-slate-200 bg-white object-contain"
+              />
+              <figcaption className="mt-3 text-xs leading-5 text-slate-500">
+                Our standard banner sizes, shown to relative scale.
+              </figcaption>
+            </figure>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+              <div
+                aria-hidden="true"
+                className="hidden items-center gap-6 border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-(--brand-navy) sm:flex"
+              >
+                <span className="w-24 shrink-0">Weight</span>
+                <span>Sizes</span>
+              </div>
+              <dl className="divide-y divide-slate-100">
+              {BANNER_WEIGHT_GROUPS.map((group) => (
+                <div
+                  key={group.weightKb}
+                  className="flex flex-col gap-2.5 px-5 py-4 sm:flex-row sm:items-center sm:gap-6"
+                >
+                  <dt className="flex shrink-0 items-baseline gap-1.5 sm:w-24">
+                    <span className="text-[13px] font-bold tabular-nums text-slate-800">
+                      {group.weightKb} KB
+                    </span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                      max
+                    </span>
+                  </dt>
+                  <dd className="flex flex-wrap gap-1.5">
+                    {group.sizes.map((size) => (
+                      <span
+                        key={`${size.width}x${size.height}`}
+                        className="rounded-md bg-slate-50 px-2 py-1 text-[12px] font-semibold tabular-nums text-slate-600 ring-1 ring-slate-200/80"
+                      >
+                        {size.width} × {size.height} px
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              ))}
+              </dl>
             </div>
           </section>
 
