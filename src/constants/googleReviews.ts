@@ -31,4 +31,12 @@ export const GOOGLE_REVIEWS: GoogleReview[] = [
     quote: "Very good experience and very quick response 💯👍",
     reviewUrl: "https://www.google.com/maps/contrib/109908637747716239568/place/ChIJM41tLTfI5zsRd0G2d3VMEXQ/@28.6259154,77.1426402,17z/data=!4m6!1m5!8m4!1e1!2s109908637747716239568!3m1!1e1?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MTExOC4xIKXMDSoASAFQAw%3D%3D",
   },
+    {
+    id: 3,
+    name: "Farooq Azam",
+    avatar: "/testimonials/Farooq-Azam.jpg",
+    rating: 5,
+    quote: "I taken loan thru Indexia Finance , Amazing experience with index finance, they people are very much supported and products knowledge is very good , staff very cooperative and with professional ethics. I would say it's hassle free process of getting loan through Indexia Finance.",
+    reviewUrl: "https://www.google.com/maps/contrib/113432331657349467430/place/ChIJM41tLTfI5zsRd0G2d3VMEXQ/@28.6295857,77.1143586,14z/data=!4m6!1m5!8m4!1e1!2s113432331657349467430!3m1!1e1?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MTExOC4xIKXMDSoASAFQAw%3D%3D",
+  },
 ];
