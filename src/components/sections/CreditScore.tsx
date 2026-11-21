@@ -1,88 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import ScoreDial from "../loan-eligibility/ScoreDial";
+import {
+  SCORE_MAX,
+  SCORE_MIN,
+  bandForScore,
+  ratingForScore,
+  type CreditBand,
+} from "../loan-eligibility/creditScoreEvaluation";
 
-// ── Gauge geometry ────────────────────────────────────────────────────────────
-const CX = 160;
-const CY = 170;
-const SVG_W = 320;
-const SVG_H = 320;
-const R_OUTER = 115;
-const STROKE  = 22;
-const GAUGE_START = -220;
-const GAUGE_END   =  40;
-const GAUGE_SWEEP = GAUGE_END - GAUGE_START; // 260°
-
-// CIBIL range: 300–900
-const CIBIL_MIN = 300;
-const CIBIL_MAX = 900;
-const TARGET_SCORE = 750; // exactly 750 shown in center
-const DURATION = 2400; // count-up length in ms
-
-// Position 750 in the 300–900 range → (750-300)/(900-300) = 75%
-const TARGET_PCT = ((TARGET_SCORE - CIBIL_MIN) / (CIBIL_MAX - CIBIL_MIN)) * 100;
-
-// ── Color stops ───────────────────────────────────────────────────────────────
-const COLOR_STOPS: [string, number][] = [
-  ["#e74c3c", 0.00],
-  ["#e67e22", 0.20],
-  ["#f1c40f", 0.40],
-  ["#a8d150", 0.58],
-  ["#26ae90", 0.75],
-  ["#1abc9c", 1.00],
-];
-
-const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
-const hexToRgb = (h: string) => ({
-  r: parseInt(h.slice(1, 3), 16),
-  g: parseInt(h.slice(3, 5), 16),
-  b: parseInt(h.slice(5, 7), 16),
-});
-const interpolateColor = (t: number): string => {
-  const clamped = Math.max(0, Math.min(1, t));
-  for (let i = 0; i < COLOR_STOPS.length - 1; i++) {
-    const [c1, f1] = COLOR_STOPS[i];
-    const [c2, f2] = COLOR_STOPS[i + 1];
-    if (clamped >= f1 && clamped <= f2) {
-      const lt = (clamped - f1) / (f2 - f1);
-      const a = hexToRgb(c1), b = hexToRgb(c2);
-      return `#${lerp(a.r,b.r,lt).toString(16).padStart(2,"0")}${lerp(a.g,b.g,lt).toString(16).padStart(2,"0")}${lerp(a.b,b.b,lt).toString(16).padStart(2,"0")}`;
-    }
-  }
-  return COLOR_STOPS[COLOR_STOPS.length - 1][0];
+const COMPARISON_BY_BAND: Record<CreditBand, number> = {
+  poor: 12,
+  average: 31,
+  good: 48,
+  veryGood: 64,
+  excellent: 78,
 };
 
-// ── SVG arc helpers ───────────────────────────────────────────────────────────
-const polar = (cx: number, cy: number, r: number, deg: number) => {
-  const rad = ((deg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-};
-const arcPath = (startDeg: number, endDeg: number, r = R_OUTER) => {
-  const s = polar(CX, CY, r, startDeg);
-  const e = polar(CX, CY, r, endDeg);
-  const large = endDeg - startDeg > 180 ? 1 : 0;
-  return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
-};
-const SEGMENTS = 80;
-const buildGradientArc = (fill: number) => {
-  const count = Math.round(fill * SEGMENTS);
-  return Array.from({ length: count }, (_, i) => {
-    const f0 = i / SEGMENTS;
-    const f1 = (i + 1) / SEGMENTS;
-    return {
-      path: arcPath(GAUGE_START + f0 * GAUGE_SWEEP, GAUGE_START + f1 * GAUGE_SWEEP),
-      color: interpolateColor(f0),
-    };
-  });
-};
-
-// ── Rating helper ─────────────────────────────────────────────────────────────
-const getRating = (p: number): { label: string; color: string; comparison: number } => {
-  if (p < 40) return { label: "Poor",      color: "#e74c3c", comparison: 12 };
-  if (p < 55) return { label: "Fair",      color: "#e67e22", comparison: 31 };
-  if (p < 70) return { label: "Good",      color: "#f1c40f", comparison: 52 };
-  if (p < 85) return { label: "Very Good", color: "var(--brand-teal)", comparison: 68 };
-  return             { label: "Excellent",  color: "#1abc9c", comparison: 73 };
-};
+const TARGET_SCORE = 750;
+const TARGET_PROGRESS = (TARGET_SCORE - SCORE_MIN) / (SCORE_MAX - SCORE_MIN);
 
 // ── Label icon definitions (static, icons don't need translation) ─────────────
 const labelIcons = {
@@ -206,16 +142,8 @@ const LabelItem = ({
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const CreditScore = () => {
-  const [animPct, setAnimPct]     = useState(0);
-  const [started, setStarted]     = useState(false);
-  const [done, setDone]           = useState(false);
-  const [pulse, setPulse]         = useState(false);
-  const sectionRef                = useRef<HTMLElement>(null);
-  const rafRef                    = useRef<number | null>(null);
-  const startRef                  = useRef<number | null>(null);
-  const pulseTimerRef             = useRef<number | null>(null);
-
-  // Start the count-up once, when the section first enters the viewport.
+  const [started, setStarted] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -232,42 +160,8 @@ const CreditScore = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Count-up animation
-  useEffect(() => {
-    if (!started) return;
-    const animate = (ts: number) => {
-      if (startRef.current === null) startRef.current = ts;
-      const elapsed  = ts - startRef.current;
-      const progress = Math.min(elapsed / DURATION, 1);
-      const eased    = 1 - Math.pow(1 - progress, 3);
-      setAnimPct(Math.round(eased * TARGET_PCT));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        setDone(true);
-        setPulse(true);
-        pulseTimerRef.current = window.setTimeout(() => setPulse(false), 1200);
-      }
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (pulseTimerRef.current) window.clearTimeout(pulseTimerRef.current);
-    };
-  }, [started]);
-
-  const arcFill      = animPct / 100;
-  const gradientSegs = buildGradientArc(arcFill);
-  const needleColor  = interpolateColor(arcFill);
-  // Map animPct (0–100%) back to CIBIL 300–900 range
-  const actualScore  = Math.round(CIBIL_MIN + (animPct / 100) * (CIBIL_MAX - CIBIL_MIN));
-
-  const { label: ratingLabel, color: ratingColor, comparison } = getRating(animPct);
-
-  const needleAngle = GAUGE_START + arcFill * GAUGE_SWEEP;
-  const nTip   = polar(CX, CY, R_OUTER - 8, needleAngle);
-  const nBase1 = { x: CX - 5, y: CY + 6 };
-  const nBase2 = { x: CX + 5, y: CY + 6 };
+  const { label: ratingLabel, tip: ratingTip } = ratingForScore(TARGET_SCORE);
+  const comparison = COMPARISON_BY_BAND[bandForScore(TARGET_SCORE)];
 
   const leftLabels  = labelDefs.filter((l) => l.side === "left");
   const rightLabels = labelDefs.filter((l) => l.side === "right");
@@ -300,89 +194,13 @@ const CreditScore = () => {
             ))}
           </div>
 
-          {/* SVG Gauge */}
-          <svg
-            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-            width={SVG_W}
-            height={SVG_H}
-            className="shrink-0 overflow-visible"
-            role="img"
-            aria-label={`Illustrative credit score gauge from ${CIBIL_MIN} to ${CIBIL_MAX} with a sample score of ${TARGET_SCORE}`}
-          >
-            {/* Outer glow ring when done */}
-            {done && (
-              <circle
-                cx={CX} cy={CY} r={R_OUTER + 14}
-                fill="none" stroke={ratingColor} strokeWidth="3"
-                opacity={pulse ? "0.35" : "0.1"}
-                style={{ transition: "opacity 0.6s ease" }}
-              />
-            )}
-
-            {/* Grey track */}
-            <path
-              d={arcPath(GAUGE_START, GAUGE_END)}
-              fill="none" stroke="#cde0f0"
-              strokeWidth={STROKE} strokeLinecap="round"
-            />
-
-            {/* Gradient arc segments */}
-            {gradientSegs.map(({ path, color }, i) => (
-              <path key={i} d={path} fill="none" stroke={color} strokeWidth={STROKE} strokeLinecap="butt" />
-            ))}
-
-            {/* Tip glow when done */}
-            {done && (
-              <circle
-                cx={nTip.x} cy={nTip.y} r="6"
-                fill={needleColor}
-                opacity={pulse ? "0.6" : "0.2"}
-                style={{ transition: "opacity 0.6s ease" }}
-              />
-            )}
-
-            {/* Needle */}
-            <polygon
-              points={`${nTip.x},${nTip.y} ${nBase1.x},${nBase1.y} ${nBase2.x},${nBase2.y}`}
-              fill={needleColor} opacity="0.95"
-            />
-            <circle cx={CX} cy={CY} r="10" fill="#334155" />
-            <circle cx={CX} cy={CY} r="5"  fill="#fff" />
-
-            {/* Score — shows animating count, snaps to exact 750 when done */}
-            <text
-              x={CX} y={CY - 14}
-              textAnchor="middle" fontSize="52" fontWeight="bold"
-              fill={ratingColor} fontFamily="Georgia, serif"
-            >
-              {done ? TARGET_SCORE : actualScore}
-            </text>
-
-            {/* CIBIL range: 300 on left end, 900 on right end */}
-            <text x={CX - 102} y={CY + 100} textAnchor="middle" fontSize="10" fill="#999" fontWeight="500">300</text>
-            <text x={CX + 102} y={CY + 100} textAnchor="middle" fontSize="10" fill="#999" fontWeight="500">900</text>
-
-            {/* Sub label */}
-            <text x={CX} y={CY + 16} textAnchor="middle" fontSize="11" fill="#777">
-              Your credit score is
-            </text>
-
-            {/* Rating pill */}
-            <rect x={CX - 46} y={CY + 22} width="92" height="22" rx="11" fill={ratingColor} opacity="0.15" />
-            <text x={CX} y={CY + 37} textAnchor="middle" fontSize="13" fontWeight="bold" fill={ratingColor}>
-              {ratingLabel}
-            </text>
-
-            {/* Comparison badge — fades in when done */}
-            {done && (
-              <>
-                <rect x={CX - 68} y={CY + 50} width="136" height="20" rx="10" fill="var(--brand-navy)" opacity="0.1" />
-                <text x={CX} y={CY + 64} textAnchor="middle" fontSize="10" fill="var(--brand-navy)" fontWeight="600">
-                  {`Better than ${comparison}% of users`}
-                </text>
-              </>
-            )}
-          </svg>
+          {/* Score dial */}
+          <ScoreDial
+            progress={started ? TARGET_PROGRESS : 0}
+            label={ratingLabel}
+            tip={ratingTip}
+            caption={`Better than ${comparison}% of users`}
+          />
 
           {/* RIGHT labels */}
           <div className="hidden sm:flex flex-col gap-5 items-start ml-4 w-44 shrink-0">

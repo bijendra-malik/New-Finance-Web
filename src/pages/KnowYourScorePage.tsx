@@ -16,23 +16,11 @@ import {
   SCORE_MIN,
   bandForScore,
   isValidScore,
+  ratingForScore,
   type CreditBand,
 } from "../components/loan-eligibility/creditScoreEvaluation";
+import ScoreDial from "../components/loan-eligibility/ScoreDial";
 import useSEO from "../hooks/useSEO";
-
-const BAND_ORDER: CreditBand[] = ["poor", "average", "good", "excellent"];
-
-const BAND_LABEL: Record<CreditBand, string> = {
-  poor: "Poor",
-  average: "Average",
-  good: "Good",
-  excellent: "Excellent",
-};
-
-const BANDS = BAND_ORDER.map((key) => ({
-  key,
-  ...BAND_META[key],
-}));
 
 const NEXT_STEPS: Record<CreditBand, string[]> = {
   poor: [
@@ -46,6 +34,10 @@ const NEXT_STEPS: Record<CreditBand, string[]> = {
   good: [
     "Compare offers from a few lenders before choosing.",
     "Keep your existing EMIs comfortable relative to your income.",
+  ],
+  veryGood: [
+    "Ask lenders to match or beat the best rate you are offered.",
+    "Keep utilisation low so the profile stays in this band.",
   ],
   excellent: [
     "Ask lenders to match or beat the best rate you are offered.",
@@ -99,66 +91,6 @@ const FAQS = [
   },
 ];
 
-const scorePercent = (score: number) =>
-  ((score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * 100;
-
-const ScoreScale = ({ score }: { score: number | null }) => {
-  const activeBand = score !== null ? bandForScore(score) : null;
-
-  return (
-    <div>
-      <div
-        className="relative"
-        role="img"
-        aria-label="Credit score bands: Poor 300 to 600, Average 601 to 700, Good 701 to 800, Excellent 801 to 900"
-      >
-        <div className="flex h-2.5 overflow-hidden rounded-full">
-          {BANDS.map((band) => (
-            <div
-              key={band.key}
-              style={{
-                width: `${((band.segment[1] - band.segment[0]) / (SCORE_MAX - SCORE_MIN)) * 100}%`,
-                backgroundColor: band.color,
-              }}
-            />
-          ))}
-        </div>
-
-        {score !== null && (
-          <span
-            aria-hidden="true"
-            className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-md"
-            style={{
-              left: `${scorePercent(score)}%`,
-              backgroundColor: activeBand ? BAND_META[activeBand].color : "#334155",
-            }}
-          />
-        )}
-      </div>
-
-      <div className="mt-2 flex justify-between text-[10px] font-semibold text-slate-400">
-        <span>{SCORE_MIN}</span>
-        <span>{SCORE_MAX}</span>
-      </div>
-
-      <div className="mt-1 flex text-[10px] font-bold">
-        {BANDS.map((band) => (
-          <span
-            key={band.key}
-            className="text-center"
-            style={{
-              width: `${((band.segment[1] - band.segment[0]) / (SCORE_MAX - SCORE_MIN)) * 100}%`,
-              color: band.color,
-            }}
-          >
-            {BAND_LABEL[band.key]}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const KnowYourScorePage = () => {
   useSEO({
     title: "Know Your Credit Score — Free Score Band Check",
@@ -174,6 +106,20 @@ const KnowYourScorePage = () => {
   const isValid = hasScore && isValidScore(parsedScore);
   const band = isValid ? bandForScore(parsedScore) : null;
   const meta = band ? BAND_META[band] : null;
+  // Band name and copy come from the same rule set as the eligibility tool.
+  const rating = ratingForScore(parsedScore);
+  const dialProps = isValid
+    ? {
+        progress: (parsedScore - SCORE_MIN) / (SCORE_MAX - SCORE_MIN),
+        label: rating.label,
+        tip: rating.tip,
+      }
+    : {
+        progress: 0,
+        value: null,
+        label: "Awaiting score",
+        accent: "#94a3b8",
+      };
   const showError = hasScore && !isValid && score.length >= 3;
 
   return (
@@ -303,46 +249,38 @@ const KnowYourScorePage = () => {
               <div className="lg:col-span-7">
                 <p className="sr-only" aria-live="polite">
                   {meta && band
-                    ? `Score ${parsedScore}. ${BAND_LABEL[band]} band. ${meta.blurb}`
+                    ? `Score ${parsedScore}. ${rating.label} band. ${meta.blurb}`
                     : ""}
                 </p>
-                {meta && band ? (
-                  <div
-                    className="flex h-full flex-col rounded-3xl border p-6 sm:p-8"
-                    style={{ borderColor: meta.border, backgroundColor: meta.bg }}
-                  >
+                <div
+                  className="flex h-full flex-col rounded-3xl border p-6 sm:p-8"
+                  style={{
+                    borderColor: meta ? meta.border : "#e2e8f0",
+                    backgroundColor: meta ? meta.bg : "#f8fafc",
+                  }}
+                >
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                          Your result
-                        </p>
-                        <div className="mt-1 flex flex-wrap items-end gap-3">
-                          <span
-                            className="text-6xl font-extrabold leading-none tracking-tight"
-                            style={{ color: meta.color }}
-                          >
-                            {parsedScore}
-                          </span>
-                          <span
-                            className="mb-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white"
-                            style={{ backgroundColor: meta.color }}
-                          >
-                            {BAND_LABEL[band]}
-                          </span>
-                        </div>
-                      </div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                        Your result
+                      </p>
                       <span
                         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/60"
-                        style={{ color: meta.color }}
+                        style={{ color: isValid ? rating.color : "#94a3b8" }}
                         aria-hidden="true"
                       >
                         <ShieldCheck className="h-5 w-5" />
                       </span>
                     </div>
 
-                    <p className="mt-4 text-sm leading-6 text-slate-700">{meta.blurb}</p>
+                    <div className="mt-2 flex justify-center">
+                      <ScoreDial {...dialProps} />
+                    </div>
 
-                    <div className="mt-6">
+                    {meta && band ? (
+                      <>
+                        <p className="mt-4 text-sm leading-6 text-slate-700">{meta.blurb}</p>
+
+                        <div className="mt-6">
                       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
                         What to do next
                       </p>
@@ -362,11 +300,19 @@ const KnowYourScorePage = () => {
                           </li>
                         ))}
                       </ul>
-                    </div>
-
-                    <div className="mt-auto pt-6">
-                      <ScoreScale score={parsedScore} />
-                    </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-4">
+                        <h3 className="text-xl font-extrabold tracking-tight text-slate-800">
+                          Your band will appear here.
+                        </h3>
+                        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+                          Enter a score from {SCORE_MIN} to {SCORE_MAX} to see what it means
+                          for your loan options and what to do next.
+                        </p>
+                      </div>
+                    )}
 
                     <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                       <Link
@@ -399,26 +345,7 @@ const KnowYourScorePage = () => {
                         Talk to a specialist
                       </Link>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex h-full min-h-90 flex-col justify-between rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 sm:p-8">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                        Your result
-                      </p>
-                      <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-800">
-                        Your band will appear here.
-                      </h3>
-                      <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-                        Enter a score from {SCORE_MIN} to {SCORE_MAX} to see what it means for
-                        your loan options and what to do next.
-                      </p>
-                    </div>
-                    <div className="mt-8">
-                      <ScoreScale score={null} />
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
