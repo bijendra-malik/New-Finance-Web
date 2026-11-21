@@ -13,8 +13,7 @@ const COMPARISON_BY_BAND: Record<CreditBand, number> = {
   poor: 12,
   average: 31,
   good: 48,
-  veryGood: 64,
-  excellent: 78,
+  excellent: 72,
 };
 
 const TARGET_SCORE = 750;

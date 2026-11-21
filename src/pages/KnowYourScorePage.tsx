@@ -35,10 +35,6 @@ const NEXT_STEPS: Record<CreditBand, string[]> = {
     "Compare offers from a few lenders before choosing.",
     "Keep your existing EMIs comfortable relative to your income.",
   ],
-  veryGood: [
-    "Ask lenders to match or beat the best rate you are offered.",
-    "Keep utilisation low so the profile stays in this band.",
-  ],
   excellent: [
     "Ask lenders to match or beat the best rate you are offered.",
     "Apply selectively — several enquiries at once can still affect your profile.",
@@ -77,7 +73,7 @@ const FAQS = [
   {
     question: "What is considered a good credit score?",
     answer:
-      "As a general guide, 700 and above is good and 800 and above is excellent. Lender cut-offs vary by loan product and by the rest of your profile.",
+      "As a general guide, 750 and above is excellent, 650–749 is good and 550–649 is average. Lender cut-offs vary by loan product and by the rest of your profile.",
   },
   {
     question: "Where can I find my credit score?",

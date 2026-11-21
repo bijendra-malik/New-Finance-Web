@@ -1,7 +1,7 @@
 export const SCORE_MIN = 300;
 export const SCORE_MAX = 900;
 
-export type CreditBand = "poor" | "average" | "good" | "veryGood" | "excellent";
+export type CreditBand = "poor" | "average" | "good" | "excellent";
 
 export interface BandMeta {
   label: string;
@@ -18,58 +18,51 @@ export const BAND_META: Record<CreditBand, BandMeta> = {
   poor: {
     label: "a Poor",
     shortLabel: "Poor",
-    range: [300, 600],
-    segment: [300, 600],
+    range: [300, 549],
+    segment: [300, 550],
     color: "#b91c1c",
     bg: "rgba(185,28,28,0.08)",
     border: "rgba(185,28,28,0.35)",
-    blurb: "Lenders see this as a higher-risk profile. Clearing dues and paying on time moves this band fastest.",
+    blurb:
+      "Indicates late payments, defaults, or high credit risk, making new credit harder to get.",
   },
   average: {
     label: "an Average",
     shortLabel: "Average",
-    range: [601, 700],
-    segment: [600, 700],
+    range: [550, 649],
+    segment: [550, 650],
     color: "#a16207",
     bg: "rgba(161,98,7,0.08)",
     border: "rgba(161,98,7,0.35)",
-    blurb: "Some lenders may ask for extra documents or a co-applicant at this band.",
+    blurb:
+      "Signals past repayment strain, higher credit utilization, or a thin file; lenders may charge higher interest or require collateral/guarantors.",
   },
   good: {
     label: "a Good",
     shortLabel: "Good",
-    range: [701, 749],
-    segment: [700, 750],
+    range: [650, 749],
+    segment: [650, 750],
     color: "#0369a1",
     bg: "rgba(3,105,161,0.08)",
     border: "rgba(3,105,161,0.35)",
-    blurb: "Most lenders treat this as a low-risk profile with standard terms.",
-  },
-  veryGood: {
-    label: "a Very Good",
-    shortLabel: "Very Good",
-    range: [750, 799],
-    segment: [750, 800],
-    color: "#0e7490",
-    bg: "rgba(14,116,144,0.08)",
-    border: "rgba(14,116,144,0.35)",
-    blurb: "A strong profile — most lenders offer competitive terms without extra conditions.",
+    blurb:
+      "Often considered moderate to good depending on the lender and bureau; approval may still be possible, though terms or interest rates can vary.",
   },
   excellent: {
     label: "an Excellent",
     shortLabel: "Excellent",
-    range: [801, 900],
-    segment: [800, 900],
+    range: [750, 900],
+    segment: [750, 900],
     color: "#0f766e",
     bg: "rgba(15,118,110,0.08)",
     border: "rgba(15,118,110,0.35)",
-    blurb: "The widest lender acceptance and the best rate offers available.",
+    blurb:
+      "Generally viewed as strong creditworthiness across major Indian bureaus (CIBIL, Experian, CRIF High Mark, Equifax), helping with faster approvals and lower interest rates.",
   },
 };
 
 export const bandForScore = (score: number): CreditBand => {
   if (score >= BAND_META.excellent.segment[0]) return "excellent";
-  if (score >= BAND_META.veryGood.segment[0]) return "veryGood";
   if (score >= BAND_META.good.segment[0]) return "good";
   if (score >= BAND_META.average.segment[0]) return "average";
   return "poor";
