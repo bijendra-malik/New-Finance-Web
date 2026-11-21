@@ -13,6 +13,8 @@ const GAUGE_START = -220;
 const GAUGE_END = 40;
 const GAUGE_SWEEP = GAUGE_END - GAUGE_START;
 const NEEDLE_COLOR = "#94a3b8";
+const NEEDLE_REACH = R_OUTER - 12;
+const NEEDLE_HALF_WIDTH = 5.5;
 const HUB_RADIUS = 10;
 const EASE = 0.05;
 
@@ -72,6 +74,7 @@ const arcPath = (startDeg: number, endDeg: number, r = R_OUTER) => {
 };
 const ARC_START_COLOR = interpolateColor(0);
 const START_CAP = polar(CX, CY, R_OUTER, GAUGE_START);
+const END_CAP = polar(CX, CY, R_OUTER, GAUGE_END);
 const SEGMENTS = 140;
 const SEGMENT_STEP = GAUGE_SWEEP / SEGMENTS;
 const buildGradientArc = (fill: number) => {
@@ -167,14 +170,15 @@ const ScoreDial = ({
       : value;
   const accentColor = accent ?? interpolateColor(shownFill);
 
-  const needleTip = polar(CX, CY, R_OUTER - 12, needleAngle);
-  const needleReach = R_OUTER - 12;
+  const needleTip = polar(CX, CY, NEEDLE_REACH, needleAngle);
   const needleDir = {
-    x: (needleTip.x - CX) / needleReach,
-    y: (needleTip.y - CY) / needleReach,
+    x: (needleTip.x - CX) / NEEDLE_REACH,
+    y: (needleTip.y - CY) / NEEDLE_REACH,
   };
-  const needleHalfWidth = 5.5;
-  const needlePerp = { x: -needleDir.y * needleHalfWidth, y: needleDir.x * needleHalfWidth };
+  const needlePerp = {
+    x: -needleDir.y * NEEDLE_HALF_WIDTH,
+    y: needleDir.x * NEEDLE_HALF_WIDTH,
+  };
   const needleBase = { x: CX + needleDir.x * HUB_RADIUS, y: CY + needleDir.y * HUB_RADIUS };
   const needlePoints = [
     `${(needleBase.x + needlePerp.x).toFixed(2)},${(needleBase.y + needlePerp.y).toFixed(2)}`,
@@ -183,7 +187,7 @@ const ScoreDial = ({
   ].join(" ");
 
   return (
-    <div className="relative w-full max-w-[320px] shrink-0">
+    <div className="relative w-full max-w-[320px] shrink-0 @container">
       <div className="relative">
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
@@ -246,10 +250,10 @@ const ScoreDial = ({
           <circle cx={marker.x} cy={marker.y} r="10" fill="#ffffff" filter={`url(#${markerShadowId})`} />
 
           {/* Scale ends, sitting beside the caps in the open gap */}
-          <text x="252" y="245" textAnchor="start" fontSize="13" fontWeight="600" fill="#94a3b8">
+          <text x={Math.round(START_CAP.x) + 18} y={Math.round(START_CAP.y) + 4} textAnchor="start" fontSize="13" fontWeight="600" fill="#94a3b8">
             {SCORE_MIN}
           </text>
-          <text x="252" y="67" textAnchor="start" fontSize="13" fontWeight="600" fill="#94a3b8">
+          <text x={Math.round(END_CAP.x) + 18} y={Math.round(END_CAP.y) + 4} textAnchor="start" fontSize="13" fontWeight="600" fill="#94a3b8">
             {SCORE_MAX}
           </text>
         </svg>
@@ -260,7 +264,7 @@ const ScoreDial = ({
           style={{ top: `${(SCORE_TOP / SVG_H) * 100}%` }}
         >
           <span
-            className="text-[56px] font-bold leading-none tabular-nums"
+            className="text-[clamp(28px,17.5cqw,56px)] font-bold leading-none tabular-nums"
             style={{
               color: accentColor,
               fontFamily: "var(--font-serif)",
@@ -275,13 +279,13 @@ const ScoreDial = ({
           className="pointer-events-none absolute inset-x-0 flex flex-col items-center"
           style={{ top: `${(BAND_TOP / SVG_H) * 100}%` }}
         >
-          <span className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <span className="mb-[1.9cqw] text-[clamp(9px,3.1cqw,10px)] font-semibold uppercase tracking-[0.2em] text-slate-400">
             Your credit score is
           </span>
 
-          <div className="relative flex items-center gap-1.5">
+          <div className="relative flex items-center gap-[1.9cqw]">
             <span
-              className="rounded-full px-3 py-1 text-sm font-bold text-white shadow-[0_1px_2px_rgba(15,23,42,0.12)]"
+              className="rounded-full px-[3.8cqw] py-[1.3cqw] text-[clamp(11px,4.4cqw,14px)] font-bold text-white shadow-[0_1px_2px_rgba(15,23,42,0.12)]"
               style={{ backgroundColor: shadeColor(accentColor) }}
             >
               {label}
@@ -297,9 +301,9 @@ const ScoreDial = ({
                 onFocus={() => setTipOpen(true)}
                 onBlur={() => setTipOpen(false)}
                 onClick={() => setTipOpen((open) => !open)}
-                className="pointer-events-auto flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-[#3b9dff] transition-colors hover:text-[#6fb8ff]"
+                className="pointer-events-auto flex h-[6.3cqw] w-[6.3cqw] cursor-pointer items-center justify-center rounded-full text-[#3b9dff] transition-colors hover:text-[#6fb8ff]"
               >
-                <Info className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+                <Info className="h-[5cqw] w-[5cqw]" strokeWidth={2.4} aria-hidden="true" />
               </button>
             )}
 
@@ -311,11 +315,10 @@ const ScoreDial = ({
           </div>
 
           {caption && (
-            <p className="mt-2 text-[10px] font-semibold text-(--brand-navy)">{caption}</p>
+            <p className="mt-[2.5cqw] text-[clamp(9px,3.1cqw,10px)] font-semibold text-(--brand-navy)">{caption}</p>
           )}
         </div>
       </div>
-
     </div>
   );
 };
