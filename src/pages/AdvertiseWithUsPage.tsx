@@ -2,10 +2,11 @@ import { GalleryHorizontal, Type } from "lucide-react";
 import PageBanner from "../components/common/PageBanner";
 import LeadForm from "../components/form/LeadForm";
 import useSEO from "../hooks/useSEO";
-import startingImage from "../assets/advertise-with-us/starting-img.png";
-import textAdsImage from "../assets/advertise-with-us/text-ads.png";
-import bannerAdsImage from "../assets/advertise-with-us/banner-ads.png";
-import bannerSizesImage from "../assets/advertise-with-us/banner-specifications.png";
+import { submitContactEnquiry } from "../api/contact";
+import startingImage from "../assets/advertise-with-us/starting-img.webp";
+import textAdsImage from "../assets/advertise-with-us/text-ads.webp";
+import bannerAdsImage from "../assets/advertise-with-us/banner-ads.webp";
+import bannerSizesImage from "../assets/advertise-with-us/banner-specifications.webp";
 
 const INTRO_PARAGRAPHS = [
   "More than 4 Billion people of the world use the internet to stay connected and informed. Since the early 1990's there has been an exponential increase in the growth of online advertising, which has evolved into a standard for any size organisation whether small or large.",
@@ -237,6 +238,27 @@ const AdvertiseWithUsPage = () => {
                 submitLabel="Send Enquiry"
                 successTitle="Enquiry Sent!"
                 successMessage="Thank you for your advertising enquiry. Our team will get back to you shortly."
+                submitErrorMessage="We could not send your enquiry just now. Please try again."
+                onSubmit={async (values) => {
+                  const company = values.company?.trim();
+                  const message = [
+                    company ? `Company / Brand: ${company}` : "",
+                    values.message.trim(),
+                  ]
+                    .filter(Boolean)
+                    .join("\n\n");
+
+                  const response = await submitContactEnquiry({
+                    name: values.name.trim(),
+                    mobile: values.phone.trim(),
+                    email: values.email.trim(),
+                    topic: "Advertising",
+                    message,
+                    source: "website-advertise-with-us",
+                  });
+
+                  return response.message;
+                }}
                 fields={[
                   { name: "name", label: "Full Name", required: true, placeholder: "Your full name" },
                   { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-digit mobile number" },
@@ -247,7 +269,8 @@ const AdvertiseWithUsPage = () => {
                     label: "Your Message",
                     type: "textarea",
                     required: true,
-                    placeholder: "Tell us briefly what you'd like to advertise",
+                    minLength: 50,
+                    placeholder: "Tell us briefly what you'd like to advertise (minimum 50 characters)",
                   },
                 ]}
               />
