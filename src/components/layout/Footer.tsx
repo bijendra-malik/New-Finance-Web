@@ -5,6 +5,7 @@ import globeVideo from "../../assets/logo-footer.webm";
 import { socialLinks } from "../../constants/socialLinks";
 import {
   EMAIL_CONTACT,
+  OFFICE_MAP_DIRECTIONS_URL,
   PHONE_LANDLINE,
   PHONE_LANDLINE_HREF,
   PHONE_MOBILE,
@@ -192,9 +193,17 @@ const Footer = () => {
                   <span className="min-w-13 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-white/68">
                     Office
                   </span>
-                  <span className="cursor-default text-[13px] text-white/88">
-                    Naraina Vihar, New Delhi
-                  </span>
+                  <a
+                    href={OFFICE_MAP_DIRECTIONS_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[13px] text-white/88 no-underline transition-colors hover:text-(--brand-yellow) hover:underline"
+                  >
+                    Naraina Vihar, New Delhi{" "}
+                    <span aria-hidden="true" className="text-[11px]">
+                      ↗
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -258,14 +267,8 @@ const Footer = () => {
                       rel="noreferrer"
                       aria-label={`${social.name} — ${social.handle}`}
                       title={`${social.name} — ${social.handle}`}
-                      className="flex h-8.5 w-8.5 items-center justify-center rounded-full border text-[13px] text-white transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.75 hover:bg-white hover:text-(--soc)"
-                      style={
-                        {
-                          "--soc": social.brand,
-                          backgroundColor: "var(--soc)",
-                          borderColor: "var(--soc)",
-                        } as CSSProperties
-                      }
+                      className="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-(--soc) bg-(--soc) text-[13px] text-white transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.75 hover:bg-white hover:text-(--soc)"
+                      style={{ "--soc": social.brand } as CSSProperties}
                     >
                       <Icon aria-hidden="true" />
                     </a>
