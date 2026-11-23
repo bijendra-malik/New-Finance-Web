@@ -4,52 +4,137 @@ export interface CareerRole {
   title: string;
   team: string;
   location: string;
-  type: string;
-  summary: string;
+  type: "Full-time" | "Intern";
+  description: string;
+  requirements: string[];
 }
 
 export const CAREER_ROLES: CareerRole[] = [
   {
-    title: "Relationship Manager — Loans",
-    team: "Sales & Distribution",
-    location: "New Delhi",
+    title: "Digital Marketing Executive",
+    team: "Digital Marketing",
+    location: "Delhi",
     type: "Full-time",
-    summary: "Own a portfolio of loan enquiries from first call to disbursal, working with our partner banks and NBFCs.",
+    description:
+      "Lead digital marketing strategies including SEO, SEM, social media marketing, and content creation to drive online presence and lead generation.",
+    requirements: [
+      "Minimum 1 year experience in digital marketing",
+      "Strong knowledge of SEO, SEM, and SMO",
+      "Experience with Google Analytics, Ads, and social media tools",
+      "Excellent communication and analytical skills",
+    ],
   },
   {
-    title: "Credit Analyst",
-    team: "Credit & Risk",
-    location: "New Delhi",
+    title: "IT Developer",
+    team: "Information Technology",
+    location: "Delhi",
     type: "Full-time",
-    summary: "Read income profiles and bureau reports, and put a defensible view on every file that reaches the lender.",
+    description:
+      "Develop and maintain software applications, manage databases, and support IT infrastructure across the organization.",
+    requirements: [
+      "Minimum 1 year experience as a full-stack developer",
+      "Proficiency in frontend and backend technologies",
+      "Experience with databases and API development",
+      "Strong problem-solving and debugging skills",
+    ],
   },
   {
-    title: "Frontend Engineer (React)",
-    team: "Technology",
-    location: "New Delhi / Remote",
+    title: "HR Executive",
+    team: "Human Resources",
+    location: "Delhi",
     type: "Full-time",
-    summary: "Build the application journeys customers actually use — forms, dashboards and calculators that stay fast and accessible.",
+    description:
+      "Manage end-to-end HR processes including profile hiring, shortlisting candidates, conducting interviews, managing joining formalities, induction, training, salary management, and exit formalities.",
+    requirements: [
+      "Minimum 1 year experience in HR",
+      "End-to-end recruitment experience from hiring to exit",
+      "Knowledge of HR policies, salary management, and employee relations",
+      "Strong interpersonal and organizational skills",
+    ],
   },
   {
-    title: "Backend Engineer (Node.js)",
-    team: "Technology",
-    location: "New Delhi / Remote",
+    title: "Customer Support Associate (CSA)",
+    team: "Customer Support",
+    location: "Delhi",
     type: "Full-time",
-    summary: "Design APIs and integrations for onboarding, KYC, bureau pulls and lender hand-offs.",
+    description:
+      "Handle customer inquiries across all loan products, provide end-to-end support from application to disbursal, and ensure a seamless customer experience at Indexia Finserve.",
+    requirements: [
+      "Handle inbound/outbound calls for loan enquiries (Personal, Business, Home, LAP, etc.)",
+      "Guide customers through eligibility, documentation, and application process",
+      "Maintain customer records and follow up on pending applications",
+      "Coordinate with banks and NBFCs for loan processing updates",
+      "Resolve customer complaints and escalate issues when necessary",
+      "Achieve monthly targets for customer engagement and satisfaction",
+      "Strong communication skills in English and Hindi",
+      "Basic knowledge of financial products and banking processes",
+    ],
   },
   {
-    title: "Operations Associate — Disbursals",
-    team: "Operations",
-    location: "New Delhi",
+    title: "Executive Assistant to Director",
+    team: "Administration",
+    location: "Delhi",
     type: "Full-time",
-    summary: "Keep files moving between sanction and disbursal, and make sure nothing waits on us.",
+    description:
+      "Support the Director in managing multiple profiles, coordinating schedules, handling correspondence, and acting as a supporting hand for day-to-day operations.",
+    requirements: [
+      "Minimum 1 year experience as an EA or in a similar administrative role",
+      "Ability to handle multiple profiles and priorities",
+      "Excellent organizational and time management skills",
+      "Proficiency in MS Office and communication tools",
+      "Discretion and professionalism in handling confidential matters",
+    ],
   },
   {
-    title: "Digital Marketing Specialist",
-    team: "Growth",
-    location: "New Delhi",
-    type: "Full-time",
-    summary: "Run performance and content campaigns for loan products across search, social and partner channels.",
+    title: "HR (Intern)",
+    team: "Human Resources",
+    location: "Delhi",
+    type: "Intern",
+    description:
+      "Learn end-to-end HR processes including recruitment, onboarding, and employee management.",
+    requirements: [
+      "Currently pursuing or recently completed degree in HR/Management",
+      "Strong communication and interpersonal skills",
+      "Basic knowledge of HR practices",
+    ],
+  },
+  {
+    title: "Digital Marketing (Intern)",
+    team: "Digital Marketing",
+    location: "Delhi",
+    type: "Intern",
+    description:
+      "Assist in digital marketing campaigns, SEO optimization, and social media management.",
+    requirements: [
+      "Currently pursuing or recently completed degree in Marketing/Communications",
+      "Knowledge of SEO, SEM, and social media platforms",
+      "Creative thinking and analytical skills",
+    ],
+  },
+  {
+    title: "IT Developer (Intern)",
+    team: "Information Technology",
+    location: "Delhi",
+    type: "Intern",
+    description: "Support IT infrastructure, software development, and technical operations.",
+    requirements: [
+      "Currently pursuing or recently completed degree in Computer Science/IT",
+      "Basic programming knowledge",
+      "Interest in software development and IT systems",
+    ],
+  },
+  {
+    title: "Finance (Intern)",
+    team: "Finance",
+    location: "Delhi",
+    type: "Intern",
+    description:
+      "Gain hands-on experience in financial operations, loan processing, and banking procedures.",
+    requirements: [
+      "Currently pursuing or recently completed degree in Finance/Commerce",
+      "Interest in financial services and banking",
+      "Proficiency in MS Excel and basic financial tools",
+    ],
   },
 ];
 

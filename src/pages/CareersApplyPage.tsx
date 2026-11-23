@@ -209,7 +209,7 @@ const CareersApplyPage = () => {
               {role && (
                 <section className="mb-6 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                   <h2 className="text-lg font-bold text-slate-900">{role.title}</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{role.summary}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{role.description}</p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {[role.team, role.location, role.type].map((tag) => (
                       <span

@@ -23,6 +23,11 @@ const VALUES = [
   },
 ];
 
+const ROLE_GROUPS = [
+  { label: "Full-time", roles: CAREER_ROLES.filter((role) => role.type === "Full-time") },
+  { label: "Internships", roles: CAREER_ROLES.filter((role) => role.type === "Intern") },
+];
+
 const HIRING_STEPS = [
   { step: "01", title: "Apply", desc: "Send your CV with the role in the subject line. Every application is read by a person." },
   { step: "02", title: "Conversation", desc: "A 30-minute call about your experience, what you want next and how the role fits." },
@@ -105,35 +110,52 @@ const CareersPage = () => {
               </p>
             </div>
 
-            <ul className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              {CAREER_ROLES.map((role) => (
-                <li
-                  key={role.title}
-                  className="flex flex-col gap-3 border-b border-slate-100 px-5 py-5 last:border-0 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <h4 className="text-[15px] font-bold text-(--brand-teal)">{role.title}</h4>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{role.summary}</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {[role.team, role.location, role.type].map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600"
+            <div className="space-y-6">
+              {ROLE_GROUPS.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.24em] text-slate-500">
+                    {group.label} · {group.roles.length}
+                  </p>
+                  <ul className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                    {group.roles.map((role) => (
+                      <li
+                        key={role.title}
+                        className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 last:border-0 sm:flex-row sm:items-start sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <h4 className="text-[15px] font-bold text-(--brand-teal)">{role.title}</h4>
+                          <p className="mt-1 text-sm leading-relaxed text-slate-600">{role.description}</p>
+                          <ul className="mt-2.5 grid gap-1.5 text-[13px] leading-relaxed text-slate-500">
+                            {role.requirements.map((requirement) => (
+                              <li key={requirement} className="flex gap-2">
+                                <span aria-hidden="true" className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-(--brand-teal)" />
+                                <span>{requirement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {[role.team, role.location, role.type].map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <Link
+                          to={`/careers/apply?role=${encodeURIComponent(role.title)}&dept=${encodeURIComponent(role.team)}`}
+                          className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full border border-(--brand-navy) px-5 py-2.5 text-xs font-bold text-(--brand-navy) transition-all duration-300 hover:bg-(--brand-navy) hover:text-white active:scale-95"
                         >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <Link
-                    to={`/careers/apply?role=${encodeURIComponent(role.title)}&dept=${encodeURIComponent(role.team)}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-(--brand-navy) px-5 py-2.5 text-xs font-bold text-(--brand-navy) transition-all duration-300 hover:bg-(--brand-navy) hover:text-white active:scale-95"
-                  >
-                    Apply now →
-                  </Link>
-                </li>
+                          Apply now →
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
 
             <p className="mt-3 text-xs text-slate-500">
               Nothing matching your skills?{" "}
