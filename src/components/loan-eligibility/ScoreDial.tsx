@@ -114,6 +114,9 @@ export interface ScoreDialProps {
   accent?: string;
   tip?: string;
   caption?: string;
+  /** Lets the user drag the needle's end circle to change the score. */
+  interactive?: boolean;
+  onProgressChange?: (progress: number) => void;
 }
 
 const ScoreDial = ({
@@ -123,6 +126,8 @@ const ScoreDial = ({
   accent,
   tip,
   caption,
+  interactive = false,
+  onProgressChange,
 }: ScoreDialProps) => {
   const uid = useId().replace(/:/g, "");
   const arcGlowId = `score-arc-glow-${uid}`;
@@ -133,6 +138,8 @@ const ScoreDial = ({
   const [fill, setFill] = useState(0);
   const [tipOpen, setTipOpen] = useState(false);
   const fillRef = useRef(0);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [dragging, setDragging] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   // Reduced motion jumps straight to the score instead of sweeping to it.
   const shownFill = reducedMotion ? target : fill;
@@ -160,6 +167,53 @@ const ScoreDial = ({
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [target, reducedMotion]);
+
+  // Maps a pointer position onto a 0–1 value along the gauge arc.
+  const progressFromPointer = (clientX: number, clientY: number): number | null => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const box = svg.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+
+    const x = ((clientX - box.left) / box.width) * SVG_W;
+    const y = ((clientY - box.top) / box.height) * SVG_H;
+    const deg = (Math.atan2(y - CY, x - CX) * 180) / Math.PI + 90;
+    const rel = (((deg - GAUGE_START) % 360) + 360) % 360;
+
+    // Pointer in the open gap below the dial snaps to the nearer end.
+    if (rel > GAUGE_SWEEP) {
+      return rel - GAUGE_SWEEP < 360 - rel ? 1 : 0;
+    }
+    return rel / GAUGE_SWEEP;
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const applyPointer = (clientX: number, clientY: number) => {
+      const raw = progressFromPointer(clientX, clientY);
+      if (raw === null) return;
+      // Snap to whole score points so the displayed value stays integral.
+      const next =
+        Math.round(raw * (SCORE_MAX - SCORE_MIN)) / (SCORE_MAX - SCORE_MIN);
+      fillRef.current = next;
+      setFill(next);
+      onProgressChange?.(next);
+    };
+
+    const onMove = (event: PointerEvent) =>
+      applyPointer(event.clientX, event.clientY);
+    const stop = () => setDragging(false);
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+  }, [dragging, onProgressChange]);
 
   const needleAngle = GAUGE_START + shownFill * GAUGE_SWEEP;
   const gradientSegs = buildGradientArc(shownFill);
@@ -190,6 +244,7 @@ const ScoreDial = ({
     <div className="relative w-full max-w-[320px] shrink-0 @container">
       <div className="relative">
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           className="w-full overflow-visible"
           role="img"
@@ -245,9 +300,23 @@ const ScoreDial = ({
           <circle cx={CX} cy={CY} r={HUB_RADIUS} fill="#ffffff" filter={`url(#${markerShadowId})`} />
           <circle cx={CX} cy={CY} r="4.5" fill={accentColor} />
 
-          {/* White marker on the arc */}
+          {/* White marker on the arc — doubles as the drag handle */}
           <circle cx={marker.x} cy={marker.y} r="18" fill={accentColor} opacity="0.3" filter={`url(#${markerGlowId})`} />
           <circle cx={marker.x} cy={marker.y} r="10" fill="#ffffff" filter={`url(#${markerShadowId})`} />
+          {interactive && (
+            <circle
+              cx={marker.x}
+              cy={marker.y}
+              r="24"
+              fill="transparent"
+              className={`touch-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onPointerUp={() => setDragging(false)}
+            />
+          )}
 
           {/* Scale ends, sitting beside the caps in the open gap */}
           <text x={Math.round(START_CAP.x) + 18} y={Math.round(START_CAP.y) + 4} textAnchor="start" fontSize="13" fontWeight="600" fill="#94a3b8">

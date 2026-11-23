@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ScoreDial from "../loan-eligibility/ScoreDial";
 import {
@@ -17,7 +17,8 @@ const COMPARISON_BY_BAND: Record<CreditBand, number> = {
 };
 
 const TARGET_SCORE = 750;
-const TARGET_PROGRESS = (TARGET_SCORE - SCORE_MIN) / (SCORE_MAX - SCORE_MIN);
+const progressForScore = (score: number) =>
+  (score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN);
 
 // ── Label icon definitions (static, icons don't need translation) ─────────────
 const labelIcons = {
@@ -142,6 +143,7 @@ const LabelItem = ({
 // ── Main Component ────────────────────────────────────────────────────────────
 const CreditScore = () => {
   const [started, setStarted] = useState(false);
+  const [score, setScore] = useState(TARGET_SCORE);
   const sectionRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const section = sectionRef.current;
@@ -159,8 +161,13 @@ const CreditScore = () => {
     return () => observer.disconnect();
   }, []);
 
-  const { label: ratingLabel, tip: ratingTip } = ratingForScore(TARGET_SCORE);
-  const comparison = COMPARISON_BY_BAND[bandForScore(TARGET_SCORE)];
+  const handleProgressChange = useCallback((progress: number) => {
+    setStarted(true);
+    setScore(Math.round(SCORE_MIN + progress * (SCORE_MAX - SCORE_MIN)));
+  }, []);
+
+  const { label: ratingLabel, tip: ratingTip } = ratingForScore(score);
+  const comparison = COMPARISON_BY_BAND[bandForScore(score)];
 
   const leftLabels  = labelDefs.filter((l) => l.side === "left");
   const rightLabels = labelDefs.filter((l) => l.side === "right");
@@ -195,10 +202,12 @@ const CreditScore = () => {
 
           {/* Score dial */}
           <ScoreDial
-            progress={started ? TARGET_PROGRESS : 0}
+            progress={started ? progressForScore(score) : 0}
             label={ratingLabel}
             tip={ratingTip}
             caption={`Better than ${comparison}% of users`}
+            interactive
+            onProgressChange={handleProgressChange}
           />
 
           {/* RIGHT labels */}
