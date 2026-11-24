@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import WebsiteLayout from "./components/layout/WebsiteLayout";
-import ErrorBoundary from "./components/common/ErrorBoundary";
 import ScrollToTop from "./components/common/ScrollToTop";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./context/authContext";
@@ -160,8 +159,7 @@ function App() {
       <AuthProvider>
         <ApplicantPrefillProvider>
         <WebsiteLayout>
-          <ErrorBoundary>
-            <Suspense fallback={<RouteFallback />}>
+          <Suspense fallback={<RouteFallback />}>
               <Routes>
               <Route path="/" element={<Home />} />
 
@@ -209,8 +207,7 @@ function App() {
 
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-            </Suspense>
-          </ErrorBoundary>
+          </Suspense>
         </WebsiteLayout>
         </ApplicantPrefillProvider>
       </AuthProvider>
