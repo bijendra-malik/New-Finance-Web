@@ -12,9 +12,12 @@ import {
   PRODUCTS,
   assetLtvFor,
   goldEligibility,
+  lrdEligibility,
   maturityAgeFor,
   monthsToMaturity,
   productByKey,
+  LRD_LTV_MAX,
+  LRD_LTV_MIN,
   shareEligibility,
   termEligibility,
   tenureText,
@@ -27,14 +30,12 @@ const SERIF = { fontFamily: "var(--font-serif)" } as const;
 
 const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner"] as const;
 const BUSINESS_OCCUPATIONS = ["Self-Employed", "Business Owner"] as const;
-const BUSINESS_PRODUCTS = new Set([
-  "business",
-  "projectLoan",
-  "commercialPurchase",
-  "workingCapital",
-  "leaseRentalDiscounting",
-]);
-const PROFIT_INCOME_PRODUCTS = new Set(["home", "lap", "vehicleLoan"]);
+// Income wording follows the applicant's occupation, whatever the loan.
+const INCOME_COPY: Record<string, { label: string; hint: string }> = {
+  Salaried: { label: "Monthly income", hint: "Take-home after deductions" },
+  "Self-Employed": { label: "Monthly net profit", hint: "Profit after business expenses, from your P&L" },
+  "Business Owner": { label: "Monthly net profit", hint: "Profit after business expenses, from your P&L" },
+};
 const LAP_PROPERTY_TYPES = ["Residential", "Commercial", "Industrial", "Other"] as const;
 const LAP_CITIES = [
   { value: "A", label: "Category A (metro)" },
@@ -42,18 +43,12 @@ const LAP_CITIES = [
   { value: "C", label: "Category C (smaller town)" },
 ] as const;
 const LAP_USAGES = ["Self-occupied", "Rented out"] as const;
+
 const CARATS = [24, 22, 20, 18] as const;
 
 const num = (value: string): number => {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-};
-
-/** Crores and lakhs for headline figures, exact rupees elsewhere. */
-const compact = (value: number): string => {
-  if (value >= 1_00_00_000) return `₹${(value / 1_00_00_000).toFixed(2)} Cr`;
-  if (value >= 1_00_000) return `₹${(value / 1_00_000).toFixed(2)} L`;
-  return formatINRRounded(value);
 };
 
 const maxTenureFor = (product: ProductSpec, age: number, occupation: string): number => {
@@ -106,10 +101,10 @@ const AmountField = ({
 );
 
 const PlainField = ({
-  id, label, value, onChange, inputMode = "text", placeholder, maxLength, error,
+  id, label, value, onChange, inputMode = "text", placeholder, maxLength, error, hint,
 }: {
   id: string; label: string; value: string; onChange: (next: string) => void;
-  inputMode?: "text" | "tel" | "email"; placeholder?: string; maxLength?: number; error?: string;
+  inputMode?: "text" | "tel" | "email"; placeholder?: string; maxLength?: number; error?: string; hint?: string;
 }) => (
   <div>
     <FieldLabel htmlFor={id}>{label}</FieldLabel>
@@ -125,6 +120,7 @@ const PlainField = ({
       className={fieldClass(error)}
     />
     <FieldError>{error}</FieldError>
+    {!error && hint && <p className="mt-1 text-[11px] leading-4 text-slate-400">{hint}</p>}
   </div>
 );
 
@@ -147,6 +143,12 @@ interface FormState {
   lapUsage: string;
   lapRent: string;
   lapExistingLoan: string;
+  lrdRent: string;
+  lrdLeaseYears: string;
+  lrdPropertyValue: string;
+  lrdRate: string;
+  lrdTenureYears: string;
+  lrdLtv: string;
   existingEmi: string;
   propertyValue: string;
   turnover: string;
@@ -176,6 +178,12 @@ const INITIAL_FORM: FormState = {
   lapUsage: "Self-occupied",
   lapRent: "",
   lapExistingLoan: "",
+  lrdRent: "",
+  lrdLeaseYears: "",
+  lrdPropertyValue: "",
+  lrdRate: "",
+  lrdTenureYears: "",
+  lrdLtv: "",
   existingEmi: "",
   propertyValue: "",
   turnover: "",
@@ -218,9 +226,15 @@ const EligibilityCalculatorPage = () => {
         ? "Self-Employed"
         : form.occupation;
   const occupationOptions: readonly string[] =
-    product.key === "personal" ? [] : product.key === "business" ? BUSINESS_OCCUPATIONS : OCCUPATIONS;
-  const isBusiness = BUSINESS_PRODUCTS.has(product.key);
-  const isBusinessIncome = isBusiness || (PROFIT_INCOME_PRODUCTS.has(product.key) && occupation !== "Salaried");
+    product.key === "personal" || product.family === "lrd"
+      ? []
+      : product.key === "business"
+        ? BUSINESS_OCCUPATIONS
+        : OCCUPATIONS;
+  const incomeCopy = INCOME_COPY[occupation] ?? INCOME_COPY.Salaried;
+  const incomeLabel = incomeCopy.label;
+  const incomeHint = incomeCopy.hint;
+  const incomeError = `Enter your ${incomeLabel.toLowerCase()}`;
   const age = ageOn(form.dob);
   const tenure = maxTenureFor(product, age, occupation);
 
@@ -247,7 +261,35 @@ const EligibilityCalculatorPage = () => {
     }
   }, [result]);
 
+  const lrdInput = {
+    product,
+    roi: num(form.lrdRate),
+    monthlyRent: num(form.lrdRent),
+    leaseMonths: Math.round(num(form.lrdLeaseYears) * 12),
+    propertyValue: num(form.lrdPropertyValue),
+    repaymentMonths: Math.round(num(form.lrdTenureYears) * 12),
+    ltvPercent: num(form.lrdLtv),
+    creditScore: num(form.creditScore),
+  };
+  const lrdReady =
+    lrdInput.monthlyRent > 0 &&
+    lrdInput.leaseMonths > 0 &&
+    lrdInput.propertyValue > 0 &&
+    lrdInput.roi > 0 &&
+    lrdInput.repaymentMonths > 0 &&
+    lrdInput.repaymentMonths <= lrdInput.leaseMonths &&
+    lrdInput.ltvPercent >= LRD_LTV_MIN * 100 &&
+    lrdInput.ltvPercent <= LRD_LTV_MAX * 100 &&
+    lrdInput.creditScore >= 300 &&
+    lrdInput.creditScore <= 900;
+  // LRD revalues the rent as the applicant types, so the estimate is live before submit.
+  const lrdLive = product.family === "lrd" && lrdReady ? lrdEligibility(lrdInput) : null;
+
   const computeOutcome = (): EligibilityOutcome => {
+    if (product.family === "lrd") {
+      return lrdEligibility(lrdInput);
+    }
+
     if (product.family === "gold") {
       return goldEligibility({
         product,
@@ -305,13 +347,30 @@ const EligibilityCalculatorPage = () => {
 
     if (product.family === "term") {
       if (num(form.monthlyIncome) <= 0) {
-        next.monthlyIncome = isBusinessIncome ? "Enter your monthly net profit" : "Enter your monthly income";
+        next.monthlyIncome = incomeError;
       }
       if (product.asset && num(form[product.asset.field]) <= 0) {
         next[product.asset.field] = `Enter the ${product.asset.label.toLowerCase()}`;
       }
       if (product.key === "lap" && form.lapPropertyType === "Other" && !form.lapPropertyOther.trim()) {
         next.lapPropertyOther = "Name the property type";
+      }
+    }
+    if (product.family === "lrd") {
+      const leaseYears = num(form.lrdLeaseYears);
+      const repaymentYears = num(form.lrdTenureYears);
+      const ltv = num(form.lrdLtv);
+      if (num(form.lrdRent) <= 0) next.lrdRent = "Enter the monthly rent your tenant pays";
+      if (leaseYears <= 0) next.lrdLeaseYears = "Enter the lease left to run in years";
+      if (num(form.lrdPropertyValue) <= 0) next.lrdPropertyValue = "Enter the property's market value";
+      if (num(form.lrdRate) <= 0) next.lrdRate = "Enter the expected interest rate";
+      if (repaymentYears <= 0) next.lrdTenureYears = "Enter the loan repayment tenure in years";
+      else if (leaseYears > 0 && repaymentYears > leaseYears) {
+        next.lrdTenureYears = "Repayment cannot run past the remaining lease";
+      }
+      if (ltv <= 0) next.lrdLtv = "Enter the assumed LTV";
+      else if (ltv < LRD_LTV_MIN * 100 || ltv > LRD_LTV_MAX * 100) {
+        next.lrdLtv = `Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`;
       }
     }
     if (product.family === "gold") {
@@ -371,20 +430,17 @@ const EligibilityCalculatorPage = () => {
     form.lapPropertyType === "Other" ? form.lapPropertyOther.trim() || "Other" : form.lapPropertyType;
   const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field]), lapAssetType, form.lapCity) : 0;
 
-  const incomeNoun =
-    result &&
-    (BUSINESS_PRODUCTS.has(result.product.key) ||
-      (PROFIT_INCOME_PRODUCTS.has(result.product.key) && occupation !== "Salaried"))
-      ? "monthly net profit"
-      : "monthly income";
+  const incomeNoun = incomeLabel.toLowerCase();
 
   const basedOn = result
     ? result.product.family === "gold"
       ? `Based on ${form.goldGrams} g of ${form.goldCarat}K gold at ${formatINRRounded(num(form.goldRate))} per gram.`
       : result.product.family === "wc"
         ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover.`
-        : result.product.family === "share"
-          ? `Based on shares worth ${formatINRRounded(num(form.shareValue))} pledged as security.`
+        : result.product.family === "lrd"
+          ? `Based on ${formatINRRounded(num(form.lrdRent))} of monthly rent, ${form.lrdLeaseYears} years of lease left and a property valued at ${formatINRRounded(num(form.lrdPropertyValue))}.`
+          : result.product.family === "share"
+            ? `Based on shares worth ${formatINRRounded(num(form.shareValue))} pledged as security.`
             : result.outcome.credit
               ? `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
               : `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun} and ${formatINRRounded(num(form.existingEmi))} of existing EMIs.`
@@ -397,12 +453,22 @@ const EligibilityCalculatorPage = () => {
           { label: "Interest at full draw", value: `${formatINRRounded(result.outcome.monthly)} / month` },
           { label: "Rate", value: `${result.outcome.roi}% p.a.` },
         ]
-      : result.product.family === "gold"
-        ? [
-            { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
-            { label: "Gold value", value: compact(result.outcome.gold?.value ?? 0) },
-            { label: "Tenure", value: tenureText(result.outcome.months) },
-          ]
+      : result.product.family === "lrd"
+          ? [
+              { label: "Monthly rental income", value: formatINRRounded(result.outcome.lease?.rent ?? 0) },
+              { label: "Annual rental income", value: formatINRRounded(result.outcome.lease?.annualRent ?? 0) },
+              { label: "Property-based limit", value: formatINRRounded(result.outcome.lease?.propertyLimit ?? 0) },
+              { label: "Rental-based limit", value: formatINRRounded(result.outcome.lease?.rentalLimit ?? 0) },
+              { label: "Applicable LTV", value: `${Math.round((result.outcome.lease?.ltv ?? 0) * 100)}%` },
+              { label: "Remaining lease", value: tenureText(result.outcome.lease?.leaseMonths ?? 0) },
+              { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
+            ]
+        : result.product.family === "gold"
+          ? [
+              { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
+              { label: "Gold value", value: formatINRRounded(result.outcome.gold?.value ?? 0) },
+              { label: "Tenure", value: tenureText(result.outcome.months) },
+            ]
         : [
             { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
             { label: "Interest rate", value: `${result.outcome.roi}% p.a.` },
@@ -438,8 +504,8 @@ const EligibilityCalculatorPage = () => {
                     {result.outcome.eligible ? result.outcome.headlineLabel : "Your estimate"}
                   </p>
                   {result.outcome.eligible ? (
-                    <p className="mt-2 text-[40px] font-bold leading-none" style={SERIF}>
-                      {compact(result.outcome.headline)}
+                    <p className="mt-2 text-[32px] font-bold leading-none tabular-nums sm:text-[40px]" style={SERIF}>
+                      {formatINRRounded(result.outcome.headline)}
                     </p>
                   ) : (
                     <p className="mt-2 text-[26px] font-bold leading-tight">We can't estimate an amount yet</p>
@@ -481,6 +547,13 @@ const EligibilityCalculatorPage = () => {
                   )}
 
                   <p className="mt-3 text-[12px] text-slate-400">{basedOn}</p>
+
+                  {result.product.family === "lrd" && (
+                    <p className="mt-3 text-[11px] leading-5 text-slate-400">
+                      Loan eligibility shown is indicative and subject to property valuation, tenant profile, lease
+                      documentation, lender policies, credit assessment and final approval. Actual loan amount may vary.
+                    </p>
+                  )}
 
                   <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
                     {result.outcome.eligible && (
@@ -559,12 +632,12 @@ const EligibilityCalculatorPage = () => {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <AmountField
                           id="elig-income"
-                          label={isBusinessIncome ? "Monthly net profit" : "Monthly income"}
+                          label={incomeLabel}
                           value={form.monthlyIncome}
                           onChange={(next) => set("monthlyIncome", next)}
                           error={errors.monthlyIncome}
                           placeholder="e.g. 75,000"
-                          hint={isBusinessIncome ? "Profit after business expenses, from your P&L" : "Take-home after deductions"}
+                          hint={incomeHint}
                         />
                         <AmountField
                           id="elig-emi"
@@ -827,6 +900,115 @@ const EligibilityCalculatorPage = () => {
                           hint="Leave blank if none"
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {product.family === "lrd" && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Lease details</p>
+                        <span className="group relative inline-flex">
+                          <button
+                            type="button"
+                            aria-label="What is lease rental discounting?"
+                            className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-500 transition-colors group-hover:border-(--brand-teal) group-hover:text-(--brand-teal)"
+                          >
+                            i
+                          </button>
+                          <span
+                            role="tooltip"
+                            className="pointer-events-none absolute left-0 top-6 z-20 w-64 rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal leading-4 text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+                          >
+                            Lease Rental Discounting lets a property owner borrow against the rent a tenant pays. Rent for the
+                            remaining lease is discounted to today's value at the loan rate, the lender funds a slice of that
+                            value, and the loan can never exceed the property's market value.
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-lrd-rent"
+                          label="Monthly rental income"
+                          value={form.lrdRent}
+                          onChange={(next) => set("lrdRent", next)}
+                          error={errors.lrdRent}
+                          placeholder="e.g. 1,20,000"
+                          hint="Rent your tenant pays under the registered lease"
+                        />
+                        <PlainField
+                          id="elig-lrd-lease"
+                          label="Remaining lease tenure (years)"
+                          value={form.lrdLeaseYears}
+                          onChange={(next) => set("lrdLeaseYears", next.replace(/\D/g, ""))}
+                          inputMode="tel"
+                          maxLength={2}
+                          placeholder="e.g. 5"
+                          error={errors.lrdLeaseYears}
+                        />
+                        <AmountField
+                          id="elig-lrd-property"
+                          label="Property market value"
+                          value={form.lrdPropertyValue}
+                          onChange={(next) => set("lrdPropertyValue", next)}
+                          error={errors.lrdPropertyValue}
+                          placeholder="e.g. 2,50,00,000"
+                          hint="Current market value of the leased property"
+                        />
+                        <PlainField
+                          id="elig-lrd-rate"
+                          label="Expected interest rate (% p.a.)"
+                          value={form.lrdRate}
+                          onChange={(next) => set("lrdRate", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={5}
+                          placeholder="e.g. 10.5"
+                          error={errors.lrdRate}
+                        />
+                        <PlainField
+                          id="elig-lrd-tenure"
+                          label="Loan repayment tenure (years)"
+                          value={form.lrdTenureYears}
+                          onChange={(next) => set("lrdTenureYears", next.replace(/\D/g, ""))}
+                          inputMode="tel"
+                          maxLength={2}
+                          placeholder="e.g. 10"
+                          error={errors.lrdTenureYears}
+                          hint="Cannot run past the lease left to run"
+                        />
+                        <PlainField
+                          id="elig-lrd-ltv"
+                          label="Assumed LTV (%)"
+                          value={form.lrdLtv}
+                          onChange={(next) => set("lrdLtv", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={4}
+                          placeholder="e.g. 70"
+                          error={errors.lrdLtv}
+                          hint={`Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`}
+                        />
+                      </div>
+
+                      {lrdLive && (
+                        <div className="rounded-xl border border-(--brand-teal-33) bg-(--surface-muted) px-4 py-3">
+                          <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400">Live estimate</p>
+                          {lrdLive.eligible ? (
+                            <>
+                              <p className="mt-1 text-lg font-bold tabular-nums text-slate-900">
+                                {formatINRRounded(lrdLive.headline)}
+                              </p>
+                              <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                                {formatINRRounded(lrdLive.lease?.rentalLimit ?? 0)} from the discounted rent ·{" "}
+                                {formatINRRounded(lrdLive.lease?.propertyLimit ?? 0)} from the property value
+                              </p>
+                            </>
+                          ) : (
+                            <p className="mt-1 text-[11.5px] leading-4 text-slate-500">
+                              The rent and property together support less than the smallest loan lenders sanction.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

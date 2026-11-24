@@ -1,4 +1,4 @@
-export type ModelFamily = "term" | "gold" | "wc" | "share";
+export type ModelFamily = "term" | "gold" | "wc" | "share" | "lrd";
 export type AssetField = "propertyValue" | "turnover" | "vehiclePrice";
 
 export const FOIR_CAP = 0.7;
@@ -89,7 +89,7 @@ export const PRODUCTS: readonly ProductSpec[] = [
     key: "workingCapital", label: "Working Capital", family: "term", roi: 12.5, maxTenureMonths: 120,
     asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 20% of annual turnover", ltv: 0.2 },
   },
-  { key: "leaseRentalDiscounting", label: "Lease Rental Discounting", family: "term", roi: 12.5, maxTenureMonths: 120 },
+  { key: "leaseRentalDiscounting", label: "Lease Rental Discounting", family: "lrd", roi: 10.5, maxTenureMonths: 120 },
   { key: "odCcLimit", label: "OD / CC Limit", family: "wc", roi: 10, maxTenureMonths: 12 },
   { key: "goldLoan", label: "Gold Loan", family: "gold", roi: 9, maxTenureMonths: 12 },
   { key: "loanAgainstShares", label: "Loan Against Shares", family: "share", roi: 11, maxTenureMonths: 120 },
@@ -99,7 +99,7 @@ export const productByKey = (key: string): ProductSpec =>
   PRODUCTS.find((product) => product.key === key) ?? (PRODUCTS.find((product) => product.key === "personal") as ProductSpec);
 
 export interface Cap {
-  key: "foir" | "asset" | "gold" | "turnover" | "mpbf";
+  key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease";
   label: string;
   value: number;
 }
@@ -130,6 +130,17 @@ export interface EligibilityOutcome {
   gold?: { value: number; ltv: number; netWeight: number };
   credit?: { score: number; band: string; foirCap: number };
   share?: { value: number; ltv: number };
+  lease?: {
+    rent: number;
+    annualRent: number;
+    leaseMonths: number;
+    propertyValue: number;
+    ltv: number;
+    discountedRent: number;
+    rentalLimit: number;
+    propertyLimit: number;
+    interest: number;
+  };
 }
 
 // ── Money maths ───────────────────────────────────────────────────────────────
@@ -716,8 +727,127 @@ export const shareEligibility = (input: ShareInput): EligibilityOutcome => {
   };
 };
 
+// ── Lease rental discounting ──────────────────────────────────────────────────
+
+/** Lenders fund a slice of the discounted rent, never the whole lease value. */
+export const LRD_LTV_MIN = 0.5;
+export const LRD_LTV_MAX = 0.9;
+export const LRD_DEFAULT_LTV = 0.7;
+
+/** Present value of a level monthly cash flow (ordinary annuity). */
+export const presentValueOfAnnuity = (payment: number, annualRate: number, months: number): number => {
+  if (payment <= 0 || months <= 0) return 0;
+  const monthlyRate = annualRate / 1200;
+  // Interest-free leases still have a value, and dividing by zero would lose it.
+  if (monthlyRate <= 0) return payment * months;
+  return (payment * (1 - Math.pow(1 + monthlyRate, -months))) / monthlyRate;
+};
+
+export interface LrdInput {
+  product: ProductSpec;
+  roi?: number;
+  monthlyRent: number;
+  leaseMonths: number;
+  propertyValue: number;
+  repaymentMonths: number;
+  ltvPercent: number;
+  creditScore?: number;
+}
+
+export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
+  const { product } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative lease rental loan");
+  if (refusal) return refusal;
+
+  // A zero rate is a real answer, not a missing one: only fall back when no rate was given.
+  const roi =
+    input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
+  const rent = Math.max(0, input.monthlyRent);
+  const leaseMonths = Math.max(0, Math.round(input.leaseMonths));
+  const propertyValue = Math.max(0, input.propertyValue);
+  // Stay inside the range lenders actually approve, whatever was entered.
+  const ltv = Math.min(LRD_LTV_MAX, Math.max(LRD_LTV_MIN, (input.ltvPercent || LRD_DEFAULT_LTV * 100) / 100));
+  // Repayment can never run past the lease left to run.
+  const months = Math.min(
+    Math.max(0, Math.round(input.repaymentMonths)),
+    leaseMonths,
+    product.maxTenureMonths,
+  );
+
+  if (rent <= 0 || leaseMonths <= 0 || propertyValue <= 0 || months <= 0) {
+    return holding(
+      "Indicative lease rental loan",
+      "Add the rent your tenant pays, the lease left to run, the property's market value and the repayment tenure, and we will value that rental stream.",
+      [
+        "Only a registered lease with a creditworthy tenant is discounted.",
+        "Rent is discounted for the time value of money, not added up as it stands.",
+      ],
+    );
+  }
+
+  const annualRent = rent * 12;
+  // Rent over the remaining lease, discounted back to today at the loan rate.
+  const discountedRent = presentValueOfAnnuity(rent, roi, leaseMonths);
+  const rentalLimit = roundTo(discountedRent * ltv, 1000);
+  const propertyLimit = roundTo(propertyValue * ltv, 1000);
+  const value = Math.min(rentalLimit, propertyLimit);
+  const emi = emiForPrincipal(value, roi, months);
+  const lease = {
+    rent,
+    annualRent,
+    leaseMonths,
+    propertyValue,
+    ltv,
+    discountedRent,
+    rentalLimit,
+    propertyLimit,
+    interest: Math.max(0, Math.round(emi * months - value)),
+  };
+  const caps: Cap[] = [
+    { key: "lease", label: `${Math.round(ltv * 100)}% of the discounted rent`, value: rentalLimit },
+    { key: "asset", label: `${Math.round(ltv * 100)}% of the property value`, value: propertyLimit },
+  ];
+  const binding = rentalLimit <= propertyLimit ? caps[0].label : caps[1].label;
+
+  if (value < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative lease rental loan",
+        `On this rent, lease and property the limit comes to under ${money(MIN_LOAN)}, the smallest most lenders will sanction.`,
+        ["A longer lease, a higher rent or a more valuable property supports a larger loan."],
+      ),
+      roi,
+      months,
+      lease,
+    };
+  }
+
+  return {
+    eligible: true,
+    headline: value,
+    headlineLabel: "Indicative lease rental loan",
+    monthly: Math.round(emi),
+    monthlyLabel: "Monthly EMI",
+    roi,
+    months,
+    caps,
+    binding,
+    foir: {
+      used: rent > 0 ? emi / rent : 0,
+      headroom: Math.max(0, rent - emi),
+      income: rent,
+      existing: 0,
+    },
+    message: `Rent of ${money(rent)} a month, discounted at ${roi}% p.a. over ${tenureText(leaseMonths)}, supports ${money(rentalLimit)} at a ${Math.round(ltv * 100)}% LTV. The ${money(propertyValue)} property caps lending at ${money(propertyLimit)}, so the estimate is ${money(value)}, repayable at about ${money(emi)} a month over ${tenureText(months)}.`,
+    suggestions: [],
+    lease,
+  };
+};
+
 export const formulaFor = (family: ModelFamily): string => {
   switch (family) {
+    case "lrd":
+      return "Loan = min(present value of the rent over the remaining lease at the loan rate × LTV, property market value × LTV) · EMI on the sanctioned amount over the repayment tenure"
     case "share":
       return "Loan = market value of approved shares × LTV (50%)";
     case "gold":
