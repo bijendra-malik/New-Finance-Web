@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { GOOGLE_BUSINESS, GOOGLE_REVIEWS } from "../../constants/googleReviews";
 import TestimonialCard from "./TestimonialCard";
@@ -8,6 +8,7 @@ const Testimonials = () => {
   const trackRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const lastIndex = GOOGLE_REVIEWS.length - 1;
 
   const goTo = useCallback((index: number) => {
@@ -22,6 +23,16 @@ const Testimonials = () => {
       card.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
     track.scrollTo({ left, behavior: "smooth" });
   }, []);
+
+  useEffect(() => {
+    if (paused) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      goTo((activeRef.current + 1) % GOOGLE_REVIEWS.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [paused, goTo]);
 
   const handleScroll = () => {
     const track = trackRef.current;
@@ -119,6 +130,12 @@ const Testimonials = () => {
           role="region"
           aria-roledescription="carousel"
           aria-label="Customer reviews"
+          onPointerEnter={() => setPaused(true)}
+          onPointerLeave={() => setPaused(false)}
+          onFocusCapture={(event) => {
+            if (event.target instanceof Element && event.target.matches(":focus-visible")) setPaused(true);
+          }}
+          onBlurCapture={() => setPaused(false)}
         >
           <div
             ref={trackRef}
