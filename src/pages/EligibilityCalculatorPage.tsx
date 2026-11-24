@@ -207,8 +207,7 @@ const EligibilityCalculatorPage = () => {
       return goldEligibility({
         product,
         grams: num(form.goldGrams),
-        carat: form.goldCarat,
-        ratePerGram22: num(form.goldRate),
+        ratePerGram: num(form.goldRate),
         months: tenure,
         monthlyIncome: num(form.monthlyIncome),
         existingEmi: num(form.existingEmi),
@@ -572,10 +571,11 @@ const EligibilityCalculatorPage = () => {
 
                         <AmountField
                           id="elig-gold-rate"
-                          label="Gold rate per gram (22K)"
+                          label={`Gold rate per gram (${form.goldCarat}K)`}
                           value={form.goldRate}
                           onChange={(next) => set("goldRate", next)}
                           error={errors.goldRate}
+                          hint="Today's rate for the purity you selected"
                         />
                       </div>
 

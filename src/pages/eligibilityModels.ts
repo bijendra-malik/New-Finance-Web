@@ -309,29 +309,27 @@ export interface GoldInput {
   product: ProductSpec;
   roi?: number;
   grams: number;
-  carat: number;
-  ratePerGram22: number;
+  ratePerGram: number;
   months: number;
   monthlyIncome: number;
   existingEmi: number;
 }
 
 export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
-  const { product, grams, carat, ratePerGram22, monthlyIncome: income, existingEmi: existing } = input;
+  const { product, grams, ratePerGram, monthlyIncome: income, existingEmi: existing } = input;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const months = Math.max(1, Math.min(12, Math.round(input.months) || 12));
   const netWeight = Math.max(0, grams);
 
-  if (netWeight <= 0 || ratePerGram22 <= 0) {
+  if (netWeight <= 0 || ratePerGram <= 0) {
     return holding(
       "Indicative gold loan",
-      "Add the net weight of the jewellery and the current 22K rate to value the pledge.",
+      "Add the net weight of the jewellery and today's rate for its purity to value the pledge.",
       ["Net weight is gross weight minus stones, beads, thread and lac."],
     );
   }
 
-  const equivalent22 = netWeight * (carat / 22);
-  const value = equivalent22 * ratePerGram22;
+  const value = netWeight * ratePerGram;
   const ltv = goldLtvFor(value);
   const ltvCap = roundTo(value * ltv, 1000);
 
@@ -361,7 +359,7 @@ export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
       binding,
       roi: roi,
       months,
-      gold: { value, ltv, netWeight: equivalent22 },
+      gold: { value, ltv, netWeight },
       foir,
     };
   }
@@ -377,9 +375,9 @@ export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
     caps,
     binding,
     foir,
-    message: `${Math.round(equivalent22)} g of 22K-equivalent gold values at ${money(value)}; RBI's ${Math.round(ltv * 100)}% LTV allows ${money(loan)}.`,
+    message: `${Math.round(netWeight)} g of gold values at ${money(value)}; RBI's ${Math.round(ltv * 100)}% LTV allows ${money(loan)}.`,
     suggestions: [],
-    gold: { value, ltv, netWeight: equivalent22 },
+    gold: { value, ltv, netWeight },
   };
 };
 
@@ -572,7 +570,7 @@ export const formulaFor = (family: ModelFamily): string => {
     case "share":
       return "Loan = market value of approved shares × LTV (50%)";
     case "gold":
-      return "Value = net weight × (carat ÷ 22) × 22K rate · Loan = value × LTV (85% ≤ ₹2.5L, 80% ≤ ₹5L, 75% above)";
+      return "Value = net weight × today's rate for the selected purity · Loan = value × LTV (85% ≤ ₹2.5L, 80% ≤ ₹5L, 75% above)";
     case "wc":
       return "Turnover limit = 20% of turnover · MPBF = min(75% × WC gap, 75% × current assets − other CL) · Drawing power on paid stock and eligible debtors";
     default:
