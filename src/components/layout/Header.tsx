@@ -128,7 +128,7 @@ const Header = () => {
       >
           <div className="hdr-row flex h-24 items-center justify-between px-5 xl:justify-center xl:gap-x-12 2xl:gap-x-16">
             {/* Logo Section — pinned left */}
-            <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center overflow-hidden">
+            <Link to="/" className="relative order-1 flex h-24 w-48 shrink-0 items-center justify-center">
               {logoVideoReady ? (
                 <video
                   src={WebmLogo}
