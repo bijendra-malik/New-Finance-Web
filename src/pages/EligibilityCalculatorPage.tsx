@@ -256,6 +256,7 @@ const EligibilityCalculatorPage = () => {
         months: tenure,
         monthlyIncome: num(form.monthlyIncome),
         existingEmi: num(form.existingEmi),
+        creditScore: num(form.creditScore),
       });
     }
 
@@ -266,6 +267,7 @@ const EligibilityCalculatorPage = () => {
         stock: num(form.stock),
         debtors: num(form.debtors),
         otherCurrentLiabilities: num(form.otherCurrentLiabilities),
+        creditScore: num(form.creditScore),
       });
     }
 
@@ -276,6 +278,7 @@ const EligibilityCalculatorPage = () => {
         monthlyIncome: num(form.monthlyIncome),
         existingEmi: num(form.existingEmi),
         months: tenure,
+        creditScore: num(form.creditScore),
       });
     }
 
@@ -288,7 +291,6 @@ const EligibilityCalculatorPage = () => {
       occupation,
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
-      // These only describe a mortgaged property, so they must not leak into other products.
       assetType: product.key === "lap" ? lapAssetType : undefined,
       cityCategory: product.key === "lap" ? form.lapCity : undefined,
       existingLoanOnAsset: product.key === "lap" ? num(form.lapExistingLoan) : 0,
@@ -319,11 +321,9 @@ const EligibilityCalculatorPage = () => {
     if (product.family === "wc" && num(form.turnover) <= 0) {
       next.turnover = "Enter your projected annual turnover";
     }
-    if (product.unsecured) {
-      const score = num(form.creditScore);
-      if (!form.creditScore) next.creditScore = "Enter your credit score";
-      else if (score < 300 || score > 900) next.creditScore = "Credit scores run from 300 to 900";
-    }
+    const score = num(form.creditScore);
+    if (!form.creditScore) next.creditScore = "Enter your credit score";
+    else if (score < 300 || score > 900) next.creditScore = "Credit scores run from 300 to 900";
     if (product.family === "share" && num(form.shareValue) <= 0) {
       next.shareValue = "Enter the market value of the shares";
     }
@@ -574,35 +574,6 @@ const EligibilityCalculatorPage = () => {
                           hint="Leave blank if none"
                         />
                       </div>
-
-                      {product.unsecured && (
-                        <div>
-                          <FieldLabel htmlFor="elig-credit">Credit score (CIBIL)</FieldLabel>
-                          <input
-                            id="elig-credit"
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={3}
-                            autoComplete="off"
-                            placeholder="e.g. 760"
-                            value={form.creditScore}
-                            onChange={(event) => set("creditScore", event.target.value.replace(/\D/g, ""))}
-                            className={fieldClass(errors.creditScore)}
-                          />
-                          <FieldError>{errors.creditScore}</FieldError>
-                          {!errors.creditScore && (
-                            <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                              300 to 900. Without security, the bureau score sets how much of your income can go to EMIs.
-                            </p>
-                          )}
-                          <Link
-                            to="/know-your-score"
-                            className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-(--brand-navy) underline underline-offset-2 hover:text-(--brand-teal)"
-                          >
-                            Don't know your score? Check your credit score →
-                          </Link>
-                        </div>
-                      )}
 
                       {asset && (
                         <AmountField
@@ -858,6 +829,33 @@ const EligibilityCalculatorPage = () => {
                       </div>
                     </div>
                   )}
+
+                  <div>
+                    <FieldLabel htmlFor="elig-credit">Credit score (CIBIL)</FieldLabel>
+                    <input
+                      id="elig-credit"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={3}
+                      autoComplete="off"
+                      placeholder="e.g. 760"
+                      value={form.creditScore}
+                      onChange={(event) => set("creditScore", event.target.value.replace(/\D/g, ""))}
+                      className={fieldClass(errors.creditScore)}
+                    />
+                    <FieldError>{errors.creditScore}</FieldError>
+                    {!errors.creditScore && (
+                      <p className="mt-1 text-[11px] leading-4 text-slate-400">
+                        300 to 900. The bureau score sets how much of your income can go to EMIs.
+                      </p>
+                    )}
+                    <Link
+                      to="/know-your-score"
+                      className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-(--brand-navy) underline underline-offset-2 hover:text-(--brand-teal)"
+                    >
+                      Don't know your score? Check your credit score →
+                    </Link>
+                  </div>
 
                   <div>
                     <FieldLabel htmlFor="elig-dob">Date of birth</FieldLabel>

@@ -216,15 +216,41 @@ export const CREDIT_SCORE_FLOOR = 650;
 export interface CreditPolicy {
   band: string;
   foirCap: number;
+  securedFoirCap: number;
   eligible: boolean;
 }
 
 export const creditPolicyFor = (score: number): CreditPolicy | null => {
   if (!Number.isFinite(score) || score <= 0) return null;
-  if (score >= 750) return { band: "750 and above, excellent", foirCap: 0.65, eligible: true };
-  if (score >= 700) return { band: "700 to 749, good", foirCap: 0.55, eligible: true };
-  if (score >= CREDIT_SCORE_FLOOR) return { band: "650 to 699, fair", foirCap: 0.45, eligible: true };
-  return { band: `under ${CREDIT_SCORE_FLOOR}`, foirCap: 0, eligible: false };
+  if (score >= 750) return { band: "750 and above, excellent", foirCap: 0.65, securedFoirCap: 0.7, eligible: true };
+  if (score >= 700) return { band: "700 to 749, good", foirCap: 0.55, securedFoirCap: 0.65, eligible: true };
+  if (score >= CREDIT_SCORE_FLOOR) return { band: "650 to 699, fair", foirCap: 0.45, securedFoirCap: 0.6, eligible: true };
+  return { band: `under ${CREDIT_SCORE_FLOOR}`, foirCap: 0, securedFoirCap: 0, eligible: false };
+};
+
+export const creditRefusal = (
+  score: number | undefined,
+  headlineLabel: string,
+): EligibilityOutcome | null => {
+  const policy = creditPolicyFor(score ?? 0);
+  if (!policy) {
+    return holding(
+      headlineLabel,
+      "Add your credit bureau score and we will estimate the loan you can service.",
+      ["A score of 750 or above usually gets the widest repayment room and the best rate."],
+    );
+  }
+  if (!policy.eligible) {
+    return holding(
+      headlineLabel,
+      `A score of ${Math.round(score ?? 0)} sits below the ${CREDIT_SCORE_FLOOR} most lenders need to sanction a loan.`,
+      [
+        "Clear overdue dues, keep card utilisation under 30% and check the report for errors.",
+        "A secured loan on property, gold or shares is judged on the asset rather than the score.",
+      ],
+    );
+  }
+  return null;
 };
 
 // ── Term loans ────────────────────────────────────────────────────────────────
@@ -234,12 +260,9 @@ export interface TermInput {
   roi?: number;
   monthlyIncome: number;
   existingEmi: number;
-  /** Property type and city category refine a type-aware LTV, e.g. LAP. */
   assetType?: string;
   cityCategory?: string;
-  /** An existing mortgage on the same property is netted off the secured limit. */
   existingLoanOnAsset?: number;
-  /** Rent received on the property, of which a haircut is counted as income. */
   rentalIncome?: number;
   age: number;
   occupation: string;
@@ -254,20 +277,20 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const income = monthlyIncome + rental;
   const existing = existingEmi;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
-  const credit = product.unsecured ? creditPolicyFor(input.creditScore ?? 0) : null;
+  const credit = creditPolicyFor(input.creditScore ?? 0);
 
-  if (product.unsecured && !credit) {
+  if (!credit) {
     return holding(
       "Indicative loan amount",
-      "Unsecured loans are assessed on your credit bureau score, so add that first.",
+      "Add your credit bureau score and we will estimate the loan you can service.",
       ["A score of 750 or above usually gets the widest repayment room and the best rate."],
     );
   }
 
-  if (credit && !credit.eligible) {
+  if (!credit.eligible) {
     return holding(
       "Indicative loan amount",
-      `A score of ${Math.round(input.creditScore ?? 0)} sits below the ${CREDIT_SCORE_FLOOR} most lenders need for an unsecured loan.`,
+      `A score of ${Math.round(input.creditScore ?? 0)} sits below the ${CREDIT_SCORE_FLOOR} most lenders need to sanction a loan.`,
       [
         "Clear overdue dues, keep card utilisation under 30% and check the report for errors.",
         "A secured loan on property, gold or shares is judged on the asset rather than the score.",
@@ -275,7 +298,7 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
     );
   }
 
-  const foirCap = credit ? credit.foirCap : FOIR_CAP;
+  const foirCap = product.unsecured ? credit.foirCap : credit.securedFoirCap;
   const emiCap = income * foirCap;
   const headroom = Math.max(0, emiCap - existing);
   const months = Math.min(product.maxTenureMonths, input.tenureMonths, monthsToMaturity(age, product, occupation));
@@ -390,10 +413,13 @@ export interface GoldInput {
   months: number;
   monthlyIncome: number;
   existingEmi: number;
+  creditScore?: number;
 }
 
 export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
   const { product, grams, ratePerGram, monthlyIncome: income, existingEmi: existing } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative gold loan");
+  if (refusal) return refusal;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const months = Math.max(1, Math.min(12, Math.round(input.months) || 12));
   const netWeight = Math.max(0, grams);
@@ -488,10 +514,13 @@ export interface WorkingCapitalInput {
   stock: number;
   debtors: number;
   otherCurrentLiabilities: number;
+  creditScore?: number;
 }
 
 export const workingCapitalEligibility = (input: WorkingCapitalInput): EligibilityOutcome => {
   const { product, turnover } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative drawing power");
+  if (refusal) return refusal;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const stock = Math.max(0, input.stock);
   const debtors = Math.max(0, input.debtors);
@@ -599,10 +628,13 @@ export interface ShareInput {
   monthlyIncome: number;
   existingEmi: number;
   months: number;
+  creditScore?: number;
 }
 
 export const shareEligibility = (input: ShareInput): EligibilityOutcome => {
   const { product, monthlyIncome: income, existingEmi: existing } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative loan against shares");
+  if (refusal) return refusal;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const months = Math.max(6, Math.min(product.maxTenureMonths, Math.round(input.months) || product.maxTenureMonths));
   const value = Math.max(0, input.marketValue);
