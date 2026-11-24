@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/common/Container";
-import bgImage from "../assets/customer-img.webp";
+import PageBanner from "../components/common/PageBanner";
 import useSEO from "../hooks/useSEO";
 import { T, serif, loanTypes, banks, fmt } from "./emiCalculatorData";
 import { Icon } from "./emiCalculatorIcons";
@@ -108,69 +108,13 @@ const EMICalculatorPage = () => {
         .emi-slider::-moz-range-track { background: transparent; }
       `}</style>
 
-      {/* HERO BANNER */}
-      <section
-        className="relative w-full overflow-hidden mt-(--header-h)"
-        style={{ minHeight: 380 }}
-      >
-        {/* Background image */}
-        <img
-          src={bgImage}
-          alt=""
-          aria-hidden
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        {/* Dark navy overlay — keeps content legible while image shows through */}
-        <div
-          className="absolute inset-0"
-          style={{ background: `linear-gradient(120deg, rgba(3,43,92,0.92) 0%, rgba(5,66,137,0.85) 55%, rgba(0,179,161,0.70) 100%)` }}
-        />
-
-        <Container>
-          <div className="relative z-10 py-14 md:py-16 px-4 md:px-8 text-white">
-            <div className="flex items-center gap-2 text-sm mb-6" style={{ color: T.goldSoft }}>
-              <a href="/" className="hover:text-white transition-colors">Home</a>
-              <span style={{ color: T.emerald }}>/</span>
-              <span className="text-white font-medium">EMI Calculator</span>
-            </div>
-
-            <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase mb-4 px-3 py-1.5 rounded-full" style={{ color: T.navyDeep, background: T.gold }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: T.navyDeep }} />
-                Free & Instant
-              </span>
-              <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-3" style={serif}>
-                Know your EMI<br className="hidden md:block" /> before you borrow
-              </h1>
-              <p className="text-base md:text-lg leading-relaxed" style={{ color: T.onNavyMuted }}>
-                Move the sliders to see your monthly instalment, total interest and full repayment
-                schedule update instantly — no sign-up needed.
-              </p>
-
-              {/* stat strip — a quick, credible snapshot */}
-              <div className="flex flex-wrap gap-3 mt-7">
-                {[
-                  { k: "8%+", v: "Rates from" },
-                  { k: "8", v: "Loan types" },
-                  { k: "30 yrs", v: "Max tenure" },
-                ].map(s => (
-                  <div key={s.v} className="flex items-center gap-2.5 rounded-xl px-4 py-2.5" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
-                    <span className="text-lg font-bold" style={{ ...serif, color: T.gold }}>{s.k}</span>
-                    <span className="text-xs" style={{ color: T.onNavyMuted }}>{s.v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Container>
-
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden" style={{ height: 36 }}>
-          <svg viewBox="0 0 1440 36" className="w-full h-full" preserveAspectRatio="none">
-            <path d="M0,36 C480,0 960,0 1440,36 L1440,36 L0,36 Z" fill={T.cream} />
-          </svg>
-        </div>
-      </section>
+      {/* HERO BANNER — same banner treatment as the Contact page */}
+      <PageBanner
+        breadcrumb="EMI Calculator"
+        title="Know Your EMI"
+        highlight="Before You Borrow"
+        tagline="Move the sliders to see your monthly instalment, total interest and full repayment schedule update instantly — no sign-up needed."
+      />
 
       {/* CALCULATOR */}
       <Container>
