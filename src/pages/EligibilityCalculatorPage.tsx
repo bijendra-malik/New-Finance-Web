@@ -10,10 +10,11 @@ import { DateOfBirthPicker } from "../components/form/FormControls";
 import { digitsOnly, formatIndianNumber, formatINRRounded } from "../utils/formatters";
 import {
   PRODUCTS,
+  assetLtvFor,
   goldEligibility,
-  monthsToRetirement,
+  maturityAgeFor,
+  monthsToMaturity,
   productByKey,
-  retirementAgeFor,
   shareEligibility,
   termEligibility,
   tenureText,
@@ -25,6 +26,15 @@ import {
 const SERIF = { fontFamily: "var(--font-serif)" } as const;
 
 const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner"] as const;
+const BUSINESS_OCCUPATIONS = ["Self-Employed", "Business Owner"] as const;
+const BUSINESS_PRODUCTS = new Set([
+  "business",
+  "projectLoan",
+  "commercialPurchase",
+  "workingCapital",
+  "leaseRentalDiscounting",
+]);
+const PROFIT_INCOME_PRODUCTS = new Set(["home", "lap", "vehicleLoan"]);
 const CARATS = [24, 22, 20, 18] as const;
 
 const num = (value: string): number => {
@@ -41,7 +51,7 @@ const compact = (value: number): string => {
 
 const maxTenureFor = (product: ProductSpec, age: number, occupation: string): number => {
   if (product.family === "gold") return 12;
-  return Math.max(12, Math.min(product.maxTenureMonths, monthsToRetirement(age, occupation) || 12));
+  return Math.max(12, Math.min(product.maxTenureMonths, monthsToMaturity(age, product, occupation) || 12));
 };
 
 const fieldClass = (hasError?: string) =>
@@ -124,6 +134,9 @@ interface FormState {
   occupation: string;
   dob: string;
   monthlyIncome: string;
+  coApplicantIncome: string;
+  coApplicantEmi: string;
+  coApplicantOccupation: string;
   existingEmi: string;
   propertyValue: string;
   turnover: string;
@@ -147,6 +160,9 @@ const INITIAL_FORM: FormState = {
   occupation: "Salaried",
   dob: "",
   monthlyIncome: "",
+  coApplicantIncome: "",
+  coApplicantEmi: "",
+  coApplicantOccupation: "Salaried",
   existingEmi: "",
   propertyValue: "",
   turnover: "",
@@ -179,18 +195,47 @@ const EligibilityCalculatorPage = () => {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ outcome: EligibilityOutcome; product: ProductSpec } | null>(null);
+  const [coApplicantOpen, setCoApplicantOpen] = useState(false);
 
   const product = productByKey(form.product);
+  // Personal loans are only open to salaried applicants, whatever was picked earlier.
+  const occupation =
+    product.key === "personal"
+      ? "Salaried"
+      : product.key === "business" && form.occupation === "Salaried"
+        ? "Self-Employed"
+        : form.occupation;
+  const occupationOptions: readonly string[] =
+    product.key === "personal" ? [] : product.key === "business" ? BUSINESS_OCCUPATIONS : OCCUPATIONS;
+  const isBusiness = BUSINESS_PRODUCTS.has(product.key);
+  const isBusinessIncome = isBusiness || (PROFIT_INCOME_PRODUCTS.has(product.key) && occupation !== "Salaried");
   const age = ageOn(form.dob);
-  const tenure = maxTenureFor(product, age, form.occupation);
+  const tenure = maxTenureFor(product, age, occupation);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((previous) => ({ ...previous, [key]: value }));
     setErrors((previous) => (previous[key] ? { ...previous, [key]: "" } : previous));
   };
 
+  const toggleCoApplicant = () => {
+    if (coApplicantOpen) {
+      setForm((previous) => ({
+        ...previous,
+        coApplicantIncome: "",
+        coApplicantEmi: "",
+        coApplicantOccupation: "Salaried",
+      }));
+    }
+    setCoApplicantOpen(!coApplicantOpen);
+  };
+
   const changeProduct = (key: string) => {
-    setForm((previous) => ({ ...previous, product: key }));
+    setForm((previous) => ({
+      ...previous,
+      product: key,
+      occupation:
+        key === "personal" ? "Salaried" : key === "business" && previous.occupation === "Salaried" ? "Self-Employed" : previous.occupation,
+    }));
     setErrors({});
   };
 
@@ -238,9 +283,11 @@ const EligibilityCalculatorPage = () => {
     return termEligibility({
       product,
       monthlyIncome: num(form.monthlyIncome),
+      coApplicantIncome: num(form.coApplicantIncome),
+      coApplicantEmi: num(form.coApplicantEmi),
       existingEmi: num(form.existingEmi),
       age,
-      occupation: form.occupation,
+      occupation,
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
       creditScore: num(form.creditScore),
@@ -252,7 +299,9 @@ const EligibilityCalculatorPage = () => {
     const next: Record<string, string> = {};
 
     if (product.family === "term") {
-      if (num(form.monthlyIncome) <= 0) next.monthlyIncome = "Enter your monthly income";
+      if (num(form.monthlyIncome) + num(form.coApplicantIncome) <= 0) {
+        next.monthlyIncome = isBusinessIncome ? "Enter your monthly net profit" : "Enter your monthly income";
+      }
       if (product.asset && num(form[product.asset.field]) <= 0) {
         next[product.asset.field] = `Enter the ${product.asset.label.toLowerCase()}`;
       }
@@ -311,6 +360,14 @@ const EligibilityCalculatorPage = () => {
   };
 
   const asset = product.asset;
+  const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field])) : 0;
+
+  const incomeNoun =
+    result &&
+    (BUSINESS_PRODUCTS.has(result.product.key) ||
+      (PROFIT_INCOME_PRODUCTS.has(result.product.key) && occupation !== "Salaried"))
+      ? "monthly net profit"
+      : "monthly income";
 
   const basedOn = result
     ? result.product.family === "gold"
@@ -320,8 +377,8 @@ const EligibilityCalculatorPage = () => {
         : result.product.family === "share"
           ? `Based on shares worth ${formatINRRounded(num(form.shareValue))} pledged as security.`
             : result.outcome.credit
-              ? `Based on ${formatINRRounded(num(form.monthlyIncome))} monthly income, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
-              : `Based on ${formatINRRounded(num(form.monthlyIncome))} monthly income and ${formatINRRounded(num(form.existingEmi))} of existing EMIs.`
+              ? `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
+              : `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}${num(form.coApplicantIncome) > 0 ? ` (plus ${formatINRRounded(num(form.coApplicantIncome))} from a co-applicant)` : ""} and ${formatINRRounded(num(form.existingEmi) + num(form.coApplicantEmi))} of existing EMIs${num(form.coApplicantEmi) > 0 ? " across both applicants" : ""}.`
     : "";
 
   const stats = result
@@ -466,37 +523,39 @@ const EligibilityCalculatorPage = () => {
 
                   {product.family === "term" && (
                     <div className="space-y-5">
-                      <div>
-                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Occupation</p>
-                        <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
-                          {OCCUPATIONS.map((occupation) => {
-                            const active = occupation === form.occupation;
-                            return (
-                              <button
-                                key={occupation}
-                                type="button"
-                                onClick={() => set("occupation", occupation)}
-                                aria-pressed={active}
-                                className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
-                                  active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
-                                }`}
-                              >
-                                {occupation}
-                              </button>
-                            );
-                          })}
+                      {occupationOptions.length > 0 && (
+                        <div>
+                          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Occupation</p>
+                          <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
+                            {occupationOptions.map((option) => {
+                              const active = option === occupation;
+                              return (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => set("occupation", option)}
+                                  aria-pressed={active}
+                                  className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                    active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                  }`}
+                                >
+                                  {option}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <AmountField
                           id="elig-income"
-                          label="Monthly income"
+                          label={isBusinessIncome ? "Monthly net profit" : "Monthly income"}
                           value={form.monthlyIncome}
                           onChange={(next) => set("monthlyIncome", next)}
                           error={errors.monthlyIncome}
                           placeholder="e.g. 75,000"
-                          hint="Take-home after deductions"
+                          hint={isBusinessIncome ? "Profit after business expenses, from your P&L" : "Take-home after deductions"}
                         />
                         <AmountField
                           id="elig-emi"
@@ -506,6 +565,69 @@ const EligibilityCalculatorPage = () => {
                           hint="Leave blank if none"
                         />
                       </div>
+
+                      {product.key === "home" && (
+                        <div className="space-y-4">
+                          <button
+                            type="button"
+                            onClick={toggleCoApplicant}
+                            aria-expanded={coApplicantOpen}
+                            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2 text-[12px] font-bold text-(--brand-navy) transition-colors hover:border-slate-400 hover:bg-slate-50"
+                          >
+                            <span className="text-base leading-none">{coApplicantOpen ? "\u2212" : "+"}</span>
+                            {coApplicantOpen ? "Remove co-applicant" : "Add a Co-applicant"}
+                          </button>
+                          {coApplicantOpen && (
+                            <div className="space-y-4">
+                            <div>
+                              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Co-applicant's occupation</p>
+                              <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
+                                {OCCUPATIONS.map((option) => {
+                                  const active = option === form.coApplicantOccupation;
+                                  return (
+                                    <button
+                                      key={option}
+                                      type="button"
+                                      onClick={() => set("coApplicantOccupation", option)}
+                                      aria-pressed={active}
+                                      className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                        active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                      }`}
+                                    >
+                                      {option}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              <AmountField
+                                id="elig-co-applicant-income"
+                                label={
+                                  form.coApplicantOccupation === "Salaried"
+                                    ? "Co-applicant monthly income (optional)"
+                                    : "Co-applicant monthly net profit (optional)"
+                                }
+                                value={form.coApplicantIncome}
+                                onChange={(next) => set("coApplicantIncome", next)}
+                                hint={
+                                  form.coApplicantOccupation === "Salaried"
+                                    ? "Added to your income for the shared EMI capacity"
+                                    : "Profit after business expenses, pooled with your income"
+                                }
+                              />
+                              <AmountField
+                                id="elig-co-applicant-emi"
+                                label="Co-applicant's EMIs (optional)"
+                                value={form.coApplicantEmi}
+                                onChange={(next) => set("coApplicantEmi", next)}
+                                hint="EMIs they already pay; leave blank if none"
+                              />
+                            </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {product.unsecured && (
                         <div>
@@ -543,7 +665,7 @@ const EligibilityCalculatorPage = () => {
                           value={form[asset.field]}
                           onChange={(next) => set(asset.field, next)}
                           error={errors[asset.field]}
-                          hint={asset.hint}
+                          hint={asset.ltvSlabs && form[asset.field] ? `Up to ${Math.round(assetLtv * 100)}% for this property value` : asset.hint}
                         />
                       )}
                     </div>
@@ -601,13 +723,22 @@ const EligibilityCalculatorPage = () => {
                         </div>
                       </div>
 
-                      <AmountField
-                        id="elig-gold-income"
-                        label="Monthly income (optional)"
-                        value={form.monthlyIncome}
-                        onChange={(next) => set("monthlyIncome", next)}
-                        hint="Helps us check you can repay comfortably"
-                      />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-gold-income"
+                          label="Monthly income (optional)"
+                          value={form.monthlyIncome}
+                          onChange={(next) => set("monthlyIncome", next)}
+                          hint="Helps us check you can repay comfortably"
+                        />
+                        <AmountField
+                          id="elig-gold-emi"
+                          label="EMIs you already pay"
+                          value={form.existingEmi}
+                          onChange={(next) => set("existingEmi", next)}
+                          hint="Leave blank if none"
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -689,7 +820,7 @@ const EligibilityCalculatorPage = () => {
                     {!errors.dob && (
                       <p className="mt-1 text-[11px] leading-4 text-slate-400">
                         {age >= 0 ? `You are ${age} years old. ` : ""}
-                        Repayment must end by age {retirementAgeFor(form.occupation)}.
+                        Repayment must end by age {maturityAgeFor(product, occupation)}.
                       </p>
                     )}
                   </div>

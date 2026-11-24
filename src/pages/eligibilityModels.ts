@@ -10,6 +10,12 @@ export const TURNOVER_METHOD_CAP = 5_00_00_000;
 export const STOCK_MARGIN = 0.25;
 export const DEBTOR_MARGIN = 0.3;
 
+export const HOME_LTV_SLABS = [
+  { upTo: 30_00_000, ltv: 0.9 },
+  { upTo: 75_00_000, ltv: 0.8 },
+  { upTo: Number.POSITIVE_INFINITY, ltv: 0.75 },
+] as const;
+
 export const GOLD_LTV_SLABS = [
   { upTo: 2_50_000, ltv: 0.85 },
   { upTo: 5_00_000, ltv: 0.8 },
@@ -22,7 +28,14 @@ export interface ProductSpec {
   family: ModelFamily;
   roi: number;
   maxTenureMonths: number;
-  asset?: { field: AssetField; label: string; hint: string; ltv: number };
+  maturityAge?: number;
+  asset?: {
+    field: AssetField;
+    label: string;
+    hint: string;
+    ltv: number;
+    ltvSlabs?: readonly { upTo: number; ltv: number }[];
+  };
   unsecured?: boolean;
 }
 
@@ -33,8 +46,14 @@ export const PRODUCTS: readonly ProductSpec[] = [
     asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 20% of annual turnover", ltv: 0.2 },
   },
   {
-    key: "home", label: "Home Loan", family: "term", roi: 8, maxTenureMonths: 360,
-    asset: { field: "propertyValue", label: "Property Value", hint: "Up to 90% of the property value", ltv: 0.9 },
+    key: "home", label: "Home Loan", family: "term", roi: 8, maxTenureMonths: 360, maturityAge: 70,
+    asset: {
+      field: "propertyValue",
+      label: "Property Value",
+      hint: "Up to 90% of the property value",
+      ltv: 0.9,
+      ltvSlabs: HOME_LTV_SLABS,
+    },
   },
   {
     key: "lap", label: "Loan Against Property", family: "term", roi: 10.5, maxTenureMonths: 120,
@@ -123,6 +142,15 @@ const roundTo = (value: number, step: number) => Math.max(0, Math.floor(value / 
 const money = (value: number) =>
   `₹${Math.round(value).toLocaleString("en-IN")}`;
 
+export const assetLtvFor = (
+  asset: NonNullable<ProductSpec["asset"]>,
+  value: number,
+): number => {
+  if (!asset.ltvSlabs || value <= 0) return asset.ltv;
+  const slab = asset.ltvSlabs.find(({ upTo, ltv }) => value * ltv <= upTo);
+  return slab ? slab.ltv : asset.ltv;
+};
+
 export const goldLtvFor = (value: number): number => {
   if (value <= 0) return 0;
   const slab = GOLD_LTV_SLABS.find(({ upTo, ltv }) => value * ltv <= upTo);
@@ -134,6 +162,12 @@ export const retirementAgeFor = (occupation: string): number =>
 
 export const monthsToRetirement = (age: number, occupation: string): number =>
   Math.max(0, (retirementAgeFor(occupation) - age) * 12);
+
+export const maturityAgeFor = (product: ProductSpec, occupation: string): number =>
+  product.maturityAge ?? retirementAgeFor(occupation);
+
+export const monthsToMaturity = (age: number, product: ProductSpec, occupation: string): number =>
+  Math.max(0, (maturityAgeFor(product, occupation) - age) * 12);
 
 const holding = (headlineLabel: string, message: string, suggestions: string[]): EligibilityOutcome => ({
   eligible: false,
@@ -174,6 +208,8 @@ export interface TermInput {
   product: ProductSpec;
   roi?: number;
   monthlyIncome: number;
+  coApplicantIncome?: number;
+  coApplicantEmi?: number;
   existingEmi: number;
   age: number;
   occupation: string;
@@ -183,7 +219,9 @@ export interface TermInput {
 }
 
 export const termEligibility = (input: TermInput): EligibilityOutcome => {
-  const { product, monthlyIncome: income, existingEmi: existing, age, occupation } = input;
+  const { product, monthlyIncome, existingEmi, age, occupation } = input;
+  const income = monthlyIncome + Math.max(0, input.coApplicantIncome ?? 0);
+  const existing = existingEmi + Math.max(0, input.coApplicantEmi ?? 0);
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const credit = product.unsecured ? creditPolicyFor(input.creditScore ?? 0) : null;
 
@@ -210,7 +248,7 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const foirCap = credit ? credit.foirCap : FOIR_CAP;
   const emiCap = income * foirCap;
   const headroom = Math.max(0, emiCap - existing);
-  const months = Math.min(product.maxTenureMonths, input.tenureMonths, monthsToRetirement(age, occupation));
+  const months = Math.min(product.maxTenureMonths, input.tenureMonths, monthsToMaturity(age, product, occupation));
 
   if (income <= 0) {
     return holding(
@@ -233,10 +271,18 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
     );
   }
 
+  if (months <= 0) {
+    return holding(
+      "Indicative loan amount",
+      `Repayment has to end by age ${maturityAgeFor(product, occupation)}, and at your age there is no tenure left.`,
+      ["A younger co-applicant extends the repayment period lenders will allow."],
+    );
+  }
+
   if (months < 12) {
     return holding(
       "Indicative loan amount",
-      `Repayment has to end by age ${retirementAgeFor(occupation)}, which leaves less than a year of tenure.`,
+      `Repayment has to end by age ${maturityAgeFor(product, occupation)}, which leaves less than a year of tenure.`,
       ["A younger co-applicant extends the repayment period lenders will allow."],
     );
   }
@@ -245,10 +291,11 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const caps: Cap[] = [{ key: "foir", label: "Repayment capacity", value: roundTo(capacity, 1000) }];
 
   if (product.asset && input.assetValue > 0) {
+    const effectiveLtv = assetLtvFor(product.asset, input.assetValue);
     caps.push({
       key: "asset",
-      label: `${product.asset.label.replace("Annual ", "")} × ${Math.round(product.asset.ltv * 100)}%`,
-      value: roundTo(input.assetValue * product.asset.ltv, 1000),
+      label: `${product.asset.label.replace("Annual ", "")} × ${Math.round(effectiveLtv * 100)}%`,
+      value: roundTo(input.assetValue * effectiveLtv, 1000),
     });
   }
 
@@ -347,6 +394,27 @@ export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
   const foir = income > 0
     ? { used: (existing + emi) / income, headroom: Math.max(0, income * FOIR_CAP - existing - emi), income, existing }
     : null;
+
+  if (existing > 0 && income <= 0) {
+    return holding(
+      "Indicative gold loan",
+      "You have other EMIs on record but no income — add your monthly income so we can weigh them, or clear the EMI field.",
+      ["Lenders check that the total EMI bill, including this loan, fits within your income."],
+    );
+  }
+
+  if (income > 0 && income * FOIR_CAP - existing < MIN_HEADROOM) {
+    return holding(
+      "Indicative gold loan",
+      existing > 0
+        ? `Other EMIs of ${money(existing)} already use up the ${money(income * FOIR_CAP)} of income a lender will count, so this loan cannot be serviced.`
+        : "This income does not leave enough room for a new EMI.",
+      [
+        "Closing or part-pre-paying an existing loan frees up room for a gold loan.",
+        "Leave the income and EMI fields blank to value the loan on the gold alone.",
+      ],
+    );
+  }
 
   if (loan < MIN_GOLD_LOAN) {
     return {
@@ -530,6 +598,27 @@ export const shareEligibility = (input: ShareInput): EligibilityOutcome => {
   const loan = Math.min(...caps.map((cap) => cap.value));
   const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
   const emi = emiForPrincipal(loan, roi, months);
+
+  if (existing > 0 && income <= 0) {
+    return holding(
+      "Indicative loan against shares",
+      "You have other EMIs on record but no income — add your monthly income so we can weigh them, or clear the EMI field.",
+      ["Lenders check that the total EMI bill, including this loan, fits within your income."],
+    );
+  }
+
+  if (income > 0 && income * FOIR_CAP - existing < MIN_HEADROOM) {
+    return holding(
+      "Indicative loan against shares",
+      existing > 0
+        ? `Other EMIs of ${money(existing)} already use up the ${money(income * FOIR_CAP)} of income a lender will count, so this loan cannot be serviced.`
+        : "This income does not leave enough room for a new EMI.",
+      [
+        "Closing or part-pre-paying an existing loan frees up room for a share-backed loan.",
+        "Leave the income and EMI fields blank to value the loan on the shares alone.",
+      ],
+    );
+  }
 
   if (loan < MIN_SHARE_LOAN) {
     return {
