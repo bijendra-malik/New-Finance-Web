@@ -9,6 +9,7 @@ export const TURNOVER_METHOD_CAP = 5_00_00_000;
 
 export const STOCK_MARGIN = 0.25;
 export const DEBTOR_MARGIN = 0.3;
+export const RENTAL_HAIRCUT = 0.75;
 
 export const HOME_LTV_SLABS = [
   { upTo: 30_00_000, ltv: 0.9 },
@@ -35,6 +36,10 @@ export interface ProductSpec {
     hint: string;
     ltv: number;
     ltvSlabs?: readonly { upTo: number; ltv: number }[];
+    ltvByType?: Readonly<Record<string, number>>;
+    /** Cap for a property type the applicant names themselves ("Other"). */
+    ltvForOtherType?: number;
+    cityAdjustment?: Readonly<Record<string, number>>;
   };
   unsecured?: boolean;
 }
@@ -49,15 +54,23 @@ export const PRODUCTS: readonly ProductSpec[] = [
     key: "home", label: "Home Loan", family: "term", roi: 8, maxTenureMonths: 360, maturityAge: 70,
     asset: {
       field: "propertyValue",
-      label: "Property Value",
-      hint: "Up to 90% of the property value",
+      label: "Property Market Value",
+      hint: "Up to 90% of the property market value",
       ltv: 0.9,
       ltvSlabs: HOME_LTV_SLABS,
     },
   },
   {
     key: "lap", label: "Loan Against Property", family: "term", roi: 10.5, maxTenureMonths: 120,
-    asset: { field: "propertyValue", label: "Property Value", hint: "Up to 65% of the property value", ltv: 0.65 },
+    asset: {
+      field: "propertyValue",
+      label: "Property Market Value",
+      hint: "Up to 65% of the property market value",
+      ltv: 0.65,
+      ltvByType: { Residential: 0.8, Commercial: 0.7, Industrial: 0.65 },
+      ltvForOtherType: 0.7,
+      cityAdjustment: { A: 0, B: 0.05, C: 0.1 },
+    },
   },
   {
     key: "vehicleLoan", label: "Vehicle Loan", family: "term", roi: 8, maxTenureMonths: 60,
@@ -145,10 +158,22 @@ const money = (value: number) =>
 export const assetLtvFor = (
   asset: NonNullable<ProductSpec["asset"]>,
   value: number,
+  type?: string,
+  city?: string,
 ): number => {
-  if (!asset.ltvSlabs || value <= 0) return asset.ltv;
-  const slab = asset.ltvSlabs.find(({ upTo, ltv }) => value * ltv <= upTo);
-  return slab ? slab.ltv : asset.ltv;
+  let ltv = asset.ltv;
+  if (type && asset.ltvByType) {
+    ltv =
+      asset.ltvByType[type] ??
+      asset.ltvForOtherType ??
+      Math.min(...Object.values(asset.ltvByType));
+  }
+  if (asset.ltvSlabs && value > 0) {
+    const slab = asset.ltvSlabs.find(({ upTo, ltv: slabLtv }) => value * slabLtv <= upTo);
+    if (slab) ltv = slab.ltv;
+  }
+  if (city && asset.cityAdjustment) ltv -= asset.cityAdjustment[city] ?? 0;
+  return Math.max(0.3, ltv);
 };
 
 export const goldLtvFor = (value: number): number => {
@@ -208,9 +233,14 @@ export interface TermInput {
   product: ProductSpec;
   roi?: number;
   monthlyIncome: number;
-  coApplicantIncome?: number;
-  coApplicantEmi?: number;
   existingEmi: number;
+  /** Property type and city category refine a type-aware LTV, e.g. LAP. */
+  assetType?: string;
+  cityCategory?: string;
+  /** An existing mortgage on the same property is netted off the secured limit. */
+  existingLoanOnAsset?: number;
+  /** Rent received on the property, of which a haircut is counted as income. */
+  rentalIncome?: number;
   age: number;
   occupation: string;
   tenureMonths: number;
@@ -220,8 +250,9 @@ export interface TermInput {
 
 export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const { product, monthlyIncome, existingEmi, age, occupation } = input;
-  const income = monthlyIncome + Math.max(0, input.coApplicantIncome ?? 0);
-  const existing = existingEmi + Math.max(0, input.coApplicantEmi ?? 0);
+  const rental = Math.max(0, input.rentalIncome ?? 0) * RENTAL_HAIRCUT;
+  const income = monthlyIncome + rental;
+  const existing = existingEmi;
   const roi = input.roi && input.roi > 0 ? input.roi : product.roi;
   const credit = product.unsecured ? creditPolicyFor(input.creditScore ?? 0) : null;
 
@@ -240,7 +271,6 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
       [
         "Clear overdue dues, keep card utilisation under 30% and check the report for errors.",
         "A secured loan on property, gold or shares is judged on the asset rather than the score.",
-        "A co-applicant with a stronger bureau record can carry the application.",
       ],
     );
   }
@@ -266,7 +296,6 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
         : "This income does not leave enough room for a new EMI.",
       [
         "Closing or part-pre-paying an existing loan frees up EMI headroom.",
-        "A co-applicant's income can be added to the household capacity.",
       ],
     );
   }
@@ -275,7 +304,7 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
     return holding(
       "Indicative loan amount",
       `Repayment has to end by age ${maturityAgeFor(product, occupation)}, and at your age there is no tenure left.`,
-      ["A younger co-applicant extends the repayment period lenders will allow."],
+      ["Most lenders will not sanction a fresh loan of this type at your age."],
     );
   }
 
@@ -283,7 +312,7 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
     return holding(
       "Indicative loan amount",
       `Repayment has to end by age ${maturityAgeFor(product, occupation)}, which leaves less than a year of tenure.`,
-      ["A younger co-applicant extends the repayment period lenders will allow."],
+      ["A smaller loan amount can still be repaid within the time left."],
     );
   }
 
@@ -291,11 +320,12 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const caps: Cap[] = [{ key: "foir", label: "Repayment capacity", value: roundTo(capacity, 1000) }];
 
   if (product.asset && input.assetValue > 0) {
-    const effectiveLtv = assetLtvFor(product.asset, input.assetValue);
+    const effectiveLtv = assetLtvFor(product.asset, input.assetValue, input.assetType, input.cityCategory);
+    const secured = Math.max(0, input.assetValue * effectiveLtv - Math.max(0, input.existingLoanOnAsset ?? 0));
     caps.push({
       key: "asset",
       label: `${product.asset.label.replace("Annual ", "")} × ${Math.round(effectiveLtv * 100)}%`,
-      value: roundTo(input.assetValue * effectiveLtv, 1000),
+      value: roundTo(secured, 1000),
     });
   }
 
@@ -309,8 +339,8 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
         "Indicative loan amount",
         `On these figures the limit comes to under ${money(MIN_LOAN)}, the smallest most lenders will sanction.`,
         product.asset
-          ? [`Declare a higher ${product.asset.label.toLowerCase()}, or add a co-applicant's income.`]
-          : ["Adding a co-applicant's income raises the shared EMI headroom."],
+          ? [`Declare a higher ${product.asset.label.toLowerCase()}.`]
+          : ["A smaller loan amount brings the EMI within reach."],
       ),
       caps,
       binding,

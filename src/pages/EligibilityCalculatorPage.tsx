@@ -35,6 +35,13 @@ const BUSINESS_PRODUCTS = new Set([
   "leaseRentalDiscounting",
 ]);
 const PROFIT_INCOME_PRODUCTS = new Set(["home", "lap", "vehicleLoan"]);
+const LAP_PROPERTY_TYPES = ["Residential", "Commercial", "Industrial", "Other"] as const;
+const LAP_CITIES = [
+  { value: "A", label: "Category A (metro)" },
+  { value: "B", label: "Category B (large city)" },
+  { value: "C", label: "Category C (smaller town)" },
+] as const;
+const LAP_USAGES = ["Self-occupied", "Rented out"] as const;
 const CARATS = [24, 22, 20, 18] as const;
 
 const num = (value: string): number => {
@@ -134,9 +141,12 @@ interface FormState {
   occupation: string;
   dob: string;
   monthlyIncome: string;
-  coApplicantIncome: string;
-  coApplicantEmi: string;
-  coApplicantOccupation: string;
+  lapPropertyType: string;
+  lapPropertyOther: string;
+  lapCity: string;
+  lapUsage: string;
+  lapRent: string;
+  lapExistingLoan: string;
   existingEmi: string;
   propertyValue: string;
   turnover: string;
@@ -160,9 +170,12 @@ const INITIAL_FORM: FormState = {
   occupation: "Salaried",
   dob: "",
   monthlyIncome: "",
-  coApplicantIncome: "",
-  coApplicantEmi: "",
-  coApplicantOccupation: "Salaried",
+  lapPropertyType: "Residential",
+  lapPropertyOther: "",
+  lapCity: "A",
+  lapUsage: "Self-occupied",
+  lapRent: "",
+  lapExistingLoan: "",
   existingEmi: "",
   propertyValue: "",
   turnover: "",
@@ -195,7 +208,6 @@ const EligibilityCalculatorPage = () => {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ outcome: EligibilityOutcome; product: ProductSpec } | null>(null);
-  const [coApplicantOpen, setCoApplicantOpen] = useState(false);
 
   const product = productByKey(form.product);
   // Personal loans are only open to salaried applicants, whatever was picked earlier.
@@ -215,18 +227,6 @@ const EligibilityCalculatorPage = () => {
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((previous) => ({ ...previous, [key]: value }));
     setErrors((previous) => (previous[key] ? { ...previous, [key]: "" } : previous));
-  };
-
-  const toggleCoApplicant = () => {
-    if (coApplicantOpen) {
-      setForm((previous) => ({
-        ...previous,
-        coApplicantIncome: "",
-        coApplicantEmi: "",
-        coApplicantOccupation: "Salaried",
-      }));
-    }
-    setCoApplicantOpen(!coApplicantOpen);
   };
 
   const changeProduct = (key: string) => {
@@ -283,13 +283,16 @@ const EligibilityCalculatorPage = () => {
     return termEligibility({
       product,
       monthlyIncome: num(form.monthlyIncome),
-      coApplicantIncome: num(form.coApplicantIncome),
-      coApplicantEmi: num(form.coApplicantEmi),
       existingEmi: num(form.existingEmi),
       age,
       occupation,
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
+      // These only describe a mortgaged property, so they must not leak into other products.
+      assetType: product.key === "lap" ? lapAssetType : undefined,
+      cityCategory: product.key === "lap" ? form.lapCity : undefined,
+      existingLoanOnAsset: product.key === "lap" ? num(form.lapExistingLoan) : 0,
+      rentalIncome: product.key === "lap" && form.lapUsage === "Rented out" ? num(form.lapRent) : 0,
       creditScore: num(form.creditScore),
     });
   };
@@ -299,11 +302,14 @@ const EligibilityCalculatorPage = () => {
     const next: Record<string, string> = {};
 
     if (product.family === "term") {
-      if (num(form.monthlyIncome) + num(form.coApplicantIncome) <= 0) {
+      if (num(form.monthlyIncome) <= 0) {
         next.monthlyIncome = isBusinessIncome ? "Enter your monthly net profit" : "Enter your monthly income";
       }
       if (product.asset && num(form[product.asset.field]) <= 0) {
         next[product.asset.field] = `Enter the ${product.asset.label.toLowerCase()}`;
+      }
+      if (product.key === "lap" && form.lapPropertyType === "Other" && !form.lapPropertyOther.trim()) {
+        next.lapPropertyOther = "Name the property type";
       }
     }
     if (product.family === "gold") {
@@ -360,7 +366,10 @@ const EligibilityCalculatorPage = () => {
   };
 
   const asset = product.asset;
-  const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field])) : 0;
+  // "Other" lets the applicant name the property type; the model then uses the safest cap.
+  const lapAssetType =
+    form.lapPropertyType === "Other" ? form.lapPropertyOther.trim() || "Other" : form.lapPropertyType;
+  const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field]), lapAssetType, form.lapCity) : 0;
 
   const incomeNoun =
     result &&
@@ -378,7 +387,7 @@ const EligibilityCalculatorPage = () => {
           ? `Based on shares worth ${formatINRRounded(num(form.shareValue))} pledged as security.`
             : result.outcome.credit
               ? `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
-              : `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}${num(form.coApplicantIncome) > 0 ? ` (plus ${formatINRRounded(num(form.coApplicantIncome))} from a co-applicant)` : ""} and ${formatINRRounded(num(form.existingEmi) + num(form.coApplicantEmi))} of existing EMIs${num(form.coApplicantEmi) > 0 ? " across both applicants" : ""}.`
+              : `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun} and ${formatINRRounded(num(form.existingEmi))} of existing EMIs.`
     : "";
 
   const stats = result
@@ -566,69 +575,6 @@ const EligibilityCalculatorPage = () => {
                         />
                       </div>
 
-                      {product.key === "home" && (
-                        <div className="space-y-4">
-                          <button
-                            type="button"
-                            onClick={toggleCoApplicant}
-                            aria-expanded={coApplicantOpen}
-                            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3.5 py-2 text-[12px] font-bold text-(--brand-navy) transition-colors hover:border-slate-400 hover:bg-slate-50"
-                          >
-                            <span className="text-base leading-none">{coApplicantOpen ? "\u2212" : "+"}</span>
-                            {coApplicantOpen ? "Remove co-applicant" : "Add a Co-applicant"}
-                          </button>
-                          {coApplicantOpen && (
-                            <div className="space-y-4">
-                            <div>
-                              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Co-applicant's occupation</p>
-                              <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
-                                {OCCUPATIONS.map((option) => {
-                                  const active = option === form.coApplicantOccupation;
-                                  return (
-                                    <button
-                                      key={option}
-                                      type="button"
-                                      onClick={() => set("coApplicantOccupation", option)}
-                                      aria-pressed={active}
-                                      className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
-                                        active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
-                                      }`}
-                                    >
-                                      {option}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              <AmountField
-                                id="elig-co-applicant-income"
-                                label={
-                                  form.coApplicantOccupation === "Salaried"
-                                    ? "Co-applicant monthly income (optional)"
-                                    : "Co-applicant monthly net profit (optional)"
-                                }
-                                value={form.coApplicantIncome}
-                                onChange={(next) => set("coApplicantIncome", next)}
-                                hint={
-                                  form.coApplicantOccupation === "Salaried"
-                                    ? "Added to your income for the shared EMI capacity"
-                                    : "Profit after business expenses, pooled with your income"
-                                }
-                              />
-                              <AmountField
-                                id="elig-co-applicant-emi"
-                                label="Co-applicant's EMIs (optional)"
-                                value={form.coApplicantEmi}
-                                onChange={(next) => set("coApplicantEmi", next)}
-                                hint="EMIs they already pay; leave blank if none"
-                              />
-                            </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
                       {product.unsecured && (
                         <div>
                           <FieldLabel htmlFor="elig-credit">Credit score (CIBIL)</FieldLabel>
@@ -665,8 +611,114 @@ const EligibilityCalculatorPage = () => {
                           value={form[asset.field]}
                           onChange={(next) => set(asset.field, next)}
                           error={errors[asset.field]}
-                          hint={asset.ltvSlabs && form[asset.field] ? `Up to ${Math.round(assetLtv * 100)}% for this property value` : asset.hint}
+                          hint={
+                            asset.ltvSlabs && form[asset.field]
+                              ? `Up to ${Math.round(assetLtv * 100)}% for this property value`
+                              : asset.ltvByType
+                                ? `Up to ${Math.round(assetLtv * 100)}% for a ${lapAssetType.toLowerCase()} property in a category ${form.lapCity} city`
+                                : asset.hint
+                          }
                         />
+                      )}
+
+                      {product.key === "lap" && (
+                        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                          <div>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property type</p>
+                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                              {LAP_PROPERTY_TYPES.map((option) => {
+                                const active = option === form.lapPropertyType;
+                                return (
+                                  <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => set("lapPropertyType", option)}
+                                    aria-pressed={active}
+                                    className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                      active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    }`}
+                                  >
+                                    {option}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {form.lapPropertyType === "Other" && (
+                            <PlainField
+                              id="elig-lap-property-other"
+                              label="Property type"
+                              value={form.lapPropertyOther}
+                              onChange={(next) => set("lapPropertyOther", next)}
+                              placeholder="e.g. Agricultural land, warehouse"
+                              error={errors.lapPropertyOther}
+                            />
+                          )}
+
+                          <div>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">City category</p>
+                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                              {LAP_CITIES.map((option) => {
+                                const active = option.value === form.lapCity;
+                                return (
+                                  <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => set("lapCity", option.value)}
+                                    aria-pressed={active}
+                                    className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                      active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    }`}
+                                  >
+                                    {option.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property usage</p>
+                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                              {LAP_USAGES.map((option) => {
+                                const active = option === form.lapUsage;
+                                return (
+                                  <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => set("lapUsage", option)}
+                                    aria-pressed={active}
+                                    className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                      active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    }`}
+                                  >
+                                    {option}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {form.lapUsage === "Rented out" && (
+                            <AmountField
+                              id="elig-lap-rent"
+                              label="Monthly rent received"
+                              value={form.lapRent}
+                              onChange={(next) => set("lapRent", next)}
+                              placeholder="e.g. 25,000"
+                              hint="Lenders count about 75% of the rent as income"
+                            />
+                          )}
+
+                          <AmountField
+                            id="elig-lap-existing-loan"
+                            label="Existing loan on this property (optional)"
+                            value={form.lapExistingLoan}
+                            onChange={(next) => set("lapExistingLoan", next)}
+                            hint="Outstanding balance, netted off the amount you can borrow"
+                          />
+                        </div>
                       )}
                     </div>
                   )}
