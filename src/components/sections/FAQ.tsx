@@ -25,7 +25,7 @@ const FAQ_ICONS:  Record<string, LucideIcon> = { "📝": FileText, "📄": Files
 const STEPS = [
   { id: 1, title: "Apply Online",   desc: "Share basic details & loan amount. Takes under 2 minutes — no paperwork, no hassle.",        color: NAVY_HEX,  icon: "📝", tag: "Step 1" },
   { id: 2, title: "Get Verified",   desc: "Instant eligibility & CIBIL check. Our smart system verifies documents in real-time.",       color: TEAL_HEX,  icon: "✅", tag: "Step 2" },
-  { id: 3, title: "Receive Funds",  desc: "Amount disbursed to your account in 24–48 hours. Safe, secure & direct transfer.",          color: DARK_HEX,  icon: "💳", tag: "Step 3" },
+  { id: 3, title: "Funds Disbursement",  desc: "Amount disbursed to your account in 24–48 hours. Safe, secure & direct transfer.",          color: DARK_HEX,  icon: "💳", tag: "Step 3" },
 ];
 
 const FAQS = [
