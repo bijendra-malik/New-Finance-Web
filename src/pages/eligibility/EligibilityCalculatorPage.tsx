@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import NotFoundPage from "../NotFoundPage";
 import PageBanner from "../../components/common/PageBanner";
 import Container from "../../components/common/Container";
 import useSEO from "../../hooks/useSEO";
@@ -18,6 +19,8 @@ import {
   lrdEligibility,
   maturityAgeFor,
   productByKey,
+  productBySlug,
+  productPath,
   projectEligibility,
   LRD_LTV_MAX,
   LRD_LTV_MIN,
@@ -47,11 +50,15 @@ import { SERIF, fieldClass } from "./formState";
 import EligibilityProductFields from "./productFields";
 
 const EligibilityCalculatorPage = () => {
+  const { productSlug: slug } = useParams<{ productSlug: string }>();
+  const navigate = useNavigate();
+  const routeProduct = productBySlug(slug);
+  const product = routeProduct ?? productByKey("personal");
+
   useSEO({
-    title: "Loan Eligibility Calculator — Check in 2 Minutes",
-    description:
-      "Check how much loan you may be eligible for. Free and instant estimate built on your income and obligations, the value of your gold, or your business turnover — no documents needed.",
-    path: "/eligibility-calculator",
+    title: `${product.label} Eligibility Calculator — Check in 2 Minutes`,
+    description: `Check how much you may be eligible for on a ${product.label.toLowerCase()}. Free and instant estimate built on your income and obligations — no documents needed.`,
+    path: productPath(product.key),
   });
 
   const { requestApply, gate } = useApplyGate();
@@ -61,7 +68,6 @@ const EligibilityCalculatorPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ outcome: EligibilityOutcome; product: ProductSpec } | null>(null);
 
-  const product = productByKey(form.product);
   const occupation =
     product.key === "personal"
       ? "Salaried"
@@ -87,13 +93,7 @@ const EligibilityCalculatorPage = () => {
   };
 
   const changeProduct = (key: string) => {
-    setForm((previous) => ({
-      ...previous,
-      product: key,
-      occupation:
-        key === "personal" ? "Salaried" : key === "business" && previous.occupation === "Salaried" ? "Self-Employed" : previous.occupation,
-    }));
-    setErrors({});
+    navigate(productPath(key));
   };
 
   useEffect(() => {
@@ -103,6 +103,10 @@ const EligibilityCalculatorPage = () => {
       });
     }
   }, [result]);
+
+  if (!routeProduct) {
+    return <NotFoundPage />;
+  }
 
   const lrdInput = {
     product,
@@ -569,7 +573,7 @@ const EligibilityCalculatorPage = () => {
                     <FieldLabel htmlFor="elig-product">Loan product</FieldLabel>
                     <select
                       id="elig-product"
-                      value={form.product}
+                      value={product.key}
                       onChange={(event) => changeProduct(event.target.value)}
                       className="w-full cursor-pointer rounded-xl border border-slate-200 bg-(--surface-muted) px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-33)"
                     >

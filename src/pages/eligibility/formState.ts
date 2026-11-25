@@ -33,7 +33,6 @@ export const maxTenureFor = (product: ProductSpec, age: number, occupation: stri
 };
 
 export interface FormState {
-  product: string;
   occupation: string;
   dob: string;
   monthlyIncome: string;
@@ -91,7 +90,6 @@ export interface FormState {
 }
 
 export const INITIAL_FORM: FormState = {
-  product: "personal",
   occupation: "Salaried",
   dob: "",
   monthlyIncome: "",

@@ -189,7 +189,8 @@ function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/global-research" element={<GlobalResearchPage />} />
               <Route path="/emi-calculator" element={<EMICalculatorPage />} />
-              <Route path="/eligibility-calculator" element={<EligibilityCalculatorPage />} />
+              <Route path="/eligibility-calculator" element={<Navigate to="/eligibility-calculator/personal-loan" replace />} />
+              <Route path="/eligibility-calculator/:productSlug" element={<EligibilityCalculatorPage />} />
               <Route path="/credit-score" element={<CreditScorePage />} />
               <Route path="/know-your-score" element={<KnowYourScorePage />} />
               <Route path="/how-to-improve-credit-score" element={<ImproveCreditScorePage />} />

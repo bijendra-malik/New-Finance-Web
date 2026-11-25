@@ -104,6 +104,17 @@ export const PRODUCTS: readonly ProductSpec[] = [
 export const productByKey = (key: string): ProductSpec =>
   PRODUCTS.find((product) => product.key === key) ?? (PRODUCTS.find((product) => product.key === "personal") as ProductSpec);
 
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+export const productSlug = (product: ProductSpec): string =>
+  product.label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+export const productBySlug = (slug: string | undefined): ProductSpec | null =>
+  slug ? (PRODUCTS.find((product) => productSlug(product) === slug) ?? null) : null;
+
+export const productPath = (key: string): string =>
+  `/eligibility-calculator/${productSlug(productByKey(key))}`;
+
 export interface Cap {
   key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease" | "cost" | "dscr" | "drawing";
   label: string;
