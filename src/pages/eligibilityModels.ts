@@ -1,7 +1,19 @@
-export type ModelFamily = "term" | "gold" | "wc" | "share" | "lrd";
+export type ModelFamily =
+  | "term"
+  | "gold"
+  | "wc"
+  | "share"
+  | "lrd"
+  | "education"
+  | "project"
+  | "commercial"
+  | "turnover";
 export type AssetField = "propertyValue" | "turnover" | "vehiclePrice";
 
 export const FOIR_CAP = 0.7;
+export const EDUCATION_FOIR_CAP = 0.5;
+export const VEHICLE_FOIR = 0.5;
+export const VEHICLE_LTV = 0.9;
 export const MIN_HEADROOM = 500;
 export const MIN_LOAN = 50_000;
 export const MIN_GOLD_LOAN = 10_000;
@@ -10,6 +22,13 @@ export const TURNOVER_METHOD_CAP = 5_00_00_000;
 export const STOCK_MARGIN = 0.25;
 export const DEBTOR_MARGIN = 0.3;
 export const RENTAL_HAIRCUT = 0.75;
+
+export const DSCR_MIN = 1.25;
+export const COMMERCIAL_LTV = 0.7;
+export const WC_ASSESSMENT_PCT = 0.2;
+export const WC_TURNOVER_REQUIREMENT = 0.25;
+export const WC_BANK_SHARE = 0.75;
+export const WC_TURNOVER_NORM = WC_TURNOVER_REQUIREMENT * WC_BANK_SHARE;
 
 export const HOME_LTV_SLABS = [
   { upTo: 30_00_000, ltv: 0.9 },
@@ -37,7 +56,6 @@ export interface ProductSpec {
     ltv: number;
     ltvSlabs?: readonly { upTo: number; ltv: number }[];
     ltvByType?: Readonly<Record<string, number>>;
-    /** Cap for a property type the applicant names themselves ("Other"). */
     ltvForOtherType?: number;
     cityAdjustment?: Readonly<Record<string, number>>;
   };
@@ -46,10 +64,7 @@ export interface ProductSpec {
 
 export const PRODUCTS: readonly ProductSpec[] = [
   { key: "personal", label: "Personal Loan", family: "term", roi: 12, maxTenureMonths: 60, unsecured: true },
-  {
-    key: "business", label: "Business Loan", family: "term", roi: 14, maxTenureMonths: 60, unsecured: true,
-    asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 20% of annual turnover", ltv: 0.2 },
-  },
+  { key: "business", label: "Business Loan", family: "term", roi: 14, maxTenureMonths: 60, unsecured: true },
   {
     key: "home", label: "Home Loan", family: "term", roi: 8, maxTenureMonths: 360, maturityAge: 70,
     asset: {
@@ -76,19 +91,10 @@ export const PRODUCTS: readonly ProductSpec[] = [
     key: "vehicleLoan", label: "Vehicle Loan", family: "term", roi: 8, maxTenureMonths: 60,
     asset: { field: "vehiclePrice", label: "On-Road Vehicle Price", hint: "Up to 90% of the on-road price", ltv: 0.9 },
   },
-  { key: "educationLoan", label: "Education Loan", family: "term", roi: 6, maxTenureMonths: 120, unsecured: true },
-  {
-    key: "projectLoan", label: "Project Loan", family: "term", roi: 10.5, maxTenureMonths: 60,
-    asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 25% of annual turnover", ltv: 0.25 },
-  },
-  {
-    key: "commercialPurchase", label: "Commercial Purchase", family: "term", roi: 12, maxTenureMonths: 120,
-    asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 25% of annual turnover", ltv: 0.25 },
-  },
-  {
-    key: "workingCapital", label: "Working Capital", family: "term", roi: 12.5, maxTenureMonths: 120,
-    asset: { field: "turnover", label: "Annual Business Turnover", hint: "Up to 20% of annual turnover", ltv: 0.2 },
-  },
+  { key: "educationLoan", label: "Education Loan", family: "education", roi: 6, maxTenureMonths: 120, unsecured: true },
+  { key: "projectLoan", label: "Project Loan", family: "project", roi: 10.5, maxTenureMonths: 60 },
+  { key: "commercialPurchase", label: "Commercial Purchase", family: "commercial", roi: 12, maxTenureMonths: 120 },
+  { key: "workingCapital", label: "Working Capital", family: "turnover", roi: 12.5, maxTenureMonths: 12 },
   { key: "leaseRentalDiscounting", label: "Lease Rental Discounting", family: "lrd", roi: 10.5, maxTenureMonths: 120 },
   { key: "odCcLimit", label: "OD / CC Limit", family: "wc", roi: 10, maxTenureMonths: 12 },
   { key: "goldLoan", label: "Gold Loan", family: "gold", roi: 9, maxTenureMonths: 12 },
@@ -99,7 +105,7 @@ export const productByKey = (key: string): ProductSpec =>
   PRODUCTS.find((product) => product.key === key) ?? (PRODUCTS.find((product) => product.key === "personal") as ProductSpec);
 
 export interface Cap {
-  key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease";
+  key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease" | "cost" | "dscr" | "drawing";
   label: string;
   value: number;
 }
@@ -139,6 +145,8 @@ export interface EligibilityOutcome {
     discountedRent: number;
     rentalLimit: number;
     propertyLimit: number;
+    netRent?: number;
+    supportedEmi?: number;
     interest: number;
   };
 }
@@ -271,6 +279,8 @@ export interface TermInput {
   roi?: number;
   monthlyIncome: number;
   existingEmi: number;
+  foirPct?: number;
+  ltvPct?: number;
   assetType?: string;
   cityCategory?: string;
   existingLoanOnAsset?: number;
@@ -279,11 +289,13 @@ export interface TermInput {
   occupation: string;
   tenureMonths: number;
   assetValue: number;
+  downPayment?: number;
   creditScore?: number;
 }
 
 export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const { product, monthlyIncome, existingEmi, age, occupation } = input;
+  const isVehicle = product.key === "vehicleLoan";
   const rental = Math.max(0, input.rentalIncome ?? 0) * RENTAL_HAIRCUT;
   const income = monthlyIncome + rental;
   const existing = existingEmi;
@@ -309,7 +321,12 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
     );
   }
 
-  const foirCap = product.unsecured ? credit.foirCap : credit.securedFoirCap;
+  const vehicleFoirPct = Math.min(80, Math.max(20, input.foirPct ?? VEHICLE_FOIR * 100));
+  const foirCap = isVehicle
+    ? vehicleFoirPct / 100
+    : product.unsecured
+      ? credit.foirCap
+      : credit.securedFoirCap;
   const emiCap = income * foirCap;
   const headroom = Math.max(0, emiCap - existing);
   const months = Math.min(product.maxTenureMonths, input.tenureMonths, monthsToMaturity(age, product, occupation));
@@ -354,11 +371,22 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   const caps: Cap[] = [{ key: "foir", label: "Repayment capacity", value: roundTo(capacity, 1000) }];
 
   if (product.asset && input.assetValue > 0) {
-    const effectiveLtv = assetLtvFor(product.asset, input.assetValue, input.assetType, input.cityCategory);
-    const secured = Math.max(0, input.assetValue * effectiveLtv - Math.max(0, input.existingLoanOnAsset ?? 0));
+    const vehicleLtvPct = Math.min(100, Math.max(50, input.ltvPct ?? VEHICLE_LTV * 100));
+    const effectiveLtv = isVehicle
+      ? vehicleLtvPct / 100
+      : assetLtvFor(product.asset, input.assetValue, input.assetType, input.cityCategory);
+    let secured = Math.max(0, input.assetValue * effectiveLtv - Math.max(0, input.existingLoanOnAsset ?? 0));
+    let assetLabel = `${product.asset.label.replace("Annual ", "")} × ${Math.round(effectiveLtv * 100)}%`;
+    if (product.asset.field === "vehiclePrice") {
+      const afterDownPayment = Math.max(0, input.assetValue - Math.max(0, input.downPayment ?? 0));
+      if (afterDownPayment < secured) {
+        secured = afterDownPayment;
+        assetLabel = "On-road price less down payment";
+      }
+    }
     caps.push({
       key: "asset",
-      label: `${product.asset.label.replace("Annual ", "")} × ${Math.round(effectiveLtv * 100)}%`,
+      label: assetLabel,
       value: roundTo(secured, 1000),
     });
   }
@@ -525,6 +553,10 @@ export interface WorkingCapitalInput {
   stock: number;
   debtors: number;
   otherCurrentLiabilities: number;
+  /** Borrower's margin deducted from drawing power. */
+  margin?: number;
+  /** Defaults to the turnover method; drawing power is the stricter alternative. */
+  mode?: "turnover" | "drawingPower";
   creditScore?: number;
 }
 
@@ -539,7 +571,13 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
   const currentAssets = stock + debtors;
   const workingCapitalGap = currentAssets - otherCurrentLiabilities;
 
-  const turnoverLimit = roundTo(turnover * 0.2, 1000);
+  const margin = Math.max(0, input.margin ?? 0);
+  const mode = input.mode === "drawingPower" ? "drawingPower" : "turnover";
+  const turnoverLimit = roundTo(turnover * WC_TURNOVER_NORM, 1000);
+  const drawingPower = roundTo(
+    Math.max(0, stock * (1 - STOCK_MARGIN) + debtors * (1 - DEBTOR_MARGIN) - margin),
+    1000,
+  );
   const mpbfMethodI = roundTo(Math.max(0, 0.75 * workingCapitalGap), 1000);
   const mpbfMethodII = roundTo(Math.max(0, 0.75 * currentAssets - otherCurrentLiabilities), 1000);
   const mpbf = Math.min(mpbfMethodI, mpbfMethodII);
@@ -554,23 +592,25 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
   }
 
   const withinTurnoverMethod = turnover <= TURNOVER_METHOD_CAP;
-  const caps: Cap[] = [];
 
-  if (withinTurnoverMethod) caps.push({ key: "turnover", label: "Turnover method (20%)", value: turnoverLimit });
-  if (hasBalanceSheet && mpbf > 0) caps.push({ key: "mpbf", label: "MPBF (Tandon, 75%)", value: mpbf });
-
-  if (caps.length === 0) {
+  if (mode === "drawingPower" && !hasBalanceSheet) {
     return holding(
       "Indicative OD / CC limit",
-      `Above ${money(TURNOVER_METHOD_CAP)} of turnover, lenders move to an MPBF or cash-budget assessment — add your stock and debtors.`,
-      ["Enter current assets and other current liabilities to run the MPBF method."],
+      "The drawing-power method needs the stock and receivables the bank can charge.",
+      ["Add your stock and payments due from customers, or switch back to the turnover method."],
     );
+  }
+
+  const caps: Cap[] = [
+    { key: "turnover", label: `Turnover method (${Math.round(WC_TURNOVER_NORM * 10000) / 100}%)`, value: turnoverLimit },
+  ];
+  if (mode === "drawingPower") {
+    caps.push({ key: "drawing", label: "Drawing power on stock and receivables", value: drawingPower });
   }
 
   const limit = Math.min(...caps.map((cap) => cap.value));
   const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
-  const drawingPower = roundTo(stock * (1 - STOCK_MARGIN) + debtors * (1 - DEBTOR_MARGIN), 1000);
-  const usable = Math.min(drawingPower, limit);
+  const usable = hasBalanceSheet ? Math.min(drawingPower, limit) : limit;
   const currentRatio = currentAssets / (otherCurrentLiabilities + limit || 1);
   const monthlyInterest = Math.round(usable * (roi / 1200));
 
@@ -609,11 +649,18 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
     caps,
     binding,
     foir: null,
-    message: `A ${money(limit)} limit is supported by a ${money(turnover)} turnover; ${money(usable)} can be drawn today against stock and debtors.`,
-    suggestions:
-      currentRatio < 1.33
+    message:
+      mode === "drawingPower"
+        ? `The ${money(limit)} limit is the lower of the turnover norm (${money(turnoverLimit)}) and the ${money(drawingPower)} drawing power on stock and receivables after ${money(margin)} of margin.`
+        : `A ${money(limit)} limit is ${Math.round(WC_TURNOVER_NORM * 10000) / 100}% of your ${money(turnover)} turnover${hasBalanceSheet ? `, with ${money(usable)} drawable against stock and debtors` : ""}.`,
+    suggestions: [
+      ...(hasBalanceSheet && currentRatio < 1.33
         ? ["A current ratio below 1.33:1 usually needs more long-term funds in the business before sanction."]
-        : [],
+        : []),
+      ...(!withinTurnoverMethod
+        ? [`Above ${money(TURNOVER_METHOD_CAP)} of turnover the turnover norm is only indicative; banks usually assess such cases on MPBF or a cash budget.`]
+        : []),
+    ],
     workCapital: {
       turnoverLimit,
       mpbf,
@@ -727,18 +774,449 @@ export const shareEligibility = (input: ShareInput): EligibilityOutcome => {
   };
 };
 
+// ── Education loans ───────────────────────────────────────────────────────────
+
+export interface EducationInput {
+  product: ProductSpec;
+  roi?: number;
+  months: number;
+  courseFees: number;
+  hostelCost: number;
+  otherCost: number;
+  scholarships: number;
+  marginMoney: number;
+  coApplicantIncome?: number;
+  existingEmi?: number;
+  creditScore?: number;
+}
+
+export const educationEligibility = (input: EducationInput): EligibilityOutcome => {
+  const { product } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative education loan");
+  if (refusal) return refusal;
+  const roi =
+    input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
+  const months = Math.min(product.maxTenureMonths, Math.max(0, Math.round(input.months)));
+  const fees = Math.max(0, input.courseFees);
+  const hostel = Math.max(0, input.hostelCost);
+  const other = Math.max(0, input.otherCost);
+  const scholarships = Math.max(0, input.scholarships);
+  const margin = Math.max(0, input.marginMoney);
+  const cost = fees + hostel + other;
+
+  if (cost <= 0) {
+    return holding(
+      "Indicative education loan",
+      "Add the course fees for the programme, and any hostel or other eligible costs, and we will work out what can be borrowed.",
+      [
+        "Tuition, hostel and living costs count when they are part of the course.",
+        "Scholarships and the margin your family funds are deducted before the loan is worked out.",
+      ],
+    );
+  }
+
+  if (months <= 0) {
+    return holding(
+      "Indicative education loan",
+      "There is no repayment tenure left for this applicant.",
+      ["Lenders need the loan repaid within the tenure they allow for education loans."],
+    );
+  }
+
+  const claim = Math.max(0, cost - scholarships);
+  const value = roundTo(Math.max(0, claim - margin), 1000);
+
+  const income = Math.max(0, input.coApplicantIncome ?? 0);
+  const existing = Math.max(0, input.existingEmi ?? 0);
+  const headroom = income > 0 ? Math.max(0, income * EDUCATION_FOIR_CAP - existing) : 0;
+  const capacity = income > 0 ? roundTo(principalForEmi(headroom, roi, months), 1000) : 0;
+
+  const caps: Cap[] = [
+    { key: "cost", label: "Course cost less scholarships and margin", value },
+  ];
+  if (income > 0) {
+    caps.unshift({
+      key: "foir",
+      label: `Repayment capacity at ${EDUCATION_FOIR_CAP * 100}% FOIR`,
+      value: capacity,
+    });
+  }
+
+  if (value < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative education loan",
+        `Scholarships and margin cover most of this ${money(cost)} cost, leaving less than the ${money(MIN_LOAN)} most lenders will sanction.`,
+        ["A larger loan can still be arranged against a longer course or additional eligible expenses."],
+      ),
+      roi,
+      months,
+    };
+  }
+
+  if (income > 0 && capacity < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative education loan",
+        existing > 0
+          ? `The co-applicant's existing EMIs of ${money(existing)} use up the income lenders will count, leaving no room for a new education loan.`
+          : `At ${EDUCATION_FOIR_CAP * 100}% of the co-applicant's ${money(income)} income, the available EMI supports less than the ${money(MIN_LOAN)} most lenders will sanction over ${tenureText(months)}.`,
+        [
+          "Closing or part-pre-paying an existing loan frees up EMI headroom.",
+          "A longer repayment tenure after the moratorium lowers the EMI and raises the limit.",
+        ],
+      ),
+      caps,
+      binding: "Repayment capacity",
+      roi,
+      months,
+      foir: {
+        used: income > 0 ? (existing + emiForPrincipal(capacity, roi, months)) / income : 0,
+        headroom,
+        income,
+        existing,
+      },
+    };
+  }
+
+  const loan = Math.min(...caps.map((cap) => cap.value));
+  const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
+  const emi = emiForPrincipal(loan, roi, months);
+
+  return {
+    eligible: true,
+    headline: loan,
+    headlineLabel: "Indicative education loan",
+    monthly: Math.round(emi),
+    monthlyLabel: "Monthly EMI",
+    roi,
+    months,
+    caps,
+    binding,
+    foir: income > 0
+      ? {
+          used: (existing + emi) / income,
+          headroom: Math.max(0, income * EDUCATION_FOIR_CAP - existing - emi),
+          income,
+          existing,
+        }
+      : null,
+    message: income > 0
+      ? `A ${money(cost)} course less ${money(scholarships)} of scholarships and ${money(margin)} of margin leaves ${money(value)}; the co-applicant's income supports ${money(capacity)} at a ${EDUCATION_FOIR_CAP * 100}% FOIR, so the estimate is ${money(loan)}, repayable over ${tenureText(months)}.`
+      : `A course costing ${money(cost)} less ${money(scholarships)} of scholarships and ${money(margin)} of margin supports about ${money(loan)}, repayable over ${tenureText(months)}.`,
+    suggestions: [],
+  };
+};
+
+// ── Project loans ─────────────────────────────────────────────────────────────
+
+export interface ProjectInput {
+  product: ProductSpec;
+  roi?: number;
+  months: number;
+  projectCost: number;
+  promoterContribution: number;
+  monthlyCashFlow: number;
+  dscr?: number;
+  creditScore?: number;
+}
+
+export const projectEligibility = (input: ProjectInput): EligibilityOutcome => {
+  const { product } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative project loan");
+  if (refusal) return refusal;
+  const roi =
+    input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
+  const months = Math.min(product.maxTenureMonths, Math.max(0, Math.round(input.months)));
+  const cost = Math.max(0, input.projectCost);
+  const contribution = Math.max(0, input.promoterContribution);
+  const cashFlow = Math.max(0, input.monthlyCashFlow);
+
+  if (cost <= 0) {
+    return holding(
+      "Indicative project loan",
+      "Add the total project cost and the promoter contribution, and we will work out the debt the project can carry.",
+      ["Project cost covers land, construction, plant and machinery, and pre-operative expenses."],
+    );
+  }
+
+  if (contribution >= cost) {
+    return holding(
+      "Indicative project loan",
+      `A ${money(contribution)} promoter contribution covers the whole ${money(cost)} project, so there is nothing left to finance.`,
+      ["Lenders still expect the promoters to fund part of the project, so check the numbers you entered."],
+    );
+  }
+
+  const dscr = Math.min(3, Math.max(1, input.dscr ?? DSCR_MIN));
+  const financeable = roundTo(cost - contribution, 1000);
+  const caps: Cap[] = [
+    { key: "cost", label: "Project cost − promoter contribution", value: financeable },
+  ];
+  if (cashFlow > 0 && months > 0) {
+    caps.push({
+      key: "dscr",
+      label: `DSCR of ${dscr}× on projected cash flow`,
+      value: roundTo(principalForEmi(cashFlow / dscr, roi, months), 1000),
+    });
+  }
+  const loan = Math.min(...caps.map((cap) => cap.value));
+  const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
+  const emi = emiForPrincipal(loan, roi, months);
+
+  if (loan < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative project loan",
+        `On these figures the project supports less than ${money(MIN_LOAN)}, below the smallest project loan lenders sanction.`,
+        ["A larger debt requirement or stronger projected cash flow supports a bigger loan."],
+      ),
+      caps,
+      binding,
+      roi,
+      months,
+    };
+  }
+
+  return {
+    eligible: true,
+    headline: loan,
+    headlineLabel: "Indicative project loan",
+    monthly: Math.round(emi),
+    monthlyLabel: "Monthly EMI",
+    roi,
+    months,
+    caps,
+    binding,
+    foir: null,
+    message:
+      cashFlow > 0
+        ? `A ${money(cost)} project with ${money(contribution)} of promoter funds needs ${money(cost - contribution)}; projected cash flow of ${money(cashFlow)} a month supports ${money(loan)} at a ${dscr}× DSCR.`
+        : `A ${money(cost)} project with ${money(contribution)} of promoter funds needs ${money(loan)}, repayable over ${tenureText(months)}. Add projected cash flow to test the DSCR.`,
+    suggestions: [],
+  };
+};
+
+// ── Commercial purchase ───────────────────────────────────────────────────────
+
+export interface CommercialInput {
+  product: ProductSpec;
+  roi?: number;
+  months: number;
+  propertyValue: number;
+  monthlyRent: number;
+  monthlyIncome: number;
+  existingEmi: number;
+  coApplicantIncome?: number;
+  foirPct?: number;
+  ltvPct?: number;
+  creditScore?: number;
+}
+
+/** Loan = min(property value × LTV, DSCR limit on the rent, repayment capacity). */
+export const commercialEligibility = (input: CommercialInput): EligibilityOutcome => {
+  const { product } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative commercial property loan");
+  if (refusal) return refusal;
+  const roi =
+    input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
+  const months = Math.min(product.maxTenureMonths, Math.max(0, Math.round(input.months)));
+  const propertyValue = Math.max(0, input.propertyValue);
+  const rent = Math.max(0, input.monthlyRent);
+  const coApplicant = Math.max(0, input.coApplicantIncome ?? 0);
+  const income = Math.max(0, input.monthlyIncome) + coApplicant;
+  const existing = Math.max(0, input.existingEmi);
+  const ltv = Math.min(0.9, Math.max(0.3, (input.ltvPct ?? COMMERCIAL_LTV * 100) / 100));
+  const foirCap = Math.min(0.9, Math.max(0.2, (input.foirPct ?? FOIR_CAP * 100) / 100));
+  const caps: Cap[] = [];
+
+  if (propertyValue > 0) {
+    caps.push({
+      key: "asset",
+      label: `Property value × ${Math.round(ltv * 100)}%`,
+      value: roundTo(propertyValue * ltv, 1000),
+    });
+  }
+  if (rent > 0 && months > 0) {
+    caps.push({
+      key: "dscr",
+      label: `DSCR of ${DSCR_MIN}× on the rent`,
+      value: roundTo(principalForEmi(rent / DSCR_MIN, roi, months), 1000),
+    });
+  }
+  if (income > 0 && months > 0) {
+    const headroom = Math.max(0, income * foirCap - existing);
+    if (headroom > 0) {
+      caps.push({
+        key: "foir",
+        label: `Repayment capacity at ${Math.round(foirCap * 100)}% FOIR`,
+        value: roundTo(principalForEmi(headroom, roi, months), 1000),
+      });
+    }
+  }
+
+  if (caps.length === 0) {
+    return holding(
+      "Indicative commercial property loan",
+      "Add the property's market value, and ideally the rent it earns, to see what it can support.",
+      ["Rent is tested against a debt-service cover ratio before a commercial property is financed."],
+    );
+  }
+
+  const loan = Math.min(...caps.map((cap) => cap.value));
+  const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
+  const emi = emiForPrincipal(loan, roi, months);
+
+  if (loan < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative commercial property loan",
+        `These figures support less than ${money(MIN_LOAN)}, below the smallest loan lenders sanction on commercial property.`,
+        ["A more valuable property or stronger rent supports a larger loan."],
+      ),
+      caps,
+      binding,
+      roi,
+      months,
+    };
+  }
+
+  return {
+    eligible: true,
+    headline: loan,
+    headlineLabel: "Indicative commercial property loan",
+    monthly: Math.round(emi),
+    monthlyLabel: "Monthly EMI",
+    roi,
+    months,
+    caps,
+    binding,
+    foir:
+      income > 0
+        ? { used: (existing + emi) / income, headroom: Math.max(0, income * foirCap - existing - emi), income, existing }
+        : null,
+    message:
+      rent > 0
+        ? `A ${money(propertyValue)} commercial property at ${Math.round(ltv * 100)}% LTV and ${money(rent)} of monthly rent supports about ${money(loan)} at ${roi}% p.a. over ${tenureText(months)}.`
+        : `A ${money(propertyValue)} commercial property at ${Math.round(ltv * 100)}% LTV supports about ${money(loan)} over ${tenureText(months)}. Add the rent to test the DSCR.`,
+    suggestions: [],
+  };
+};
+
+// ── Working capital (turnover method) ─────────────────────────────────────────
+
+export interface TurnoverInput {
+  product: ProductSpec;
+  roi?: number;
+  turnover: number;
+  assessmentPct: number;
+  margin: number;
+  /** Eligible current assets (inventory + receivables) for the balance-sheet method. */
+  currentAssets?: number;
+  /** Trade creditors and other current liabilities. */
+  currentLiabilities?: number;
+  /** Defaults to the turnover method; drawing power caps it at the balance-sheet gap. */
+  mode?: "turnover" | "drawingPower";
+  creditScore?: number;
+}
+
+/** Requirement = turnover × assessment percentage; the loan is that requirement less the borrower's margin. */
+export const turnoverEligibility = (input: TurnoverInput): EligibilityOutcome => {
+  const { product } = input;
+  const refusal = creditRefusal(input.creditScore, "Indicative working capital limit");
+  if (refusal) return refusal;
+  const roi =
+    input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
+  const turnover = Math.max(0, input.turnover);
+  const pct = input.assessmentPct > 0 ? Math.min(100, input.assessmentPct) : WC_ASSESSMENT_PCT * 100;
+  const margin = Math.max(0, input.margin);
+
+  if (turnover <= 0) {
+    return holding(
+      "Indicative working capital limit",
+      "Projected annual turnover is the starting point for a working-capital limit.",
+      ["Use the turnover you expect in the next 12 months, not last year's audited figure."],
+    );
+  }
+
+  const requirement = turnover * (pct / 100);
+  const mode = input.mode === "drawingPower" ? "drawingPower" : "turnover";
+
+  // Turnover method gives the bank's assessed limit; a balance sheet gives the
+  // borrowing requirement: (current assets − current liabilities) − margin.
+  const currentAssets = Math.max(0, input.currentAssets ?? 0);
+  const currentLiabilities = Math.max(0, input.currentLiabilities ?? 0);
+  const hasBalanceSheet = currentAssets > 0 || currentLiabilities > 0;
+  const gap = Math.max(0, currentAssets - currentLiabilities);
+  const assessed = roundTo(Math.max(0, requirement - margin), 1000);
+  const borrowing = roundTo(Math.max(0, gap - margin), 1000);
+
+  if (mode === "drawingPower" && !hasBalanceSheet) {
+    return holding(
+      "Indicative working capital limit",
+      "The drawing-power method needs your current assets and current liabilities.",
+      ["Add eligible current assets and current liabilities, or switch back to the turnover method."],
+    );
+  }
+
+  const value = mode === "drawingPower" ? Math.min(assessed, borrowing) : assessed;
+
+  const caps: Cap[] = [
+    { key: "turnover", label: `${Math.round(pct * 100) / 100}% of turnover, less margin`, value: assessed },
+  ];
+  if (mode === "drawingPower") {
+    caps.push({ key: "drawing", label: "Current assets − current liabilities, less margin", value: borrowing });
+  }
+  const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
+
+  if (value < MIN_LOAN) {
+    return {
+      ...holding(
+        "Indicative working capital limit",
+        hasBalanceSheet
+          ? `A ${money(gap)} gap between current assets and liabilities, less ${money(margin)} of margin, supports less than the ${money(MIN_LOAN)} banks open.`
+          : `A ${money(requirement)} requirement less ${money(margin)} of margin leaves less than the ${money(MIN_LOAN)} banks open.`,
+        ["A lower borrower's margin or a higher projected turnover lifts the limit."],
+      ),
+      caps,
+      binding,
+      roi,
+      months: 12,
+    };
+  }
+
+  return {
+    eligible: true,
+    headline: value,
+    headlineLabel: "Indicative working capital limit",
+    monthly: Math.round(value * (roi / 1200)),
+    monthlyLabel: "Interest at full draw",
+    roi,
+    months: 12,
+    caps,
+    binding,
+    foir: null,
+    message:
+      mode === "drawingPower"
+        ? `Current assets of ${money(currentAssets)} less ${money(currentLiabilities)} of current liabilities leave a ${money(gap)} gap; after ${money(margin)} of margin that is ${money(borrowing)}, against a turnover-based limit of ${money(assessed)}, so the limit is ${money(value)}.`
+        : `A ${money(turnover)} turnover at ${Math.round(pct * 100) / 100}% needs ${money(requirement)} of working capital; after ${money(margin)} of margin, about ${money(value)} can be financed.`,
+    suggestions: [],
+  };
+};
+
 // ── Lease rental discounting ──────────────────────────────────────────────────
 
-/** Lenders fund a slice of the discounted rent, never the whole lease value. */
 export const LRD_LTV_MIN = 0.5;
 export const LRD_LTV_MAX = 0.9;
 export const LRD_DEFAULT_LTV = 0.7;
+export const LRD_ROI = 10.5;
+export const LRD_TENURE_YEARS = 10;
+export const LRD_DEFAULT_DEDUCTION = 0.1;
+export const LRD_DEFAULT_COVERAGE = 0.7;
 
-/** Present value of a level monthly cash flow (ordinary annuity). */
 export const presentValueOfAnnuity = (payment: number, annualRate: number, months: number): number => {
   if (payment <= 0 || months <= 0) return 0;
   const monthlyRate = annualRate / 1200;
-  // Interest-free leases still have a value, and dividing by zero would lose it.
   if (monthlyRate <= 0) return payment * months;
   return (payment * (1 - Math.pow(1 + monthlyRate, -months))) / monthlyRate;
 };
@@ -751,6 +1229,8 @@ export interface LrdInput {
   propertyValue: number;
   repaymentMonths: number;
   ltvPercent: number;
+  deductionPct?: number;
+  coveragePct?: number;
   creditScore?: number;
 }
 
@@ -759,15 +1239,12 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
   const refusal = creditRefusal(input.creditScore, "Indicative lease rental loan");
   if (refusal) return refusal;
 
-  // A zero rate is a real answer, not a missing one: only fall back when no rate was given.
   const roi =
     input.roi !== undefined && Number.isFinite(input.roi) && input.roi >= 0 ? input.roi : product.roi;
   const rent = Math.max(0, input.monthlyRent);
   const leaseMonths = Math.max(0, Math.round(input.leaseMonths));
   const propertyValue = Math.max(0, input.propertyValue);
-  // Stay inside the range lenders actually approve, whatever was entered.
   const ltv = Math.min(LRD_LTV_MAX, Math.max(LRD_LTV_MIN, (input.ltvPercent || LRD_DEFAULT_LTV * 100) / 100));
-  // Repayment can never run past the lease left to run.
   const months = Math.min(
     Math.max(0, Math.round(input.repaymentMonths)),
     leaseMonths,
@@ -777,7 +1254,7 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
   if (rent <= 0 || leaseMonths <= 0 || propertyValue <= 0 || months <= 0) {
     return holding(
       "Indicative lease rental loan",
-      "Add the rent your tenant pays, the lease left to run, the property's market value and the repayment tenure, and we will value that rental stream.",
+      "Add the rent your tenant pays, the lease left to run and the property's market value, and we will value that rental stream.",
       [
         "Only a registered lease with a creditworthy tenant is discounted.",
         "Rent is discounted for the time value of money, not added up as it stands.",
@@ -785,10 +1262,13 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
     );
   }
 
+  const deduction = Math.min(50, Math.max(0, input.deductionPct ?? LRD_DEFAULT_DEDUCTION * 100)) / 100;
+  const coverage = Math.min(100, Math.max(20, input.coveragePct ?? LRD_DEFAULT_COVERAGE * 100)) / 100;
+  const netRent = rent * (1 - deduction);
+  const supportedEmi = netRent * coverage;
   const annualRent = rent * 12;
-  // Rent over the remaining lease, discounted back to today at the loan rate.
-  const discountedRent = presentValueOfAnnuity(rent, roi, leaseMonths);
-  const rentalLimit = roundTo(discountedRent * ltv, 1000);
+  const discountedRent = presentValueOfAnnuity(supportedEmi, roi, leaseMonths);
+  const rentalLimit = roundTo(discountedRent, 1000);
   const propertyLimit = roundTo(propertyValue * ltv, 1000);
   const value = Math.min(rentalLimit, propertyLimit);
   const emi = emiForPrincipal(value, roi, months);
@@ -801,10 +1281,12 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
     discountedRent,
     rentalLimit,
     propertyLimit,
+    netRent,
+    supportedEmi,
     interest: Math.max(0, Math.round(emi * months - value)),
   };
   const caps: Cap[] = [
-    { key: "lease", label: `${Math.round(ltv * 100)}% of the discounted rent`, value: rentalLimit },
+    { key: "lease", label: `Rent after ${Math.round(deduction * 100)}% deduction at ${Math.round(coverage * 100)}% coverage`, value: rentalLimit },
     { key: "asset", label: `${Math.round(ltv * 100)}% of the property value`, value: propertyLimit },
   ];
   const binding = rentalLimit <= propertyLimit ? caps[0].label : caps[1].label;
@@ -833,12 +1315,12 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
     caps,
     binding,
     foir: {
-      used: rent > 0 ? emi / rent : 0,
-      headroom: Math.max(0, rent - emi),
-      income: rent,
+      used: netRent > 0 ? emi / netRent : 0,
+      headroom: Math.max(0, supportedEmi - emi),
+      income: netRent,
       existing: 0,
     },
-    message: `Rent of ${money(rent)} a month, discounted at ${roi}% p.a. over ${tenureText(leaseMonths)}, supports ${money(rentalLimit)} at a ${Math.round(ltv * 100)}% LTV. The ${money(propertyValue)} property caps lending at ${money(propertyLimit)}, so the estimate is ${money(value)}, repayable at about ${money(emi)} a month over ${tenureText(months)}.`,
+    message: `Rent of ${money(rent)} a month less a ${Math.round(deduction * 100)}% deduction leaves ${money(netRent)}; at ${Math.round(coverage * 100)}% coverage the EMI can be ${money(supportedEmi)}, which discounts to ${money(rentalLimit)} over the remaining lease at ${roi}% p.a. The ${money(propertyValue)} property caps lending at ${money(propertyLimit)}, so the estimate is ${money(value)}, repayable at about ${money(emi)} a month over ${tenureText(months)}.`,
     suggestions: [],
     lease,
   };
@@ -846,14 +1328,22 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
 
 export const formulaFor = (family: ModelFamily): string => {
   switch (family) {
+    case "education":
+      return "Loan = course fees + hostel and living costs + other eligible expenses − scholarships − margin money";
+    case "project":
+      return "Loan = min(project cost − promoter contribution, principal serviced by projected cash flow at a " + `${DSCR_MIN}× DSCR)`;
+    case "commercial":
+      return "Loan = min(repayment capacity at the assumed FOIR, property value × LTV, DSCR limit on the rent)";
+    case "turnover":
+      return `Turnover method: requirement = turnover × ${Math.round(WC_ASSESSMENT_PCT * 10000) / 100}%, less margin · Drawing power = current assets − current liabilities − margin · Limit = min(turnover norm, drawing power)`;
+    case "wc":
+      return "Turnover method: requirement = turnover × 25%, bank finance = requirement × 75% (18.75% of turnover) · Drawing power = eligible stock + eligible receivables − margin − deductions · Limit = min(turnover norm, drawing power)";
     case "lrd":
-      return "Loan = min(present value of the rent over the remaining lease at the loan rate × LTV, property market value × LTV) · EMI on the sanctioned amount over the repayment tenure"
+      return "Net rent = rent × (1 − deduction) · Supported EMI = net rent × coverage · Loan = min(present value of that EMI over the remaining lease, property value × LTV)"
     case "share":
       return "Loan = market value of approved shares × LTV (50%)";
     case "gold":
       return "Value = net weight × today's rate for the selected purity · Loan = value × LTV (85% ≤ ₹2.5L, 80% ≤ ₹5L, 75% above)";
-    case "wc":
-      return "Turnover limit = 20% of turnover · MPBF = min(75% × WC gap, 75% × current assets − other CL) · Drawing power on paid stock and eligible debtors";
     default:
       return "Loan = present value of the affordable EMI at the product rate and tenure";
   }
