@@ -267,7 +267,7 @@ const Footer = () => {
                       rel="noreferrer"
                       aria-label={`${social.name} — ${social.handle}`}
                       title={`${social.name} — ${social.handle}`}
-                      className="flex h-8.5 w-8.5 items-center justify-center rounded-full border border-(--soc) bg-(--soc) text-[13px] text-white transition-[transform,background-color,color,border-color] duration-200 hover:-translate-y-0.75 hover:bg-white hover:text-(--soc)"
+                      className="flex h-8.5 w-8.5 items-center justify-center rounded-full bg-(--soc) text-[13px] text-white ring-1 ring-white/20 shadow-[0_6px_16px_rgba(2,16,26,0.25)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-white hover:text-(--soc) hover:ring-white/60 hover:shadow-[0_8px_18px_rgba(2,16,26,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                       style={{ "--soc": social.brand } as CSSProperties}
                     >
                       <Icon aria-hidden="true" />
