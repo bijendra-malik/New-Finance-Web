@@ -61,6 +61,49 @@ const icons: Record<string, ReactElement> = {
       <path d="M6.5 14.3h4" />
     </>
   ),
+  project: (
+    <>
+      <path d="M3 8.5 12 4l9 4.5-9 4.5z" />
+      <path d="M3 13.5 12 18l9-4.5" />
+    </>
+  ),
+  commercial: (
+    <>
+      <path d="M4 9V6h16v3" />
+      <path d="M5 9v11h14V9" />
+      <path d="M9.5 20v-5.5h5V20" />
+    </>
+  ),
+  working: (
+    <>
+      <path d="M4 12a8 8 0 0 1 13.7-5.7L20 8" />
+      <path d="M20 4.5V8h-3.5" />
+      <path d="M20 12a8 8 0 0 1-13.7 5.7L4 16" />
+      <path d="M4 19.5V16h3.5" />
+    </>
+  ),
+  lrd: (
+    <>
+      <path d="M6 3.5h8l4 4V20.5H6z" />
+      <path d="M14 3.5v4h4" />
+      <path d="M9 12.5h6" />
+      <path d="M9 16h4" />
+    </>
+  ),
+  gold: (
+    <>
+      <path d="M6.5 4h11l3 5.5-8.5 10L3.5 9.5z" />
+      <path d="M3.5 9.5h17" />
+      <path d="M9 4l1.4 5.5L12 4l1.6 5.5L15 4" />
+    </>
+  ),
+  shares: (
+    <>
+      <path d="M4 4.5v15h15.5" />
+      <path d="M7 15.5l4-4 3 3 5-6" />
+      <path d="M19 8.5v-3h-3" />
+    </>
+  ),
 };
 
 export const Icon = ({ id, active }: { id: string; active: boolean }) => (
