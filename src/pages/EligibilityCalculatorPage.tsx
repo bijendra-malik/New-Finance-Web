@@ -10,17 +10,28 @@ import { DateOfBirthPicker } from "../components/form/FormControls";
 import { digitsOnly, formatIndianNumber, formatINRRounded } from "../utils/formatters";
 import {
   PRODUCTS,
+  COMMERCIAL_LTV,
+  EDUCATION_FOIR_CAP,
+  VEHICLE_FOIR,
+  VEHICLE_LTV,
+  DSCR_MIN,
   assetLtvFor,
+  commercialEligibility,
+  educationEligibility,
   goldEligibility,
   lrdEligibility,
   maturityAgeFor,
   monthsToMaturity,
   productByKey,
+  projectEligibility,
   LRD_LTV_MAX,
   LRD_LTV_MIN,
+  LRD_ROI,
+  LRD_TENURE_YEARS,
   shareEligibility,
   termEligibility,
   tenureText,
+  turnoverEligibility,
   workingCapitalEligibility,
   type EligibilityOutcome,
   type ProductSpec,
@@ -30,7 +41,6 @@ const SERIF = { fontFamily: "var(--font-serif)" } as const;
 
 const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner"] as const;
 const BUSINESS_OCCUPATIONS = ["Self-Employed", "Business Owner"] as const;
-// Income wording follows the applicant's occupation, whatever the loan.
 const INCOME_COPY: Record<string, { label: string; hint: string }> = {
   Salaried: { label: "Monthly income", hint: "Take-home after deductions" },
   "Self-Employed": { label: "Monthly net profit", hint: "Profit after business expenses, from your P&L" },
@@ -146,13 +156,36 @@ interface FormState {
   lrdRent: string;
   lrdLeaseYears: string;
   lrdPropertyValue: string;
-  lrdRate: string;
-  lrdTenureYears: string;
   lrdLtv: string;
+  vehicleDownPayment: string;
+  eduFees: string;
+  eduHostel: string;
+  eduOther: string;
+  eduScholarship: string;
+  eduMargin: string;
+  projectCost: string;
+  projectContribution: string;
+  projectCashFlow: string;
+  commercialRent: string;
+  wcAssessment: string;
+  wcMargin: string;
   existingEmi: string;
   propertyValue: string;
   turnover: string;
   vehiclePrice: string;
+  vehicleFoir: string;
+  vehicleLtv: string;
+  commercialCoApplicant: string;
+  commercialFoir: string;
+  commercialLtv: string;
+  projectDscr: string;
+  wcCurrentAssets: string;
+  wcCurrentLiabilities: string;
+  odMode: "turnover" | "drawingPower";
+  odMargin: string;
+  wcMethod: "turnover" | "drawingPower";
+  lrdDeduction: string;
+  lrdCoverage: string;
   goldGrams: string;
   goldCarat: number;
   goldRate: string;
@@ -181,9 +214,32 @@ const INITIAL_FORM: FormState = {
   lrdRent: "",
   lrdLeaseYears: "",
   lrdPropertyValue: "",
-  lrdRate: "",
-  lrdTenureYears: "",
   lrdLtv: "",
+  vehicleDownPayment: "",
+  vehicleFoir: String(VEHICLE_FOIR * 100),
+  vehicleLtv: String(VEHICLE_LTV * 100),
+  commercialCoApplicant: "",
+  commercialFoir: "70",
+  commercialLtv: "70",
+  projectDscr: "1.25",
+  wcCurrentAssets: "",
+  wcCurrentLiabilities: "",
+  odMode: "turnover",
+  odMargin: "",
+  wcMethod: "turnover",
+  lrdDeduction: "10",
+  lrdCoverage: "70",
+  eduFees: "",
+  eduHostel: "",
+  eduOther: "",
+  eduScholarship: "",
+  eduMargin: "",
+  projectCost: "",
+  projectContribution: "",
+  projectCashFlow: "",
+  commercialRent: "",
+  wcAssessment: "18.75",
+  wcMargin: "",
   existingEmi: "",
   propertyValue: "",
   turnover: "",
@@ -218,7 +274,6 @@ const EligibilityCalculatorPage = () => {
   const [result, setResult] = useState<{ outcome: EligibilityOutcome; product: ProductSpec } | null>(null);
 
   const product = productByKey(form.product);
-  // Personal loans are only open to salaried applicants, whatever was picked earlier.
   const occupation =
     product.key === "personal"
       ? "Salaried"
@@ -263,21 +318,20 @@ const EligibilityCalculatorPage = () => {
 
   const lrdInput = {
     product,
-    roi: num(form.lrdRate),
+    roi: LRD_ROI,
     monthlyRent: num(form.lrdRent),
     leaseMonths: Math.round(num(form.lrdLeaseYears) * 12),
     propertyValue: num(form.lrdPropertyValue),
-    repaymentMonths: Math.round(num(form.lrdTenureYears) * 12),
+    repaymentMonths: LRD_TENURE_YEARS * 12,
     ltvPercent: num(form.lrdLtv),
+    deductionPct: num(form.lrdDeduction),
+    coveragePct: num(form.lrdCoverage),
     creditScore: num(form.creditScore),
   };
   const lrdReady =
     lrdInput.monthlyRent > 0 &&
     lrdInput.leaseMonths > 0 &&
     lrdInput.propertyValue > 0 &&
-    lrdInput.roi > 0 &&
-    lrdInput.repaymentMonths > 0 &&
-    lrdInput.repaymentMonths <= lrdInput.leaseMonths &&
     lrdInput.ltvPercent >= LRD_LTV_MIN * 100 &&
     lrdInput.ltvPercent <= LRD_LTV_MAX * 100 &&
     lrdInput.creditScore >= 300 &&
@@ -288,6 +342,61 @@ const EligibilityCalculatorPage = () => {
   const computeOutcome = (): EligibilityOutcome => {
     if (product.family === "lrd") {
       return lrdEligibility(lrdInput);
+    }
+
+    if (product.family === "education") {
+      return educationEligibility({
+        product,
+        months: tenure,
+        courseFees: num(form.eduFees),
+        hostelCost: num(form.eduHostel),
+        otherCost: num(form.eduOther),
+        scholarships: num(form.eduScholarship),
+        marginMoney: num(form.eduMargin),
+        coApplicantIncome: num(form.monthlyIncome),
+        existingEmi: num(form.existingEmi),
+        creditScore: num(form.creditScore),
+      });
+    }
+
+    if (product.family === "project") {
+      return projectEligibility({
+        product,
+        months: tenure,
+        projectCost: num(form.projectCost),
+        promoterContribution: num(form.projectContribution),
+        monthlyCashFlow: num(form.projectCashFlow),
+        dscr: num(form.projectDscr),
+        creditScore: num(form.creditScore),
+      });
+    }
+
+    if (product.family === "commercial") {
+      return commercialEligibility({
+        product,
+        months: tenure,
+        propertyValue: num(form.propertyValue),
+        monthlyRent: num(form.commercialRent),
+        monthlyIncome: num(form.monthlyIncome),
+        existingEmi: num(form.existingEmi),
+        coApplicantIncome: num(form.commercialCoApplicant),
+        foirPct: num(form.commercialFoir),
+        ltvPct: num(form.commercialLtv),
+        creditScore: num(form.creditScore),
+      });
+    }
+
+    if (product.family === "turnover") {
+      return turnoverEligibility({
+        product,
+        turnover: num(form.turnover),
+        assessmentPct: num(form.wcAssessment),
+        margin: num(form.wcMargin),
+        currentAssets: num(form.wcCurrentAssets),
+        currentLiabilities: num(form.wcCurrentLiabilities),
+        mode: form.wcMethod,
+        creditScore: num(form.creditScore),
+      });
     }
 
     if (product.family === "gold") {
@@ -309,6 +418,8 @@ const EligibilityCalculatorPage = () => {
         stock: num(form.stock),
         debtors: num(form.debtors),
         otherCurrentLiabilities: num(form.otherCurrentLiabilities),
+        margin: num(form.odMargin),
+        mode: form.odMode,
         creditScore: num(form.creditScore),
       });
     }
@@ -333,6 +444,9 @@ const EligibilityCalculatorPage = () => {
       occupation,
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
+      downPayment: num(form.vehicleDownPayment),
+      foirPct: num(form.vehicleFoir),
+      ltvPct: num(form.vehicleLtv),
       assetType: product.key === "lap" ? lapAssetType : undefined,
       cityCategory: product.key === "lap" ? form.lapCity : undefined,
       existingLoanOnAsset: product.key === "lap" ? num(form.lapExistingLoan) : 0,
@@ -358,19 +472,32 @@ const EligibilityCalculatorPage = () => {
     }
     if (product.family === "lrd") {
       const leaseYears = num(form.lrdLeaseYears);
-      const repaymentYears = num(form.lrdTenureYears);
       const ltv = num(form.lrdLtv);
       if (num(form.lrdRent) <= 0) next.lrdRent = "Enter the monthly rent your tenant pays";
       if (leaseYears <= 0) next.lrdLeaseYears = "Enter the lease left to run in years";
       if (num(form.lrdPropertyValue) <= 0) next.lrdPropertyValue = "Enter the property's market value";
-      if (num(form.lrdRate) <= 0) next.lrdRate = "Enter the expected interest rate";
-      if (repaymentYears <= 0) next.lrdTenureYears = "Enter the loan repayment tenure in years";
-      else if (leaseYears > 0 && repaymentYears > leaseYears) {
-        next.lrdTenureYears = "Repayment cannot run past the remaining lease";
-      }
       if (ltv <= 0) next.lrdLtv = "Enter the assumed LTV";
       else if (ltv < LRD_LTV_MIN * 100 || ltv > LRD_LTV_MAX * 100) {
         next.lrdLtv = `Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`;
+      }
+    }
+    if (product.family === "education" && num(form.eduFees) <= 0) {
+      next.eduFees = "Enter the course fees";
+    }
+    if (product.family === "project") {
+      if (num(form.projectCost) <= 0) next.projectCost = "Enter the total project cost";
+      else if (num(form.projectContribution) >= num(form.projectCost)) {
+        next.projectContribution = "Promoter contribution must be less than the project cost";
+      }
+    }
+    if (product.family === "commercial" && num(form.propertyValue) <= 0) {
+      next.propertyValue = "Enter the commercial property's market value";
+    }
+    if (product.family === "turnover") {
+      if (num(form.turnover) <= 0) next.turnover = "Enter your projected annual turnover";
+      const pct = num(form.wcAssessment);
+      if (form.wcAssessment && (pct <= 0 || pct > 100)) {
+        next.wcAssessment = "Assessment must be between 1% and 100% of turnover";
       }
     }
     if (product.family === "gold") {
@@ -425,7 +552,6 @@ const EligibilityCalculatorPage = () => {
   };
 
   const asset = product.asset;
-  // "Other" lets the applicant name the property type; the model then uses the safest cap.
   const lapAssetType =
     form.lapPropertyType === "Other" ? form.lapPropertyOther.trim() || "Other" : form.lapPropertyType;
   const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field]), lapAssetType, form.lapCity) : 0;
@@ -433,7 +559,15 @@ const EligibilityCalculatorPage = () => {
   const incomeNoun = incomeLabel.toLowerCase();
 
   const basedOn = result
-    ? result.product.family === "gold"
+    ? result.product.family === "education"
+      ? `Based on ${formatINRRounded(num(form.eduFees) + num(form.eduHostel) + num(form.eduOther))} of course cost, less ${formatINRRounded(num(form.eduScholarship) + num(form.eduMargin))} of scholarships and margin${num(form.monthlyIncome) > 0 ? `, and a co-applicant income of ${formatINRRounded(num(form.monthlyIncome))}` : ""}.`
+      : result.product.family === "project"
+        ? `Based on a ${formatINRRounded(num(form.projectCost))} project with ${formatINRRounded(num(form.projectContribution))} from the promoters.`
+        : result.product.family === "commercial"
+          ? `Based on a commercial property valued at ${formatINRRounded(num(form.propertyValue))}${num(form.commercialRent) > 0 ? ` let for ${formatINRRounded(num(form.commercialRent))} a month` : ""}.`
+          : result.product.family === "turnover"
+            ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover and a ${num(form.wcAssessment) || 18.75}% assessment.`
+    : result.product.family === "gold"
       ? `Based on ${form.goldGrams} g of ${form.goldCarat}K gold at ${formatINRRounded(num(form.goldRate))} per gram.`
       : result.product.family === "wc"
         ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover.`
@@ -453,7 +587,37 @@ const EligibilityCalculatorPage = () => {
           { label: "Interest at full draw", value: `${formatINRRounded(result.outcome.monthly)} / month` },
           { label: "Rate", value: `${result.outcome.roi}% p.a.` },
         ]
-      : result.product.family === "lrd"
+      : result.product.family === "education"
+        ? [
+            { label: "Course cost", value: formatINRRounded(num(form.eduFees) + num(form.eduHostel) + num(form.eduOther)) },
+            { label: "Scholarships", value: formatINRRounded(num(form.eduScholarship)) },
+            ...(result.outcome.caps.some((cap) => cap.key === "foir")
+              ? [{
+                  label: `Capacity at ${EDUCATION_FOIR_CAP * 100}% FOIR`,
+                  value: formatINRRounded(result.outcome.caps.find((cap) => cap.key === "foir")?.value ?? 0),
+                }]
+              : []),
+            { label: "Repayment tenure", value: tenureText(result.outcome.months) },
+          ]
+        : result.product.family === "project"
+          ? [
+              { label: "Project cost", value: formatINRRounded(num(form.projectCost)) },
+              { label: "Promoter contribution", value: formatINRRounded(num(form.projectContribution)) },
+              { label: "Repayment tenure", value: tenureText(result.outcome.months) },
+            ]
+          : result.product.family === "commercial"
+            ? [
+                { label: "Property-based limit", value: formatINRRounded(num(form.propertyValue) * ((num(form.commercialLtv) || COMMERCIAL_LTV * 100) / 100)) },
+                { label: "Monthly rent", value: formatINRRounded(num(form.commercialRent)) },
+                { label: "Tenure", value: tenureText(result.outcome.months) },
+              ]
+            : result.product.family === "turnover"
+              ? [
+                  { label: "Working capital requirement", value: formatINRRounded(num(form.turnover) * ((num(form.wcAssessment) || 18.75) / 100)) },
+                  { label: "Borrower's margin", value: formatINRRounded(num(form.wcMargin)) },
+                  { label: "Rate", value: `${result.outcome.roi}% p.a.` },
+                ]
+              : result.product.family === "lrd"
           ? [
               { label: "Monthly rental income", value: formatINRRounded(result.outcome.lease?.rent ?? 0) },
               { label: "Annual rental income", value: formatINRRounded(result.outcome.lease?.annualRent ?? 0) },
@@ -468,6 +632,12 @@ const EligibilityCalculatorPage = () => {
               { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
               { label: "Gold value", value: formatINRRounded(result.outcome.gold?.value ?? 0) },
               { label: "Tenure", value: tenureText(result.outcome.months) },
+            ]
+        : result.product.key === "vehicleLoan"
+          ? [
+              { label: "Repayment capacity", value: formatINRRounded(result.outcome.caps.find((cap) => cap.key === "foir")?.value ?? 0) },
+              { label: "Vehicle funding limit", value: formatINRRounded(result.outcome.caps.find((cap) => cap.key === "asset")?.value ?? 0) },
+              { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
             ]
         : [
             { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
@@ -512,7 +682,7 @@ const EligibilityCalculatorPage = () => {
                   )}
                   <p className="mt-2 text-[13px] text-white/80">
                     {result.outcome.eligible
-                      ? result.product.family === "wc"
+                      ? result.product.family === "wc" || result.product.family === "turnover"
                         ? `${result.outcome.roi}% p.a. · reviewed every year`
                         : `${result.outcome.roi}% p.a. · ${tenureText(result.outcome.months)}`
                       : "Adjust a detail or two and check again."}
@@ -521,9 +691,9 @@ const EligibilityCalculatorPage = () => {
 
                 <div className="p-6 md:p-7">
                   {result.outcome.eligible && (
-                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                       {stats.map((stat) => (
-                        <div key={stat.label} className="rounded-xl bg-(--surface-muted) px-4 py-3">
+                        <div key={stat.label} className="min-w-0 rounded-xl bg-(--surface-muted) px-3.5 py-3">
                           <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-slate-400">{stat.label}</p>
                           <p className="mt-1 text-[15px] font-bold text-slate-900">{stat.value}</p>
                         </div>
@@ -608,7 +778,7 @@ const EligibilityCalculatorPage = () => {
                       {occupationOptions.length > 0 && (
                         <div>
                           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Occupation</p>
-                          <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
+                          <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-slate-100 p-1 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
                             {occupationOptions.map((option) => {
                               const active = option === occupation;
                               return (
@@ -669,7 +839,7 @@ const EligibilityCalculatorPage = () => {
                         <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                           <div>
                             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property type</p>
-                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                            <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
                               {LAP_PROPERTY_TYPES.map((option) => {
                                 const active = option === form.lapPropertyType;
                                 return (
@@ -702,7 +872,7 @@ const EligibilityCalculatorPage = () => {
 
                           <div>
                             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">City category</p>
-                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                            <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
                               {LAP_CITIES.map((option) => {
                                 const active = option.value === form.lapCity;
                                 return (
@@ -724,7 +894,7 @@ const EligibilityCalculatorPage = () => {
 
                           <div>
                             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property usage</p>
-                            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                            <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
                               {LAP_USAGES.map((option) => {
                                 const active = option === form.lapUsage;
                                 return (
@@ -871,6 +1041,46 @@ const EligibilityCalculatorPage = () => {
                         onChange={(next) => set("otherCurrentLiabilities", next)}
                         hint="Excluding bank loans"
                       />
+
+                      <div>
+                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Assessment method</p>
+                        <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
+                          {([
+                            ["turnover", "Turnover method"],
+                            ["drawingPower", "Drawing power"],
+                          ] as const).map(([value, label]) => {
+                            const active = form.odMode === value;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => set("odMode", value)}
+                                aria-pressed={active}
+                                className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                  active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="mt-2 text-[11.5px] leading-4 text-slate-500">
+                          {form.odMode === "turnover"
+                            ? "25% of turnover is the requirement and the bank funds 75% of it — 18.75% of turnover."
+                            : "Stock and receivables less the bank's margin and deductions, capped by the turnover norm."}
+                        </p>
+                      </div>
+
+                      {form.odMode === "drawingPower" && (
+                        <AmountField
+                          id="elig-od-margin"
+                          label="Borrower's margin"
+                          value={form.odMargin}
+                          onChange={(next) => set("odMargin", next)}
+                          hint="Deducted from drawing power; your own contribution"
+                        />
+                      )}
                     </div>
                   )}
 
@@ -903,11 +1113,290 @@ const EligibilityCalculatorPage = () => {
                     </div>
                   )}
 
+                  {product.key === "vehicleLoan" && (
+                    <div className="space-y-5">
+                      <AmountField
+                        id="elig-vehicle-down"
+                        label="Down payment"
+                        value={form.vehicleDownPayment}
+                        onChange={(next) => set("vehicleDownPayment", next)}
+                        hint="Paid upfront; the loan cannot exceed the on-road price less this amount"
+                      />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <PlainField
+                          id="elig-vehicle-foir"
+                          label="FOIR (%)"
+                          value={form.vehicleFoir}
+                          onChange={(next) => set("vehicleFoir", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={4}
+                          hint="Share of income lenders allow for all EMIs; 50% is typical"
+                        />
+                        <PlainField
+                          id="elig-vehicle-ltv"
+                          label="LTV (%)"
+                          value={form.vehicleLtv}
+                          onChange={(next) => set("vehicleLtv", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={3}
+                          hint="Share of the on-road price lenders fund; 90% is typical"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {product.family === "education" && (
+                    <div className="space-y-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-edu-fees"
+                          label="Course fees"
+                          value={form.eduFees}
+                          onChange={(next) => set("eduFees", next)}
+                          error={errors.eduFees}
+                          placeholder="e.g. 8,00,000"
+                          hint="Tuition for the full programme"
+                        />
+                        <AmountField
+                          id="elig-edu-hostel"
+                          label="Hostel and living costs"
+                          value={form.eduHostel}
+                          onChange={(next) => set("eduHostel", next)}
+                          hint="For the duration of the course"
+                        />
+                        <AmountField
+                          id="elig-edu-other"
+                          label="Other eligible expenses"
+                          value={form.eduOther}
+                          onChange={(next) => set("eduOther", next)}
+                          hint="Books, equipment, exam and travel costs"
+                        />
+                        <AmountField
+                          id="elig-edu-scholarship"
+                          label="Scholarships or grants"
+                          value={form.eduScholarship}
+                          onChange={(next) => set("eduScholarship", next)}
+                          hint="Leave blank if none"
+                        />
+                      </div>
+                      <AmountField
+                        id="elig-edu-margin"
+                        label="Margin money"
+                        value={form.eduMargin}
+                        onChange={(next) => set("eduMargin", next)}
+                        hint="The part of the cost your family funds itself"
+                      />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-edu-income"
+                          label="Co-applicant monthly income"
+                          value={form.monthlyIncome}
+                          onChange={(next) => set("monthlyIncome", next)}
+                          hint={`Lenders count ${EDUCATION_FOIR_CAP * 100}% of this towards the EMI`}
+                        />
+                        <AmountField
+                          id="elig-edu-emi"
+                          label="EMIs already paid"
+                          value={form.existingEmi}
+                          onChange={(next) => set("existingEmi", next)}
+                          hint="Leave blank if none"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {product.family === "project" && (
+                    <div className="space-y-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-project-cost"
+                          label="Total project cost"
+                          value={form.projectCost}
+                          onChange={(next) => set("projectCost", next)}
+                          error={errors.projectCost}
+                          placeholder="e.g. 5,00,00,000"
+                          hint="Land, construction, plant and pre-operative costs"
+                        />
+                        <AmountField
+                          id="elig-project-contribution"
+                          label="Promoter contribution"
+                          value={form.projectContribution}
+                          onChange={(next) => set("projectContribution", next)}
+                          error={errors.projectContribution}
+                          hint="Your own equity in the project"
+                        />
+                      </div>
+                      <AmountField
+                        id="elig-project-cashflow"
+                        label="Projected monthly cash flow (optional)"
+                        value={form.projectCashFlow}
+                        onChange={(next) => set("projectCashFlow", next)}
+                        hint={`Caps the loan at a ${DSCR_MIN}× DSCR on the project's cash flow`}
+                      />
+                      <PlainField
+                        id="elig-project-dscr"
+                        label="DSCR assumption (×)"
+                        value={form.projectDscr}
+                        onChange={(next) => set("projectDscr", next.replace(/[^\d.]/g, ""))}
+                        inputMode="tel"
+                        maxLength={4}
+                        hint="Debt service cover lenders ask for; 1.25× is typical"
+                      />
+                    </div>
+                  )}
+
+                  {product.family === "commercial" && (
+                    <div className="space-y-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-commercial-value"
+                          label="Property current market value"
+                          value={form.propertyValue}
+                          onChange={(next) => set("propertyValue", next)}
+                          error={errors.propertyValue}
+                          placeholder="e.g. 2,00,00,000"
+                          hint="Today's market value, not the purchase price; lenders fund about 70% of it"
+                        />
+                        <AmountField
+                          id="elig-commercial-rent"
+                          label="Monthly rent received (optional)"
+                          value={form.commercialRent}
+                          onChange={(next) => set("commercialRent", next)}
+                          hint={`Caps the loan at a ${DSCR_MIN}× DSCR on the rent`}
+                        />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-commercial-income"
+                          label="Monthly income (optional)"
+                          value={form.monthlyIncome}
+                          onChange={(next) => set("monthlyIncome", next)}
+                          hint="Caps the loan at what you can repay"
+                        />
+                        <AmountField
+                          id="elig-commercial-emi"
+                          label="EMIs you already pay"
+                          value={form.existingEmi}
+                          onChange={(next) => set("existingEmi", next)}
+                          hint="Leave blank if none"
+                        />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-commercial-coapplicant"
+                          label="Co-applicant monthly income (optional)"
+                          value={form.commercialCoApplicant}
+                          onChange={(next) => set("commercialCoApplicant", next)}
+                          hint="Added to your income when the lender counts both"
+                        />
+                        <PlainField
+                          id="elig-commercial-foir"
+                          label="FOIR (%)"
+                          value={form.commercialFoir}
+                          onChange={(next) => set("commercialFoir", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={4}
+                          hint="Share of income lenders allow for all EMIs; 70% is typical"
+                        />
+                      </div>
+                      <PlainField
+                        id="elig-commercial-ltv"
+                        label="LTV (%)"
+                        value={form.commercialLtv}
+                        onChange={(next) => set("commercialLtv", next.replace(/[^\d.]/g, ""))}
+                        inputMode="tel"
+                        maxLength={3}
+                        hint="Share of the property value lenders fund; 70% is typical"
+                      />
+                    </div>
+                  )}
+
+                  {product.family === "turnover" && (
+                    <div className="space-y-5">
+                      <AmountField
+                        id="elig-wct-turnover"
+                        label="Projected annual turnover"
+                        value={form.turnover}
+                        onChange={(next) => set("turnover", next)}
+                        error={errors.turnover}
+                        hint="What you expect over the next 12 months"
+                      />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <PlainField
+                          id="elig-wct-assessment"
+                          label="Assessment percentage (%)"
+                          value={form.wcAssessment}
+                          onChange={(next) => set("wcAssessment", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={5}
+                          placeholder="e.g. 18.75"
+                          error={errors.wcAssessment}
+                          hint="Turnover norm; 18.75% is the Nayak default (75% of a 25% requirement)"
+                        />
+                        <AmountField
+                          id="elig-wct-margin"
+                          label="Borrower's margin"
+                          value={form.wcMargin}
+                          onChange={(next) => set("wcMargin", next)}
+                          hint="Your own contribution to the working capital"
+                        />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <AmountField
+                          id="elig-wct-current-assets"
+                          label="Eligible current assets (optional)"
+                          value={form.wcCurrentAssets}
+                          onChange={(next) => set("wcCurrentAssets", next)}
+                          hint="Inventory, receivables and other qualifying assets"
+                        />
+                        <AmountField
+                          id="elig-wct-current-liabilities"
+                          label="Current liabilities (optional)"
+                          value={form.wcCurrentLiabilities}
+                          onChange={(next) => set("wcCurrentLiabilities", next)}
+                          hint="Trade creditors and other current liabilities"
+                        />
+                      </div>
+                      <div>
+                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Assessment method</p>
+                        <div className="flex flex-wrap gap-1.5 rounded-xl bg-slate-100 p-1">
+                          {([
+                            ["turnover", "Turnover method"],
+                            ["drawingPower", "Drawing power"],
+                          ] as const).map(([value, label]) => {
+                            const active = form.wcMethod === value;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => set("wcMethod", value)}
+                                aria-pressed={active}
+                                className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${
+                                  active ? "bg-white text-(--brand-navy) shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="mt-2 text-[11.5px] leading-4 text-slate-500">
+                          {form.wcMethod === "turnover"
+                            ? "The turnover norm less your margin sets the limit."
+                            : "Current assets less current liabilities, less your margin, capped by the turnover norm."
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {product.family === "lrd" && (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-1.5">
+                      {/* The tooltip is anchored to the whole label row, so its
+                          256px panel cannot spill past the card on a phone. */}
+                      <div className="group relative flex items-center gap-1.5">
                         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Lease details</p>
-                        <span className="group relative inline-flex">
+                        <span className="inline-flex">
                           <button
                             type="button"
                             aria-label="What is lease rental discounting?"
@@ -917,7 +1406,7 @@ const EligibilityCalculatorPage = () => {
                           </button>
                           <span
                             role="tooltip"
-                            className="pointer-events-none absolute left-0 top-6 z-20 w-64 rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal leading-4 text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+                            className="pointer-events-none absolute left-0 top-6 z-20 w-64 rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal leading-4 text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 sm:left-full sm:top-0 sm:ml-2"
                           >
                             Lease Rental Discounting lets a property owner borrow against the rent a tenant pays. Rent for the
                             remaining lease is discounted to today's value at the loan rate, the lender funds a slice of that
@@ -956,27 +1445,6 @@ const EligibilityCalculatorPage = () => {
                           hint="Current market value of the leased property"
                         />
                         <PlainField
-                          id="elig-lrd-rate"
-                          label="Expected interest rate (% p.a.)"
-                          value={form.lrdRate}
-                          onChange={(next) => set("lrdRate", next.replace(/[^\d.]/g, ""))}
-                          inputMode="tel"
-                          maxLength={5}
-                          placeholder="e.g. 10.5"
-                          error={errors.lrdRate}
-                        />
-                        <PlainField
-                          id="elig-lrd-tenure"
-                          label="Loan repayment tenure (years)"
-                          value={form.lrdTenureYears}
-                          onChange={(next) => set("lrdTenureYears", next.replace(/\D/g, ""))}
-                          inputMode="tel"
-                          maxLength={2}
-                          placeholder="e.g. 10"
-                          error={errors.lrdTenureYears}
-                          hint="Cannot run past the lease left to run"
-                        />
-                        <PlainField
                           id="elig-lrd-ltv"
                           label="Assumed LTV (%)"
                           value={form.lrdLtv}
@@ -988,6 +1456,31 @@ const EligibilityCalculatorPage = () => {
                           hint={`Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`}
                         />
                       </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <PlainField
+                          id="elig-lrd-deduction"
+                          label="Rental deduction (%)"
+                          value={form.lrdDeduction}
+                          onChange={(next) => set("lrdDeduction", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={4}
+                          hint="Vacancy, expenses and lender adjustments; 10% is typical"
+                        />
+                        <PlainField
+                          id="elig-lrd-coverage"
+                          label="Rent-to-EMI coverage (%)"
+                          value={form.lrdCoverage}
+                          onChange={(next) => set("lrdCoverage", next.replace(/[^\d.]/g, ""))}
+                          inputMode="tel"
+                          maxLength={3}
+                          hint="Share of net rent the EMI may use; 70% is typical"
+                        />
+                      </div>
+
+                      <p className="rounded-xl bg-slate-50 px-4 py-3 text-[11.5px] leading-4 text-slate-500">
+                        Fixed terms: {LRD_ROI}% p.a. over up to {LRD_TENURE_YEARS} years, capped at the lease left to run.
+                      </p>
 
                       {lrdLive && (
                         <div className="rounded-xl border border-(--brand-teal-33) bg-(--surface-muted) px-4 py-3">
@@ -1028,7 +1521,9 @@ const EligibilityCalculatorPage = () => {
                     <FieldError>{errors.creditScore}</FieldError>
                     {!errors.creditScore && (
                       <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                        300 to 900. The bureau score sets how much of your income can go to EMIs.
+                        {product.key === "vehicleLoan" || product.family === "commercial"
+                          ? "300 to 900. Lenders need a score of at least 650, and the FOIR above sets the EMI room."
+                          : "300 to 900. The bureau score sets how much of your income can go to EMIs."}
                       </p>
                     )}
                     <Link
