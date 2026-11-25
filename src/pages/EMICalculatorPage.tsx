@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Container from "../components/common/Container";
 import PageBanner from "../components/common/PageBanner";
 import useSEO from "../hooks/useSEO";
-import { T, serif, loanTypes, banks, fmt } from "./emiCalculatorData";
+import { T, serif, loanTypes, banks, bankById, fmt } from "./emiCalculatorData";
 import { Icon } from "./emiCalculatorIcons";
-import { DonutChart, Slider } from "./emiCalculatorControls";
+import { Slider } from "./emiCalculatorControls";
 import { useCountUp } from "./useCountUp";
 import { digitsOnly, formatIndianNumber } from "../utils/formatters";
 
@@ -28,22 +28,42 @@ const EMICalculatorPage = () => {
 
   const loan = useMemo(() => loanTypes.find(l => l.id === selectedLoanId)!, [selectedLoanId]);
 
+  const rateFor = (bankId: string, loanId: string, fallback: number) => {
+    const rate = bankById(bankId)?.rates[loanId];
+    return typeof rate === "number" ? rate : fallback;
+  };
+
   const handleLoanTypeChange = (id: string) => {
     const l = loanTypes.find(x => x.id === id)!;
+    const bankRate = bankById(selectedBank)?.rates[id];
+    if (selectedBank && typeof bankRate !== "number") setSelectedBank("");
     setSelectedLoanId(id);
-    setInterestRate(l.rate);
+    setInterestRate(typeof bankRate === "number" ? bankRate : l.rate);
     setLoanAmount(Math.round((l.minAmt + l.maxAmt) / 10 / 1000) * 1000);
     setLoanTenure(Math.round((l.minTenure + l.maxTenure) / 2));
     setTenureUnit("years");
   };
 
-  // Amount has no upper limit: the slider follows whatever the product allows,
-  // and widens when a larger amount is typed in.
+  const handleBankChange = (id: string) => {
+    setSelectedBank(id);
+    setInterestRate(rateFor(id, loan.id, loan.rate));
+  };
+
+  const handleRateChange = (rate: number) => {
+    setSelectedBank("");
+    setInterestRate(rate);
+  };
+
+  const selectedBankOffer = bankById(selectedBank);
+  const selectedBankRate = selectedBankOffer?.rates[loan.id];
+  const bankRateVerified = selectedBankOffer ? selectedBankOffer.verified.includes(loan.id) : false;
+  const showsBankRate = selectedBankOffer !== undefined && typeof selectedBankRate === "number";
+  const banksForLoan = banks.filter(b => typeof b.rates[loan.id] === "number");
+
   const amountSliderMax = Math.max(loan.maxAmt, loanAmount);
 
   const tenureInMonths = tenureUnit === "years" ? loanTenure * 12 : loanTenure;
   const monthlyRate    = interestRate / 12 / 100;
-  // The amount field is free-entry (no min/max), so guard against empty or zero values.
   const emi = loanAmount <= 0 || tenureInMonths <= 0
     ? 0
     : monthlyRate === 0
@@ -57,6 +77,15 @@ const EMICalculatorPage = () => {
   const emiAnimated      = useCountUp(emi);
   const interestAnimated = useCountUp(totalInterest);
   const totalAnimated    = useCountUp(totalPayment);
+
+  const tenureLabel = tenureInMonths > 0
+    ? tenureInMonths % 12 === 0
+      ? `${tenureInMonths / 12} year${tenureInMonths === 12 ? "" : "s"}`
+      : `${tenureInMonths} months`
+    : "0 months";
+
+  const interestShare  = totalPayment > 0 ? (totalInterest / totalPayment) * 100 : 0;
+  const principalShare = 100 - interestShare;
 
   const amortRows = useMemo(() => {
     const rows = [];
@@ -72,7 +101,7 @@ const EMICalculatorPage = () => {
         yPrincipal += pp;
         balance    -= pp;
       }
-      rows.push({ yr, yPrincipal, yInterest, yTotal: yPrincipal + yInterest, balance: Math.max(0, balance) });
+      rows.push({ yr, yPrincipal, yInterest, balance: Math.max(0, balance) });
     }
     return rows;
   }, [loanAmount, monthlyRate, emi, tenureInMonths]);
@@ -108,272 +137,420 @@ const EMICalculatorPage = () => {
         .emi-slider::-moz-range-track { background: transparent; }
       `}</style>
 
-      {/* HERO BANNER — same banner treatment as the Contact page */}
       <PageBanner
         breadcrumb="EMI Calculator"
         title="Know Your EMI"
         highlight="Before You Borrow"
-        tagline="Move the sliders to see your monthly instalment, total interest and full repayment schedule update instantly — no sign-up needed."
+        tagline="Set the amount, rate and tenure — your monthly instalment, total interest and year-by-year schedule update as you go."
       />
 
-      {/* CALCULATOR */}
       <Container>
-        <div className="py-10 px-4 md:px-8">
-          <div className="max-w-5xl mx-auto">
+        <div className="px-4 py-10 md:px-8">
+          <div className="mx-auto max-w-6xl">
 
-            {/* Loan type chips */}
-            <div className="mb-5">
-              <label className="block text-xs font-bold uppercase tracking-wide mb-2.5" style={{ color: T.inkSoft }}>
-                What are you borrowing for?
-              </label>
-              <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: "thin" }}>
-                {loanTypes.map(l => {
-                  const active = l.id === selectedLoanId;
-                  return (
-                    <button
-                      key={l.id}
-                      onClick={() => handleLoanTypeChange(l.id)}
-                      className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition-all cursor-pointer"
-                      style={{
-                        background: active ? T.navy : T.paper,
-                        color: active ? "#fff" : T.ink,
-                        borderColor: active ? T.navy : T.line,
-                        boxShadow: active ? "0 4px 12px rgba(5,66,137,0.25)" : "none",
-                      }}
-                    >
-                      <Icon id={l.id} active={active} />
-                      {l.label}
-                    </button>
-                  );
-                })}
+            {/* STEP 1 — loan type */}
+            <section aria-labelledby="emi-step-loan" className="mb-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <label htmlFor="emi-loan-type" className="text-sm font-bold" style={{ color: T.ink }}>
+                  What are you borrowing for?
+                </label>
+                <div className="relative w-full sm:max-w-xs">
+                  <span className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 [&>svg]:h-4 [&>svg]:w-4">
+                    <Icon id={loan.id} active={false} />
+                  </span>
+                  <select
+                    id="emi-loan-type"
+                    value={selectedLoanId}
+                    onChange={e => handleLoanTypeChange(e.target.value)}
+                    className="w-full cursor-pointer appearance-none rounded-xl border bg-white py-2.5 pl-10 pr-9 text-[13px] font-bold focus:outline-none"
+                    style={{ borderColor: T.line, color: T.ink }}
+                  >
+                    {loanTypes.map(l => (
+                      <option key={l.id} value={l.id}>
+                        {l.full} · from {l.rate}% p.a.
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2"
+                    fill="none"
+                    stroke={T.inkSoft}
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Bank select + rate badge */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-              <div className="relative flex-1 max-w-xs">
-                <select
-                  value={selectedBank}
-                  onChange={e => setSelectedBank(e.target.value)}
-                  className="w-full appearance-none border rounded-xl px-4 py-2.5 pr-10 text-sm font-semibold focus:outline-none cursor-pointer"
-                  style={{ background: T.paper, borderColor: T.line, color: T.ink }}
-                >
-                  <option value="">Compare all banks</option>
-                  {banks.map(b => (
-                    <option key={b.id} value={b.id}>{b.label}</option>
-                  ))}
-                </select>
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" fill="none" stroke={T.inkSoft} strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <span className="text-xs font-semibold" style={{ color: T.inkSoft }}>
-                {loan.full} starts from <strong style={{ color: T.navy }}>{loan.rate}% p.a.</strong>
-              </span>
-            </div>
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
 
-            {/* Main card */}
-            <div className="rounded-3xl overflow-hidden" style={{ background: T.paper, boxShadow: "0 12px 32px rgba(5,66,137,0.08)", border: `1px solid ${T.line}` }}>
-              <div className="grid grid-cols-1 lg:grid-cols-5">
+              {/* CONTROLS */}
+              <div
+                className="rounded-3xl border p-4 md:p-6"
+                style={{ background: T.paper, borderColor: T.line, boxShadow: "0 18px 44px -34px rgba(4,78,116,0.5)" }}
+              >
+                <div className="space-y-3">
 
-                {/* LEFT — Sliders */}
-                <div className="lg:col-span-3 p-6 md:p-9 space-y-9" style={{ borderRight: `1px solid ${T.line}` }}>
-
-                  {/* Loan Amount */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-bold" style={{ color: T.ink }}>Loan Amount</label>
-                      <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.emerald }}>
-                        <span className="font-bold text-sm" style={{ color: T.emerald }}>{"\u20B9"}</span>
+                  {/* Loan amount */}
+                  <div className="rounded-2xl p-4" style={{ background: "#FBFDFD", border: `1px solid ${T.line}` }}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[10.5px] font-bold uppercase tracking-[0.16em]" style={{ color: T.inkSoft }}>
+                          Step 1
+                        </p>
+                        <p className="mt-0.5 text-sm font-bold" style={{ color: T.ink }}>How much do you need?</p>
+                        <p className="mt-0.5 text-[11.5px]" style={{ color: T.inkSoft }}>
+                          The loan amount, before interest.
+                        </p>
+                      </div>
+                      <div
+                        className="flex items-center gap-1 rounded-xl border bg-white px-3 py-2"
+                        style={{ borderColor: T.emerald }}
+                      >
+                        <span className="text-sm font-bold" style={{ color: T.emerald }}>{"\u20B9"}</span>
                         <input
                           type="text"
                           inputMode="numeric"
                           autoComplete="off"
+                          aria-label="Loan amount"
                           value={formatIndianNumber(String(loanAmount))}
                           onChange={e => setLoanAmount(Number(digitsOnly(e.target.value)) || 0)}
                           onBlur={() => setLoanAmount(v => Math.max(0, v))}
-                          className="w-32 text-sm font-bold bg-transparent focus:outline-none"
+                          className="w-32 bg-transparent text-right text-lg font-extrabold tabular-nums focus:outline-none"
                           style={{ color: T.emerald }}
                         />
                       </div>
                     </div>
-                    <Slider value={loanAmount} min={0} max={amountSliderMax} step={1000} onChange={setLoanAmount} color={T.emerald} />
-                    <div className="flex justify-between text-xs mt-1.5" style={{ color: T.inkSoft }}>
+                    <div className="mt-4">
+                      <Slider value={loanAmount} min={0} max={amountSliderMax} step={1000} onChange={setLoanAmount} color={T.emerald} />
+                    </div>
+                    <div className="mt-1.5 flex justify-between text-[11px]" style={{ color: T.inkSoft }}>
                       <span>{fmt(0)}</span>
                       <span>{fmt(amountSliderMax)}</span>
                     </div>
                   </div>
 
-                  {/* Rate of Interest */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-bold" style={{ color: T.ink }}>
-                        Rate of Interest <span className="font-normal text-xs" style={{ color: T.inkSoft }}>(% p.a.)</span>
-                      </label>
-                      <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.rust }}>
+                  {/* Interest rate + bank */}
+                  <div className="rounded-2xl p-4" style={{ background: "#FBFDFD", border: `1px solid ${T.line}` }}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[10.5px] font-bold uppercase tracking-[0.16em]" style={{ color: T.inkSoft }}>
+                          Step 2
+                        </p>
+                        <p className="mt-0.5 text-sm font-bold" style={{ color: T.ink }}>At what interest rate?</p>
+                        <p className="mt-0.5 text-[11.5px]" style={{ color: T.inkSoft }}>
+                          % per year, on the reducing balance.
+                        </p>
+                      </div>
+                      <div
+                        className="flex items-center gap-1 rounded-xl border bg-white px-3 py-2"
+                        style={{ borderColor: T.rust }}
+                      >
                         <input
-                          type="number" min={1} max={36} step={0.1}
+                          type="number"
+                          min={1}
+                          max={36}
+                          step={0.1}
+                          aria-label="Interest rate"
                           value={interestRate}
-                          onChange={e => setInterestRate(Math.min(36, Math.max(1, Number(e.target.value))))}
-                          className="w-14 text-sm font-bold bg-transparent focus:outline-none"
+                          onChange={e => handleRateChange(Math.min(36, Math.max(1, Number(e.target.value))))}
+                          className="w-16 bg-transparent text-right text-lg font-extrabold tabular-nums focus:outline-none"
                           style={{ color: T.rust }}
                         />
-                        <span className="font-bold text-sm" style={{ color: T.rust }}>%</span>
+                        <span className="text-sm font-bold" style={{ color: T.rust }}>%</span>
                       </div>
                     </div>
-                    <Slider value={interestRate} min={1} max={36} step={0.1} onChange={setInterestRate} color={T.rust} />
-                    <div className="flex justify-between text-xs mt-1.5" style={{ color: T.inkSoft }}>
-                      <span>1%</span><span>36%</span>
+                    <div className="mt-4">
+                      <Slider value={interestRate} min={1} max={36} step={0.1} onChange={handleRateChange} color={T.rust} />
                     </div>
+                    <div className="mt-1.5 flex justify-between text-[11px]" style={{ color: T.inkSoft }}>
+                      <span>1%</span>
+                      <span>36%</span>
+                    </div>
+
+                    {banksForLoan.length > 0 && (
+                    <div className="mt-4 rounded-xl px-3 py-2.5" style={{ background: T.cream }}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label htmlFor="emi-bank" className="text-[11.5px] font-bold" style={{ color: T.ink }}>
+                          Not sure? Start from a bank
+                        </label>
+                        <div className="relative">
+                          <select
+                            id="emi-bank"
+                            value={selectedBank}
+                            onChange={e => handleBankChange(e.target.value)}
+                            className="cursor-pointer appearance-none rounded-lg border bg-white py-1.5 pl-3 pr-8 text-[12px] font-bold focus:outline-none"
+                            style={{ borderColor: T.line, color: T.ink }}
+                          >
+                            <option value="">Select a bank</option>
+                            {banksForLoan.map(b => (
+                              <option key={b.id} value={b.id}>{b.label}</option>
+                            ))}
+                          </select>
+                          <svg
+                            className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2"
+                            fill="none"
+                            stroke={T.inkSoft}
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="mt-1.5 text-[11px] leading-4" style={{ color: T.inkSoft }}>
+                        {showsBankRate && selectedBankOffer ? (
+                          <>
+                            {selectedBankOffer.label} {loan.full} at{" "}
+                            <strong style={{ color: T.navy }}>{interestRate}% p.a.</strong>
+                            {!bankRateVerified && (
+                              <span
+                                className="ml-1.5 inline-block whitespace-nowrap rounded-full px-2 py-0.5 align-middle text-[10px] font-bold"
+                                style={{ background: "#FDF3D8", color: "#8A6100" }}
+                              >
+                                indicative — confirm with the lender
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {loan.full} at <strong style={{ color: T.navy }}>{interestRate}% p.a.</strong>
+                            {interestRate !== loan.rate ? " (your rate)" : ""} — pick a bank above to compare.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    )}
                   </div>
 
-                  {/* Loan Tenure */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-bold" style={{ color: T.ink }}>Loan Tenure</label>
+                  {/* Tenure */}
+                  <div className="rounded-2xl p-4" style={{ background: "#FBFDFD", border: `1px solid ${T.line}` }}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[10.5px] font-bold uppercase tracking-[0.16em]" style={{ color: T.inkSoft }}>
+                          Step 3
+                        </p>
+                        <p className="mt-0.5 text-sm font-bold" style={{ color: T.ink }}>Over how long?</p>
+                        <p className="mt-0.5 text-[11.5px]" style={{ color: T.inkSoft }}>
+                          A longer tenure lowers the EMI but costs more in interest.
+                        </p>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 rounded-lg border px-3 py-1.5" style={{ background: T.paper, borderColor: T.limeDark }}>
+                        <div
+                          className="flex items-center rounded-xl border bg-white px-3 py-2"
+                          style={{ borderColor: T.limeDark }}
+                        >
                           <input
                             type="number"
+                            aria-label="Loan tenure"
                             min={tenureUnit === "years" ? loan.minTenure : loan.minTenure * 12}
                             max={tenureUnit === "years" ? loan.maxTenure : loan.maxTenure * 12}
                             value={loanTenure}
                             onChange={e => setLoanTenure(Number(e.target.value))}
-                            className="w-10 text-sm font-bold bg-transparent focus:outline-none"
+                            className="w-12 bg-transparent text-right text-lg font-extrabold tabular-nums focus:outline-none"
                             style={{ color: T.limeDark }}
                           />
                         </div>
-                        <div className="flex rounded-lg p-0.5 text-xs font-bold" style={{ background: T.cream }}>
+                        <div className="flex rounded-xl p-0.5 text-[11px] font-bold" style={{ background: T.cream }}>
                           {(["years", "months"] as const).map(u => (
-                            <button key={u}
-                              onClick={() => { setTenureUnit(u); setLoanTenure(u === "months" ? loanTenure * 12 : Math.round(loanTenure / 12)); }}
-                              className="px-2.5 py-1 rounded-md transition-all cursor-pointer"
+                            <button
+                              key={u}
+                              type="button"
+                              onClick={() => {
+                                setTenureUnit(u);
+                                setLoanTenure(u === "months" ? loanTenure * 12 : Math.round(loanTenure / 12));
+                              }}
+                              className="cursor-pointer rounded-lg px-2.5 py-1.5 transition-all"
                               style={{
                                 background: tenureUnit === u ? T.paper : "transparent",
                                 color: tenureUnit === u ? T.navy : T.inkSoft,
                                 boxShadow: tenureUnit === u ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
-                              }}>
+                              }}
+                            >
                               {u === "years" ? "Yr" : "Mo"}
                             </button>
                           ))}
                         </div>
                       </div>
                     </div>
-                    <Slider
-                      value={loanTenure}
-                      min={tenureUnit === "years" ? loan.minTenure : loan.minTenure * 12}
-                      max={tenureUnit === "years" ? loan.maxTenure : loan.maxTenure * 12}
-                      step={1}
-                      onChange={setLoanTenure}
-                      color={T.limeDark}
-                    />
-                    <div className="flex justify-between text-xs mt-1.5" style={{ color: T.inkSoft }}>
+                    <div className="mt-4">
+                      <Slider
+                        value={loanTenure}
+                        min={tenureUnit === "years" ? loan.minTenure : loan.minTenure * 12}
+                        max={tenureUnit === "years" ? loan.maxTenure : loan.maxTenure * 12}
+                        step={1}
+                        onChange={setLoanTenure}
+                        color={T.limeDark}
+                      />
+                    </div>
+                    <div className="mt-1.5 flex justify-between text-[11px]" style={{ color: T.inkSoft }}>
                       <span>{tenureUnit === "years" ? `${loan.minTenure} Yr` : `${loan.minTenure * 12} Mo`}</span>
                       <span>{tenureUnit === "years" ? `${loan.maxTenure} Yr` : `${loan.maxTenure * 12} Mo`}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* RIGHT — Results */}
-                <div className="lg:col-span-2 p-6 md:p-9 flex flex-col gap-5" style={{ background: T.navy, color: "#fff" }}>
+                <p className="mt-4 text-[11px] leading-5" style={{ color: T.inkSoft }}>
+                  Estimates use the reducing-balance method and exclude processing fees, insurance and taxes.
+                </p>
+              </div>
 
-                  <div className="text-center pb-5" style={{ borderBottom: `1px dashed ${T.onNavyLine}` }}>
-                    <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: T.goldSoft }}>Your Monthly EMI</p>
-                    <p className="text-4xl md:text-[2.6rem] font-bold" style={serif}>{fmt(emiAnimated)}</p>
+              {/* SUMMARY */}
+              <aside
+                className="overflow-hidden rounded-3xl lg:sticky lg:top-24"
+                style={{
+                  background: "linear-gradient(158deg,#044e74 0%,#066a9c 58%,#0a6f7f 100%)",
+                  color: "#fff",
+                  boxShadow: "0 26px 60px -32px rgba(4,78,116,0.75)",
+                }}
+              >
+                <div className="p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-[10.5px] font-bold uppercase tracking-[0.18em]" style={{ color: T.goldSoft }}>
+                      Your monthly EMI
+                    </p>
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[10px] font-bold leading-none"
+                      style={{ background: "rgba(255,255,255,0.16)" }}
+                    >
+                      {loan.full}
+                    </span>
                   </div>
 
-                  <div className="space-y-3 pb-5" style={{ borderBottom: `1px dashed ${T.onNavyLine}` }}>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ color: T.onNavyMuted }}>Total Interest Payable</span>
-                      <span className="font-bold">{fmt(interestAnimated)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ color: T.onNavyMuted }}>Total of Payments</span>
-                      <span className="font-bold text-base" style={{ color: T.goldSoft }}>{fmt(totalAnimated)}</span>
-                    </div>
-                  </div>
+                  <p className="mt-2 text-[2.5rem] font-bold leading-none tabular-nums md:text-[2.9rem]" style={serif}>
+                    {fmt(emiAnimated)}
+                  </p>
+                  <p className="mt-2 text-[12.5px]" style={{ color: T.onNavyMuted }}>
+                    paid every month for {tenureLabel} at {interestRate}% p.a.
+                  </p>
 
-                  <div className="flex flex-col items-center gap-3">
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: T.onNavyMuted }}>Break-up of Payment</p>
-                    <div className="rounded-2xl p-2" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <DonutChart principal={loanAmount} interest={totalInterest} />
+                  <div className="mt-6">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: T.onNavyMuted }}>
+                        What you pay back
+                      </p>
+                      <p className="text-sm font-bold tabular-nums">{fmt(totalAnimated)}</p>
                     </div>
-                    <div className="flex items-center gap-5 text-xs font-semibold">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: T.emerald }} />
-                        Principal
+                    <div
+                      className="mt-2 flex h-2.5 w-full overflow-hidden rounded-full"
+                      style={{ background: "rgba(255,255,255,0.16)" }}
+                      role="img"
+                      aria-label={`Principal ${principalShare.toFixed(0)}%, interest ${interestShare.toFixed(0)}%`}
+                    >
+                      <div style={{ width: `${principalShare}%`, background: T.emerald, transition: "width .35s ease" }} />
+                      <div style={{ width: `${interestShare}%`, background: T.gold, transition: "width .35s ease" }} />
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2.5">
+                      <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.09)" }}>
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: T.onNavyMuted }}>
+                          <span className="h-2 w-2 rounded-full" style={{ background: T.emerald }} />
+                          Principal
+                        </p>
+                        <p className="mt-1 text-[13px] font-bold tabular-nums">{fmt(loanAmount)}</p>
+                        <p className="text-[10px]" style={{ color: T.onNavyMuted }}>{principalShare.toFixed(0)}% of payments</p>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: T.rustSoft }} />
-                        Interest
+                      <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.09)" }}>
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: T.onNavyMuted }}>
+                          <span className="h-2 w-2 rounded-full" style={{ background: T.gold }} />
+                          Interest
+                        </p>
+                        <p className="mt-1 text-[13px] font-bold tabular-nums">{fmt(interestAnimated)}</p>
+                        <p className="text-[10px]" style={{ color: T.onNavyMuted }}>{interestShare.toFixed(0)}% of payments</p>
                       </div>
                     </div>
                   </div>
 
-                  <button onClick={() => navigate("/")}
-                    className="mt-1 w-full py-3.5 rounded-xl font-bold text-sm cursor-pointer transition-all hover:opacity-90 active:scale-95"
-                    style={{ background: T.gold, color: T.navyDeep }}>
+                  <dl
+                    className="mt-5 space-y-2 border-t pt-4 text-[13px]"
+                    style={{ borderColor: T.onNavyLine }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <dt style={{ color: T.onNavyMuted }}>Total interest</dt>
+                      <dd className="font-bold tabular-nums">{fmt(interestAnimated)}</dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <dt style={{ color: T.onNavyMuted }}>Total of {tenureInMonths} payments</dt>
+                      <dd className="font-bold tabular-nums" style={{ color: T.goldSoft }}>{fmt(totalAnimated)}</dd>
+                    </div>
+                  </dl>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="mt-5 w-full cursor-pointer rounded-xl py-3.5 text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
+                    style={{ background: T.gold, color: T.navyDeep }}
+                  >
                     Apply Now →
                   </button>
                 </div>
-              </div>
+              </aside>
             </div>
           </div>
         </div>
       </Container>
 
-      {/* AMORTIZATION TABLE */}
+      {/* YEAR-BY-YEAR SCHEDULE */}
       <div style={{ background: T.paper, borderTop: `1px solid ${T.line}` }}>
         <Container>
-          <div className="py-10 px-4 md:px-8">
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-bold" style={{ ...serif, color: T.ink }}>Loan Amortization Schedule</h3>
-                  <p className="text-sm mt-0.5" style={{ color: T.inkSoft }}>Year-by-year repayment breakdown</p>
-                </div>
-                <div className="hidden sm:flex items-center gap-4 text-xs font-semibold" style={{ color: T.inkSoft }}>
-                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: T.emerald }} />Principal</span>
-                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: T.rust }} />Interest</span>
-                </div>
-              </div>
+          <div className="px-4 py-10 md:px-8">
+            <div className="mx-auto max-w-6xl">
+              <h3 className="text-lg font-bold" style={{ ...serif, color: T.ink }}>Year-by-year repayment</h3>
+              <p className="mt-1 text-sm" style={{ color: T.inkSoft }}>
+                How much you repay each year, and how much is still owed.
+              </p>
 
-              <div className="overflow-x-auto rounded-2xl" style={{ border: `1px solid ${T.line}` }}>
-                <table className="w-full text-sm min-w-140">
+              <div className="mt-5 overflow-x-auto rounded-2xl" style={{ border: `1px solid ${T.line}` }}>
+                <table className="w-full text-[13px] sm:text-sm">
                   <thead>
                     <tr style={{ background: T.navy }}>
-                      {["Year", "Principal (\u20B9)", "Interest (\u20B9)", "Total Payment (\u20B9)", "Balance (\u20B9)"].map(h => (
-                        <th key={h} className="px-5 py-3.5 text-left text-white font-semibold text-xs uppercase tracking-wide whitespace-nowrap">{h}</th>
+                      {["Year", "Principal", "Interest", "Balance"].map(h => (
+                        <th
+                          key={h}
+                          className="whitespace-nowrap px-2 py-3 sm:px-4 text-left text-[10.5px] font-semibold uppercase tracking-wide text-white"
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {amortRows.map((row, i) => (
-                      <tr key={row.yr} className="transition-colors" style={{ background: i % 2 === 0 ? T.paper : T.cream, borderBottom: `1px solid ${T.line}` }}>
-                        <td className="px-5 py-3.5 font-bold" style={{ color: T.ink }}>
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white" style={{ background: T.navy }}>
-                            {row.yr}
-                          </span>
+                      <tr
+                        key={row.yr}
+                        className="transition-colors"
+                        style={{
+                          background: i % 2 === 0 ? T.paper : "#F7FBFB",
+                          borderBottom: `1px solid ${T.line}`,
+                        }}
+                      >
+                        <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-bold" style={{ color: T.ink }}>
+                          Year {row.yr}
                         </td>
-                        <td className="px-5 py-3.5 font-semibold" style={{ color: T.emerald }}>{fmt(Math.round(row.yPrincipal))}</td>
-                        <td className="px-5 py-3.5 font-semibold" style={{ color: T.rust }}>{fmt(Math.round(row.yInterest))}</td>
-                        <td className="px-5 py-3.5 font-bold" style={{ color: T.navy }}>{fmt(Math.round(row.yTotal))}</td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 rounded-full h-1.5 max-w-20 hidden md:block" style={{ background: T.line }}>
-                              <div className="h-1.5 rounded-full" style={{ width: `${loanAmount > 0 ? Math.min(100, (row.balance / loanAmount) * 100) : 0}%`, background: T.gold }} />
-                            </div>
-                            <span className="font-semibold" style={{ color: T.ink }}>{fmt(Math.round(row.balance))}</span>
-                          </div>
+                        <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-semibold tabular-nums" style={{ color: T.emerald }}>
+                          {fmt(Math.round(row.yPrincipal))}
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-semibold tabular-nums" style={{ color: T.rust }}>
+                          {fmt(Math.round(row.yInterest))}
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-bold tabular-nums" style={{ color: T.navy }}>
+                          {fmt(Math.round(row.balance))}
                         </td>
                       </tr>
                     ))}
-                    <tr style={{ borderTop: `2px solid ${T.gold}`, background: "#FBF3E1" }}>
-                      <td className="px-5 py-3.5 font-extrabold text-xs uppercase tracking-wide" style={{ color: T.ink }}>Total</td>
-                      <td className="px-5 py-3.5 font-extrabold" style={{ color: T.emerald }}>{fmt(loanAmount)}</td>
-                      <td className="px-5 py-3.5 font-extrabold" style={{ color: T.rust }}>{fmt(Math.round(totalInterest))}</td>
-                      <td className="px-5 py-3.5 font-extrabold" style={{ color: T.navy }}>{fmt(Math.round(totalPayment))}</td>
-                      <td className="px-5 py-3.5 font-extrabold" style={{ color: T.inkSoft }}>—</td>
+                    <tr style={{ borderTop: `2px solid ${T.gold}`, background: "#FBF7E6" }}>
+                      <td className="px-2 py-3 sm:px-4 text-[10.5px] font-extrabold uppercase tracking-wide" style={{ color: T.ink }}>
+                        Total
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-extrabold tabular-nums" style={{ color: T.emerald }}>
+                        {fmt(loanAmount)}
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-3 sm:px-4 font-extrabold tabular-nums" style={{ color: T.rust }}>
+                        {fmt(Math.round(totalInterest))}
+                      </td>
+                      <td className="px-2 py-3 sm:px-4 font-extrabold" style={{ color: T.inkSoft }}>—</td>
                     </tr>
                   </tbody>
                 </table>
@@ -386,9 +563,11 @@ const EMICalculatorPage = () => {
       {/* FAQ */}
       <div style={{ background: T.cream, borderTop: `1px solid ${T.line}` }}>
         <Container>
-          <div className="py-10 px-4 md:px-8">
-            <div className="max-w-3xl mx-auto">
-              <h3 className="text-lg font-bold mb-6 text-center" style={{ ...serif, color: T.ink }}>Frequently Asked Questions</h3>
+          <div className="px-4 py-10 md:px-8">
+            <div className="mx-auto max-w-3xl">
+              <h3 className="mb-6 text-center text-lg font-bold" style={{ ...serif, color: T.ink }}>
+                Frequently asked questions
+              </h3>
               <div className="space-y-2.5">
                 {[
                   { q: "What is EMI?", a: "EMI (Equated Monthly Installment) is a fixed amount paid every month to repay your loan. It includes both the principal repayment and the interest charged." },
@@ -396,10 +575,23 @@ const EMICalculatorPage = () => {
                   { q: "Does prepayment reduce my EMI?", a: "Yes. Partial prepayment reduces the outstanding principal, which reduces the interest component. You can either lower your EMI or shorten your tenure." },
                   { q: "Is this calculator accurate?", a: "Our tool uses the standard reducing balance method. Actual EMI may vary slightly based on the lender's processing fee or exact disbursement date." },
                 ].map(faq => (
-                  <details key={faq.q} className="rounded-2xl group" style={{ background: T.paper, border: `1px solid ${T.line}` }}>
-                    <summary className="flex items-center justify-between px-5 py-4 font-semibold text-sm list-none cursor-pointer select-none" style={{ color: T.ink }}>
+                  <details
+                    key={faq.q}
+                    className="group rounded-2xl"
+                    style={{ background: T.paper, border: `1px solid ${T.line}` }}
+                  >
+                    <summary
+                      className="flex cursor-pointer select-none list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold"
+                      style={{ color: T.ink }}
+                    >
                       {faq.q}
-                      <svg className="w-4 h-4 group-open:rotate-180 transition-transform shrink-0" fill="none" stroke={T.gold} strokeWidth="2" viewBox="0 0 24 24">
+                      <svg
+                        className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+                        fill="none"
+                        stroke={T.gold}
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </summary>
