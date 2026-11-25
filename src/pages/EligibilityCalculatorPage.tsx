@@ -11,7 +11,6 @@ import { digitsOnly, formatIndianNumber, formatINRRounded } from "../utils/forma
 import {
   PRODUCTS,
   COMMERCIAL_LTV,
-  EDUCATION_FOIR_CAP,
   VEHICLE_FOIR,
   VEHICLE_LTV,
   DSCR_MIN,
@@ -593,7 +592,7 @@ const EligibilityCalculatorPage = () => {
             { label: "Scholarships", value: formatINRRounded(num(form.eduScholarship)) },
             ...(result.outcome.caps.some((cap) => cap.key === "foir")
               ? [{
-                  label: `Capacity at ${EDUCATION_FOIR_CAP * 100}% FOIR`,
+                  label: "Repayment capacity",
                   value: formatINRRounded(result.outcome.caps.find((cap) => cap.key === "foir")?.value ?? 0),
                 }]
               : []),
@@ -1192,7 +1191,7 @@ const EligibilityCalculatorPage = () => {
                           label="Co-applicant monthly income"
                           value={form.monthlyIncome}
                           onChange={(next) => set("monthlyIncome", next)}
-                          hint={`Lenders count ${EDUCATION_FOIR_CAP * 100}% of this towards the EMI`}
+                          hint="Counted towards the repayment capacity"
                         />
                         <AmountField
                           id="elig-edu-emi"

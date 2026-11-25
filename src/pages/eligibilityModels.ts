@@ -11,7 +11,7 @@ export type ModelFamily =
 export type AssetField = "propertyValue" | "turnover" | "vehiclePrice";
 
 export const FOIR_CAP = 0.7;
-export const EDUCATION_FOIR_CAP = 0.5;
+export const EDUCATION_FOIR_CAP = 0.7;
 export const VEHICLE_FOIR = 0.5;
 export const VEHICLE_LTV = 0.9;
 export const MIN_HEADROOM = 500;
@@ -837,7 +837,7 @@ export const educationEligibility = (input: EducationInput): EligibilityOutcome 
   if (income > 0) {
     caps.unshift({
       key: "foir",
-      label: `Repayment capacity at ${EDUCATION_FOIR_CAP * 100}% FOIR`,
+      label: "Repayment capacity",
       value: capacity,
     });
   }
@@ -860,7 +860,7 @@ export const educationEligibility = (input: EducationInput): EligibilityOutcome 
         "Indicative education loan",
         existing > 0
           ? `The co-applicant's existing EMIs of ${money(existing)} use up the income lenders will count, leaving no room for a new education loan.`
-          : `At ${EDUCATION_FOIR_CAP * 100}% of the co-applicant's ${money(income)} income, the available EMI supports less than the ${money(MIN_LOAN)} most lenders will sanction over ${tenureText(months)}.`,
+          : `The co-applicant's ${money(income)} income leaves too little EMI room for the ${money(MIN_LOAN)} most lenders will sanction over ${tenureText(months)}.`,
         [
           "Closing or part-pre-paying an existing loan frees up EMI headroom.",
           "A longer repayment tenure after the moratorium lowers the EMI and raises the limit.",
@@ -902,7 +902,7 @@ export const educationEligibility = (input: EducationInput): EligibilityOutcome 
         }
       : null,
     message: income > 0
-      ? `A ${money(cost)} course less ${money(scholarships)} of scholarships and ${money(margin)} of margin leaves ${money(value)}; the co-applicant's income supports ${money(capacity)} at a ${EDUCATION_FOIR_CAP * 100}% FOIR, so the estimate is ${money(loan)}, repayable over ${tenureText(months)}.`
+      ? `A ${money(cost)} course less ${money(scholarships)} of scholarships and ${money(margin)} of margin leaves ${money(value)}; the co-applicant's income supports ${money(capacity)}, so the estimate is ${money(loan)}, repayable over ${tenureText(months)}.`
       : `A course costing ${money(cost)} less ${money(scholarships)} of scholarships and ${money(margin)} of margin supports about ${money(loan)}, repayable over ${tenureText(months)}.`,
     suggestions: [],
   };
