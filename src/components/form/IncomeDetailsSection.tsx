@@ -1,4 +1,5 @@
-import { FieldError, FieldLabel, AmountField, SelectField, SelectWithOther, TextField, DateField, OtherOptionList } from "./FormControls";
+import { FieldError, FieldLabel, AmountField, SelectField, SelectWithOther, TextField, OtherOptionList } from "./FormControls";
+import { DateField } from "./DateField";
 import { BusinessPlaceSection } from "./BusinessPlaceSection";
 import { FORM } from "../../constants/formStyles";
 import { THEME as C } from "../../constants/theme";
