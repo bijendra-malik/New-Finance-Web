@@ -18,6 +18,7 @@ import {
 SelectWithOther, TenureYearsField, TextField,
 } from "../../../../../components/form/FormControls";
 import { buildProductSections } from "./receiptSections";
+import { exposureState } from "../../shared/exposure";
 
 interface ApplicationFormProps {
   userName?: string;
@@ -53,9 +54,8 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
     [masters.personalEmploymentTypes]
   );
 
-  const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  const pillBanksSelected = [form.existingBanks].some(a => a.length > 0);
-  const pillLoanTypesSelected = [form.existingLoanTypes].some(a => a.length > 0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanks], [form.existingLoanTypes]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({
     set: (key, value) => set(key as keyof FormData, value),

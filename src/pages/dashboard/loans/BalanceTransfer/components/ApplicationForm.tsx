@@ -15,6 +15,7 @@ import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithO
 import { buildProductSections } from "./receiptSections";
 import { applyBalanceTransfer } from "../../../../../api/loanApplications";
 import type { BalanceTransferApplication } from "../../../../../api/loanApplications";
+import { exposureState } from "../../shared/exposure";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's BalanceTransfer document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { BalanceTransferApplication } from "../../../../../api/loanApplications";
@@ -74,9 +75,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [masters.homeEmploymentTypes]
   );
 
-const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
-  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanks], [form.existingLoanTypes]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 

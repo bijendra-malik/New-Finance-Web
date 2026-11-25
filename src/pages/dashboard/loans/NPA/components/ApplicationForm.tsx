@@ -15,6 +15,7 @@ import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOption
 import { buildProductSections } from "./receiptSections";
 import { applyNPA } from "../../../../../api/loanApplications";
 import type { NPAApplication } from "../../../../../api/loanApplications";
+import { exposureState } from "../../shared/exposure";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Field set mirrors LoanAgainstProperty's ApplicationForm — NPA resolution is typically negotiated against the same kind of property collateral.
 export type { NPAApplication } from "../../../../../api/loanApplications";
@@ -91,10 +92,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [masters.npaEmploymentTypes]
   );
 
-const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
-  const pillBanksSelected = [form.existingBanksNpa, form.existingBanksNonNpa].some(a=>a.length>0);
-  const pillLoanTypesSelected = [form.existingLoanTypesNpa, form.existingLoanTypesNonNpa].some(a=>a.length>0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanksNpa, form.existingBanksNonNpa], [form.existingLoanTypesNpa, form.existingLoanTypesNonNpa]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business", "collateralProperty"] });
 

@@ -17,6 +17,7 @@ import { buildProductSections } from "./receiptSections";
 
 import { applyGoldLoan } from "../../../../../api/loanApplications";
 import type { GoldLoanApplication } from "../../../../../api/loanApplications";
+import { exposureState } from "../../shared/exposure";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Field set mirrors LoanAgainstProperty's ApplicationForm.
 export type { GoldLoanApplication } from "../../../../../api/loanApplications";
@@ -83,10 +84,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [masters.goldLoanEmploymentTypes]
   );
 
-const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
-  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
-  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanks], [form.existingLoanTypes]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 
