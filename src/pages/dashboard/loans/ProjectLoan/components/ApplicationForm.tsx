@@ -11,10 +11,12 @@ import IncomeDetailsSection from "../../../../../components/form/IncomeDetailsSe
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatIndianNumber } from "../../../../../utils/formatters";
 import { PAN_REGEX, COMPANY_NAME_REGEX, GSTIN_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
-import { AmountField, DateField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithOther, TenureYearsField } from "../../../../../components/form/FormControls";
+import { AmountField, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, SelectWithOther, TenureYearsField } from "../../../../../components/form/FormControls";
+import { DateField } from "../../../../../components/form/DateField";
 import { buildProductSections } from "./receiptSections";
 import { applyProjectLoan } from "../../../../../api/loanApplications";
 import type { ProjectLoanApplication } from "../../../../../api/loanApplications";
+import { exposureState } from "../../shared/exposure";
 
 // Local type — no backend yet, this is purely the shape used to render the UI success state Type lives in the API layer (aligned with the backend's ProjectLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { ProjectLoanApplication } from "../../../../../api/loanApplications";
@@ -76,10 +78,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [masters.homeEmploymentTypes]
   );
 
-const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
-  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
-  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanks], [form.existingLoanTypes]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 

@@ -15,8 +15,10 @@ import { BusinessPlaceSection } from "../../../../../components/form/BusinessPla
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
 import { formatGSTIN, formatPAN } from "../../../../../utils/formatters";
 import { PAN_REGEX, GSTIN_REGEX, COMPANY_NAME_REGEX, stripOther, validateLoanAmount, validatePersonalDetails, validateTenure } from "../../../../../utils/validation";
-import { AmountField, DateField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
+import { AmountField, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
+import { DateField } from "../../../../../components/form/DateField";
 import { buildProductSections } from "./receiptSections";
+import { exposureState } from "../../shared/exposure";
 
 // Type lives in the API layer now (aligned with the backend's BusinessLoan document); re-exported so the dashboard and LoanStatus imports keep working unchanged.
 export type { BusinessLoanApplication };
@@ -71,10 +73,8 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
     [masters.businessEmploymentTypes]
   );
 
-  const hasExposure = parseInt(form.existingEMI) > 0 || parseInt(form.existingLoanAmount) > 0;
-  // Inverse pill gate: if any existing-loan bank/type pill is selected, some exposure must be entered.
-  const pillBanksSelected = [form.existingBanks].some(a=>a.length>0);
-  const pillLoanTypesSelected = [form.existingLoanTypes].some(a=>a.length>0);
+  const { hasExposure, pillBanksSelected, pillLoanTypesSelected } =
+    exposureState(form.existingEMI, form.existingLoanAmount, [form.existingBanks], [form.existingLoanTypes]);
 
   const { onPincodeResolved, mismatchErrors } = usePincodeSections({ set: (key, value) => set(key as keyof FormData, value), loadCities, sections: ["residence", "business"] });
 
