@@ -39,6 +39,7 @@ import {
   OCCUPATIONS,
   maxTenureFor,
   num,
+  optionalNum,
   type FormState,
 } from "./formState";
 import { Card, FieldError, FieldLabel, PlainField } from "./fieldControls";
@@ -111,8 +112,8 @@ const EligibilityCalculatorPage = () => {
     propertyValue: num(form.lrdPropertyValue),
     repaymentMonths: LRD_TENURE_YEARS * 12,
     ltvPercent: num(form.lrdLtv),
-    deductionPct: num(form.lrdDeduction),
-    coveragePct: num(form.lrdCoverage),
+    deductionPct: optionalNum(form.lrdDeduction),
+    coveragePct: optionalNum(form.lrdCoverage),
     creditScore: num(form.creditScore),
   };
   const lrdReady =
@@ -152,7 +153,7 @@ const EligibilityCalculatorPage = () => {
         projectCost: num(form.projectCost),
         promoterContribution: num(form.projectContribution),
         monthlyCashFlow: num(form.projectCashFlow),
-        dscr: num(form.projectDscr),
+        dscr: optionalNum(form.projectDscr),
         creditScore: num(form.creditScore),
       });
     }
@@ -166,8 +167,8 @@ const EligibilityCalculatorPage = () => {
         monthlyIncome: num(form.monthlyIncome),
         existingEmi: num(form.existingEmi),
         coApplicantIncome: num(form.commercialCoApplicant),
-        foirPct: num(form.commercialFoir),
-        ltvPct: num(form.commercialLtv),
+        foirPct: optionalNum(form.commercialFoir),
+        ltvPct: optionalNum(form.commercialLtv),
         creditScore: num(form.creditScore),
       });
     }
@@ -231,8 +232,8 @@ const EligibilityCalculatorPage = () => {
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
       downPayment: num(form.vehicleDownPayment),
-      foirPct: num(form.vehicleFoir),
-      ltvPct: num(form.vehicleLtv),
+      foirPct: optionalNum(form.vehicleFoir),
+      ltvPct: optionalNum(form.vehicleLtv),
       assetType: product.key === "lap" ? lapAssetType : undefined,
       cityCategory: product.key === "lap" ? form.lapCity : undefined,
       existingLoanOnAsset: product.key === "lap" ? num(form.lapExistingLoan) : 0,
@@ -412,7 +413,7 @@ const EligibilityCalculatorPage = () => {
             ]
           : result.product.family === "commercial"
             ? [
-                { label: "Property-based limit", value: formatINRRounded(num(form.propertyValue) * ((num(form.commercialLtv) || COMMERCIAL_LTV * 100) / 100)) },
+                { label: "Property-based limit", value: formatINRRounded(num(form.propertyValue) * ((optionalNum(form.commercialLtv) ?? COMMERCIAL_LTV * 100) / 100)) },
                 { label: "Monthly rent", value: formatINRRounded(num(form.commercialRent)) },
                 { label: "Tenure", value: tenureText(result.outcome.months) },
               ]

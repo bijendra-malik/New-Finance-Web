@@ -1,4 +1,4 @@
-import { monthsToMaturity, VEHICLE_FOIR, VEHICLE_LTV, type ProductSpec } from "./models";
+import { monthsToMaturity, type ProductSpec } from "./models";
 
 export const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner"] as const;
 export const BUSINESS_OCCUPATIONS = ["Self-Employed", "Business Owner"] as const;
@@ -20,6 +20,11 @@ export const CARATS = [24, 22, 20, 18] as const;
 export const num = (value: string): number => {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+};
+
+export const optionalNum = (value: string): number | undefined => {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 };
 
 export const maxTenureFor = (product: ProductSpec, age: number, occupation: string): number => {
@@ -101,19 +106,19 @@ export const INITIAL_FORM: FormState = {
   lrdPropertyValue: "",
   lrdLtv: "",
   vehicleDownPayment: "",
-  vehicleFoir: String(VEHICLE_FOIR * 100),
-  vehicleLtv: String(VEHICLE_LTV * 100),
+  vehicleFoir: "",
+  vehicleLtv: "",
   commercialCoApplicant: "",
-  commercialFoir: "70",
-  commercialLtv: "70",
-  projectDscr: "1.25",
+  commercialFoir: "",
+  commercialLtv: "",
+  projectDscr: "",
   wcCurrentAssets: "",
   wcCurrentLiabilities: "",
   odMode: "turnover",
   odMargin: "",
   wcMethod: "turnover",
-  lrdDeduction: "10",
-  lrdCoverage: "70",
+  lrdDeduction: "",
+  lrdCoverage: "",
   eduFees: "",
   eduHostel: "",
   eduOther: "",
@@ -123,7 +128,7 @@ export const INITIAL_FORM: FormState = {
   projectContribution: "",
   projectCashFlow: "",
   commercialRent: "",
-  wcAssessment: "18.75",
+  wcAssessment: "",
   wcMargin: "",
   existingEmi: "",
   propertyValue: "",
