@@ -20,6 +20,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           value={form.turnover}
           onChange={(next) => set("turnover", next)}
           error={errors.turnover}
+          placeholder="e.g. 2,00,00,000"
           hint="What you expect over the next 12 months"
           required
         />
@@ -30,6 +31,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.stock}
             onChange={(next) => set("stock", next)}
             error={errors.stock}
+            placeholder="e.g. 20,00,000"
             hint="Paid stock at cost"
             required={form.odMode === "drawingPower"}
           />
@@ -39,6 +41,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.debtors}
             onChange={(next) => set("debtors", next)}
             error={errors.debtors}
+            placeholder="e.g. 10,00,000"
             hint="Within the last 90 days"
             required={form.odMode === "drawingPower"}
           />
@@ -48,6 +51,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           label="Other short-term dues"
           value={form.otherCurrentLiabilities}
           onChange={(next) => set("otherCurrentLiabilities", next)}
+          placeholder="e.g. 4,00,000"
           hint="Excluding bank loans"
         />
 
@@ -86,6 +90,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Borrower's margin"
             value={form.odMargin}
             onChange={(next) => set("odMargin", next)}
+            placeholder="e.g. 5,00,000"
             hint="Deducted from drawing power; your own contribution"
           />
         )}
@@ -110,6 +115,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.projectContribution}
             onChange={(next) => set("projectContribution", next)}
             error={errors.projectContribution}
+            placeholder="e.g. 1,50,00,000"
             hint="Your own equity in the project"
             required
           />
@@ -119,6 +125,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           label="Projected monthly cash flow (optional)"
           value={form.projectCashFlow}
           onChange={(next) => set("projectCashFlow", next)}
+          placeholder="e.g. 12,00,000"
           hint={`Caps the loan at a ${DSCR_MIN}× DSCR on the project's cash flow`}
         />
         <PlainField
@@ -126,6 +133,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           label="DSCR assumption (×)"
           value={form.projectDscr}
           onChange={(next) => set("projectDscr", next.replace(/[^\d.]/g, ""))}
+          placeholder="e.g. 1.25"
           inputMode="tel"
           maxLength={4}
           hint="Debt service cover lenders ask for; 1.25× is typical"
@@ -151,6 +159,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Monthly rent received (optional)"
             value={form.commercialRent}
             onChange={(next) => set("commercialRent", next)}
+            placeholder="e.g. 1,00,000"
             hint={`Caps the loan at a ${DSCR_MIN}× DSCR on the rent`}
           />
         </div>
@@ -160,6 +169,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Monthly income (optional)"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
+            placeholder="e.g. 1,50,000"
             hint="Caps the loan at what you can repay"
           />
           <AmountField
@@ -168,6 +178,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
+            placeholder="e.g. 20,000 or 0"
             hint="Enter 0 if you have none"
             required
           />
@@ -178,6 +189,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Co-applicant monthly income (optional)"
             value={form.commercialCoApplicant}
             onChange={(next) => set("commercialCoApplicant", next)}
+            placeholder="e.g. 60,000"
             hint="Added to your income when the lender counts both"
           />
           <PlainField
@@ -185,6 +197,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="FOIR (%)"
             value={form.commercialFoir}
             onChange={(next) => set("commercialFoir", next.replace(/[^\d.]/g, ""))}
+            placeholder="e.g. 70"
             inputMode="tel"
             maxLength={4}
             hint="Share of income lenders allow for all EMIs; 70% is typical"
@@ -195,6 +208,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           label="LTV (%)"
           value={form.commercialLtv}
           onChange={(next) => set("commercialLtv", next.replace(/[^\d.]/g, ""))}
+          placeholder="e.g. 70"
           inputMode="tel"
           maxLength={3}
           hint="Share of the property value lenders fund; 70% is typical"
@@ -210,6 +224,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           value={form.turnover}
           onChange={(next) => set("turnover", next)}
           error={errors.turnover}
+          placeholder="e.g. 3,00,00,000"
           hint="What you expect over the next 12 months"
           required
         />
@@ -230,6 +245,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Borrower's margin"
             value={form.wcMargin}
             onChange={(next) => set("wcMargin", next)}
+            placeholder="e.g. 5,00,000"
             hint="Your own contribution to the working capital"
           />
         </div>
@@ -240,6 +256,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.wcCurrentAssets}
             onChange={(next) => set("wcCurrentAssets", next)}
             error={errors.wcCurrentAssets}
+            placeholder="e.g. 60,00,000"
             hint="Inventory, receivables and other qualifying assets"
             required={form.wcMethod === "drawingPower"}
           />
@@ -248,6 +265,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Current liabilities"
             value={form.wcCurrentLiabilities}
             onChange={(next) => set("wcCurrentLiabilities", next)}
+            placeholder="e.g. 20,00,000"
             hint="Trade creditors and other current liabilities"
           />
         </div>

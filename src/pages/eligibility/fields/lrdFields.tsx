@@ -89,6 +89,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             label="Rental deduction (%)"
             value={form.lrdDeduction}
             onChange={(next) => set("lrdDeduction", next.replace(/[^\d.]/g, ""))}
+            placeholder="e.g. 10"
             inputMode="tel"
             maxLength={4}
             hint="Vacancy, expenses and lender adjustments; 10% is typical"
@@ -98,6 +99,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             label="Rent-to-EMI coverage (%)"
             value={form.lrdCoverage}
             onChange={(next) => set("lrdCoverage", next.replace(/[^\d.]/g, ""))}
+            placeholder="e.g. 70"
             inputMode="tel"
             maxLength={3}
             hint="Share of net rent the EMI may use; 70% is typical"

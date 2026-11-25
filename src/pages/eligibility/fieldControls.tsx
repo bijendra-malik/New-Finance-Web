@@ -13,7 +13,7 @@ export const FieldError = ({ children }: { children?: string }) =>
   children ? <p className="mt-1 text-[11.5px] font-semibold text-red-500">{children}</p> : null;
 
 export const AmountField = ({
-  id, label, value, onChange, hint, error, placeholder = "0", required = false,
+  id, label, value, onChange, hint, error, placeholder, required = false,
 }: {
   id: string; label: string; value: string; onChange: (next: string) => void;
   hint?: string; error?: string; placeholder?: string; required?: boolean;

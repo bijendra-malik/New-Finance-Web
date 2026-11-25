@@ -61,6 +61,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
+            placeholder="e.g. 12,000 or 0"
             hint="Enter 0 if you have none"
             required
           />
@@ -73,6 +74,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             value={form[asset.field]}
             onChange={(next) => set(asset.field, next)}
             error={errors[asset.field]}
+            placeholder={product.key === "vehicleLoan" ? "e.g. 12,00,000" : "e.g. 80,00,000"}
             required
             hint={
               asset.ltvSlabs && form[asset.field]
@@ -179,6 +181,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
               label="Existing loan on this property (optional)"
               value={form.lapExistingLoan}
               onChange={(next) => set("lapExistingLoan", next)}
+              placeholder="e.g. 15,00,000 or 0"
               hint="Outstanding balance, netted off the amount you can borrow"
             />
           </div>

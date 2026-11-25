@@ -29,6 +29,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             label="Hostel and living costs"
             value={form.eduHostel}
             onChange={(next) => set("eduHostel", next)}
+            placeholder="e.g. 1,50,000"
             hint="For the duration of the course"
           />
           <AmountField
@@ -36,6 +37,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             label="Other eligible expenses"
             value={form.eduOther}
             onChange={(next) => set("eduOther", next)}
+            placeholder="e.g. 50,000"
             hint="Books, equipment, exam and travel costs"
           />
           <AmountField
@@ -43,6 +45,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             label="Scholarships or grants"
             value={form.eduScholarship}
             onChange={(next) => set("eduScholarship", next)}
+            placeholder="e.g. 25,000"
             hint="Leave blank if none"
           />
         </div>
@@ -51,6 +54,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
           label="Margin money"
           value={form.eduMargin}
           onChange={(next) => set("eduMargin", next)}
+          placeholder="e.g. 1,00,000"
           hint="The part of the cost your family funds itself"
         />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -59,6 +63,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             label="Co-applicant monthly income"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
+            placeholder="e.g. 80,000"
             hint="Counted towards the repayment capacity"
           />
           <AmountField
@@ -67,6 +72,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
+            placeholder="e.g. 5,000 or 0"
             hint="Enter 0 if none"
             required
           />

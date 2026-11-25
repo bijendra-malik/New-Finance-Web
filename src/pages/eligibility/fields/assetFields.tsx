@@ -23,6 +23,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
               min={1}
               step={1}
               value={form.goldGrams}
+              placeholder="e.g. 50"
               onChange={(event) => set("goldGrams", event.target.value)}
               className={fieldClass(errors.goldGrams)}
             />
@@ -38,6 +39,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.goldRate}
             onChange={(next) => set("goldRate", next)}
             error={errors.goldRate}
+            placeholder="e.g. 7,200"
             hint="Today's rate for the purity you selected"
             required
           />
@@ -70,6 +72,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="Monthly income (optional)"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
+            placeholder="e.g. 60,000"
             hint="Helps us check you can repay comfortably"
           />
           <AmountField
@@ -78,6 +81,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
+            placeholder="e.g. 8,000 or 0"
             hint="Enter 0 if you have none"
             required
           />
@@ -93,6 +97,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
           value={form.shareValue}
           onChange={(next) => set("shareValue", next)}
           error={errors.shareValue}
+          placeholder="e.g. 10,00,000"
           hint="Closing value of the approved shares you will pledge"
           required
         />
@@ -102,6 +107,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="Monthly income (optional)"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
+            placeholder="e.g. 1,00,000"
             hint="Caps the loan at what you can repay"
           />
           <AmountField
@@ -110,6 +116,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
+            placeholder="e.g. 8,000 or 0"
             hint="Enter 0 if you have none"
             required
           />
@@ -125,6 +132,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
           value={form.vehicleDownPayment}
           onChange={(next) => set("vehicleDownPayment", next)}
           error={errors.vehicleDownPayment}
+          placeholder="e.g. 1,50,000 or 0"
           hint="Paid upfront; the loan cannot exceed the on-road price less this amount. Enter 0 if you are financing the full price"
           required
         />
@@ -134,6 +142,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="FOIR (%)"
             value={form.vehicleFoir}
             onChange={(next) => set("vehicleFoir", next.replace(/[^\d.]/g, ""))}
+            placeholder="e.g. 50"
             inputMode="tel"
             maxLength={4}
             hint="Share of income lenders allow for all EMIs; 50% is typical"
@@ -143,6 +152,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="LTV (%)"
             value={form.vehicleLtv}
             onChange={(next) => set("vehicleLtv", next.replace(/[^\d.]/g, ""))}
+            placeholder="e.g. 90"
             inputMode="tel"
             maxLength={3}
             hint="Share of the on-road price lenders fund; 90% is typical"
