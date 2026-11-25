@@ -21,6 +21,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("turnover", next)}
           error={errors.turnover}
           hint="What you expect over the next 12 months"
+          required
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
@@ -28,14 +29,18 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="Stock / inventory"
             value={form.stock}
             onChange={(next) => set("stock", next)}
+            error={errors.stock}
             hint="Paid stock at cost"
+            required={form.odMode === "drawingPower"}
           />
           <AmountField
             id="elig-wc-debtors"
             label="Payments due from customers"
             value={form.debtors}
             onChange={(next) => set("debtors", next)}
+            error={errors.debtors}
             hint="Within the last 90 days"
+            required={form.odMode === "drawingPower"}
           />
         </div>
         <AmountField
@@ -106,6 +111,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("projectContribution", next)}
             error={errors.projectContribution}
             hint="Your own equity in the project"
+            required
           />
         </div>
         <AmountField
@@ -138,6 +144,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             error={errors.propertyValue}
             placeholder="e.g. 2,00,00,000"
             hint="Today's market value, not the purchase price; lenders fund about 70% of it"
+            required
           />
           <AmountField
             id="elig-commercial-rent"
@@ -160,7 +167,9 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             label="EMIs you already pay"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
-            hint="Leave blank if none"
+            error={errors.existingEmi}
+            hint="Enter 0 if you have none"
+            required
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -202,6 +211,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("turnover", next)}
           error={errors.turnover}
           hint="What you expect over the next 12 months"
+          required
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <PlainField
@@ -226,14 +236,16 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
             id="elig-wct-current-assets"
-            label="Eligible current assets (optional)"
+            label="Eligible current assets"
             value={form.wcCurrentAssets}
             onChange={(next) => set("wcCurrentAssets", next)}
+            error={errors.wcCurrentAssets}
             hint="Inventory, receivables and other qualifying assets"
+            required={form.wcMethod === "drawingPower"}
           />
           <AmountField
             id="elig-wct-current-liabilities"
-            label="Current liabilities (optional)"
+            label="Current liabilities"
             value={form.wcCurrentLiabilities}
             onChange={(next) => set("wcCurrentLiabilities", next)}
             hint="Trade creditors and other current liabilities"

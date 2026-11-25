@@ -16,7 +16,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <FieldLabel htmlFor="elig-gold-weight">Gold weight (grams)</FieldLabel>
+            <FieldLabel htmlFor="elig-gold-weight" required>Gold weight (grams)</FieldLabel>
             <input
               id="elig-gold-weight"
               type="number"
@@ -39,6 +39,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("goldRate", next)}
             error={errors.goldRate}
             hint="Today's rate for the purity you selected"
+            required
           />
         </div>
 
@@ -76,7 +77,9 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="EMIs you already pay"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
-            hint="Leave blank if none"
+            error={errors.existingEmi}
+            hint="Enter 0 if you have none"
+            required
           />
         </div>
       </div>
@@ -91,6 +94,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("shareValue", next)}
           error={errors.shareValue}
           hint="Closing value of the approved shares you will pledge"
+          required
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
@@ -105,7 +109,9 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             label="EMIs you already pay"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
-            hint="Leave blank if none"
+            error={errors.existingEmi}
+            hint="Enter 0 if you have none"
+            required
           />
         </div>
       </div>
@@ -118,7 +124,9 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
           label="Down payment"
           value={form.vehicleDownPayment}
           onChange={(next) => set("vehicleDownPayment", next)}
-          hint="Paid upfront; the loan cannot exceed the on-road price less this amount"
+          error={errors.vehicleDownPayment}
+          hint="Paid upfront; the loan cannot exceed the on-road price less this amount. Enter 0 if you are financing the full price"
+          required
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <PlainField

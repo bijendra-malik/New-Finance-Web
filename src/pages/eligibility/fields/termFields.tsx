@@ -53,13 +53,16 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             error={errors.monthlyIncome}
             placeholder="e.g. 75,000"
             hint={incomeHint}
+            required
           />
           <AmountField
             id="elig-emi"
             label="EMIs you already pay"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
-            hint="Leave blank if none"
+            error={errors.existingEmi}
+            hint="Enter 0 if you have none"
+            required
           />
         </div>
 
@@ -70,6 +73,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             value={form[asset.field]}
             onChange={(next) => set(asset.field, next)}
             error={errors[asset.field]}
+            required
             hint={
               asset.ltvSlabs && form[asset.field]
                 ? `Up to ${Math.round(assetLtv * 100)}% for this property value`
@@ -111,6 +115,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                 onChange={(next) => set("lapPropertyOther", next)}
                 placeholder="e.g. Agricultural land, warehouse"
                 error={errors.lapPropertyOther}
+                required
               />
             )}
 
@@ -162,8 +167,10 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                 label="Monthly rent received"
                 value={form.lapRent}
                 onChange={(next) => set("lapRent", next)}
+                error={errors.lapRent}
                 placeholder="e.g. 25,000"
                 hint="Lenders count about 75% of the rent as income"
+                required
               />
             )}
 

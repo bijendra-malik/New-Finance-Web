@@ -46,6 +46,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             error={errors.lrdRent}
             placeholder="e.g. 1,20,000"
             hint="Rent your tenant pays under the registered lease"
+            required
           />
           <PlainField
             id="elig-lrd-lease"
@@ -56,6 +57,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             maxLength={2}
             placeholder="e.g. 5"
             error={errors.lrdLeaseYears}
+            required
           />
           <AmountField
             id="elig-lrd-property"
@@ -65,6 +67,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             error={errors.lrdPropertyValue}
             placeholder="e.g. 2,50,00,000"
             hint="Current market value of the leased property"
+            required
           />
           <PlainField
             id="elig-lrd-ltv"
@@ -75,6 +78,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             maxLength={4}
             placeholder="e.g. 70"
             error={errors.lrdLtv}
+            required
             hint={`Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`}
           />
         </div>

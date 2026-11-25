@@ -22,6 +22,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             error={errors.eduFees}
             placeholder="e.g. 8,00,000"
             hint="Tuition for the full programme"
+            required
           />
           <AmountField
             id="elig-edu-hostel"
@@ -65,7 +66,9 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             label="EMIs already paid"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
-            hint="Leave blank if none"
+            error={errors.existingEmi}
+            hint="Enter 0 if none"
+            required
           />
         </div>
       </div>

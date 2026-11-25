@@ -252,8 +252,15 @@ const EligibilityCalculatorPage = () => {
       if (product.asset && num(form[product.asset.field]) <= 0) {
         next[product.asset.field] = `Enter the ${product.asset.label.toLowerCase()}`;
       }
+      if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
+      if (product.key === "vehicleLoan" && !form.vehicleDownPayment.trim()) {
+        next.vehicleDownPayment = "Enter the down payment you can pay (0 if none)";
+      }
       if (product.key === "lap" && form.lapPropertyType === "Other" && !form.lapPropertyOther.trim()) {
         next.lapPropertyOther = "Name the property type";
+      }
+      if (product.key === "lap" && form.lapUsage === "Rented out" && num(form.lapRent) <= 0) {
+        next.lapRent = "Enter the monthly rent received";
       }
     }
     if (product.family === "lrd") {
@@ -267,17 +274,21 @@ const EligibilityCalculatorPage = () => {
         next.lrdLtv = `Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`;
       }
     }
-    if (product.family === "education" && num(form.eduFees) <= 0) {
-      next.eduFees = "Enter the course fees";
+    if (product.family === "education") {
+      if (num(form.eduFees) <= 0) next.eduFees = "Enter the course fees";
+      if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
     }
     if (product.family === "project") {
       if (num(form.projectCost) <= 0) next.projectCost = "Enter the total project cost";
-      else if (num(form.projectContribution) >= num(form.projectCost)) {
+      else if (num(form.projectContribution) <= 0) {
+        next.projectContribution = "Enter the promoter contribution";
+      } else if (num(form.projectContribution) >= num(form.projectCost)) {
         next.projectContribution = "Promoter contribution must be less than the project cost";
       }
     }
-    if (product.family === "commercial" && num(form.propertyValue) <= 0) {
-      next.propertyValue = "Enter the commercial property's market value";
+    if (product.family === "commercial") {
+      if (num(form.propertyValue) <= 0) next.propertyValue = "Enter the commercial property's market value";
+      if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
     }
     if (product.family === "turnover") {
       if (num(form.turnover) <= 0) next.turnover = "Enter your projected annual turnover";
@@ -285,19 +296,27 @@ const EligibilityCalculatorPage = () => {
       if (form.wcAssessment && (pct <= 0 || pct > 100)) {
         next.wcAssessment = "Assessment must be between 1% and 100% of turnover";
       }
+      if (form.wcMethod === "drawingPower" && num(form.wcCurrentAssets) <= 0) {
+        next.wcCurrentAssets = "Enter the eligible current assets for the drawing power";
+      }
     }
     if (product.family === "gold") {
       if (num(form.goldGrams) <= 0) next.goldGrams = "Enter the gold weight in grams";
       if (num(form.goldRate) <= 0) next.goldRate = "Enter the rate per gram";
+      if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
     }
-    if (product.family === "wc" && num(form.turnover) <= 0) {
-      next.turnover = "Enter your projected annual turnover";
+    if (product.family === "wc") {
+      if (num(form.turnover) <= 0) next.turnover = "Enter your projected annual turnover";
+      if (form.odMode === "drawingPower" && num(form.stock) + num(form.debtors) <= 0) {
+        next.stock = "Enter the stock and receivables behind the drawing power";
+      }
     }
     const score = num(form.creditScore);
     if (!form.creditScore) next.creditScore = "Enter your credit score";
     else if (score < 300 || score > 900) next.creditScore = "Credit scores run from 300 to 900";
-    if (product.family === "share" && num(form.shareValue) <= 0) {
-      next.shareValue = "Enter the market value of the shares";
+    if (product.family === "share") {
+      if (num(form.shareValue) <= 0) next.shareValue = "Enter the market value of the shares";
+      if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
     }
 
     if (!form.dob) next.dob = "Enter your date of birth";
@@ -574,7 +593,7 @@ const EligibilityCalculatorPage = () => {
                     lapAssetType={lapAssetType}
                   />
                   <div>
-                    <FieldLabel htmlFor="elig-credit">Credit score (CIBIL)</FieldLabel>
+                    <FieldLabel htmlFor="elig-credit" required>Credit score (CIBIL)</FieldLabel>
                     <input
                       id="elig-credit"
                       type="text"
@@ -603,7 +622,7 @@ const EligibilityCalculatorPage = () => {
                   </div>
 
                   <div>
-                    <FieldLabel htmlFor="elig-dob">Date of birth</FieldLabel>
+                    <FieldLabel htmlFor="elig-dob" required>Date of birth</FieldLabel>
                     <DateOfBirthPicker
                       id="elig-dob"
                       value={form.dob}
@@ -632,6 +651,7 @@ const EligibilityCalculatorPage = () => {
                       onChange={(next) => set("fullName", next)}
                       placeholder="As per your PAN card"
                       error={errors.fullName}
+                      required
                     />
                   </div>
                   <PlainField
@@ -643,6 +663,7 @@ const EligibilityCalculatorPage = () => {
                     maxLength={10}
                     placeholder="10-digit mobile number"
                     error={errors.mobile}
+                    required
                   />
                   <PlainField
                     id="elig-email"
@@ -652,6 +673,7 @@ const EligibilityCalculatorPage = () => {
                     inputMode="email"
                     placeholder="you@example.com"
                     error={errors.email}
+                    required
                   />
                   <div className="sm:col-span-2">
                     <label className="flex cursor-pointer items-start gap-3">
