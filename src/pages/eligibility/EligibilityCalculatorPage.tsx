@@ -6,6 +6,7 @@ import Container from "../../components/common/Container";
 import useSEO from "../../hooks/useSEO";
 import { useApplyGate } from "../../hooks/useApplyGate";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
+import { submitEligibility } from "../../api/eligibility";
 import { EMAIL_REGEX, MOBILE_REGEX, ageOn } from "../../utils/validation";
 import { DateOfBirthPicker } from "../../components/form/FormControls";
 import { formatINRRounded } from "../../utils/formatters";
@@ -21,6 +22,7 @@ import {
   productByKey,
   productBySlug,
   productPath,
+  productSlug,
   projectEligibility,
   LRD_LTV_MAX,
   LRD_LTV_MIN,
@@ -67,6 +69,8 @@ const EligibilityCalculatorPage = () => {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ outcome: EligibilityOutcome; product: ProductSpec } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const occupation =
     product.key === "personal"
@@ -246,8 +250,9 @@ const EligibilityCalculatorPage = () => {
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     const next: Record<string, string> = {};
 
     if (product.family === "term") {
@@ -337,7 +342,30 @@ const EligibilityCalculatorPage = () => {
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    setResult({ outcome: computeOutcome(), product });
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      await submitEligibility(productSlug(product), {
+        fullName: form.fullName.trim(),
+        mobile: form.mobile,
+        email: form.email.trim(),
+        dob: form.dob,
+        ...(product.key === "personal" ? {} : { occupation }),
+        creditScore: Math.round(num(form.creditScore)),
+        authorized: form.authorized,
+        monthlyIncome: num(form.monthlyIncome),
+        existingEmi: num(form.existingEmi),
+      });
+      setResult({ outcome: computeOutcome(), product });
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error && error.message
+          ? error.message
+          : "We could not check your eligibility just now. Please try again in a moment.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const startApplication = () => {
@@ -703,11 +731,21 @@ const EligibilityCalculatorPage = () => {
               </Card>
 
               <div className="pt-1">
+                {submitError && (
+                  <p
+                    role="alert"
+                    className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] leading-5 text-red-700"
+                  >
+                    {submitError}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="w-full cursor-pointer rounded-xl bg-(--brand-navy) px-6 py-4 text-sm font-bold text-white shadow-[0_12px_28px_-16px_rgba(6,106,156,0.9)] transition-all hover:-translate-y-0.5 hover:bg-(--brand-navy-deep) active:translate-y-0"
+                  disabled={submitting}
+                  aria-busy={submitting}
+                  className="w-full cursor-pointer rounded-xl bg-(--brand-navy) px-6 py-4 text-sm font-bold text-white shadow-[0_12px_28px_-16px_rgba(6,106,156,0.9)] transition-all hover:-translate-y-0.5 hover:bg-(--brand-navy-deep) active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                 >
-                  Check my eligibility
+                  {submitting ? "Checking…" : "Check my eligibility"}
                 </button>
                 <p className="mt-3 text-center text-[11.5px] text-slate-400">
                   Free and instant. No documents needed for this estimate.
