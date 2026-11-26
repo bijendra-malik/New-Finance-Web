@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { LOAN_ROUTES } from "../../constants/loanRoutes";
 import type { LoanKey } from "../../constants/loanSlugs";
+import { DEFAULT_ELIGIBILITY_PATH } from "../../pages/eligibility/routes";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 const LOAN_MENU_ORDER: LoanKey[] = [
@@ -101,7 +102,7 @@ const Header = () => {
     { label: "Home",               href: "/" },
     { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
     { label: "EMI Calculator",     href: "/emi-calculator" },
-    { label: "Loan Eligibility",   href: "/eligibility-calculator" },
+    { label: "Loan Eligibility",   href: DEFAULT_ELIGIBILITY_PATH, match: "/eligibility-calculator" },
     { label: "Contact Us",         href: "/contact" },
     { label: "Be a Franchisee",     href: "/franchise" },
   ];
@@ -132,7 +133,7 @@ const Header = () => {
               {logoVideoReady ? (
                 <video
                   src={WebmLogo}
-                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2"
+                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2 p-2"
                   autoPlay
                   muted
                   loop
@@ -143,7 +144,7 @@ const Header = () => {
                   src={LogoAlphaWebp}
                   alt="Indexia Finance"
                   decoding="async"
-                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2"
+                  className="absolute left-1/2 top-1/2 h-24 w-auto max-w-none -translate-x-1/2 -translate-y-1/2 p-2"
                 />
               )}
             </Link>
@@ -268,8 +269,8 @@ const Header = () => {
                     <li key={link.label}>
                       <Link
                         to={link.href}
-                        aria-current={isRouteActive(link.href) ? "page" : undefined}
-                        className={`nav-link${isRouteActive(link.href) ? " is-active" : ""}`}
+                        aria-current={isRouteActive(link.href, link.match) ? "page" : undefined}
+                        className={`nav-link${isRouteActive(link.href, link.match) ? " is-active" : ""}`}
                       >
                         {link.label}
                       </Link>
@@ -357,7 +358,7 @@ const Header = () => {
                             ? "mb-3 rounded-xl bg-(--brand-teal-14) text-(--brand-navy) hover:bg-(--brand-teal) hover:text-white"
                             : "text-slate-700 hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                       }`}
-                      aria-current={isRouteActive(link.href) ? "page" : undefined}
+                      aria-current={isRouteActive(link.href, link.match) ? "page" : undefined}
                       onClick={closeMobileMenu}
                     >
                       {link.label}

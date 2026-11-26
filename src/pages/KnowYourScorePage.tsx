@@ -21,6 +21,7 @@ import {
 } from "../components/loan-eligibility/creditScoreEvaluation";
 import ScoreDial from "../components/loan-eligibility/ScoreDial";
 import useSEO from "../hooks/useSEO";
+import { DEFAULT_ELIGIBILITY_PATH } from "./eligibility/routes";
 
 const NEXT_STEPS: Record<CreditBand, string[]> = {
   poor: [
@@ -312,7 +313,7 @@ const KnowYourScorePage = () => {
 
                     <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                       <Link
-                        to="/eligibility-calculator"
+                        to={DEFAULT_ELIGIBILITY_PATH}
                         className="group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-44) focus-visible:ring-offset-1"
                         style={{
                           background:
@@ -461,7 +462,7 @@ const KnowYourScorePage = () => {
               </p>
             </div>
             <Link
-              to="/eligibility-calculator"
+              to={DEFAULT_ELIGIBILITY_PATH}
               className="relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-(--brand-navy) transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-yellow)"
             >
               Estimate my eligibility

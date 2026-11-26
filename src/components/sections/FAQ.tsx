@@ -5,6 +5,7 @@ import { Plus, Minus, FileText, BadgeCheck, CreditCard, Files, BarChart3, Wallet
 import { Check } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { THEME } from "../../constants/theme";
+import { DEFAULT_ELIGIBILITY_PATH } from "../../pages/eligibility/routes";
 
 // Legacy aliases kept so call sites stay readable
 const C = {
@@ -104,7 +105,7 @@ const FAQ = () => {
 
           {/* Button */}
           <Link
-            to="/eligibility-calculator"
+            to={DEFAULT_ELIGIBILITY_PATH}
             className="mt-9 inline-flex items-center justify-center whitespace-nowrap rounded-full bg-(--brand-yellow) px-9 py-4 text-lg font-bold text-(--brand-navy) shadow-[0_10px_26px_rgba(242,242,49,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105 active:scale-[.99]"
           >
             Check Here
