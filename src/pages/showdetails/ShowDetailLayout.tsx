@@ -1,15 +1,10 @@
-/**
- * Shared layout used by ALL "Show Details" loan pages.
- * Each loan page just passes its own sections + meta props.
- *
- * To update the banner, section heading style, or content layout —
- * change it here once and every loan detail page reflects it.
- */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ApplicationModal from "../../components/modals/ApplicationModal";
 import SectionHeading from "../../components/ui/SectionHeading";
 import useSEO from "../../hooks/useSEO";
+import { loanKeyFor } from "../../constants/loanSlugs";
+import { eligibilityPathForLoanKey } from "../eligibility/routes";
 
 // ─────────────────────────────────────────────────────────────────────────────
 export interface DetailSection {
@@ -19,23 +14,14 @@ export interface DetailSection {
 }
 
 export interface ShowDetailLayoutProps {
-  /** Loan product name shown in the banner and modal */
   loanName: string;
-  /** Breadcrumb label e.g. "Personal Loan" */
   breadcrumb: string;
-  /** Banner headline — can be longer than loanName */
   bannerTitle: string;
-  /** Banner sub-tagline */
   bannerTagline?: string;
-  /** Banner background image */
   bannerBg: string;
-  /** Path to the required-documents page for this loan */
   docsHref?: string;
-  /** Apply form slug, used for the apply-now redirect */
   applySlug: string;
-  /** All content sections */
   sections: DetailSection[];
-  /** How many sections to show before "Read More" (default 3) */
   previewCount?: number;
 }
 
@@ -48,13 +34,13 @@ const ShowDetailLayout = ({
   bannerTagline = "Now, Right Bank will come to your doorstep",
   bannerBg,
   docsHref,
-  /** Form slug; doubles as the canonical-url slug for SEO. */
   applySlug,
   sections,
   previewCount = 3,
 }: ShowDetailLayoutProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const eligibilityHref = eligibilityPathForLoanKey(loanKeyFor(loanName));
 
   useSEO({
     title: `${loanName} — Rates, Eligibility & Documents`,
@@ -112,22 +98,35 @@ const ShowDetailLayout = ({
                 {bannerTagline}
               </p>
 
-              {/* Required Docs link */}
-              {docsHref && (
-                <Link
-                  to={docsHref}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                  style={{
-                    background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
-                    boxShadow: "0 4px 18px rgba(6,106,156,0.45)",
-                  }}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Required Documents
-                </Link>
-              )}
+              {/* Eligibility + required docs links */}
+              <div className="flex flex-wrap items-center gap-3">
+                {eligibilityHref && (
+                  <Link
+                    to={eligibilityHref}
+                    className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-(--brand-navy) transition-all duration-200 hover:scale-105 hover:bg-slate-50 active:scale-95"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path d="M9 7h6m-6 4h6m-6 4h3M7 3h7l5 5v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Check Eligibility
+                  </Link>
+                )}
+                {docsHref && (
+                  <Link
+                    to={docsHref}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
+                    style={{
+                      background: "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
+                      boxShadow: "0 4px 18px rgba(6,106,156,0.45)",
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Required Documents
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* RIGHT — Apply Now */}
