@@ -142,7 +142,7 @@ interface OtpStagePanelProps {
   notice?: string;
   busy: boolean;
   resending: boolean;
-  onVerify: (event: React.FormEvent<HTMLFormElement>) => void;
+  onVerify: (event: React.SyntheticEvent<HTMLFormElement>) => void;
   onResend: () => void;
   onChangeDetails: () => void;
 }

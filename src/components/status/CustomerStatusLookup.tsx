@@ -103,7 +103,7 @@ const CustomerStatusLookup = () => {
     }
   };
 
-  const handleDetailsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleDetailsSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validateDetails()) return;
     // Persist only after the fields pass validation so stale/partial input is not cached.
@@ -115,7 +115,7 @@ const CustomerStatusLookup = () => {
     void requestOtp(false);
   };
 
-  const handleVerify = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleVerify = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!/^\d{6}$/.test(otp)) {
       setErrors((previous) => ({ ...previous, otp: "Enter the 6-digit OTP sent to your mobile" }));

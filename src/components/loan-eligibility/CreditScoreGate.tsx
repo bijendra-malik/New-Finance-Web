@@ -82,7 +82,7 @@ const CreditScoreGate = ({ product, dashboardPath, onFinalized, onDiscard }: Cre
   const pendingDraft = franchisePending ?? readPendingCreditScoreDraft(user?._id);
   const draftingWindow = pendingDraft ? remainingCreditScoreWindow(pendingDraft.createdAt) : null;
 
-  const submitScore = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitScore = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!rawScore.trim()) return setError("Enter the score shown on your credit report");
     if (!isValidScore(typedScore)) return setError(`Enter a whole-number score between ${SCORE_MIN} and ${SCORE_MAX}`);

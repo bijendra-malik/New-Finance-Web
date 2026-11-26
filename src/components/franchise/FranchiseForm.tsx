@@ -298,7 +298,7 @@ const FranchiseForm = ({
   };
 
   // ── OTP verification for the Franchisee application ──────────────────────
-  const verifyEntryOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+  const verifyEntryOtp = async (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!/^\d{6}$/.test(otp)) {
       setOtpError("Enter the 6-digit OTP sent to your mobile");
