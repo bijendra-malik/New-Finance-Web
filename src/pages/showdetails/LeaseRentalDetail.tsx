@@ -2,21 +2,7 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/LeaseRental-banner.webp";
 import LeaseRentalImg from "../../assets/personal-loan/leaserental-Details.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const NumberedList = ({ items }: { items: [string, string][] }) => (
-  <ol className="space-y-3 mt-1">
-    {items.map(([title, desc], i) => (
-      <li key={i} className="flex items-start gap-3">
-        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
-        <span className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{title}: </span>{desc}
-        </span>
-      </li>
-    ))}
-  </ol>
-);
+import { NumberedSteps, NumberedList } from "../../components/ui/DetailContent";
 
 const sections: DetailSection[] = [
   {
@@ -87,22 +73,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Lease Rental Discounting Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best LRD Provider", desc: "Known for competitive rates and tailored solutions — secure financing against future rental income with ease." },
           { num: "2", title: "Best Lease Rental Discounting", desc: "From property expansion to working capital — flexible terms designed to suit your specific LRD requirements." },
           { num: "3", title: "Best LRD Company", desc: "Transparent terms and reliable service — committed to a seamless borrowing experience from start to finish." },
           { num: "4", title: "Best LRD Provider Company", desc: "Whether you're an individual or a corporation, these providers offer comprehensive financial support for your real estate ventures." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
