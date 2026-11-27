@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { LOAN_ROUTES } from "../../constants/loanRoutes";
 import type { LoanKey } from "../../constants/loanSlugs";
 import { DEFAULT_ELIGIBILITY_PATH } from "../../pages/eligibility/routes";
+import { PRODUCTS, productPath } from "../../pages/eligibility/models";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 const LOAN_MENU_ORDER: LoanKey[] = [
@@ -102,7 +103,7 @@ const Header = () => {
     { label: "Home",               href: "/" },
     { label: "Loan Product",       dropdown: "loans", href: "", match: "/showdetails" },
     { label: "EMI Calculator",     href: "/emi-calculator" },
-    { label: "Loan Eligibility",   href: DEFAULT_ELIGIBILITY_PATH, match: "/eligibility-calculator" },
+    { label: "Loan Eligibility",   dropdown: "eligibility", href: DEFAULT_ELIGIBILITY_PATH, match: "/eligibility-calculator" },
     { label: "Contact Us",         href: "/contact" },
     { label: "Be a Franchisee",     href: "/franchise" },
   ];
@@ -241,27 +242,35 @@ const Header = () => {
                             : "opacity-0 invisible -translate-y-2"
                         }`}
                       >
-                        {link.dropdown === "loans" ? (
-                        <div className="w-[min(40rem,calc(100vw-3rem))] rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl">
-                          <p className="mb-4 text-[10.5px] font-bold uppercase tracking-[0.16em] text-(--brand-teal)">
-                            Loan Products
-                          </p>
-                          <div className="grid grid-cols-3 gap-x-6 gap-y-1">
-                            {loanProducts.map((item) => (
-                              <Link
-                                key={item.key}
-                                to={item.detail}
-                                onClick={() => setOpenDropdown(null)}
-                                className="loan-item text-[12.5px] text-slate-600 py-2"
-                              >
-                                <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                                </svg>
-                                {item.label}
-                              </Link>
-                            ))}
+                        {link.dropdown ? (
+                          <div className="w-[min(40rem,calc(100vw-3rem))] rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xl">
+                            <p className="mb-4 text-[10.5px] font-bold uppercase tracking-[0.16em] text-(--brand-teal)">
+                              {link.dropdown === "loans" ? "Loan Products" : "Loan Eligibility"}
+                            </p>
+                            <div className="grid grid-cols-3 gap-x-6 gap-y-1">
+                              {(link.dropdown === "loans"
+                                ? loanProducts.map((item) => ({ key: item.key, label: item.label, to: item.detail }))
+                                : PRODUCTS.map((item) => ({ key: item.key, label: item.label, to: productPath(item.key) }))
+                              ).map((item) => (
+                                <Link
+                                  key={item.key}
+                                  to={item.to}
+                                  onClick={() => setOpenDropdown(null)}
+                                  aria-current={pathname === item.to ? "page" : undefined}
+                                  className={`loan-item py-2 text-[12.5px] ${
+                                    pathname === item.to
+                                      ? "font-bold text-(--brand-navy)"
+                                      : "text-slate-600"
+                                  }`}
+                                >
+                                  <svg className="arrow-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L10.745 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                                  </svg>
+                                  {item.label}
+                                </Link>
+                              ))}
+                            </div>
                           </div>
-                        </div>
                         ) : null}
                       </div>
                     </li>
@@ -334,10 +343,14 @@ const Header = () => {
 
                     {openMobileDropdown === link.dropdown && (
                       <div className="bg-slate-50 border-l-4 border-emerald-500 pl-0">
-                        {loanProducts.map((item) => (
+                        {(link.dropdown === "loans"
+                          ? loanProducts.map((item) => ({ key: item.key, label: item.label, to: item.detail }))
+                          : PRODUCTS.map((item) => ({ key: item.key, label: item.label, to: productPath(item.key) }))
+                        ).map((item) => (
                           <Link
                             key={item.key}
-                            to={item.detail}
+                            to={item.to}
+                            aria-current={pathname === item.to ? "page" : undefined}
                             className="block border-b border-slate-100 px-8 py-3 text-xs font-medium text-slate-600 transition-colors last:border-b-0 hover:bg-(--brand-teal-14) hover:text-(--brand-navy)"
                             onClick={closeMobileMenu}
                           >
