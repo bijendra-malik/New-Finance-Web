@@ -1,21 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/project-banner.webp";
-import { NumberedSteps } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
-
-const BulletList = ({ items }: { items: [string, string][] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map(([title, desc], i) => (
-      <li key={i} className="flex items-start gap-3">
-        <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-        <span className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{title}: </span>{desc}
-        </span>
-      </li>
-    ))}
-  </ul>
-);
+import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
 
 const sections: DetailSection[] = [
   {

@@ -1,22 +1,8 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletList, NumberedList } from "../../components/ui/DetailContent";
 import bannerBg from "../../assets/loan-images/personal-banner.webp";
 import personaldetails from "../../assets/personal-loan/personal-loan.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BulletList = ({ items }: { items: [string, string][] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map(([title, desc]) => (
-      <li key={title} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-        <span className="text-sm md:text-base text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{title}: </span>{desc}
-        </span>
-      </li>
-    ))}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -100,30 +86,22 @@ const sections: DetailSection[] = [
     id: "benefits",
     heading: "Benefits of Personal Loans",
     content: (
-      <ol className="space-y-3 mt-1">
-        {[
+      <NumberedList
+        size="md"
+        items={[
           ["No Collateral Required", "Fully unsecured — no property, gold, or guarantor needed."],
           ["Streamlined Documentation", "Minimal paperwork with digital KYC and e-signature support."],
           ["Complete Usage Freedom", "Spend the funds however you need — banks only evaluate repayment capacity."],
           ["High Loan Amounts", "Access up to ₹50 lakh to meet large financial requirements."],
-        ].map(([title, desc], i) => (
-          <li key={title} className="flex items-start gap-3">
-            <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>
-              {i + 1}
-            </span>
-            <span className="text-sm md:text-base text-gray-600 leading-relaxed">
-              <span className="font-semibold text-gray-800">{title}: </span>{desc}
-            </span>
-          </li>
-        ))}
-      </ol>
+        ]}
+      />
     ),
   },
   {
     id: "comparing",
     heading: "Comparing Indexia Finance Personal Loans",
     content: (
-      <BulletList
+      <BulletList size="md"
         items={[
           ["Interest Rates", "Compare rates across our partner banks to find the most competitive option."],
           ["Additional Charges", "Factor in processing fees, prepayment penalties, and documentation fees."],
@@ -238,7 +216,7 @@ const sections: DetailSection[] = [
     id: "pointers",
     heading: "Important Tips Before You Apply",
     content: (
-      <BulletList
+      <BulletList size="md"
         items={[
           ["Boost Your Eligibility", "Add your spouse's income to qualify for a higher loan amount."],
           ["Use Existing Relationships", "Your current bank may offer preferential rates or waive fees for existing customers."],
