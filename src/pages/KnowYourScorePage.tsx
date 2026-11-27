@@ -107,16 +107,16 @@ const KnowYourScorePage = () => {
   const rating = ratingForScore(parsedScore);
   const dialProps = isValid
     ? {
-        progress: (parsedScore - SCORE_MIN) / (SCORE_MAX - SCORE_MIN),
-        label: rating.label,
-        tip: rating.tip,
-      }
+      progress: (parsedScore - SCORE_MIN) / (SCORE_MAX - SCORE_MIN),
+      label: rating.label,
+      tip: rating.tip,
+    }
     : {
-        progress: 0,
-        value: null,
-        label: "Awaiting score",
-        accent: "#94a3b8",
-      };
+      progress: 0,
+      value: null,
+      label: "Awaiting score",
+      accent: "#94a3b8",
+    };
   const showError = hasScore && !isValid && score.length >= 3;
 
   return (
@@ -124,7 +124,7 @@ const KnowYourScorePage = () => {
       <PageBanner
         breadcrumb="Know Your Score"
         title="Know Your"
-        highlight="Score"
+        highlight="Credit Score"
         tagline="A clear check. A clear next step."
       />
 
@@ -177,11 +177,10 @@ const KnowYourScorePage = () => {
                       placeholder="e.g. 750"
                       aria-invalid={showError || undefined}
                       aria-describedby={showError ? "score-error" : "score-hint"}
-                      className={`w-full rounded-2xl border-2 bg-white px-5 py-4 pr-20 text-4xl font-extrabold tracking-tight outline-none transition ${
-                        showError
+                      className={`w-full rounded-2xl border-2 bg-white px-5 py-4 pr-20 text-4xl font-extrabold tracking-tight outline-none transition ${showError
                           ? "border-red-300 text-red-900 focus:border-red-400 focus:ring-4 focus:ring-red-100"
                           : "border-slate-200 text-(--brand-navy) focus:border-(--brand-teal) focus:ring-4 focus:ring-(--brand-teal-20)"
-                      }`}
+                        }`}
                     />
                     <span
                       aria-hidden="true"
@@ -256,92 +255,92 @@ const KnowYourScorePage = () => {
                     backgroundColor: meta ? meta.bg : "#f8fafc",
                   }}
                 >
-                    <div className="flex items-start justify-between gap-4">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                        Your result
-                      </p>
-                      <span
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/60"
-                        style={{ color: isValid ? rating.color : "#94a3b8" }}
-                        aria-hidden="true"
-                      >
-                        <ShieldCheck className="h-5 w-5" />
-                      </span>
-                    </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                      Your result
+                    </p>
+                    <span
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/60"
+                      style={{ color: isValid ? rating.color : "#94a3b8" }}
+                      aria-hidden="true"
+                    >
+                      <ShieldCheck className="h-5 w-5" />
+                    </span>
+                  </div>
 
-                    <div className="mt-2 flex justify-center">
-                      <ScoreDial {...dialProps} />
-                    </div>
+                  <div className="mt-2 flex justify-center">
+                    <ScoreDial {...dialProps} />
+                  </div>
 
-                    {meta && band ? (
-                      <>
-                        <p className="mt-4 text-sm leading-6 text-slate-700">{meta.blurb}</p>
+                  {meta && band ? (
+                    <>
+                      <p className="mt-4 text-sm leading-6 text-slate-700">{meta.blurb}</p>
 
-                        <div className="mt-6">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                        What to do next
-                      </p>
-                      <ul className="mt-2 space-y-2">
-                        {NEXT_STEPS[band].map((step) => (
-                          <li
-                            key={step}
-                            className="flex gap-2 text-[12.5px] leading-5 text-slate-600"
-                          >
-                            <Check
-                              className="mt-0.5 h-3.5 w-3.5 shrink-0"
-                              style={{ color: meta.color }}
-                              strokeWidth={3}
-                              aria-hidden="true"
-                            />
-                            {step}
-                          </li>
-                        ))}
-                      </ul>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="mt-4">
-                        <h3 className="text-xl font-extrabold tracking-tight text-slate-800">
-                          Your band will appear here.
-                        </h3>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-                          Enter a score from {SCORE_MIN} to {SCORE_MAX} to see what it means
-                          for your loan options and what to do next.
+                      <div className="mt-6">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                          What to do next
                         </p>
+                        <ul className="mt-2 space-y-2">
+                          {NEXT_STEPS[band].map((step) => (
+                            <li
+                              key={step}
+                              className="flex gap-2 text-[12.5px] leading-5 text-slate-600"
+                            >
+                              <Check
+                                className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                                style={{ color: meta.color }}
+                                strokeWidth={3}
+                                aria-hidden="true"
+                              />
+                              {step}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    )}
-
-                    <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                      <Link
-                        to={DEFAULT_ELIGIBILITY_PATH}
-                        className="group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-44) focus-visible:ring-offset-1"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
-                        }}
-                      >
-                        Estimate my eligibility
-                        <ArrowRight
-                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                          aria-hidden="true"
-                        />
-                      </Link>
-                      {(band === "poor" || band === "average") && (
-                        <Link
-                          to="/how-to-improve-credit-score"
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-(--brand-teal) bg-white px-4 py-2.5 text-[12.5px] font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                        >
-                          How to improve your score
-                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                        </Link>
-                      )}
-                      <Link
-                        to="/contact"
-                        className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/70 px-4 py-2.5 text-[12.5px] font-bold text-slate-700 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
-                      >
-                        Talk to a specialist
-                      </Link>
+                    </>
+                  ) : (
+                    <div className="mt-4">
+                      <h3 className="text-xl font-extrabold tracking-tight text-slate-800">
+                        Your band will appear here.
+                      </h3>
+                      <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+                        Enter a score from {SCORE_MIN} to {SCORE_MAX} to see what it means
+                        for your loan options and what to do next.
+                      </p>
                     </div>
+                  )}
+
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                    <Link
+                      to={DEFAULT_ELIGIBILITY_PATH}
+                      className="group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12.5px] font-bold text-white transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-44) focus-visible:ring-offset-1"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-teal) 100%)",
+                      }}
+                    >
+                      Estimate my eligibility
+                      <ArrowRight
+                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                    {(band === "poor" || band === "average") && (
+                      <Link
+                        to="/how-to-improve-credit-score"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-(--brand-teal) bg-white px-4 py-2.5 text-[12.5px] font-bold text-(--brand-navy) transition hover:bg-(--brand-teal-20) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                      >
+                        How to improve your score
+                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      </Link>
+                    )}
+                    <Link
+                      to="/contact"
+                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/70 px-4 py-2.5 text-[12.5px] font-bold text-slate-700 transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
+                    >
+                      Talk to a specialist
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -403,11 +402,10 @@ const KnowYourScorePage = () => {
                 return (
                   <div
                     key={question}
-                    className={`rounded-2xl border bg-white px-5 py-4 transition ${
-                      isOpen
+                    className={`rounded-2xl border bg-white px-5 py-4 transition ${isOpen
                         ? "border-slate-300 shadow-[0_8px_24px_-18px_rgba(6,106,156,0.45)]"
                         : "border-slate-200 hover:border-slate-300"
-                    }`}
+                      }`}
                   >
                     <button
                       type="button"
@@ -419,9 +417,8 @@ const KnowYourScorePage = () => {
                       {question}
                       <span
                         aria-hidden="true"
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg leading-none text-slate-500 transition-transform duration-300 ${
-                          isOpen ? "rotate-45" : ""
-                        }`}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg leading-none text-slate-500 transition-transform duration-300 ${isOpen ? "rotate-45" : ""
+                          }`}
                       >
                         +
                       </span>
