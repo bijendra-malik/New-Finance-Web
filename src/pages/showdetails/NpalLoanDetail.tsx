@@ -1,24 +1,7 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletList, NumberedSteps } from "../../components/ui/DetailContent";
 import bannerBg from "../../assets/loan-images/commercial-banner.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -69,7 +52,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The application process for NPAs involves several steps:</p>
-        <BL items={[
+        <BulletList items={[
           ["Documentation Required", "Applicants must gather necessary documents to support their NPA application"],
           ["Eligibility Criteria", "Banks typically establish specific eligibility criteria regarding creditworthiness, business viability, and adherence to regulatory guidelines"],
           ["Approval Process", "Once the application is submitted along with the required documents, it undergoes a thorough review by the bank's credit assessment team — the approval process may vary based on the type and amount of the loan"],
@@ -83,7 +66,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">When applying for an NPA, applicants must provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Identification Proof", "A valid identification document such as a passport or driver's licence"],
           ["Address Proof", "Documents like utility bills or rental agreements to verify the applicant's residential address"],
           ["Income Proof", "Salary slips or income tax returns to assess the applicant's financial stability and repayment capacity"],
@@ -97,7 +80,7 @@ const sections: DetailSection[] = [
     id: "benefits",
     heading: "Benefits of Taking NPA",
     content: (
-      <BL items={[
+      <BulletList items={[
         ["Access to Funds", "NPAs provide access to much-needed funds for various purposes, including business expansion and infrastructure development"],
         ["Flexible Repayment Options", "Borrowers benefit from flexible repayment terms tailored to their financial capabilities and business cycles, reducing the burden of repayment"],
         ["Potential for Business Growth", "Proper utilisation of NPA funds can catalyse business growth, leading to increased revenue generation and market expansion opportunities"],
@@ -108,22 +91,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Choosing the Right NPA Partner",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Non-Performing Assets Provider", desc: "Renowned for its expertise in managing distressed assets and maximising recovery outcomes, with a track record of success and a proactive approach to NPA resolution." },
           { num: "2", title: "Best Non-Performing Company", desc: "Known for its extensive portfolio of distressed assets and innovative strategies for asset disposition — tailored solutions whether offloading NPAs or seeking opportunities in distressed assets." },
           { num: "3", title: "Best Non-Performing Assets Company", desc: "Combines industry experience, financial acumen, and strategic insights to deliver superior results, with a focus on transparency, integrity, and client satisfaction." },
           { num: "4", title: "Best Non-Performing Assets Solutions", desc: "Tailored to your specific requirements — asset recovery services, portfolio management assistance, or investment opportunities in distressed assets, with a collaborative approach to optimise returns." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
