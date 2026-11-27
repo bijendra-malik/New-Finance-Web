@@ -1,22 +1,9 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletList, NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/working-banner.webp";
 import WorkingCapitalImg from "../../assets/personal-loan/WorkingCapital-Img.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: [string, string][] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map(([t, d], i) => (
-      <li key={i} className="flex items-start gap-3">
-        <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-        <span className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{t}: </span>{d}
-        </span>
-      </li>
-    ))}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -94,7 +81,7 @@ const sections: DetailSection[] = [
     id: "security",
     heading: "Security Requirements",
     content: (
-      <BL items={[
+      <BulletList items={[
         ["First Charge on Current Assets", "Through hypothecation"],
         ["Charge on Fixed Assets", "Of the unit"],
         ["Personal / Corporate Guarantee", "Of promoter director or corporate entity"],
@@ -107,22 +94,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Working Capital Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Working Capital Provider", desc: "Known for competitive rates and flexible terms — secure short-term operational financing with ease." },
           { num: "2", title: "Best Working Capital", desc: "From inventory management to payroll — tailored solutions to keep your operations running smoothly." },
           { num: "3", title: "Best Working Capital Company", desc: "Transparent terms and reliable service — ensuring efficient access to funds when you need them most." },
           { num: "4", title: "Best Working Capital Provider Company", desc: "Whether you're experiencing rapid growth or facing unexpected expenses, trust these providers for reliable financial support." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
