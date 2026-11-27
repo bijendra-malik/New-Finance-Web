@@ -5,6 +5,7 @@ import SectionHeading from "../../components/ui/SectionHeading";
 import useSEO from "../../hooks/useSEO";
 import { loanKeyFor } from "../../constants/loanSlugs";
 import { eligibilityPathForLoanKey } from "../eligibility/routes";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 // ─────────────────────────────────────────────────────────────────────────────
 export interface DetailSection {
@@ -24,8 +25,6 @@ export interface ShowDetailLayoutProps {
   sections: DetailSection[];
   previewCount?: number;
 }
-
-const ACCENT = "var(--brand-navy)";
 
 const ShowDetailLayout = ({
   loanName,
