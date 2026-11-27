@@ -1,8 +1,8 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/project-banner.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
@@ -71,22 +71,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Project Loan Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Project Loan Provider", desc: "Known for competitive rates and tailored financing solutions — expertise in project funding helps turn your vision into reality." },
           { num: "2", title: "Best Project Loan Options", desc: "From startup capital to expansion funding — flexible loan terms designed to support projects of all sizes and stages." },
           { num: "3", title: "Best Project Loan Company", desc: "Transparent terms and reliable service — focused on customer satisfaction from application through to final disbursement." },
           { num: "4", title: "Best Project Loan Provider Company", desc: "Whether in construction, real estate, or infrastructure, these providers offer comprehensive financial support for your project." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
