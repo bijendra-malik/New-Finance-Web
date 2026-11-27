@@ -2,24 +2,7 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/BlanceTransper-banner.webp";
 import balanceTransferConcept from "../../assets/personal-loan/balance-transfer-03.webp";
-import { NumberedSteps } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
-
-const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2 mt-1">
-    {items.map((item, i) => {
-      const [title, desc] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
+import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
 
 const sections: DetailSection[] = [
   {
@@ -52,7 +35,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Required for all applicants and co-applicants:</p>
-        <BulletList items={[
+        <BulletList gap="tight" items={[
           "2 passport-size photographs of each applicant & co-applicant",
           "PAN Card copy of each applicant & co-applicant",
           "Aadhaar Card copy of applicant & co-applicant",
@@ -67,7 +50,7 @@ const sections: DetailSection[] = [
     id: "income-salaried",
     heading: "Income Documents — Salaried Applicants",
     content: (
-      <BulletList items={[
+      <BulletList gap="tight" items={[
         "Payslips for the last 6 months and TDS certificate",
         "Employment certificate from the current employer",
         "Latest 2 years' Form 16 issued by the employer",
@@ -79,7 +62,7 @@ const sections: DetailSection[] = [
     id: "income-selfemployed",
     heading: "Income Documents — Self-Employed Applicants",
     content: (
-      <BulletList items={[
+      <BulletList gap="tight" items={[
         "PAN Card copy of the company",
         "MOA & AOA / Partnership Deed / Registration certificate or Business Proof",
         "3 years' ITR, computation of income, P&L, Balance Sheet with all annexures & schedules",
@@ -95,7 +78,7 @@ const sections: DetailSection[] = [
     id: "additional-unsecured",
     heading: "Additional Documents — Unsecured Loan Transfer",
     content: (
-      <BulletList items={[
+      <BulletList gap="tight" items={[
         "Loan repayment track record",
         "Foreclosure letter of existing loan",
       ]} />
@@ -106,7 +89,7 @@ const sections: DetailSection[] = [
     heading: "Additional Documents — Secured Loan Transfer",
     content: (
       <div className="space-y-3">
-        <BulletList items={[
+        <BulletList gap="tight" items={[
           "Property documents (registered deed, OC & share certificate)",
           "Loan repayment track records",
           "Foreclosure letter and list of original documents held with the existing bank",

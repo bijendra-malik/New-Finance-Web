@@ -2,21 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/AgainstProperty-banner.webp";
 import againstloanDetails from "../../assets/personal-loan/againstloan-details.webp";
-import { NumberedSteps } from "../../components/ui/DetailContent";
+import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
 import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
-
-const BulletList = ({ items }: { items: [string, string?][] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map(([title, desc], i) => (
-      <li key={i} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-        <span className="text-sm text-gray-600 leading-relaxed">
-          {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
-        </span>
-      </li>
-    ))}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -62,7 +49,7 @@ const sections: DetailSection[] = [
     id: "advantages",
     heading: "Advantages of Taking a Loan Against Property",
     content: (
-      <BulletList items={[
+      <BulletList gap="tight" items={[
         ["Cheaper than Personal Loans", "LAP interest rates are far lower than personal loans, which typically range from 11.5% – 21% p.a."],
         ["Longer Loan Tenure", "LAP tenures can go up to 20 years, giving you much more breathing room than a personal loan."],
         ["Lower EMI", "Because the interest rate is lower and tenure is longer, your monthly outgo is significantly reduced."],

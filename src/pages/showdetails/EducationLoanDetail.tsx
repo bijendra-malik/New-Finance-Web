@@ -2,24 +2,7 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/Education-banner.webp";
 import EducationLoanImg from "../../assets/personal-loan/educationloan-details.webp";
-import { NumberedSteps, NumberedList } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
-
-const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2 mt-1">
-    {items.map((item, i) => {
-      const [title, desc] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
+import { NumberedSteps, NumberedList, BulletList } from "../../components/ui/DetailContent";
 
 const sections: DetailSection[] = [
   {
@@ -45,7 +28,7 @@ const sections: DetailSection[] = [
               Covering graduate, postgraduate, professional, and doctoral courses, our education
               loans go beyond just tuition fees:
             </p>
-            <BulletList items={[
+            <BulletList gap="tight" items={[
               "Books, uniforms, equipment, and instruments",
               "Essential computers or laptops required for course completion",
               "Fees for exams, library, laboratories, and hostel accommodation",
@@ -81,7 +64,7 @@ const sections: DetailSection[] = [
     id: "eligibility",
     heading: "Eligibility Criteria",
     content: (
-      <BulletList items={[
+      <BulletList gap="tight" items={[
         "Indian citizenship is a prerequisite",
         ["NRI Applicants", "Must possess a valid Indian Passport"],
         "Must meet the age requirements defined by the respective bank",
