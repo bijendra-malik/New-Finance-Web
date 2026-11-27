@@ -1,6 +1,6 @@
 import { tenureText } from "./term";
 import type { Cap, EligibilityOutcome, ModelFamily, ProductSpec } from "./core";
-import { DSCR_MIN, MIN_LOAN, WC_ASSESSMENT_PCT, creditRefusal, emiForPrincipal, holding, money, roundTo } from "./core";
+import { DSCR_MIN, MIN_LOAN, creditRefusal, emiForPrincipal, holding, money, roundTo } from "./core";
 
 // ── Lease rental discounting ──────────────────────────────────────────────────
 
@@ -26,10 +26,11 @@ export interface LrdInput {
   leaseMonths: number;
   propertyValue: number;
   repaymentMonths: number;
-  ltvPercent: number;
+  ltvPercent?: number;
   deductionPct?: number;
   coveragePct?: number;
   creditScore?: number;
+  lenderLimit?: number;
 }
 
 export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
@@ -68,7 +69,16 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
   const discountedRent = presentValueOfAnnuity(supportedEmi, roi, leaseMonths);
   const rentalLimit = roundTo(discountedRent, 1000);
   const propertyLimit = roundTo(propertyValue * ltv, 1000);
-  const value = Math.min(rentalLimit, propertyLimit);
+  const lenderLimit = Math.max(0, input.lenderLimit ?? 0);
+  const caps: Cap[] = [
+    { key: "lease", label: `Rent after ${Math.round(deduction * 100)}% deduction at ${Math.round(coverage * 100)}% coverage`, value: rentalLimit },
+    { key: "asset", label: `${Math.round(ltv * 100)}% of the property value`, value: propertyLimit },
+  ];
+  if (lenderLimit > 0) {
+    caps.push({ key: "lender", label: "Lender's maximum limit", value: roundTo(lenderLimit, 1000) });
+  }
+  const value = Math.min(...caps.map((cap) => cap.value));
+  const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
   const emi = emiForPrincipal(value, roi, months);
   const lease = {
     rent,
@@ -83,12 +93,6 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
     supportedEmi,
     interest: Math.max(0, Math.round(emi * months - value)),
   };
-  const caps: Cap[] = [
-    { key: "lease", label: `Rent after ${Math.round(deduction * 100)}% deduction at ${Math.round(coverage * 100)}% coverage`, value: rentalLimit },
-    { key: "asset", label: `${Math.round(ltv * 100)}% of the property value`, value: propertyLimit },
-  ];
-  const binding = rentalLimit <= propertyLimit ? caps[0].label : caps[1].label;
-
   if (value < MIN_LOAN) {
     return {
       ...holding(
@@ -118,7 +122,7 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
       income: netRent,
       existing: 0,
     },
-    message: `Rent of ${money(rent)} a month less a ${Math.round(deduction * 100)}% deduction leaves ${money(netRent)}; at ${Math.round(coverage * 100)}% coverage the EMI can be ${money(supportedEmi)}, which discounts to ${money(rentalLimit)} over the remaining lease at ${roi}% p.a. The ${money(propertyValue)} property caps lending at ${money(propertyLimit)}, so the estimate is ${money(value)}, repayable at about ${money(emi)} a month over ${tenureText(months)}.`,
+    message: `Rent of ${money(rent)} a month less a ${Math.round(deduction * 100)}% deduction leaves ${money(netRent)}; at ${Math.round(coverage * 100)}% coverage the EMI can be ${money(supportedEmi)}, which discounts to ${money(rentalLimit)} over the remaining lease at ${roi}% p.a. The ${money(propertyValue)} property caps lending at ${money(propertyLimit)}${lenderLimit > 0 ? `, and the lender's scheme caps it at ${money(lenderLimit)}` : ""}, so the estimate is ${money(value)}, repayable at about ${money(emi)} a month over ${tenureText(months)}.`,
     suggestions: [],
     lease,
   };
@@ -133,7 +137,7 @@ export const formulaFor = (family: ModelFamily): string => {
     case "commercial":
       return "Loan = min(repayment capacity at the assumed FOIR, property value × LTV, DSCR limit on the rent)";
     case "turnover":
-      return `Turnover method: requirement = turnover × ${Math.round(WC_ASSESSMENT_PCT * 10000) / 100}%, less margin · Drawing power = current assets − current liabilities − margin · Limit = min(turnover norm, drawing power)`;
+      return "Turnover method: limit = turnover × 18.75% · Working-capital method: requirement = current assets − current liabilities, financed = requirement × (1 − margin %) · Limit = min(turnover norm, financed requirement, lender cap)";
     case "wc":
       return "Turnover method: requirement = turnover × 25%, bank finance = requirement × 75% (18.75% of turnover) · Drawing power = eligible stock + eligible receivables − margin − deductions · Limit = min(turnover norm, drawing power)";
     case "lrd":

@@ -26,15 +26,10 @@ export const RENTAL_HAIRCUT = 0.75;
 export const DSCR_MIN = 1.25;
 export const COMMERCIAL_LTV = 0.7;
 export const WC_ASSESSMENT_PCT = 0.2;
+export const WC_MARGIN = 0.25;
 export const WC_TURNOVER_REQUIREMENT = 0.25;
 export const WC_BANK_SHARE = 0.75;
 export const WC_TURNOVER_NORM = WC_TURNOVER_REQUIREMENT * WC_BANK_SHARE;
-
-export const HOME_LTV_SLABS = [
-  { upTo: 30_00_000, ltv: 0.9 },
-  { upTo: 75_00_000, ltv: 0.8 },
-  { upTo: Number.POSITIVE_INFINITY, ltv: 0.75 },
-] as const;
 
 export const GOLD_LTV_SLABS = [
   { upTo: 2_50_000, ltv: 0.85 },
@@ -52,7 +47,7 @@ export interface ProductSpec {
   asset?: {
     field: AssetField;
     label: string;
-    hint: string;
+    hint?: string;
     ltv: number;
     ltvSlabs?: readonly { upTo: number; ltv: number }[];
     ltvByType?: Readonly<Record<string, number>>;
@@ -69,18 +64,15 @@ export const PRODUCTS: readonly ProductSpec[] = [
     key: "home", label: "Home Loan", family: "term", roi: 8, maxTenureMonths: 360, maturityAge: 70,
     asset: {
       field: "propertyValue",
-      label: "Property Market Value",
-      hint: "Up to 90% of the property market value",
-      ltv: 0.9,
-      ltvSlabs: HOME_LTV_SLABS,
+      label: "Property Current Market Value",
+      ltv: 0.8,
     },
   },
   {
     key: "lap", label: "Loan Against Property", family: "term", roi: 10.5, maxTenureMonths: 120,
     asset: {
       field: "propertyValue",
-      label: "Property Market Value",
-      hint: "Up to 65% of the property market value",
+      label: "Property Current Market Value",
       ltv: 0.65,
       ltvByType: { Residential: 0.8, Commercial: 0.7, Industrial: 0.65 },
       ltvForOtherType: 0.7,
@@ -89,7 +81,7 @@ export const PRODUCTS: readonly ProductSpec[] = [
   },
   {
     key: "vehicleLoan", label: "Vehicle Loan", family: "term", roi: 8, maxTenureMonths: 60,
-    asset: { field: "vehiclePrice", label: "On-Road Vehicle Price", hint: "Up to 90% of the on-road price", ltv: 0.9 },
+    asset: { field: "vehiclePrice", label: "On-Road Vehicle Price", ltv: 0.9 },
   },
   { key: "educationLoan", label: "Education Loan", family: "education", roi: 6, maxTenureMonths: 120, unsecured: true },
   { key: "projectLoan", label: "Project Loan", family: "project", roi: 10.5, maxTenureMonths: 60 },
@@ -116,7 +108,7 @@ export const productPath = (key: string): string =>
   `/eligibility-calculator/${productSlug(productByKey(key))}`;
 
 export interface Cap {
-  key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease" | "cost" | "dscr" | "drawing";
+  key: "foir" | "asset" | "gold" | "turnover" | "mpbf" | "lease" | "cost" | "dscr" | "drawing" | "lender";
   label: string;
   value: number;
 }
@@ -143,10 +135,12 @@ export interface EligibilityOutcome {
     usable: number;
     currentRatio: number;
     currentRatioRequired: number;
+    grossLimit?: number;
+    existingLimit?: number;
   };
   gold?: { value: number; ltv: number; netWeight: number };
   credit?: { score: number; band: string; foirCap: number };
-  share?: { value: number; ltv: number };
+  share?: { value: number; ltv: number; gross?: number; existingExposure?: number };
   lease?: {
     rent: number;
     annualRent: number;

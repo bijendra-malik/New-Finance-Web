@@ -13,6 +13,8 @@ export interface WorkingCapitalInput {
   margin?: number;
   mode?: "turnover" | "drawingPower";
   creditScore?: number;
+  lenderLimit?: number;
+  existingLimit?: number;
 }
 
 export const workingCapitalEligibility = (input: WorkingCapitalInput): EligibilityOutcome => {
@@ -56,14 +58,22 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
     );
   }
 
+  const lenderLimit = Math.max(0, input.lenderLimit ?? 0);
+  const existingLimit = Math.max(0, input.existingLimit ?? 0);
+
   const caps: Cap[] = [
     { key: "turnover", label: `Turnover method (${Math.round(WC_TURNOVER_NORM * 10000) / 100}%)`, value: turnoverLimit },
   ];
-  if (mode === "drawingPower") {
+  if (hasBalanceSheet) {
     caps.push({ key: "drawing", label: "Drawing power on stock and receivables", value: drawingPower });
+    if (mpbf > 0) caps.push({ key: "mpbf", label: "Cash flow / MPBF limit", value: mpbf });
+  }
+  if (lenderLimit > 0) {
+    caps.push({ key: "lender", label: "Lender's maximum limit", value: roundTo(lenderLimit, 1000) });
   }
 
-  const limit = Math.min(...caps.map((cap) => cap.value));
+  const grossLimit = Math.min(...caps.map((cap) => cap.value));
+  const limit = Math.max(0, grossLimit - existingLimit);
   const binding = caps.reduce((lowest, cap) => (cap.value < lowest.value ? cap : lowest)).label;
   const usable = hasBalanceSheet ? Math.min(drawingPower, limit) : limit;
   const currentRatio = currentAssets / (otherCurrentLiabilities + limit || 1);
@@ -89,6 +99,8 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
         usable,
         currentRatio,
         currentRatioRequired: 1.33,
+        grossLimit,
+        existingLimit,
       },
     };
   }
@@ -105,9 +117,13 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
     binding,
     foir: null,
     message:
-      mode === "drawingPower"
-        ? `The ${money(limit)} limit is the lower of the turnover norm (${money(turnoverLimit)}) and the ${money(drawingPower)} drawing power on stock and receivables after ${money(margin)} of margin.`
-        : `A ${money(limit)} limit is ${Math.round(WC_TURNOVER_NORM * 10000) / 100}% of your ${money(turnover)} turnover${hasBalanceSheet ? `, with ${money(usable)} drawable against stock and debtors` : ""}.`,
+      (mode === "drawingPower"
+        ? `The ${money(grossLimit)} limit is the lowest of the turnover norm (${money(turnoverLimit)}), the ${money(drawingPower)} drawing power on stock and receivables after ${money(margin)} of margin and the ${money(mpbf)} cash-flow (MPBF) reading`
+        : `A ${money(grossLimit)} limit is ${Math.round(WC_TURNOVER_NORM * 10000) / 100}% of your ${money(turnover)} turnover${hasBalanceSheet ? `, with ${money(usable)} drawable against stock and debtors` : ""}`) +
+      (caps.length > 1 ? `. ${binding} binds it.` : ".") +
+      (existingLimit > 0
+        ? ` After ${money(existingLimit)} of existing OD/CC limit, ${money(limit)} remains available.`
+        : ""),
     suggestions: [
       ...(hasBalanceSheet && currentRatio < 1.33
         ? ["A current ratio below 1.33:1 usually needs more long-term funds in the business before sanction."]
@@ -125,6 +141,8 @@ export const workingCapitalEligibility = (input: WorkingCapitalInput): Eligibili
       usable,
       currentRatio,
       currentRatioRequired: 1.33,
+      grossLimit,
+      existingLimit,
     },
   };
 };
