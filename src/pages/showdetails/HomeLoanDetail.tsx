@@ -2,8 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/Home-banner.webp";
 import homelonaDetail from "../../assets/personal-loan/home-loan.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const BulletList = ({ items }: { items: [string, string][] }) => (
   <ul className="space-y-2.5 mt-1">
@@ -114,24 +114,17 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Home Loan Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Home Loan", desc: "A curated selection of home loans with competitive terms, flexible repayment options, and quick approvals — making your dream home more accessible." },
           { num: "2", title: "Best Home Loan Company", desc: "Partnered with reputable lenders known for customer satisfaction, transparent processes, and seamless borrowing experiences." },
           { num: "3", title: "Best Home Loan Provider", desc: "Institutions that prioritize your financial well-being — transparent, customer-centric, and committed to fair lending." },
           { num: "4", title: "Best Home Loan Provider Company", desc: "Renowned for reliability, integrity, and a genuine dedication to helping individuals achieve homeownership." },
           { num: "5", title: "Best Home Loan Finance", desc: "Financing options aligned with your financial goals — competitive rates, favourable terms, and solutions built around your needs." },
           { num: "6", title: "Home Loan at Lowest Rate of Interest", desc: "We negotiate with lenders to secure the most favorable interest rates, helping you minimize the total cost of financing your dream home." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
