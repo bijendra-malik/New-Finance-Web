@@ -1,25 +1,9 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/AgainstProperty-banner.webp";
 import LASImg from "../../assets/personal-loan/againstloan-details.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -61,7 +45,7 @@ const sections: DetailSection[] = [
           Loan Against Shares offers several features designed to provide liquidity against eligible
           investments:
         </p>
-        <BL items={[
+        <BulletList items={[
           "Access to funds without immediately selling eligible shares",
           "Shares can be used as collateral for obtaining financing",
           "Loan amount is determined based on the eligible value of the pledged securities",
@@ -81,42 +65,28 @@ const sections: DetailSection[] = [
       <div className="space-y-4">
         <div>
           <p className="text-gray-500 text-sm mb-2">Loan Against Shares may be available to eligible:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Salaried Individuals",
-              "Self-Employed Individuals",
-              "Business Owners",
-              "Professionals",
-              "Investors",
-              "Other eligible applicants",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Salaried Individuals",
+            "Self-Employed Individuals",
+            "Business Owners",
+            "Professionals",
+            "Investors",
+            "Other eligible applicants",
+          ]} />
         </div>
         <div>
           <p className="text-gray-500 text-sm mb-2">Eligibility may depend on:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Applicant's age and profile",
-              "Credit history",
-              "Income and repayment capacity",
-              "Ownership of eligible securities",
-              "Value of pledged shares",
-              "Type of shares/securities",
-              "Applicable margin requirements",
-              "Existing financial obligations",
-              "Lender's internal policies",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Applicant's age and profile",
+            "Credit history",
+            "Income and repayment capacity",
+            "Ownership of eligible securities",
+            "Value of pledged shares",
+            "Type of shares/securities",
+            "Applicable margin requirements",
+            "Existing financial obligations",
+            "Lender's internal policies",
+          ]} />
         </div>
         <p className="text-gray-500 text-sm">
           Only securities that meet the lender's eligibility criteria may be accepted as collateral.
@@ -130,7 +100,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The application process generally involves the following steps:</p>
-        <BL items={[
+        <BulletList items={[
           ["Application Submission", "The applicant provides personal, financial, and investment-related details"],
           ["KYC Verification", "Identity and address information is verified"],
           ["Demat Verification", "The applicant's demat account and eligible securities are reviewed"],
@@ -149,7 +119,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Applicants may be required to provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Identification Proof", "PAN Card, Aadhaar Card, passport, or other valid identity documents"],
           ["Address Proof", "Utility bills, rental agreement, or other valid address documents"],
           ["Income Proof", "Salary slips, Income Tax Returns, bank statements, or other income-related documents, where applicable"],
@@ -170,7 +140,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Loan Against Shares can provide several benefits to eligible borrowers:</p>
-        <BL items={[
+        <BulletList items={[
           ["Access to Liquidity", "Provides funds against eligible investments without requiring an immediate sale of the shares"],
           ["Investment Continuity", "Allows borrowers to retain their investments while accessing financing, subject to the facility terms"],
           ["Flexible Financial Support", "Can help meet eligible personal or business financial requirements"],

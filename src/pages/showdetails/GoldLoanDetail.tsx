@@ -1,24 +1,8 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/personal-banner.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -55,7 +39,7 @@ const sections: DetailSection[] = [
           Gold Loan offers several features designed to provide liquidity against eligible gold
           assets:
         </p>
-        <BL items={[
+        <BulletList items={[
           "Access to funds without immediately selling eligible gold",
           "Gold jewellery or other approved gold assets can be used as collateral for obtaining financing",
           "Loan amount is determined based on the assessed value and eligibility of the pledged gold",
@@ -75,42 +59,28 @@ const sections: DetailSection[] = [
       <div className="space-y-4">
         <div>
           <p className="text-gray-500 text-sm mb-2">Gold Loans may be available to eligible:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Salaried Individuals",
-              "Self-Employed Individuals",
-              "Business Owners",
-              "Professionals",
-              "Individuals with eligible gold assets",
-              "Other eligible applicants",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Salaried Individuals",
+            "Self-Employed Individuals",
+            "Business Owners",
+            "Professionals",
+            "Individuals with eligible gold assets",
+            "Other eligible applicants",
+          ]} />
         </div>
         <div>
           <p className="text-gray-500 text-sm mb-2">Eligibility may depend on:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Applicant's age and profile",
-              "Credit history, where applicable",
-              "Income and repayment capacity",
-              "Ownership of eligible gold",
-              "Purity and quality of the gold",
-              "Assessed value of the pledged gold",
-              "Type of gold jewellery or approved gold assets",
-              "Existing financial obligations",
-              "Lender's internal policies",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Applicant's age and profile",
+            "Credit history, where applicable",
+            "Income and repayment capacity",
+            "Ownership of eligible gold",
+            "Purity and quality of the gold",
+            "Assessed value of the pledged gold",
+            "Type of gold jewellery or approved gold assets",
+            "Existing financial obligations",
+            "Lender's internal policies",
+          ]} />
         </div>
         <p className="text-gray-500 text-sm">
           Only gold assets that meet the lender's eligibility and valuation criteria may be accepted
@@ -125,7 +95,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The application process generally involves the following steps:</p>
-        <BL items={[
+        <BulletList items={[
           ["Application Submission", "The applicant provides personal, financial, and loan-related details"],
           ["KYC Verification", "Identity and address information is verified"],
           ["Gold Assessment", "The proposed gold is examined to determine its purity, quality, weight, and eligible value"],
@@ -144,7 +114,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Applicants may be required to provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Identification Proof", "PAN Card, Aadhaar Card, passport, or other valid identity documents"],
           ["Address Proof", "Utility bills, rental agreement, or other valid address documents"],
           ["Income Proof", "Salary slips, Income Tax Returns, bank statements, or other income-related documents, where applicable"],
@@ -164,7 +134,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Gold Loans can provide several benefits to eligible borrowers:</p>
-        <BL items={[
+        <BulletList items={[
           ["Access to Liquidity", "Provides funds against eligible gold without requiring an immediate sale of the asset"],
           ["Retention of Gold Ownership", "Allows borrowers to retain their gold, subject to repayment of the loan and applicable terms"],
           ["Secured Financing", "Gold serves as collateral for the facility"],

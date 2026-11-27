@@ -1,24 +1,8 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/Film-banner.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -57,7 +41,7 @@ const sections: DetailSection[] = [
           Film Funding can provide financial support for eligible film and audiovisual projects. Key
           features may include:
         </p>
-        <BL items={[
+        <BulletList items={[
           "Funding support for eligible film production and related project expenses",
           "Financing may cover approved pre-production, production, and post-production requirements",
           "Funding may be provided based on the project's estimated budget and financial requirements",
@@ -77,44 +61,30 @@ const sections: DetailSection[] = [
       <div className="space-y-4">
         <div>
           <p className="text-gray-500 text-sm mb-2">Film Funding may be available to eligible:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Film Production Companies",
-              "Producers",
-              "Production Houses",
-              "Studios",
-              "Media & Entertainment Companies",
-              "Established Film Production Entities",
-              "Other eligible applicants or project entities",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Film Production Companies",
+            "Producers",
+            "Production Houses",
+            "Studios",
+            "Media & Entertainment Companies",
+            "Established Film Production Entities",
+            "Other eligible applicants or project entities",
+          ]} />
         </div>
         <div>
           <p className="text-gray-500 text-sm mb-2">Eligibility may depend on:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Applicant's business and financial profile",
-              "Experience of the producer or production team",
-              "Viability of the proposed film project",
-              "Estimated project budget",
-              "Funding requirement",
-              "Production plan and timeline",
-              "Expected revenue and commercial prospects",
-              "Existing financial obligations",
-              "Availability of security, where applicable",
-              "Financier's internal policies and assessment criteria",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Applicant's business and financial profile",
+            "Experience of the producer or production team",
+            "Viability of the proposed film project",
+            "Estimated project budget",
+            "Funding requirement",
+            "Production plan and timeline",
+            "Expected revenue and commercial prospects",
+            "Existing financial obligations",
+            "Availability of security, where applicable",
+            "Financier's internal policies and assessment criteria",
+          ]} />
         </div>
         <p className="text-gray-500 text-sm">
           The project and applicant must meet the financier's applicable eligibility and credit
@@ -129,7 +99,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The application process generally involves the following steps:</p>
-        <BL items={[
+        <BulletList items={[
           ["Application Submission", "The applicant provides personal, business, project, financial, and funding-related details"],
           ["Project Documentation", "The film concept, screenplay, budget, production plan, agreements, and other required documents are submitted"],
           ["KYC & Business Verification", "The identity, address, business registration, and other relevant details are verified"],
@@ -150,7 +120,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Applicants may be required to provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Identification Proof", "PAN Card, Aadhaar Card, passport, or other valid identity documents of the applicant, promoters, or authorised representatives"],
           ["Address Proof", "Utility bills, rental agreement, registered office proof, or other valid address documents"],
           ["Business Proof", "Certificate of Incorporation, GST certificate, partnership deed, LLP documents, or other applicable business registration documents"],
@@ -173,7 +143,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Film Funding can provide several benefits to eligible applicants:</p>
-        <BL items={[
+        <BulletList items={[
           ["Production Support", "Provides financial resources for eligible film production requirements"],
           ["Project Continuity", "Helps producers manage expenses across different stages of a film project"],
           ["Working Capital Support", "Can assist with approved production-related cash-flow requirements"],

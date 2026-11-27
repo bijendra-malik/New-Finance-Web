@@ -1,25 +1,9 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/business-banner.webp";
 import ODCCImg from "../../assets/personal-loan/business-details02.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -63,7 +47,7 @@ const sections: DetailSection[] = [
           OD/CC facilities offer businesses flexible access to working capital according to their
           operational requirements. Key features may include:
         </p>
-        <BL items={[
+        <BulletList items={[
           "Access to funds up to an approved limit",
           "Flexible utilisation of available funds",
           "Support for short-term working capital requirements",
@@ -85,26 +69,19 @@ const sections: DetailSection[] = [
           OD/CC facilities are generally intended for businesses that require working capital to
           manage their regular operations. Eligible applicants may include:
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-          {[
-            "Manufacturers",
-            "Traders",
-            "Wholesalers",
-            "Retailers",
-            "Distributors",
-            "Service Providers",
-            "MSMEs",
-            "Partnership Firms",
-            "LLPs",
-            "Private Limited Companies",
-            "Other eligible business entities",
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-            </div>
-          ))}
-        </div>
+        <BulletGrid items={[
+          "Manufacturers",
+          "Traders",
+          "Wholesalers",
+          "Retailers",
+          "Distributors",
+          "Service Providers",
+          "MSMEs",
+          "Partnership Firms",
+          "LLPs",
+          "Private Limited Companies",
+          "Other eligible business entities",
+        ]} />
         <p className="text-gray-500 text-sm pt-1">
           Eligibility is generally assessed based on factors such as business vintage, turnover,
           profitability, banking history, credit profile, existing liabilities, cash flow, working
@@ -117,7 +94,7 @@ const sections: DetailSection[] = [
     id: "process",
     heading: "Application Process",
     content: (
-      <BL items={[
+      <BulletList items={[
         ["Application Submission", "The applicant provides basic personal, business, financial, and facility-related information"],
         ["Documentation", "Required KYC, business, financial, banking, and security documents are submitted"],
         ["Verification", "Submitted information and documents are verified"],
@@ -135,7 +112,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Applicants may be required to provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Identification Proof", "PAN Card, Aadhaar Card, passport, or other valid identity documents"],
           ["Address Proof", "Utility bills, rental agreement, business address proof, or other valid documents"],
           ["Business Proof", "Business registration certificate, GST certificate, Udyam Registration, partnership deed, incorporation documents, or other applicable business documents"],
@@ -152,7 +129,7 @@ const sections: DetailSection[] = [
     id: "benefits",
     heading: "Benefits of OD / CC Limit",
     content: (
-      <BL items={[
+      <BulletList items={[
         ["Flexible Working Capital", "Access funds according to business requirements within the approved limit"],
         ["Cash-Flow Management", "Helps businesses manage temporary gaps between receivables and payments"],
         ["Operational Support", "Can support eligible day-to-day business expenses and working capital requirements"],

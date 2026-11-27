@@ -1,24 +1,8 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
+import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/construction-banner.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BL = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [t, d] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {d ? <><span className="font-semibold text-gray-800">{t}: </span>{d}</> : t}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -59,7 +43,7 @@ const sections: DetailSection[] = [
           Foreign Direct Investment offers several features that support international investment
           into eligible Indian businesses:
         </p>
-        <BL items={[
+        <BulletList items={[
           "Enables foreign investors to invest capital into eligible Indian businesses",
           "Can provide access to long-term foreign capital",
           "May support business expansion, infrastructure development, and growth initiatives",
@@ -79,42 +63,28 @@ const sections: DetailSection[] = [
       <div className="space-y-4">
         <div>
           <p className="text-gray-500 text-sm mb-2">FDI may be available to eligible:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Foreign Individuals",
-              "Foreign Companies",
-              "Foreign Investment Entities",
-              "Foreign Institutional / Investment Entities, where permitted",
-              "Other eligible persons or entities resident outside India",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Foreign Individuals",
+            "Foreign Companies",
+            "Foreign Investment Entities",
+            "Foreign Institutional / Investment Entities, where permitted",
+            "Other eligible persons or entities resident outside India",
+          ]} />
         </div>
         <div>
           <p className="text-gray-500 text-sm mb-2">Eligibility and permitted investment may depend on:</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-            {[
-              "Nature of the proposed business activity",
-              "Investor's residential status and legal structure",
-              "Indian company's legal structure",
-              "Applicable sectoral cap",
-              "Applicable entry route",
-              "Ownership and control structure",
-              "Foreign investment regulations",
-              "Security and regulatory conditions",
-              "Applicable pricing requirements",
-              "Government or regulatory approvals, where required",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-2">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-                <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-              </div>
-            ))}
-          </div>
+          <BulletGrid items={[
+            "Nature of the proposed business activity",
+            "Investor's residential status and legal structure",
+            "Indian company's legal structure",
+            "Applicable sectoral cap",
+            "Applicable entry route",
+            "Ownership and control structure",
+            "Foreign investment regulations",
+            "Security and regulatory conditions",
+            "Applicable pricing requirements",
+            "Government or regulatory approvals, where required",
+          ]} />
         </div>
         <p className="text-gray-500 text-sm">
           Foreign investment is permitted up to applicable limits in eligible sectors, subject to
@@ -129,7 +99,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The investment process generally involves the following steps:</p>
-        <BL items={[
+        <BulletList items={[
           ["Investment Planning", "The foreign investor and Indian company determine the proposed investment structure, amount, ownership, and business objectives"],
           ["Eligibility Assessment", "The proposed business activity is reviewed to determine whether foreign investment is permitted and what conditions apply"],
           ["Entry Route Assessment", "The investment is assessed to determine whether it falls under the Automatic Route or Government Route"],
@@ -150,7 +120,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">The investor and Indian investee company may be required to provide the following documents:</p>
-        <BL items={[
+        <BulletList items={[
           ["Investor Identification Proof", "Passport, certificate of incorporation, registration documents, or other valid identification documents of the foreign investor"],
           ["Address Proof", "Registered office address, utility documents, or other applicable address verification documents"],
           ["Company Documents", "Certificate of Incorporation, Memorandum and Articles of Association, PAN, GST registration, and other applicable corporate documents"],
@@ -173,7 +143,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">FDI can provide several benefits to eligible businesses and the broader economy:</p>
-        <BL items={[
+        <BulletList items={[
           ["Access to Foreign Capital", "Provides Indian businesses with access to international sources of capital"],
           ["Business Expansion", "Can support expansion into new markets, products, and business segments"],
           ["Technology Access", "Foreign investment can facilitate access to international technologies and technical expertise"],
