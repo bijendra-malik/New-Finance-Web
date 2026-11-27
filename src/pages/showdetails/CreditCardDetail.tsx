@@ -2,24 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerFallback from "../../assets/loan-images/CreditCards-banner.webp";
 import creaditcarddetails from "../../assets/personal-loan/creaditcard-details.webp";
-
-const ACCENT = "var(--brand-navy)";
-
-const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map((item, i) => {
-      const [title, desc] = Array.isArray(item) ? item : [item, undefined];
-      return (
-        <li key={i} className="flex items-start gap-3">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-          <span className="text-sm text-gray-600 leading-relaxed">
-            {desc ? <><span className="font-semibold text-gray-800">{title}: </span>{desc}</> : title}
-          </span>
-        </li>
-      );
-    })}
-  </ul>
-);
+import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const sections: DetailSection[] = [
   {
@@ -130,22 +114,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Credit Card Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Credit Card Provider", desc: "Known for competitive rates and rewarding perks — a variety of card options tailored to your lifestyle." },
           { num: "2", title: "Best Credit Card Options", desc: "From premium rewards cards to student-friendly options — providers offer solutions for every stage of life." },
           { num: "3", title: "Best Credit Card Company", desc: "User-friendly interfaces, secure payment systems, and excellent customer support." },
           { num: "4", title: "Best Credit Card Provider Company", desc: "Whether you're a frequent traveller or everyday spender, committed to innovation and enhancing your financial experience." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
