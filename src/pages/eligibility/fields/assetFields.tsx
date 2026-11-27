@@ -1,6 +1,6 @@
 import type { FormState } from "../formState";
 import { type ProductSpec } from "../models";
-import { AmountField, PlainField, FieldLabel, FieldError } from "../fieldControls";
+import { AmountField, FieldLabel, FieldError } from "../fieldControls";
 import { CARATS, fieldClass } from "../formState";
 
 interface Props {
@@ -23,14 +23,11 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
               min={1}
               step={1}
               value={form.goldGrams}
-              placeholder="e.g. 50"
+              placeholder="Net weight, no stones or thread"
               onChange={(event) => set("goldGrams", event.target.value)}
-              className={fieldClass(errors.goldGrams)}
+              className={`${fieldClass(errors.goldGrams)} placeholder:text-[12px]`}
             />
             <FieldError>{errors.goldGrams}</FieldError>
-            {!errors.goldGrams && (
-              <p className="mt-1 text-[11px] leading-4 text-slate-400">Net weight, without stones or thread.</p>
-            )}
           </div>
 
           <AmountField
@@ -40,7 +37,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("goldRate", next)}
             error={errors.goldRate}
             placeholder="e.g. 7,200"
-            hint="Today's rate for the purity you selected"
+            hint="Today's rate for this purity"
             required
           />
         </div>
@@ -69,20 +66,22 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
             id="elig-gold-income"
-            label="Monthly income (optional)"
+            label="Monthly Net Income"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
+            error={errors.monthlyIncome}
             placeholder="e.g. 60,000"
-            hint="Helps us check you can repay comfortably"
+            hint="Take-home pay that reaches your bank"
+            required
           />
           <AmountField
             id="elig-gold-emi"
-            label="EMIs you already pay"
+            label="Total monthly EMI"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
-            placeholder="e.g. 8,000 or 0"
-            hint="Enter 0 if you have none"
+            placeholder="e.g. 8,000"
+            hint="Enter 0 if you have no EMI"
             required
           />
         </div>
@@ -91,73 +90,54 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
 
     {product.family === "share" && (
       <div className="space-y-5">
-        <AmountField
-          id="elig-share-value"
-          label="Market value of shares"
-          value={form.shareValue}
-          onChange={(next) => set("shareValue", next)}
-          error={errors.shareValue}
-          placeholder="e.g. 10,00,000"
-          hint="Closing value of the approved shares you will pledge"
-          required
-        />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
+            id="elig-share-value"
+            label="Market value of shares"
+            value={form.shareValue}
+            onChange={(next) => set("shareValue", next)}
+            error={errors.shareValue}
+            placeholder="e.g. 10,00,000"
+            hint="Value of the shares pledged"
+            required
+          />
+          <AmountField
             id="elig-share-income"
-            label="Monthly income (optional)"
+            label="Monthly Net Income (optional)"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 1,00,000"
-            hint="Caps the loan at what you can repay"
+            hint="Caps the loan at what you repay"
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <AmountField
+            id="elig-share-lender-limit"
+            label="Lender's maximum limit (optional)"
+            value={form.shareLenderLimit}
+            onChange={(next) => set("shareLenderLimit", next)}
+            placeholder="e.g. 20,00,000"
+            hint="Scheme cap for this portfolio"
           />
           <AmountField
-            id="elig-share-emi"
-            label="EMIs you already pay"
-            value={form.existingEmi}
-            onChange={(next) => set("existingEmi", next)}
-            error={errors.existingEmi}
-            placeholder="e.g. 8,000 or 0"
-            hint="Enter 0 if you have none"
-            required
+            id="elig-share-exposure"
+            label="Existing loan against these shares (optional)"
+            value={form.shareExposure}
+            onChange={(next) => set("shareExposure", next)}
+            placeholder="e.g. 0"
+            hint="Deducted from the limit"
           />
         </div>
-      </div>
-    )}
-
-    {product.key === "vehicleLoan" && (
-      <div className="space-y-5">
         <AmountField
-          id="elig-vehicle-down"
-          label="Down payment"
-          value={form.vehicleDownPayment}
-          onChange={(next) => set("vehicleDownPayment", next)}
-          error={errors.vehicleDownPayment}
-          placeholder="e.g. 1,50,000 or 0"
-          hint="Paid upfront; the loan cannot exceed the on-road price less this amount. Enter 0 if you are financing the full price"
+          id="elig-share-emi"
+          label="Total monthly EMI"
+          value={form.existingEmi}
+          onChange={(next) => set("existingEmi", next)}
+          error={errors.existingEmi}
+          placeholder="e.g. 8,000"
+          hint="Enter 0 if you have no EMI"
           required
         />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PlainField
-            id="elig-vehicle-foir"
-            label="FOIR (%)"
-            value={form.vehicleFoir}
-            onChange={(next) => set("vehicleFoir", next.replace(/[^\d.]/g, ""))}
-            placeholder="e.g. 50"
-            inputMode="tel"
-            maxLength={4}
-            hint="Share of income lenders allow for all EMIs; 50% is typical"
-          />
-          <PlainField
-            id="elig-vehicle-ltv"
-            label="LTV (%)"
-            value={form.vehicleLtv}
-            onChange={(next) => set("vehicleLtv", next.replace(/[^\d.]/g, ""))}
-            placeholder="e.g. 90"
-            inputMode="tel"
-            maxLength={3}
-            hint="Share of the on-road price lenders fund; 90% is typical"
-          />
-        </div>
       </div>
     )}
 
