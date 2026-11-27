@@ -1,8 +1,8 @@
 import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
-export type BulletItem = string | readonly [string, string];
+export type BulletItem = string | readonly [string, string | undefined];
 
-const isTuple = (item: BulletItem): item is readonly [string, string] =>
+const isTuple = (item: BulletItem): item is readonly [string, string | undefined] =>
   typeof item !== "string";
 
 const bulletItems = (items: readonly BulletItem[]) =>
@@ -16,11 +16,17 @@ const bulletItems = (items: readonly BulletItem[]) =>
 export const BulletList = ({
   items,
   size = "sm",
+  gap = "normal",
 }: {
   items: readonly BulletItem[];
   size?: "sm" | "md";
+  gap?: "normal" | "tight" | "loose";
 }) => (
-  <ul className="space-y-2.5 mt-1">
+  <ul
+    className={`${
+      gap === "tight" ? "space-y-2" : gap === "loose" ? "space-y-3" : "space-y-2.5"
+    } mt-1`}
+  >
     {bulletItems(items).map(({ key, title, detail }) => (
       <li key={key} className="flex items-start gap-3">
         <span
