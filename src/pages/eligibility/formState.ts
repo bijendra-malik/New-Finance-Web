@@ -1,11 +1,16 @@
 import { monthsToMaturity, type ProductSpec } from "./models";
+import { ALL_EMPLOYMENT_TYPES, SALARIED, SELF_EMPLOYMENT } from "../../constants/masters";
 
-export const OCCUPATIONS = ["Salaried", "Self-Employed", "Business Owner"] as const;
-export const BUSINESS_OCCUPATIONS = ["Self-Employed", "Business Owner"] as const;
+export const OCCUPATIONS = ALL_EMPLOYMENT_TYPES;
+export const BUSINESS_OCCUPATIONS = SELF_EMPLOYMENT;
 export const INCOME_COPY: Record<string, { label: string; hint: string }> = {
-  Salaried: { label: "Monthly income", hint: "Take-home after deductions" },
-  "Self-Employed": { label: "Monthly net profit", hint: "Profit after business expenses, from your P&L" },
-  "Business Owner": { label: "Monthly net profit", hint: "Profit after business expenses, from your P&L" },
+  [SALARIED]: { label: "Monthly Net Income", hint: "Take home salary after deduction" },
+  ...Object.fromEntries(
+    SELF_EMPLOYMENT.map((type) => [
+      type,
+      { label: "Annual net profit", hint: "Net profit after tax deduction" },
+    ]),
+  ),
 };
 export const LAP_PROPERTY_TYPES = ["Residential", "Commercial", "Industrial", "Other"] as const;
 export const LAP_CITIES = [
@@ -45,8 +50,7 @@ export interface FormState {
   lrdRent: string;
   lrdLeaseYears: string;
   lrdPropertyValue: string;
-  lrdLtv: string;
-  vehicleDownPayment: string;
+  lrdLenderLimit: string;
   eduFees: string;
   eduHostel: string;
   eduOther: string;
@@ -56,33 +60,30 @@ export interface FormState {
   projectContribution: string;
   projectCashFlow: string;
   commercialRent: string;
-  wcAssessment: string;
-  wcMargin: string;
   existingEmi: string;
   propertyValue: string;
   turnover: string;
   vehiclePrice: string;
-  vehicleFoir: string;
-  vehicleLtv: string;
   commercialCoApplicant: string;
-  commercialFoir: string;
-  commercialLtv: string;
-  projectDscr: string;
   wcCurrentAssets: string;
   wcCurrentLiabilities: string;
   odMode: "turnover" | "drawingPower";
   odMargin: string;
-  wcMethod: "turnover" | "drawingPower";
-  lrdDeduction: string;
-  lrdCoverage: string;
+  wcMethod: "turnover" | "workingCapital";
+  wcLenderLimit: string;
+  wcExistingLimit: string;
   goldGrams: string;
   goldCarat: number;
   goldRate: string;
   stock: string;
   debtors: string;
   otherCurrentLiabilities: string;
+  odLenderLimit: string;
+  odExistingLimit: string;
   creditScore: string;
   shareValue: string;
+  shareLenderLimit: string;
+  shareExposure: string;
   fullName: string;
   mobile: string;
   email: string;
@@ -102,21 +103,15 @@ export const INITIAL_FORM: FormState = {
   lrdRent: "",
   lrdLeaseYears: "",
   lrdPropertyValue: "",
-  lrdLtv: "",
-  vehicleDownPayment: "",
-  vehicleFoir: "",
-  vehicleLtv: "",
+  lrdLenderLimit: "",
   commercialCoApplicant: "",
-  commercialFoir: "",
-  commercialLtv: "",
-  projectDscr: "",
   wcCurrentAssets: "",
   wcCurrentLiabilities: "",
   odMode: "turnover",
   odMargin: "",
   wcMethod: "turnover",
-  lrdDeduction: "",
-  lrdCoverage: "",
+  wcLenderLimit: "",
+  wcExistingLimit: "",
   eduFees: "",
   eduHostel: "",
   eduOther: "",
@@ -126,8 +121,6 @@ export const INITIAL_FORM: FormState = {
   projectContribution: "",
   projectCashFlow: "",
   commercialRent: "",
-  wcAssessment: "",
-  wcMargin: "",
   existingEmi: "",
   propertyValue: "",
   turnover: "",
@@ -138,13 +131,20 @@ export const INITIAL_FORM: FormState = {
   stock: "",
   debtors: "",
   otherCurrentLiabilities: "",
+  odLenderLimit: "",
+  odExistingLimit: "",
   creditScore: "",
   shareValue: "",
+  shareLenderLimit: "",
+  shareExposure: "",
   fullName: "",
   mobile: "",
   email: "",
   authorized: false,
 };
+
+export const placeholderWith = (hint?: string, placeholder?: string): string | undefined =>
+  hint ?? placeholder;
 
 export const SERIF = { fontFamily: "var(--font-serif)" } as const;
 
