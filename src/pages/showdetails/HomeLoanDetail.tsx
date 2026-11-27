@@ -2,21 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/Home-banner.webp";
 import homelonaDetail from "../../assets/personal-loan/home-loan.webp";
-import { NumberedSteps } from "../../components/ui/DetailContent";
+import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
 import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
-
-const BulletList = ({ items }: { items: [string, string][] }) => (
-  <ul className="space-y-2.5 mt-1">
-    {items.map(([title, desc]) => (
-      <li key={title} className="flex items-start gap-3">
-        <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-        <span className="text-sm md:text-base text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{title}: </span>{desc}
-        </span>
-      </li>
-    ))}
-  </ul>
-);
 
 const sections: DetailSection[] = [
   {
@@ -73,7 +60,7 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-600 text-sm leading-relaxed">Several factors determine how much you are eligible to borrow:</p>
-        <BulletList items={[
+        <BulletList size="md" items={[
           ["Monthly Income", "Net income after deducting existing EMIs directly influences your eligibility."],
           ["Other EMIs", "Active loan obligations reduce your available repayment capacity."],
           ["Loan Tenure", "Longer tenures lower your EMI but increase total interest paid."],
