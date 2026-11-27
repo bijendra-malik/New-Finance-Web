@@ -31,3 +31,5 @@ export const THEME = {
   blue: "var(--brand-blue)",
   blueDark: "var(--brand-blue-dark)",
 } as const;
+
+export const DETAIL_ACCENT = THEME.navy;
