@@ -48,6 +48,33 @@ export const formatPAN = (raw: string): string => {
 export const digitsOnly = (raw: string): string =>
   raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
+const WORDS_ONES = [
+  "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
+] as const;
+const WORDS_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"] as const;
+
+const underHundred = (n: number): string =>
+  n < 20 ? WORDS_ONES[n] : `${WORDS_TENS[Math.floor(n / 10)]}${n % 10 ? `-${WORDS_ONES[n % 10]}` : ""}`;
+
+const underThousand = (n: number): string => {
+  const hundreds = Math.floor(n / 100);
+  const rest = n % 100;
+  return [hundreds ? `${WORDS_ONES[hundreds]} hundred` : "", rest ? underHundred(rest) : ""]
+    .filter(Boolean)
+    .join(" ");
+};
+
+export const numberToWords = (value: number): string => {
+  const n = Math.floor(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n < 100) return underHundred(n);
+  if (n < 1000) return underThousand(n);
+  if (n < 100000) return `${underThousand(Math.floor(n / 1000))} thousand${n % 1000 ? ` ${underThousand(n % 1000)}` : ""}`;
+  if (n < 10000000) return `${underHundred(Math.floor(n / 100000))} lakh${n % 100000 ? ` ${numberToWords(n % 100000)}` : ""}`;
+  return `${numberToWords(Math.floor(n / 10000000))} crore${n % 10000000 ? ` ${numberToWords(n % 10000000)}` : ""}`;
+};
+
 /** Formats digits with Indian separators for display. */
 export const formatIndianNumber = (raw: string): string => {
   const digits = digitsOnly(raw);
