@@ -152,9 +152,8 @@ const Footer = () => {
               </p>
 
               <p className="mt-4 max-w-110 text-[15px] leading-[1.7] text-white/74 max-sm:text-sm">
-                Services for investors, FDI entities, NBFCs, and banks, facilitating secured and
-                unsecured borrowing solutions aligned with partner policies. Final approval rests
-                solely with the lender.
+                We serve &amp; deal with Banks, NBFCs, FDI, Investors in secured &amp; Unsecured
+                financial solutions.
               </p>
 
               <div className="mt-5.5 flex flex-col gap-2.5">
@@ -324,10 +323,6 @@ const Footer = () => {
               ))}
             </nav>
           </div>
-          <p className="pb-4.5 text-[11.5px] leading-[1.7] text-white/60 max-sm:text-center">
-            Indexia Finance facilitates loan applications. Approval, loan amount, interest rate,
-            fees and disbursal are decided by the lending bank or NBFC.
-          </p>
         </div>
       </div>
     </footer>
