@@ -18,7 +18,6 @@ export interface EligibilityProductFieldsProps {
   incomeHint: string;
   asset: ProductSpec["asset"];
   assetLtv: number;
-  lapAssetType: string;
 }
 
 const EligibilityProductFields = ({
@@ -33,7 +32,6 @@ const EligibilityProductFields = ({
   incomeHint,
   asset,
   assetLtv,
-  lapAssetType,
 }: EligibilityProductFieldsProps) => (
   <>
     <TermFields
@@ -47,7 +45,6 @@ const EligibilityProductFields = ({
       incomeHint={incomeHint}
       asset={asset}
       assetLtv={assetLtv}
-      lapAssetType={lapAssetType}
     />
     <AssetFields product={product} form={form} errors={errors} set={set} />
     <EducationFields product={product} form={form} errors={errors} set={set} />
