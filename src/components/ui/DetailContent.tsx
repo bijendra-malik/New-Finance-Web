@@ -66,6 +66,34 @@ export const BulletGrid = ({
   </div>
 );
 
+/** Ordered list with a small numbered badge and an inline "Title: detail" line. */
+export const NumberedList = ({
+  items,
+  size = "sm",
+}: {
+  items: readonly (readonly [string, string])[];
+  size?: "sm" | "md";
+}) => (
+  <ol className="space-y-3 mt-1">
+    {items.map(([title, desc], index) => (
+      <li key={title} className="flex items-start gap-3">
+        <span
+          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5"
+          style={{ background: ACCENT }}
+        >
+          {index + 1}
+        </span>
+        <span
+          className={`${size === "md" ? "text-sm md:text-base" : "text-sm"} text-gray-600 leading-relaxed`}
+        >
+          <span className="font-semibold text-gray-800">{title}: </span>
+          {desc}
+        </span>
+      </li>
+    ))}
+  </ol>
+);
+
 export interface NumberedStep {
   num: string | number;
   title: string;
@@ -76,11 +104,13 @@ export interface NumberedStep {
 export const NumberedSteps = ({
   items,
   size = "md",
+  className,
 }: {
   items: readonly NumberedStep[];
   size?: "md" | "sm";
+  className?: string;
 }) => (
-  <div className={size === "md" ? "space-y-4" : "space-y-3"}>
+  <div className={className ?? (size === "md" ? "space-y-4" : "space-y-3")}>
     {items.map((item) => (
       <div key={item.num} className="flex items-start gap-4">
         <span
