@@ -4,7 +4,6 @@ import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.w
 import { NumberedSteps } from "../../components/ui/DetailContent";
 import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
-
 const NumberedList = ({ items }: { items: string[] }) => (
   <ol className="space-y-2.5 mt-1">
     {items.map((item, i) => (
