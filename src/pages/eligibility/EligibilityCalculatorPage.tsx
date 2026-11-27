@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import NotFoundPage from "../NotFoundPage";
 import PageBanner from "../../components/common/PageBanner";
 import Container from "../../components/common/Container";
 import useSEO from "../../hooks/useSEO";
 import { useApplyGate } from "../../hooks/useApplyGate";
 import { useSetApplicantPrefill } from "../../context/applicantPrefillContext";
-import { submitEligibility } from "../../api/eligibility";
+import { SALARIED, SELF_EMPLOYED_BUSINESS } from "../../constants/masters";
 import { EMAIL_REGEX, MOBILE_REGEX, ageOn } from "../../utils/validation";
 import { DateOfBirthPicker } from "../../components/form/FormControls";
 import { formatINRRounded } from "../../utils/formatters";
 import {
-  PRODUCTS,
   COMMERCIAL_LTV,
   assetLtvFor,
   commercialEligibility,
@@ -22,10 +21,7 @@ import {
   productByKey,
   productBySlug,
   productPath,
-  productSlug,
   projectEligibility,
-  LRD_LTV_MAX,
-  LRD_LTV_MIN,
   LRD_ROI,
   LRD_TENURE_YEARS,
   shareEligibility,
@@ -44,7 +40,6 @@ import {
   OCCUPATIONS,
   maxTenureFor,
   num,
-  optionalNum,
   type FormState,
 } from "./formState";
 import { Card, FieldError, FieldLabel, PlainField } from "./fieldControls";
@@ -53,7 +48,6 @@ import EligibilityProductFields from "./productFields";
 
 const EligibilityCalculatorPage = () => {
   const { productSlug: slug } = useParams<{ productSlug: string }>();
-  const navigate = useNavigate();
   const routeProduct = productBySlug(slug);
   const product = routeProduct ?? productByKey("personal");
 
@@ -74,9 +68,9 @@ const EligibilityCalculatorPage = () => {
 
   const occupation =
     product.key === "personal"
-      ? "Salaried"
-      : product.key === "business" && form.occupation === "Salaried"
-        ? "Self-Employed"
+      ? SALARIED
+      : product.key === "business" && form.occupation === SALARIED
+        ? SELF_EMPLOYED_BUSINESS
         : form.occupation;
   const occupationOptions: readonly string[] =
     product.key === "personal" || product.family === "lrd"
@@ -88,16 +82,15 @@ const EligibilityCalculatorPage = () => {
   const incomeLabel = incomeCopy.label;
   const incomeHint = incomeCopy.hint;
   const incomeError = `Enter your ${incomeLabel.toLowerCase()}`;
+  // Self-employed applicants declare annual net profit; the models work in months.
+  const annualProfit = product.family === "term" && occupation !== SALARIED;
+  const monthlyIncomeValue = annualProfit ? num(form.monthlyIncome) / 12 : num(form.monthlyIncome);
   const age = ageOn(form.dob);
   const tenure = maxTenureFor(product, age, occupation);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((previous) => ({ ...previous, [key]: value }));
     setErrors((previous) => (previous[key] ? { ...previous, [key]: "" } : previous));
-  };
-
-  const changeProduct = (key: string) => {
-    navigate(productPath(key));
   };
 
   useEffect(() => {
@@ -119,17 +112,13 @@ const EligibilityCalculatorPage = () => {
     leaseMonths: Math.round(num(form.lrdLeaseYears) * 12),
     propertyValue: num(form.lrdPropertyValue),
     repaymentMonths: LRD_TENURE_YEARS * 12,
-    ltvPercent: num(form.lrdLtv),
-    deductionPct: optionalNum(form.lrdDeduction),
-    coveragePct: optionalNum(form.lrdCoverage),
     creditScore: num(form.creditScore),
+    lenderLimit: num(form.lrdLenderLimit),
   };
   const lrdReady =
     lrdInput.monthlyRent > 0 &&
     lrdInput.leaseMonths > 0 &&
     lrdInput.propertyValue > 0 &&
-    lrdInput.ltvPercent >= LRD_LTV_MIN * 100 &&
-    lrdInput.ltvPercent <= LRD_LTV_MAX * 100 &&
     lrdInput.creditScore >= 300 &&
     lrdInput.creditScore <= 900;
   const lrdLive = product.family === "lrd" && lrdReady ? lrdEligibility(lrdInput) : null;
@@ -161,7 +150,6 @@ const EligibilityCalculatorPage = () => {
         projectCost: num(form.projectCost),
         promoterContribution: num(form.projectContribution),
         monthlyCashFlow: num(form.projectCashFlow),
-        dscr: optionalNum(form.projectDscr),
         creditScore: num(form.creditScore),
       });
     }
@@ -175,8 +163,6 @@ const EligibilityCalculatorPage = () => {
         monthlyIncome: num(form.monthlyIncome),
         existingEmi: num(form.existingEmi),
         coApplicantIncome: num(form.commercialCoApplicant),
-        foirPct: optionalNum(form.commercialFoir),
-        ltvPct: optionalNum(form.commercialLtv),
         creditScore: num(form.creditScore),
       });
     }
@@ -185,11 +171,11 @@ const EligibilityCalculatorPage = () => {
       return turnoverEligibility({
         product,
         turnover: num(form.turnover),
-        assessmentPct: num(form.wcAssessment),
-        margin: num(form.wcMargin),
         currentAssets: num(form.wcCurrentAssets),
         currentLiabilities: num(form.wcCurrentLiabilities),
         mode: form.wcMethod,
+        lenderLimit: num(form.wcLenderLimit),
+        existingLimit: num(form.wcExistingLimit),
         creditScore: num(form.creditScore),
       });
     }
@@ -216,6 +202,8 @@ const EligibilityCalculatorPage = () => {
         margin: num(form.odMargin),
         mode: form.odMode,
         creditScore: num(form.creditScore),
+        lenderLimit: num(form.odLenderLimit),
+        existingLimit: num(form.odExistingLimit),
       });
     }
 
@@ -227,21 +215,20 @@ const EligibilityCalculatorPage = () => {
         existingEmi: num(form.existingEmi),
         months: tenure,
         creditScore: num(form.creditScore),
+        lenderLimit: num(form.shareLenderLimit),
+        existingExposure: num(form.shareExposure),
       });
     }
 
     const asset = product.asset;
     return termEligibility({
       product,
-      monthlyIncome: num(form.monthlyIncome),
+      monthlyIncome: monthlyIncomeValue,
       existingEmi: num(form.existingEmi),
       age,
       occupation,
       tenureMonths: tenure,
       assetValue: asset ? num(form[asset.field]) : 0,
-      downPayment: num(form.vehicleDownPayment),
-      foirPct: optionalNum(form.vehicleFoir),
-      ltvPct: optionalNum(form.vehicleLtv),
       assetType: product.key === "lap" ? lapAssetType : undefined,
       cityCategory: product.key === "lap" ? form.lapCity : undefined,
       existingLoanOnAsset: product.key === "lap" ? num(form.lapExistingLoan) : 0,
@@ -250,7 +237,7 @@ const EligibilityCalculatorPage = () => {
     });
   };
 
-  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
     const next: Record<string, string> = {};
@@ -263,9 +250,6 @@ const EligibilityCalculatorPage = () => {
         next[product.asset.field] = `Enter the ${product.asset.label.toLowerCase()}`;
       }
       if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
-      if (product.key === "vehicleLoan" && !form.vehicleDownPayment.trim()) {
-        next.vehicleDownPayment = "Enter the down payment you can pay (0 if none)";
-      }
       if (product.key === "lap" && form.lapPropertyType === "Other" && !form.lapPropertyOther.trim()) {
         next.lapPropertyOther = "Name the property type";
       }
@@ -275,14 +259,9 @@ const EligibilityCalculatorPage = () => {
     }
     if (product.family === "lrd") {
       const leaseYears = num(form.lrdLeaseYears);
-      const ltv = num(form.lrdLtv);
       if (num(form.lrdRent) <= 0) next.lrdRent = "Enter the monthly rent your tenant pays";
       if (leaseYears <= 0) next.lrdLeaseYears = "Enter the lease left to run in years";
       if (num(form.lrdPropertyValue) <= 0) next.lrdPropertyValue = "Enter the property's market value";
-      if (ltv <= 0) next.lrdLtv = "Enter the assumed LTV";
-      else if (ltv < LRD_LTV_MIN * 100 || ltv > LRD_LTV_MAX * 100) {
-        next.lrdLtv = `Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`;
-      }
     }
     if (product.family === "education") {
       if (num(form.eduFees) <= 0) next.eduFees = "Enter the course fees";
@@ -291,9 +270,9 @@ const EligibilityCalculatorPage = () => {
     if (product.family === "project") {
       if (num(form.projectCost) <= 0) next.projectCost = "Enter the total project cost";
       else if (num(form.projectContribution) <= 0) {
-        next.projectContribution = "Enter the promoter contribution";
-      } else if (num(form.projectContribution) >= num(form.projectCost)) {
-        next.projectContribution = "Promoter contribution must be less than the project cost";
+        next.projectContribution = "Enter the promoter's own contribution";
+      } else if (num(form.projectContribution) < num(form.projectCost) * 0.2) {
+        next.projectContribution = "Promoter contribution must be at least 20% of the project cost";
       }
     }
     if (product.family === "commercial") {
@@ -302,17 +281,14 @@ const EligibilityCalculatorPage = () => {
     }
     if (product.family === "turnover") {
       if (num(form.turnover) <= 0) next.turnover = "Enter your projected annual turnover";
-      const pct = num(form.wcAssessment);
-      if (form.wcAssessment && (pct <= 0 || pct > 100)) {
-        next.wcAssessment = "Assessment must be between 1% and 100% of turnover";
-      }
-      if (form.wcMethod === "drawingPower" && num(form.wcCurrentAssets) <= 0) {
-        next.wcCurrentAssets = "Enter the eligible current assets for the drawing power";
+      if (form.wcMethod === "workingCapital" && num(form.wcCurrentAssets) <= 0) {
+        next.wcCurrentAssets = "Enter the eligible current assets for the working capital method";
       }
     }
     if (product.family === "gold") {
       if (num(form.goldGrams) <= 0) next.goldGrams = "Enter the gold weight in grams";
       if (num(form.goldRate) <= 0) next.goldRate = "Enter the rate per gram";
+      if (num(form.monthlyIncome) <= 0) next.monthlyIncome = "Enter your monthly net income";
       if (!form.existingEmi.trim()) next.existingEmi = "Enter the EMIs you already pay (0 if none)";
     }
     if (product.family === "wc") {
@@ -345,17 +321,6 @@ const EligibilityCalculatorPage = () => {
     setSubmitError("");
     setSubmitting(true);
     try {
-      await submitEligibility(productSlug(product), {
-        fullName: form.fullName.trim(),
-        mobile: form.mobile,
-        email: form.email.trim(),
-        dob: form.dob,
-        ...(product.key === "personal" ? {} : { occupation }),
-        creditScore: Math.round(num(form.creditScore)),
-        authorized: form.authorized,
-        monthlyIncome: num(form.monthlyIncome),
-        existingEmi: num(form.existingEmi),
-      });
       setResult({ outcome: computeOutcome(), product });
     } catch (error) {
       setSubmitError(
@@ -394,7 +359,7 @@ const EligibilityCalculatorPage = () => {
     form.lapPropertyType === "Other" ? form.lapPropertyOther.trim() || "Other" : form.lapPropertyType;
   const assetLtv = asset ? assetLtvFor(asset, num(form[asset.field]), lapAssetType, form.lapCity) : 0;
 
-  const incomeNoun = incomeLabel.toLowerCase();
+  const incomeNoun = annualProfit ? "net profit a month" : incomeLabel.toLowerCase();
 
   const basedOn = result
     ? result.product.family === "education"
@@ -404,7 +369,7 @@ const EligibilityCalculatorPage = () => {
         : result.product.family === "commercial"
           ? `Based on a commercial property valued at ${formatINRRounded(num(form.propertyValue))}${num(form.commercialRent) > 0 ? ` let for ${formatINRRounded(num(form.commercialRent))} a month` : ""}.`
           : result.product.family === "turnover"
-            ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover and a ${num(form.wcAssessment) || 18.75}% assessment.`
+            ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover, assessed at the standard 18.75%.`
     : result.product.family === "gold"
       ? `Based on ${form.goldGrams} g of ${form.goldCarat}K gold at ${formatINRRounded(num(form.goldRate))} per gram.`
       : result.product.family === "wc"
@@ -414,16 +379,16 @@ const EligibilityCalculatorPage = () => {
           : result.product.family === "share"
             ? `Based on shares worth ${formatINRRounded(num(form.shareValue))} pledged as security.`
             : result.outcome.credit
-              ? `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun}, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
-              : `Based on ${formatINRRounded(num(form.monthlyIncome))} ${incomeNoun} and ${formatINRRounded(num(form.existingEmi))} of existing EMIs.`
+              ? `Based on ${formatINRRounded(monthlyIncomeValue)} ${incomeNoun}, ${formatINRRounded(num(form.existingEmi))} of EMIs and a credit score of ${result.outcome.credit.score}.`
+              : `Based on ${formatINRRounded(monthlyIncomeValue)} ${incomeNoun} and ${formatINRRounded(num(form.existingEmi))} of existing EMIs.`
     : "";
 
   const stats = result
     ? result.product.family === "wc"
       ? [
-          { label: "You can draw today", value: formatINRRounded(result.outcome.workCapital?.usable ?? 0) },
-          { label: "Interest at full draw", value: `${formatINRRounded(result.outcome.monthly)} / month` },
-          { label: "Rate", value: `${result.outcome.roi}% p.a.` },
+          { label: "Gross eligible limit", value: formatINRRounded(result.outcome.workCapital?.grossLimit ?? 0) },
+          { label: "Existing OD/CC limit", value: formatINRRounded(result.outcome.workCapital?.existingLimit ?? 0) },
+          { label: "Remaining eligibility", value: formatINRRounded(result.outcome.headline) },
         ]
       : result.product.family === "education"
         ? [
@@ -445,14 +410,14 @@ const EligibilityCalculatorPage = () => {
             ]
           : result.product.family === "commercial"
             ? [
-                { label: "Property-based limit", value: formatINRRounded(num(form.propertyValue) * ((optionalNum(form.commercialLtv) ?? COMMERCIAL_LTV * 100) / 100)) },
+                { label: "Property-based limit", value: formatINRRounded(num(form.propertyValue) * COMMERCIAL_LTV) },
                 { label: "Monthly rent", value: formatINRRounded(num(form.commercialRent)) },
                 { label: "Tenure", value: tenureText(result.outcome.months) },
               ]
             : result.product.family === "turnover"
               ? [
-                  { label: "Working capital requirement", value: formatINRRounded(num(form.turnover) * ((num(form.wcAssessment) || 18.75) / 100)) },
-                  { label: "Borrower's margin", value: formatINRRounded(num(form.wcMargin)) },
+                  { label: "Working capital requirement", value: formatINRRounded(num(form.turnover) * 0.1875) },
+                  { label: "Margin", value: "25% (standard)" },
                   { label: "Rate", value: `${result.outcome.roi}% p.a.` },
                 ]
               : result.product.family === "lrd"
@@ -477,6 +442,12 @@ const EligibilityCalculatorPage = () => {
               { label: "Vehicle funding limit", value: formatINRRounded(result.outcome.caps.find((cap) => cap.key === "asset")?.value ?? 0) },
               { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
             ]
+        : result.product.family === "share"
+          ? [
+              { label: "Gross eligible loan", value: formatINRRounded(result.outcome.share?.gross ?? 0) },
+              { label: "Existing LAS exposure", value: formatINRRounded(result.outcome.share?.existingExposure ?? 0) },
+              { label: "Remaining eligibility", value: formatINRRounded(result.outcome.headline) },
+            ]
         : [
             { label: "Monthly EMI", value: formatINRRounded(result.outcome.monthly) },
             { label: "Interest rate", value: `${result.outcome.roi}% p.a.` },
@@ -490,7 +461,7 @@ const EligibilityCalculatorPage = () => {
         breadcrumb="Loan Eligibility"
         title="How Much Can You"
         highlight="Borrow?"
-        tagline="Answer a few questions and get an instant estimate. No documents, no waiting."
+        tagline="Answer a few questions and get an instant estimate result. No documents, no waiting."
       />
 
       <Container>
@@ -512,7 +483,13 @@ const EligibilityCalculatorPage = () => {
                     {result.outcome.eligible ? result.outcome.headlineLabel : "Your estimate"}
                   </p>
                   {result.outcome.eligible ? (
-                    <p className="mt-2 text-[32px] font-bold leading-none tabular-nums sm:text-[40px]" style={SERIF}>
+                    <p
+                      className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[32px] font-bold leading-none tabular-nums sm:text-[40px]"
+                      style={SERIF}
+                    >
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 sm:text-[12px]">
+                        Approx.
+                      </span>
                       {formatINRRounded(result.outcome.headline)}
                     </p>
                   ) : (
@@ -595,22 +572,12 @@ const EligibilityCalculatorPage = () => {
             /* ── Form ─────────────────────────────────────────────────────── */
             <form id="eligibility-form" onSubmit={handleSubmit} noValidate className="scroll-mt-28 space-y-4">
 
-              <Card title="Loan details" note="Pick the product and tell us the numbers behind it.">
+              <Card
+                title="Loan Details"
+                note="Tell us the numbers behind the loan you have in mind."
+                badge={product.label}
+              >
                 <div className="space-y-5">
-                  <div>
-                    <FieldLabel htmlFor="elig-product">Loan product</FieldLabel>
-                    <select
-                      id="elig-product"
-                      value={product.key}
-                      onChange={(event) => changeProduct(event.target.value)}
-                      className="w-full cursor-pointer rounded-xl border border-slate-200 bg-(--surface-muted) px-3 py-2.5 text-sm font-semibold text-slate-900 outline-none transition focus:border-(--brand-teal) focus:ring-2 focus:ring-(--brand-teal-33)"
-                    >
-                      {PRODUCTS.map((entry) => (
-                        <option key={entry.key} value={entry.key}>{entry.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
                   <EligibilityProductFields
                     product={product}
                     form={form}
@@ -623,58 +590,55 @@ const EligibilityCalculatorPage = () => {
                     incomeHint={incomeHint}
                     asset={asset}
                     assetLtv={assetLtv}
-                    lapAssetType={lapAssetType}
                   />
-                  <div>
-                    <FieldLabel htmlFor="elig-credit" required>Credit score (CIBIL)</FieldLabel>
-                    <input
-                      id="elig-credit"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={3}
-                      autoComplete="off"
-                      placeholder="e.g. 760"
-                      value={form.creditScore}
-                      onChange={(event) => set("creditScore", event.target.value.replace(/\D/g, ""))}
-                      className={fieldClass(errors.creditScore)}
-                    />
-                    <FieldError>{errors.creditScore}</FieldError>
-                    {!errors.creditScore && (
-                      <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                        {product.key === "vehicleLoan" || product.family === "commercial"
-                          ? "300 to 900. Lenders need a score of at least 650, and the FOIR above sets the EMI room."
-                          : "300 to 900. The bureau score sets how much of your income can go to EMIs."}
-                      </p>
-                    )}
-                    <Link
-                      to="/know-your-score"
-                      className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-(--brand-navy) underline underline-offset-2 hover:text-(--brand-teal)"
-                    >
-                      Don't know your score? Check your credit score →
-                    </Link>
-                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <FieldLabel htmlFor="elig-credit" required>Credit score (CIBIL)</FieldLabel>
+                      <input
+                        id="elig-credit"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={3}
+                        autoComplete="off"
+                        placeholder="300 to 900 — your latest score"
+                        value={form.creditScore}
+                        onChange={(event) => set("creditScore", event.target.value.replace(/\D/g, ""))}
+                        className={`${fieldClass(errors.creditScore)} placeholder:text-[12px]`}
+                      />
+                      <FieldError>{errors.creditScore}</FieldError>
+                      <Link
+                        to="/know-your-score"
+                        className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-(--brand-navy) underline underline-offset-2 hover:text-(--brand-teal)"
+                      >
+                        Don't know your score? Check your credit score →
+                      </Link>
+                    </div>
 
-                  <div>
-                    <FieldLabel htmlFor="elig-dob" required>Date of birth</FieldLabel>
-                    <DateOfBirthPicker
-                      id="elig-dob"
-                      value={form.dob}
-                      onChange={(next) => set("dob", next)}
-                      err={errors.dob}
-                      minAge={18}
-                      maxAge={65}
-                    />
-                    {!errors.dob && (
-                      <p className="mt-1 text-[11px] leading-4 text-slate-400">
-                        {age >= 0 ? `You are ${age} years old. ` : ""}
-                        Repayment must end by age {maturityAgeFor(product, occupation)}.
-                      </p>
-                    )}
+                    <div>
+                      <FieldLabel htmlFor="elig-dob" required>Date of birth</FieldLabel>
+                      <DateOfBirthPicker
+                        id="elig-dob"
+                        value={form.dob}
+                        onChange={(next) => set("dob", next)}
+                        err={errors.dob}
+                        minAge={18}
+                        maxAge={65}
+                      />
+                      {!errors.dob && (
+                        <p className="mt-1 text-[11px] leading-4 text-slate-400">
+                          {age >= 0 ? `You are ${age} years old. ` : ""}
+                          Repayment must end by age {maturityAgeFor(product, occupation)}.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>
 
-              <Card title="Your details" note="We use these only to get back to you about this estimate.">
+              <Card
+                title={product.family === "project" ? "Promoter's Details" : product.family === "education" ? "Guardian's Details" : "Your Details"}
+                note="We use these only to get back to you about this estimate."
+              >
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <PlainField
