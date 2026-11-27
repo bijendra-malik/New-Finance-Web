@@ -2,8 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/BlanceTransper-banner.webp";
 import balanceTransferConcept from "../../assets/personal-loan/balance-transfer-03.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
   <ul className="space-y-2 mt-1">
@@ -122,22 +122,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Balance Transfer Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Balance Transfer Provider", desc: "Known for competitive rates and flexible terms — seamless transfer processes and personalised service make managing your debt easier than ever." },
           { num: "2", title: "Best Balance Transfer Options", desc: "From low ongoing rates to favourable terms — options designed to help you save money and pay off debt faster." },
           { num: "3", title: "Best Balance Transfer Company", desc: "Transparent terms, efficient processes, and expert guidance — committed to helping you achieve financial freedom." },
           { num: "4", title: "Best Balance Transfer Provider Company", desc: "Whether transferring home loan balances or personal loan debt, partner with providers known for expertise and dedication to client satisfaction." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {

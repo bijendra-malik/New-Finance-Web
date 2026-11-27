@@ -2,8 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/business-banner.webp";
 import businessloanDetails from "../../assets/personal-loan/business-details02.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const sections: DetailSection[] = [
   {
@@ -140,22 +140,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Business Loan Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Business Loan Provider", desc: "Competitive rates and flexible terms tailored to your business model. From startups to established enterprises — personalised funding solutions with fast approvals." },
           { num: "2", title: "Best Business Loan", desc: "From small business loans to equipment financing and working capital — options designed to fuel growth at every stage of your business journey." },
           { num: "3", title: "Best Business Loan Company", desc: "Transparent lending, efficient processes, and expert guidance. These companies are committed to helping businesses thrive with reliable financing." },
           { num: "4", title: "Best Business Loan Provider Company", desc: "Whether seeking working capital or funds for expansion, partner with providers known for expertise, integrity, and dedication to client success." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
