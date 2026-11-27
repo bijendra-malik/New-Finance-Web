@@ -2,8 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/Education-banner.webp";
 import EducationLoanImg from "../../assets/personal-loan/educationloan-details.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps, NumberedList } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
   <ul className="space-y-2 mt-1">
@@ -19,19 +19,6 @@ const BulletList = ({ items }: { items: (string | [string, string])[] }) => (
       );
     })}
   </ul>
-);
-
-const NumberedList = ({ items }: { items: [string, string][] }) => (
-  <ol className="space-y-3 mt-1">
-    {items.map(([title, desc], i) => (
-      <li key={i} className="flex items-start gap-3">
-        <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{i + 1}</span>
-        <span className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-gray-800">{title}: </span>{desc}
-        </span>
-      </li>
-    ))}
-  </ol>
 );
 
 const sections: DetailSection[] = [
@@ -109,22 +96,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Education Loan Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Education Loan Provider", desc: "Known for competitive rates and flexible repayment — with loan amounts tailored to your educational needs." },
           { num: "2", title: "Best Education Loan", desc: "From undergraduate loans to postgraduate funding — solutions for students at every stage of their academic journey." },
           { num: "3", title: "Best Education Loan Company", desc: "Transparent terms and dedicated support — streamlined application processes make financing your education stress-free." },
           { num: "4", title: "Best Education Loan Provider Company", desc: "Whether studying locally or abroad, committed to empowering students with the financial support they need to succeed." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
