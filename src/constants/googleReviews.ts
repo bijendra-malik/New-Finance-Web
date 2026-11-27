@@ -1,5 +1,5 @@
 export const GOOGLE_BUSINESS = {
-  rating: 4.2,
+  rating: 4.3,
   reviewCount: 96,
   reviewsUrl: "https://www.google.com/search?gs_ssp=eJwFwTEOgCAMBdC4mhiv4OJMa5HfcARvARQJC4sLx_e9dXPNMTdF_kyZlnjSlFxRVHBZMDWRSBOe2RfcQA6egWfvw-rs6Xj7SKPUH6nGFBE&q=indexia+finance&ie=UTF-8#lrd=0x3be7c8372d6d8d33:0x74114c7577b64177,1,,,,",
 } as const;
