@@ -2,6 +2,7 @@ import type { FormState } from "../formState";
 import { type ProductSpec } from "../models";
 import { AmountField, PlainField } from "../fieldControls";
 import { LAP_CITIES, LAP_PROPERTY_TYPES, LAP_USAGES } from "../formState";
+import { SALARIED } from "../../../constants/masters";
 
 interface Props {
   product: ProductSpec;
@@ -14,17 +15,16 @@ interface Props {
   incomeHint: string;
   asset: ProductSpec["asset"];
   assetLtv: number;
-  lapAssetType: string;
 }
 
-const TermFields = ({ product, form, errors, set, occupation, occupationOptions, incomeLabel, incomeHint, asset, assetLtv, lapAssetType }: Props) => (
+const TermFields = ({ product, form, errors, set, occupation, occupationOptions, incomeLabel, incomeHint, asset, assetLtv }: Props) => (
   <>
     {product.family === "term" && (
       <div className="space-y-5">
         {occupationOptions.length > 0 && (
           <div>
             <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Occupation</p>
-            <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-slate-100 p-1 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
+            <div className="flex flex-col gap-1.5 rounded-xl bg-slate-100 p-1 sm:flex-row sm:flex-wrap">
               {occupationOptions.map((option) => {
                 const active = option === occupation;
                 return (
@@ -51,18 +51,18 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
             error={errors.monthlyIncome}
-            placeholder="e.g. 75,000"
+            placeholder={occupation === SALARIED ? "e.g. 75,000" : "e.g. 12,00,000"}
             hint={incomeHint}
             required
           />
           <AmountField
             id="elig-emi"
-            label="EMIs you already pay"
+            label="Total monthly EMI"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
-            placeholder="e.g. 12,000 or 0"
-            hint="Enter 0 if you have none"
+            placeholder="e.g. 12,000"
+            hint="Enter 0 if you have no EMI"
             required
           />
         </div>
@@ -77,11 +77,9 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             placeholder={product.key === "vehicleLoan" ? "e.g. 12,00,000" : "e.g. 80,00,000"}
             required
             hint={
-              asset.ltvSlabs && form[asset.field]
-                ? `Up to ${Math.round(assetLtv * 100)}% for this property value`
-                : asset.ltvByType
-                  ? `Up to ${Math.round(assetLtv * 100)}% for a ${lapAssetType.toLowerCase()} property in a category ${form.lapCity} city`
-                  : asset.hint
+              product.key === "lap"
+                ? `Up to ${Math.round(assetLtv * 100)}% funding against Current Market Value of the Property`
+                : undefined
             }
           />
         )}
@@ -90,7 +88,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
           <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property type</p>
-              <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
+              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
                 {LAP_PROPERTY_TYPES.map((option) => {
                   const active = option === form.lapPropertyType;
                   return (
@@ -123,7 +121,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
 
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">City category</p>
-              <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
+              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
                 {LAP_CITIES.map((option) => {
                   const active = option.value === form.lapCity;
                   return (
@@ -144,7 +142,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
 
             <div>
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property usage</p>
-              <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:col-span-2">
+              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
                 {LAP_USAGES.map((option) => {
                   const active = option === form.lapUsage;
                   return (
@@ -163,27 +161,29 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
               </div>
             </div>
 
-            {form.lapUsage === "Rented out" && (
-              <AmountField
-                id="elig-lap-rent"
-                label="Monthly rent received"
-                value={form.lapRent}
-                onChange={(next) => set("lapRent", next)}
-                error={errors.lapRent}
-                placeholder="e.g. 25,000"
-                hint="Lenders count about 75% of the rent as income"
-                required
-              />
-            )}
-
-            <AmountField
-              id="elig-lap-existing-loan"
-              label="Existing loan on this property (optional)"
-              value={form.lapExistingLoan}
-              onChange={(next) => set("lapExistingLoan", next)}
-              placeholder="e.g. 15,00,000 or 0"
-              hint="Outstanding balance, netted off the amount you can borrow"
-            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {form.lapUsage === "Rented out" && (
+                <AmountField
+                  id="elig-lap-rent"
+                  label="Monthly rent received"
+                  value={form.lapRent}
+                  onChange={(next) => set("lapRent", next)}
+                  error={errors.lapRent}
+                  placeholder="e.g. 25,000"
+                  hint="75% of rent counts as income"
+                  required
+                />
+              )}
+              <div className={form.lapUsage === "Rented out" ? undefined : "sm:col-span-2"}>
+                <AmountField
+                  id="elig-lap-existing-loan"
+                  label="Existing loan on this property (optional)"
+                  value={form.lapExistingLoan}
+                  onChange={(next) => set("lapExistingLoan", next)}
+                  placeholder="e.g. 15,00,000 or 0"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>
