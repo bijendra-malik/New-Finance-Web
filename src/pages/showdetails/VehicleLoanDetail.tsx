@@ -1,8 +1,9 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import VehicleloanDetails from "../../assets/personal-loan/vehicleloan-details.webp";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
-const ACCENT = "var(--brand-navy)";
 
 const NumberedList = ({ items }: { items: string[] }) => (
   <ol className="space-y-2.5 mt-1">
@@ -114,22 +115,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Vehicle Loan Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best Vehicle Loan Provider Company", desc: "Indexia Finance stands out for competitive interest rates, transparent terms, and an efficient hassle-free application process with expert guidance at every step." },
           { num: "2", title: "Best Vehicle Loan Solutions", desc: "A variety of loan solutions catering to different preferences — ensuring you find the perfect financing match for your dream vehicle." },
           { num: "3", title: "Best Vehicle Loan Finance", desc: "Whether you need the best vehicle loan finance or simply the best vehicle loan in India, expert guidance helps you navigate the options." },
           { num: "4", title: "Apply with Indexia Finance", desc: "As one of India's best vehicle loan companies, the application process is simple and fully online." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
