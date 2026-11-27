@@ -3,7 +3,6 @@ import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/Home-banner.webp";
 import homelonaDetail from "../../assets/personal-loan/home-loan.webp";
 import { NumberedSteps, BulletList } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const sections: DetailSection[] = [
   {
@@ -33,8 +32,9 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-600 text-sm leading-relaxed">Different types of home loans cater to different borrower needs:</p>
-        <div className="space-y-3">
-          {[
+        <BulletList
+          gap="loose"
+          items={[
             ["Home Purchase Loan", "The most common type — for purchasing a new or resale house or apartment."],
             ["Home Improvement Loan", "For renovation, repair, or upgrade of an already-owned home."],
             ["Home Extension Loan", "When you want to expand your existing home — adding a room, floor, or extension."],
@@ -42,15 +42,8 @@ const sections: DetailSection[] = [
             ["Bridge Loan", "A short-term loan to help finance a new home while you wait to sell your existing one."],
             ["Home Construction Loan", "For borrowers who want to construct a new house on a plot they own."],
             ["Land Purchase Loan", "For purchasing a plot of land for construction or investment."],
-          ].map(([title, desc]) => (
-            <div key={title} className="flex items-start gap-3">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">
-                <span className="font-semibold text-gray-800">{title}: </span>{desc}
-              </span>
-            </div>
-          ))}
-        </div>
+          ]}
+        />
       </div>
     ),
   },

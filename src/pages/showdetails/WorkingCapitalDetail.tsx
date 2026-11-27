@@ -1,7 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import { BulletList, NumberedSteps } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/working-banner.webp";
 import WorkingCapitalImg from "../../assets/personal-loan/WorkingCapital-Img.webp";
 
@@ -32,20 +31,16 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Our working capital scheme caters to limited companies classified as industrial concerns. Eligible companies must:</p>
-        <ul className="space-y-2 mt-1">
-          {[
+        <BulletList
+          gap="tight"
+          items={[
             "Demonstrate a clear market for their product",
             "Have competent and integrity-driven promoters",
             "Utilise non-outdated technology",
             "Exhibit potential viability for both the company and the unit",
             "Lack of existing working capital results in underfinancing — this scheme addresses that gap",
-          ].map((item, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-            </li>
-          ))}
-        </ul>
+          ]}
+        />
       </div>
     ),
   },

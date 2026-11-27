@@ -1,7 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/AgainstProperty-banner.webp";
 import LASImg from "../../assets/personal-loan/againstloan-details.webp";
 
@@ -159,8 +158,9 @@ const sections: DetailSection[] = [
         <p className="text-gray-500 text-sm">
           Technology can simplify and improve the share-backed lending process through:
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          {[
+        <BulletGrid
+          columns={2}
+          items={[
             "Digital KYC verification",
             "Online application processing",
             "Demat account verification",
@@ -172,13 +172,8 @@ const sections: DetailSection[] = [
             "Loan status tracking",
             "Automated alerts and notifications",
             "Portfolio and risk monitoring",
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-            </div>
-          ))}
-        </div>
+          ]}
+        />
         <p className="text-gray-500 text-sm pt-1">
           Technology helps lenders monitor the value of pledged securities and manage the facility
           more efficiently.

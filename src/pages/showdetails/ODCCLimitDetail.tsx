@@ -1,7 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/business-banner.webp";
 import ODCCImg from "../../assets/personal-loan/business-details02.webp";
 
@@ -147,8 +146,9 @@ const sections: DetailSection[] = [
         <p className="text-gray-500 text-sm">
           Technology plays an important role in improving the management of OD/CC facilities through:
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          {[
+        <BulletGrid
+          columns={2}
+          items={[
             "Digital application processing",
             "Online document submission",
             "Automated data verification",
@@ -160,13 +160,8 @@ const sections: DetailSection[] = [
             "Limit monitoring",
             "Automated notifications",
             "Portfolio reporting and analytics",
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-            </div>
-          ))}
-        </div>
+          ]}
+        />
         <p className="text-gray-500 text-sm pt-1">
           These technologies can help improve transparency, reduce processing time, and provide
           better visibility into the customer's financial and credit profile.

@@ -1,7 +1,6 @@
 import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import { BulletGrid, BulletList } from "../../components/ui/DetailContent";
-import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 import bannerBg from "../../assets/loan-images/Film-banner.webp";
 
 const sections: DetailSection[] = [
@@ -161,8 +160,9 @@ const sections: DetailSection[] = [
     content: (
       <div className="space-y-3">
         <p className="text-gray-500 text-sm">Technology can simplify and improve the Film Funding process through:</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-          {[
+        <BulletGrid
+          columns={2}
+          items={[
             "Digital application processing",
             "Online document submission",
             "Digital KYC and business verification",
@@ -175,13 +175,8 @@ const sections: DetailSection[] = [
             "Funding and disbursement tracking",
             "Automated alerts and notifications",
             "Portfolio reporting and analytics",
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: ACCENT }} />
-              <span className="text-sm text-gray-600 leading-relaxed">{item}</span>
-            </div>
-          ))}
-        </div>
+          ]}
+        />
         <p className="text-gray-500 text-sm pt-1">
           Technology can help financiers evaluate project information more efficiently, improve
           documentation, and provide better visibility into funding utilisation and project
