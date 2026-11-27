@@ -54,7 +54,7 @@ const sections: DetailSection[] = [
       <div className="space-y-3">
         <p className="text-gray-600 text-sm leading-relaxed">Several factors determine how much you are eligible to borrow:</p>
         <BulletList size="md" items={[
-          ["Monthly Income", "Net income after deducting existing EMIs directly influences your eligibility."],
+          ["Monthly Net Income", "Net income after deducting existing EMIs directly influences your eligibility."],
           ["Other EMIs", "Active loan obligations reduce your available repayment capacity."],
           ["Loan Tenure", "Longer tenures lower your EMI but increase total interest paid."],
           ["Interest Rate", "Rates vary by lender — comparing deals is essential for a cost-effective decision."],

@@ -63,7 +63,7 @@ export const termEligibility = (input: TermInput): EligibilityOutcome => {
   if (income <= 0) {
     return holding(
       "Indicative loan amount",
-      "Add your net monthly income and we will estimate the loan you can service.",
+      "Add your net Monthly Net Income and we will estimate the loan you can service.",
       ["Include only the take-home amount that reaches your bank account."],
     );
   }

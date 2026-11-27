@@ -52,7 +52,7 @@ export const goldEligibility = (input: GoldInput): EligibilityOutcome => {
   if (existing > 0 && income <= 0) {
     return holding(
       "Indicative gold loan",
-      "You have other EMIs on record but no income — add your monthly income so we can weigh them, or clear the EMI field.",
+      "You have other EMIs on record but no income — add your Monthly Net Income so we can weigh them, or clear the EMI field.",
       ["Lenders check that the total EMI bill, including this loan, fits within your income."],
     );
   }

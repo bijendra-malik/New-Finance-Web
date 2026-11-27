@@ -110,7 +110,7 @@ const GROUPS: FaqGroup[] = [
       },
       {
         q: "How much loan can I get?",
-        a: "It depends on your net monthly income, existing EMIs, credit score and the product. The Eligibility Calculator gives an instant estimate, but the lender's sanction is final.",
+        a: "It depends on your net Monthly Net Income, existing EMIs, credit score and the product. The Eligibility Calculator gives an instant estimate, but the lender's sanction is final.",
       },
       {
         q: "What if my application is not eligible?",

@@ -348,7 +348,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             customValue={form.loanTenureYearsCustom} onCustomChange={v=>set("loanTenureYearsCustom",v)}
             options={masters.leaseRentalTenureYears} maxYears={LEASE_RENTAL_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
-          <div id="monthlyLeaseIncome"><FieldLabel label="Monthly Income Through Lease" required/>
+          <div id="monthlyLeaseIncome"><FieldLabel label="Monthly Net Income Through Lease" required/>
             <AmountField value={form.monthlyLeaseIncome} onChange={v=>set("monthlyLeaseIncome",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.monthlyLeaseIncome}/>
           </div>
           <div id="totalLeaseAmount"><FieldLabel label="Total Amount To Be Received From Lease" required/>

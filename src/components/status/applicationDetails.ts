@@ -50,7 +50,7 @@ const LABELS: Readonly<Record<string, string>> = {
   companyType: "Company type",
   businessName: "Business name",
   businessType: "Business type",
-  monthlySalary: "Monthly income",
+  monthlySalary: "Monthly Net Income",
   salaryReceivedAs: "Salary received as",
   salaryBankName: "Salary bank",
   natureOfBusiness: "Nature of business",
