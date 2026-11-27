@@ -1,6 +1,5 @@
 import type { FormState } from "../formState";
 import { type ProductSpec, type EligibilityOutcome } from "../models";
-import { LRD_TENURE_YEARS, LRD_ROI, LRD_LTV_MIN, LRD_LTV_MAX } from "../models";
 import { AmountField, PlainField } from "../fieldControls";
 import { formatINRRounded } from "../../../utils/formatters";
 
@@ -28,7 +27,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             </button>
             <span
               role="tooltip"
-              className="pointer-events-none absolute left-0 top-6 z-20 w-64 rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal leading-4 text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 sm:left-full sm:top-0 sm:ml-2"
+              className="pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal leading-4 text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
             >
               Lease Rental Discounting lets a property owner borrow against the rent a tenant pays. Rent for the
               remaining lease is discounted to today's value at the loan rate, the lender funds a slice of that
@@ -45,7 +44,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             onChange={(next) => set("lrdRent", next)}
             error={errors.lrdRent}
             placeholder="e.g. 1,20,000"
-            hint="Rent your tenant pays under the registered lease"
+            hint="Rent under the registered lease"
             required
           />
           <PlainField
@@ -66,49 +65,18 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             onChange={(next) => set("lrdPropertyValue", next)}
             error={errors.lrdPropertyValue}
             placeholder="e.g. 2,50,00,000"
-            hint="Current market value of the leased property"
+            hint="Current market value"
             required
           />
-          <PlainField
-            id="elig-lrd-ltv"
-            label="Assumed LTV (%)"
-            value={form.lrdLtv}
-            onChange={(next) => set("lrdLtv", next.replace(/[^\d.]/g, ""))}
-            inputMode="tel"
-            maxLength={4}
-            placeholder="e.g. 70"
-            error={errors.lrdLtv}
-            required
-            hint={`Lenders fund ${LRD_LTV_MIN * 100}% to ${LRD_LTV_MAX * 100}% of the discounted rent`}
+          <AmountField
+            id="elig-lrd-lender-limit"
+            label="Lender's maximum limit (optional)"
+            value={form.lrdLenderLimit}
+            onChange={(next) => set("lrdLenderLimit", next)}
+            placeholder="e.g. 5,00,00,000"
+            hint="Scheme cap for this loan"
           />
         </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PlainField
-            id="elig-lrd-deduction"
-            label="Rental deduction (%)"
-            value={form.lrdDeduction}
-            onChange={(next) => set("lrdDeduction", next.replace(/[^\d.]/g, ""))}
-            placeholder="e.g. 10"
-            inputMode="tel"
-            maxLength={4}
-            hint="Vacancy, expenses and lender adjustments; 10% is typical"
-          />
-          <PlainField
-            id="elig-lrd-coverage"
-            label="Rent-to-EMI coverage (%)"
-            value={form.lrdCoverage}
-            onChange={(next) => set("lrdCoverage", next.replace(/[^\d.]/g, ""))}
-            placeholder="e.g. 70"
-            inputMode="tel"
-            maxLength={3}
-            hint="Share of net rent the EMI may use; 70% is typical"
-          />
-        </div>
-
-        <p className="rounded-xl bg-slate-50 px-4 py-3 text-[11.5px] leading-4 text-slate-500">
-          Fixed terms: {LRD_ROI}% p.a. over up to {LRD_TENURE_YEARS} years, capped at the lease left to run.
-        </p>
 
         {lrdLive && (
           <div className="rounded-xl border border-(--brand-teal-33) bg-(--surface-muted) px-4 py-3">
