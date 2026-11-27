@@ -38,7 +38,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             value={form.eduOther}
             onChange={(next) => set("eduOther", next)}
             placeholder="e.g. 50,000"
-            hint="Books, equipment, exam and travel costs"
+            hint="Books, equipment, exam, travel"
           />
           <AmountField
             id="elig-edu-scholarship"
@@ -55,25 +55,25 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
           value={form.eduMargin}
           onChange={(next) => set("eduMargin", next)}
           placeholder="e.g. 1,00,000"
-          hint="The part of the cost your family funds itself"
+          hint="Cost your family funds itself"
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
             id="elig-edu-income"
-            label="Co-applicant monthly income"
+            label="Co-applicant Income (guardian)"
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 80,000"
-            hint="Counted towards the repayment capacity"
+            hint="Guardian's Monthly Net Income"
           />
           <AmountField
             id="elig-edu-emi"
-            label="EMIs already paid"
+            label="Total monthly EMI"
             value={form.existingEmi}
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
-            placeholder="e.g. 5,000 or 0"
-            hint="Enter 0 if none"
+            placeholder="e.g. 5,000"
+            hint="Enter 0 if you have no EMI"
             required
           />
         </div>
