@@ -2,8 +2,8 @@ import ShowDetailLayout from "./ShowDetailLayout";
 import type { DetailSection } from "./ShowDetailLayout";
 import bannerBg from "../../assets/loan-images/AgainstProperty-banner.webp";
 import againstloanDetails from "../../assets/personal-loan/againstloan-details.webp";
-
-const ACCENT = "var(--brand-navy)";
+import { NumberedSteps } from "../../components/ui/DetailContent";
+import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
 const BulletList = ({ items }: { items: [string, string?][] }) => (
   <ul className="space-y-2.5 mt-1">
@@ -115,22 +115,15 @@ const sections: DetailSection[] = [
     id: "best-options",
     heading: "Best Loan Against Property Options",
     content: (
-      <div className="space-y-5">
-        {[
+      <NumberedSteps
+        className="space-y-5"
+        items={[
           { num: "1", title: "Best LAP Provider Company", desc: "Partnered with reputable institutions known for expertise, integrity, and commitment to providing tailored LAP solutions." },
           { num: "2", title: "Best Loan Against Property", desc: "A curated selection with competitive terms, flexible repayment, and quick approvals." },
           { num: "3", title: "Best LAP Finance", desc: "Financing aligned with your financial objectives — competitive interest rates and favourable terms." },
           { num: "4", title: "Best LAP Company", desc: "Companies renowned for reliability, integrity, and dedication to helping individuals and businesses leverage their property." },
-        ].map((item) => (
-          <div key={item.num} className="flex items-start gap-4">
-            <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5" style={{ background: ACCENT }}>{item.num}</span>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>
-              <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
     ),
   },
   {
