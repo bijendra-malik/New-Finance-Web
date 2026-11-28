@@ -41,6 +41,7 @@ export const ConsentBlock = ({
           type="checkbox"
           checked={agreed}
           onChange={(e) => onAgreedChange(e.target.checked)}
+          aria-required="true"
           className="mt-0.5 w-4 h-4 rounded shrink-0"
           style={{ accentColor: C.teal }}
         />
@@ -65,7 +66,7 @@ export const ConsentBlock = ({
           >
             Privacy Policy
           </Link>
-          .
+          .<span aria-hidden="true" className="ml-0.5 text-red-500">*</span>
         </span>
       </label>
 

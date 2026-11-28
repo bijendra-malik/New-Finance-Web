@@ -606,12 +606,16 @@ const FranchiseForm = ({
                 setAgreed(e.target.checked);
                 if (e.target.checked) setConsentError("");
               }}
+              aria-required="true"
               aria-invalid={!!consentError}
               aria-describedby={consentError ? fid("consent-error") : undefined}
               className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded"
               style={{ accentColor: "var(--brand-teal)" }}
             />
-            <span className="text-[11.5px] leading-relaxed text-slate-600">{consentText}</span>
+            <span className="text-[11.5px] leading-relaxed text-slate-600">
+              {consentText}
+              <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>
+            </span>
           </label>
           {consentError && (
             <p id={fid("consent-error")} role="alert" className="mt-1.5 text-[11.5px] font-medium text-red-500">
