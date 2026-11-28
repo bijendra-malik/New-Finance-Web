@@ -339,10 +339,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter loan type" otherErr={errors.balanceTransferTypeOther}
           />
           <div id="currentPropertyValue"><FieldLabel label="Current Value of Property (approx) - if secured"/>
-            <AmountField value={form.currentPropertyValue} onChange={v=>set("currentPropertyValue",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.currentPropertyValue}/>
+            <AmountField value={form.currentPropertyValue} onChange={v=>set("currentPropertyValue",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.currentPropertyValue}/>
           </div>
           <div id="loanAmount"><FieldLabel label="Balance Transfer Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Balance Transfer Tenure (in years)"
@@ -351,7 +351,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             options={masters.balanceTransferTenureYears} maxYears={BALANCE_TRANSFER_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <div id="topUpAmount"><FieldLabel label="Top-up Amount (if any)"/>
-            <AmountField value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.topUpAmount}/>
+            <AmountField value={form.topUpAmount} onChange={v=>set("topUpAmount",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.topUpAmount}/>
           </div>
         </div>
       </FormCard>

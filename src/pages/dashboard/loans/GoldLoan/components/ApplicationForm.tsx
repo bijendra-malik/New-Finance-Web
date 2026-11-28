@@ -365,7 +365,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure"
@@ -406,15 +406,15 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             </div>
             <div id="jewelryStoneWeight"><FieldLabel label="Stone Weight in Jewellery"/>
               <TextField type="number" value={form.jewelryStoneWeight===0?"":String(form.jewelryStoneWeight)}
-                onChange={v=>set("jewelryStoneWeight",Math.max(0,parseFloat(v)||0))} placeholder="e.g. 2 (enter 0 if none)"/>
+                onChange={v=>set("jewelryStoneWeight",Math.max(0,parseFloat(v)||0))} placeholder="e.g. 2 (Enter 0 If None)"/>
             </div>
             <div className="md:col-span-2" id="jewelryOtherMaterials">
               <FieldLabel label="Other Material Weight in Jewellery"/>
               <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-start">
                 <TextField value={form.jewelryOtherMaterialName}
-                  onChange={v=>set("jewelryOtherMaterialName",v)} placeholder="Material name e.g. Diamond"/>
+                  onChange={v=>set("jewelryOtherMaterialName",v)} placeholder="Material Name e.g. Diamond"/>
                 <TextField type="number" value={form.jewelryOtherMaterialWeight===0?"":String(form.jewelryOtherMaterialWeight)}
-                  onChange={v=>set("jewelryOtherMaterialWeight",Math.max(0,parseFloat(v)||0))} placeholder="Weight in grams e.g. 2"/>
+                  onChange={v=>set("jewelryOtherMaterialWeight",Math.max(0,parseFloat(v)||0))} placeholder="Weight In Grams e.g. 2"/>
                 <button type="button" onClick={addJewelryOtherMaterial}
                   className="px-5 py-2.5 rounded-xl text-sm font-bold text-white shrink-0 transition-all hover:opacity-90 w-full md:w-auto"
                   style={{background:C.teal}}>
@@ -438,7 +438,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             </div>
           </>)}
           <div id="collateralPropertyMarketValue"><FieldLabel label="Current Gold Market Value (Approx)" required/>
-            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.collateralPropertyMarketValue}/>
+            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.collateralPropertyMarketValue}/>
           </div>
         </div>
       </FormCard>

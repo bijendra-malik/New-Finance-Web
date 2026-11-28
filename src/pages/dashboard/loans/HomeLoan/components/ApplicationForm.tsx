@@ -350,7 +350,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)" required
@@ -370,7 +370,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           />
           <div id="buyingPropertyAge"><FieldLabel label="Buying Property Age" required/>
             <TextField type="number" value={form.buyingPropertyAge} onChange={v=>set("buyingPropertyAge",v.replace(/\D/g,""))}
-              placeholder="In Years (0 if property is new/under construction)" err={errors.buyingPropertyAge}/>
+              placeholder="In Years (0 If Property Is New/Under Construction)" err={errors.buyingPropertyAge}/>
           </div>
           <PincodeInputField
             id="buyingPropertyPincode" label="Buying Property Pincode"

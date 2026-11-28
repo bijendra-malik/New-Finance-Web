@@ -333,7 +333,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -352,7 +352,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter property type" otherErr={errors.buyingPropertyTypeOther}
           />
           <div id="buyingPropertyMarketValue"><FieldLabel label="Buying Property Market Value" required/>
-            <AmountField value={form.buyingPropertyMarketValue===0?"":String(form.buyingPropertyMarketValue)} onChange={v=>set("buyingPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.buyingPropertyMarketValue}/>
+            <AmountField value={form.buyingPropertyMarketValue===0?"":String(form.buyingPropertyMarketValue)} onChange={v=>set("buyingPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.buyingPropertyMarketValue}/>
           </div>
           <div id="buyingPropertyAge"><FieldLabel label="Buying Property Age" required/>
             <TextField type="number" value={form.buyingPropertyAge} onChange={v=>set("buyingPropertyAge",v.replace(/\D/g,""))}

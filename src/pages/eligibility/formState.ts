@@ -4,11 +4,11 @@ import { ALL_EMPLOYMENT_TYPES, SALARIED, SELF_EMPLOYMENT } from "../../constants
 export const OCCUPATIONS = ALL_EMPLOYMENT_TYPES;
 export const BUSINESS_OCCUPATIONS = SELF_EMPLOYMENT;
 export const INCOME_COPY: Record<string, { label: string; hint: string }> = {
-  [SALARIED]: { label: "Monthly Net Income", hint: "Take home salary after deduction" },
+  [SALARIED]: { label: "Monthly Net Income", hint: "Take Home Salary After Deduction" },
   ...Object.fromEntries(
     SELF_EMPLOYMENT.map((type) => [
       type,
-      { label: "Annual net profit", hint: "Net profit after tax deduction" },
+      { label: "Annual net profit", hint: "Net Profit After Tax Deduction" },
     ]),
   ),
 };

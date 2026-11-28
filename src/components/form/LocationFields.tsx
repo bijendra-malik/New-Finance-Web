@@ -102,7 +102,7 @@ export const LocationFields = ({
           <TextField
             value={stateValue}
             onChange={(v) => set(stateKey(), v)}
-            placeholder="Your state"
+            placeholder="Your State"
             error={errors[stateKey()]}
           />
         )}
@@ -132,7 +132,7 @@ export const LocationFields = ({
               set(cityKey(), v);
               setUserCity(v);
             }}
-            placeholder="Your city"
+            placeholder="Your City"
             error={errors[cityKey()]}
           />
         )}

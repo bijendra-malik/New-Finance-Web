@@ -352,7 +352,7 @@ const CustomerStatusLookup = () => {
                   setCustomerId(value.toUpperCase());
                   clearError("customerId");
                 }}
-                placeholder="Your customer ID"
+                placeholder="Your Customer ID"
                 error={errors.customerId}
                 autoComplete="organization"
               />
@@ -378,7 +378,7 @@ const CustomerStatusLookup = () => {
                 id="mobile"
                 value={mobile}
                 onChange={setMobileState}
-                placeholder="10-digit mobile number"
+                placeholder="10-Digit Mobile Number"
                 error={errors.mobile}
                 maxLength={10}
                 inputMode="tel"

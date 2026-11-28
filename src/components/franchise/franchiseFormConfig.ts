@@ -57,15 +57,15 @@ export interface FranchiseeStep {
 }
 
 export const FRANCHISEE_STEPS: FranchiseeStep[] = [
-  { id: "personal", label: "Personal", hint: "Name, contact and PAN", fields: ["fullName", "mobile", "email", "dob", "pan"] },
+  { id: "personal", label: "Personal", hint: "Name, Contact And PAN", fields: ["fullName", "mobile", "email", "dob", "pan"] },
   {
     id: "business",
     label: "Business",
-    hint: "Business and GST details",
+    hint: "Business And GST Details",
     fields: ["gstNumber", "yearsInBusiness", "businessName", "businessType", "businessTypeOther", "address"],
   },
-  { id: "location", label: "Location", hint: "Where you operate", fields: ["continent", "country", "pincode", "state", "city"] },
-  { id: "plan", label: "Plan", hint: "Choose your package", fields: ["packageId"] },
+  { id: "location", label: "Location", hint: "Where You Operate", fields: ["continent", "country", "pincode", "state", "city"] },
+  { id: "plan", label: "Plan", hint: "Choose Your Package", fields: ["packageId"] },
 ];
 
 export const FRANCHISEE_FIELD_ORDER: FieldKey[] = [

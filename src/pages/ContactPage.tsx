@@ -264,15 +264,15 @@ const ContactPage = () => {
                     return response.message;
                   }}
                   fields={[
-                    { name: "name", label: "Full Name", required: true, placeholder: "Your full name" },
-                    { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-digit mobile number" },
+                    { name: "name", label: "Full Name", required: true, placeholder: "Your Full Name" },
+                    { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-Digit Mobile Number" },
                     { name: "email", label: "Email Address", type: "email", required: true, placeholder: "your@email.com" },
                     {
                       name: "topic",
                       label: "I'm interested in",
                       type: "select",
                       required: true,
-                      placeholder: "Select a topic",
+                      placeholder: "Select A Topic",
                       options: [
                         "Personal Loan", "Business Loan", "Home Loan", "Loan Against Property",
                         "Balance Transfer", "Vehicle Loan", "Education Loan", "Credit Card",
@@ -287,7 +287,7 @@ const ContactPage = () => {
                       type: "textarea",
                       required: true,
                       minLength: 50,
-                      placeholder: "Briefly describe your requirement (minimum 50 characters)",
+                      placeholder: "Briefly Describe Your Requirement (Minimum 50 Characters)",
                     },
                   ]}
                 />

@@ -1,5 +1,5 @@
 import type { FormState } from "../formState";
-import { type ProductSpec } from "../models";
+import { RENTAL_HAIRCUT, type ProductSpec } from "../models";
 import { AmountField, PlainField } from "../fieldControls";
 import { LAP_CITIES, LAP_PROPERTY_TYPES, LAP_USAGES } from "../formState";
 import { SALARIED } from "../../../constants/masters";
@@ -62,7 +62,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
             placeholder="e.g. 12,000"
-            hint="Enter 0 if you have no EMI"
+            hint="Enter 0 If You Have No EMI"
             required
           />
         </div>
@@ -78,7 +78,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             required
             hint={
               product.key === "lap"
-                ? `Up to ${Math.round(assetLtv * 100)}% funding against Current Market Value of the Property`
+                ? `Up To ${Math.round(assetLtv * 100)}% Funding Against Current Market Value Of The Property`
                 : undefined
             }
           />
@@ -113,7 +113,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                 label="Property type"
                 value={form.lapPropertyOther}
                 onChange={(next) => set("lapPropertyOther", next)}
-                placeholder="e.g. Agricultural land, warehouse"
+                placeholder="e.g. Agricultural Land, Warehouse"
                 error={errors.lapPropertyOther}
                 required
               />
@@ -170,7 +170,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                   onChange={(next) => set("lapRent", next)}
                   error={errors.lapRent}
                   placeholder="e.g. 25,000"
-                  hint="75% of rent counts as income"
+                  hint={`${Math.round(RENTAL_HAIRCUT * 100)}% Of Rent Counts As Income`}
                   required
                 />
               )}

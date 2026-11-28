@@ -138,7 +138,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search application no., customer or product"
+              placeholder="Search Application No., Customer Or Product"
               className="w-full rounded-xl border border-slate-200 bg-slate-50/60 py-2 pr-3 pl-9 text-[13px] text-slate-700 transition placeholder:text-slate-400 focus:border-(--brand-teal-44) focus:bg-white focus:ring-2 focus:ring-(--brand-teal-14) focus:outline-none"
             />
           </label>

@@ -260,17 +260,17 @@ const AdvertiseWithUsPage = () => {
                   return response.message;
                 }}
                 fields={[
-                  { name: "name", label: "Full Name", required: true, placeholder: "Your full name" },
-                  { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-digit mobile number" },
+                  { name: "name", label: "Full Name", required: true, placeholder: "Your Full Name" },
+                  { name: "phone", label: "Mobile Number", type: "tel", required: true, placeholder: "10-Digit Mobile Number" },
                   { name: "email", label: "Email Address", type: "email", required: true, placeholder: "your@email.com" },
-                  { name: "company", label: "Company / Brand", placeholder: "Your company or brand name" },
+                  { name: "company", label: "Company / Brand", placeholder: "Your Company Or Brand Name" },
                   {
                     name: "message",
                     label: "Your Message",
                     type: "textarea",
                     required: true,
                     minLength: 50,
-                    placeholder: "Tell us briefly what you'd like to advertise (minimum 50 characters)",
+                    placeholder: "Tell Us Briefly What You'd Like To Advertise (Minimum 50 Characters)",
                   },
                 ]}
               />

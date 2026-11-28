@@ -10,7 +10,7 @@ import { useLoanApplicationForm } from "../../../../../components/form/useLoanAp
 import { PersonalDetailsSection } from "../../../../../components/form/PersonalDetailsSection";
 import { BusinessPlaceSection } from "../../../../../components/form/BusinessPlaceSection";
 import { ExistingLoanExposureSection } from "../../../../../components/form/ExistingLoanExposureSection";
-import { formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
+import { amountInWords, formatGSTIN, formatIndianNumber, formatPAN } from "../../../../../utils/formatters";
 import { AmountField, DateOfBirthPicker, FieldError, FieldLabel, FormCard, MORE_THAN_TENURE_OPTION, OtherOptionList, PincodeInputField, SelectField, SelectWithOther, TenureYearsField, TextField } from "../../../../../components/form/FormControls";
 import { DateField } from "../../../../../components/form/DateField";
 import { buildProductSections } from "./receiptSections";
@@ -418,7 +418,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="Tell us about the course you're financing">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -450,10 +450,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             <TextField value={form.courseName} onChange={v=>set("courseName",v)} placeholder="e.g. B.Tech Computer Science" err={errors.courseName}/>
           </div>
           <div id="university"><FieldLabel label="University" required/>
-            <TextField value={form.university} onChange={v=>set("university",v)} placeholder="Enter university name" err={errors.university}/>
+            <TextField value={form.university} onChange={v=>set("university",v)} placeholder="Enter University Name" err={errors.university}/>
           </div>
           <div id="instituteName"><FieldLabel label="Institute Name" required/>
-            <TextField value={form.instituteName} onChange={v=>set("instituteName",v)} placeholder="Enter institute name" err={errors.instituteName}/>
+            <TextField value={form.instituteName} onChange={v=>set("instituteName",v)} placeholder="Enter Institute Name" err={errors.instituteName}/>
           </div>
           <div id="enrollmentStatus"><FieldLabel label="Enrollment Status" required/>
             <SelectField value={form.enrollmentStatus} onChange={v=>{
@@ -462,15 +462,18 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             }} options={masters.enrollmentStatuses} placeholder="Select" err={errors.enrollmentStatus}/>
             {form.enrollmentStatus===OTHER_OPTION&&(
               <div className="mt-3" id="enrollmentStatusOther"><FieldLabel label="Mention Enrollment Status" required/>
-                <TextField value={form.enrollmentStatusOther} onChange={v=>set("enrollmentStatusOther",v)} placeholder="Enter enrollment status" err={errors.enrollmentStatusOther}/>
+                <TextField value={form.enrollmentStatusOther} onChange={v=>set("enrollmentStatusOther",v)} placeholder="Enter Enrollment Status" err={errors.enrollmentStatusOther}/>
               </div>
             )}
           </div>
           <div id="courseDuration"><FieldLabel label="Course Duration" required/>
-            <TextField type="number" value={form.courseDuration} onChange={v=>set("courseDuration",v.replace(/\D/g,""))} placeholder="In years" err={errors.courseDuration}/>
+            <TextField type="number" value={form.courseDuration} onChange={v=>set("courseDuration",v.replace(/\D/g,""))} placeholder="In Years" err={errors.courseDuration}/>
           </div>
           <div id="educationCost"><FieldLabel label="Education Cost" required/>
-            <TextField type="number" value={form.educationCost} onChange={v=>set("educationCost",v.replace(/[^0-9.]/g,""))} placeholder="Fees/Cost of entire course in Lakhs" err={errors.educationCost}/>
+            <TextField type="number" value={form.educationCost} onChange={v=>set("educationCost",v.replace(/[^0-9.]/g,""))} placeholder="Fees/Cost Of Entire Course In Lakhs" err={errors.educationCost}/>
+            {!errors.educationCost && Number(form.educationCost) > 0 && (
+              <p className="mt-1 text-[11px] leading-4 text-slate-400">{amountInWords(Number(form.educationCost) * 100000)}</p>
+            )}
           </div>
         </div>
       </FormCard>
@@ -489,7 +492,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
 
           {form.employmentType===SALARIED&&(<>
             <div id="companyName"><FieldLabel label="Company Name" required/>
-              <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company full name" err={errors.companyName}/>
+              <TextField value={form.companyName} onChange={v=>set("companyName",v.slice(0,100))} maxLength={100} placeholder="Company Full Name" err={errors.companyName}/>
             </div>
             <SelectWithOther
               id="companyType" label="Company Type" required
@@ -502,7 +505,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
             />
             <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required/>
-              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Enter Amount in INR"
+              <AmountField value={form.monthlyNetSalary===0?"":String(form.monthlyNetSalary)} onChange={v=>set("monthlyNetSalary",parseInt(v)||0)} placeholder="Enter Amount In INR"
                 err={errors.monthlyNetSalary}/>
             </div>
             <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required/>
@@ -537,16 +540,16 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter profession" otherErr={errors.professionOther}
             />
             <div id="currentYearTurnover"><FieldLabel label="Current Year Turn Over" required/>
-              <AmountField value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)} onChange={v=>set("currentYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.currentYearTurnover}/>
+              <AmountField value={form.currentYearTurnover===0?"":String(form.currentYearTurnover)} onChange={v=>set("currentYearTurnover",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.currentYearTurnover}/>
             </div>
             <div id="priorYearTurnover"><FieldLabel label="Last (2 Years old) Turnover" required/>
-              <AmountField value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)} onChange={v=>set("priorYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.priorYearTurnover}/>
+              <AmountField value={form.priorYearTurnover===0?"":String(form.priorYearTurnover)} onChange={v=>set("priorYearTurnover",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.priorYearTurnover}/>
             </div>
             <div id="currentYearNetIncome"><FieldLabel label="Current Year Net Income" required/>
-              <AmountField value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)} onChange={v=>set("currentYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.currentYearNetIncome}/>
+              <AmountField value={form.currentYearNetIncome===0?"":String(form.currentYearNetIncome)} onChange={v=>set("currentYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.currentYearNetIncome}/>
             </div>
             <div id="previousYearNetIncome"><FieldLabel label="Previous Year Net Income" required/>
-              <AmountField value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)} onChange={v=>set("previousYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.previousYearNetIncome}/>
+              <AmountField value={form.previousYearNetIncome===0?"":String(form.previousYearNetIncome)} onChange={v=>set("previousYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.previousYearNetIncome}/>
             </div>
           </>)}
 
@@ -562,11 +565,11 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               otherPlaceholder="Enter company type" otherErr={errors.businessTypeOther}
             />
             <div id="businessName"><FieldLabel label="Company Full Name" required/>
-              <TextField value={form.businessName} onChange={v=>set("businessName",v.slice(0,100))} maxLength={100} placeholder="Registered business / firm name" err={errors.businessName}/>
+              <TextField value={form.businessName} onChange={v=>set("businessName",v.slice(0,100))} maxLength={100} placeholder="Registered Business / Firm Name" err={errors.businessName}/>
             </div>
 
             <div id="gstNumber"><FieldLabel label="GST No (if available)"/>
-                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
+                <TextField value={form.gstNumber} onChange={v=>set("gstNumber",formatGSTIN(v))} placeholder="Company GST No. – 15-Character GSTIN" maxLength={15} err={errors.gstNumber} extraCls="uppercase tracking-wide"/>
               </div>
               <div id="companyPanNumber"><FieldLabel label="Company PAN Number" required/>
                 <TextField value={form.companyPanNumber} onChange={v=>set("companyPanNumber",formatPAN(v))} placeholder="ABCDE1234F" maxLength={10} err={errors.companyPanNumber} extraCls="uppercase tracking-widest"/>
@@ -614,28 +617,28 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               </div>
               {form.transactionBankName===OTHER_OPTION&&(
                 <div id="transactionBankNameOther"><FieldLabel label="Mention Bank Name" required/>
-                  <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter bank name" err={errors.transactionBankNameOther}/>
+                  <TextField value={form.transactionBankNameOther} onChange={v=>set("transactionBankNameOther",v)} placeholder="Enter Bank Name" err={errors.transactionBankNameOther}/>
                 </div>
               )}
               {form.transactionBankName===MULTIPLE_TRANSACTION_BANKS&&(
                 <div className="md:col-span-2 mt-4" id="transactionBanks">
-                  <OtherOptionList label="Transaction Banks" placeholder="Enter bank name"
+                  <OtherOptionList label="Transaction Banks" placeholder="Enter Bank Name"
                     items={form.transactionBanks} onAdd={addTransactionBank} onRemove={removeTransactionBank} color={C.teal}/>
                   <FieldError msg={errors.transactionBanks}/>
                 </div>
               )}
 
               <div id="lastYearTurnover"><FieldLabel label="Last Year Turnover" required/>
-                <AmountField value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)} onChange={v=>set("lastYearTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.lastYearTurnover}/>
+                <AmountField value={form.lastYearTurnover===0?"":String(form.lastYearTurnover)} onChange={v=>set("lastYearTurnover",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.lastYearTurnover}/>
               </div>
               <div id="last2YearsTurnover"><FieldLabel label="Last (2 Years old) Turnover"/>
-                <AmountField value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)} onChange={v=>set("last2YearsTurnover",parseInt(v)||0)} placeholder="Enter Amount in INR"/>
+                <AmountField value={form.last2YearsTurnover===0?"":String(form.last2YearsTurnover)} onChange={v=>set("last2YearsTurnover",parseInt(v)||0)} placeholder="Enter Amount In INR"/>
               </div>
               <div id="lastYearNetIncome"><FieldLabel label="Last Year Net Income" required/>
-                <AmountField value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)} onChange={v=>set("lastYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.lastYearNetIncome}/>
+                <AmountField value={form.lastYearNetIncome===0?"":String(form.lastYearNetIncome)} onChange={v=>set("lastYearNetIncome",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.lastYearNetIncome}/>
               </div>
               <div id="last2YearsNetIncome"><FieldLabel label="Last (2 Years old) Net Income"/>
-                <AmountField value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)} onChange={v=>set("last2YearsNetIncome",parseInt(v)||0)} placeholder="Enter Amount in INR"/>
+                <AmountField value={form.last2YearsNetIncome===0?"":String(form.last2YearsNetIncome)} onChange={v=>set("last2YearsNetIncome",parseInt(v)||0)} placeholder="Enter Amount In INR"/>
               </div>
           </>)}
 
@@ -669,13 +672,13 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter relationship" otherErr={errors.parentRelationshipOther}
           />
           <div id="parentFullName"><FieldLabel label="Full Name" required/>
-            <TextField value={form.parentFullName} onChange={v=>set("parentFullName",v)} placeholder="As per PAN card" err={errors.parentFullName}/>
+            <TextField value={form.parentFullName} onChange={v=>set("parentFullName",v)} placeholder="As Per PAN Card" err={errors.parentFullName}/>
           </div>
           <div id="parentMobile"><FieldLabel label="Mobile Number" required/>
             <div className="flex items-center rounded-xl overflow-hidden"
               style={{border:`1.5px solid ${errors.parentMobile?FORM.error:FORM.fieldBorder}`,background:FORM.fieldBg}}>
               <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:FORM.fieldBorder}}>🇮🇳 +91</span>
-              <input type="tel" value={form.parentMobile} maxLength={10} placeholder="10-digit number"
+              <input type="tel" value={form.parentMobile} maxLength={10} placeholder="10-Digit Number"
                 onChange={e=>set("parentMobile",e.target.value.replace(/\D/g,""))}
                 className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none"/>
             </div><FieldError msg={errors.parentMobile}/>

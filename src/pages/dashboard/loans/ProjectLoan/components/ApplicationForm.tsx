@@ -337,7 +337,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -356,7 +356,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter project type" otherErr={errors.projectTypeOther}
           />
           <div id="totalProjectCost"><FieldLabel label="Total Project Cost" required/>
-            <AmountField value={form.totalProjectCost} onChange={v=>set("totalProjectCost",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.totalProjectCost}/>
+            <AmountField value={form.totalProjectCost} onChange={v=>set("totalProjectCost",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.totalProjectCost}/>
           </div>
           <div id="projectStartDate"><FieldLabel label="Project Start Date" required/>
             <DateField value={form.projectStartDate} onChange={v=>set("projectStartDate",v)}
@@ -370,7 +370,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
               maxDate={projectDateMax} portalId="project-completion-datepicker-portal"/>
           </div>
           <div id="ownInvestment"><FieldLabel label="Own Investment on Project" required/>
-            <AmountField value={form.ownInvestment} onChange={v=>set("ownInvestment",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.ownInvestment}/>
+            <AmountField value={form.ownInvestment} onChange={v=>set("ownInvestment",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.ownInvestment}/>
           </div>
         </div>
       </FormCard>

@@ -288,7 +288,7 @@ const Footer = () => {
                   <input
                     id="newsletter-email"
                     type="email"
-                    placeholder="Your email address"
+                    placeholder="Your Email Address"
                     className="min-w-0 flex-1 border-none bg-white/8 px-2.75 py-2.25 text-[13px] text-white outline-none placeholder:text-white/35"
                   />
                   <button

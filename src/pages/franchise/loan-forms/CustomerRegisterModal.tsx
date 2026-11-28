@@ -243,11 +243,11 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <FieldLabel label="Full name" required />
-              <TextField value={form.fullName} onChange={(v) => set("fullName", v.slice(0, 100))} maxLength={100} placeholder="As per PAN card" err={errors.fullName} />
+              <TextField value={form.fullName} onChange={(v) => set("fullName", v.slice(0, 100))} maxLength={100} placeholder="As Per PAN Card" err={errors.fullName} />
             </div>
             <div>
               <FieldLabel label="Mobile" required />
-              <TextField value={form.mobile} onChange={(v) => set("mobile", v.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit mobile" err={errors.mobile} inputMode="tel" />
+              <TextField value={form.mobile} onChange={(v) => set("mobile", v.replace(/\D/g, "").slice(0, 10))} placeholder="10-Digit Mobile" err={errors.mobile} inputMode="tel" />
             </div>
             <div>
               <FieldLabel label="Email address" required />
@@ -272,7 +272,7 @@ const CustomerRegisterModal = ({ open, onClose, onRegistered }: CustomerRegister
             />
             <div>
               <FieldLabel label="State" required />
-              <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={stateSelectOptions} placeholder="Select state" err={errors.state} />
+              <SelectField value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={stateSelectOptions} placeholder="Select State" err={errors.state} />
             </div>
             <div>
               <FieldLabel label="City" required />

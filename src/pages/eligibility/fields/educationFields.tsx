@@ -21,7 +21,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("eduFees", next)}
             error={errors.eduFees}
             placeholder="e.g. 8,00,000"
-            hint="Tuition for the full programme"
+            hint="Tuition For The Full Programme"
             required
           />
           <AmountField
@@ -30,7 +30,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             value={form.eduHostel}
             onChange={(next) => set("eduHostel", next)}
             placeholder="e.g. 1,50,000"
-            hint="For the duration of the course"
+            hint="For The Duration Of The Course"
           />
           <AmountField
             id="elig-edu-other"
@@ -38,7 +38,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             value={form.eduOther}
             onChange={(next) => set("eduOther", next)}
             placeholder="e.g. 50,000"
-            hint="Books, equipment, exam, travel"
+            hint="Books, Equipment, Exam, Travel"
           />
           <AmountField
             id="elig-edu-scholarship"
@@ -46,7 +46,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             value={form.eduScholarship}
             onChange={(next) => set("eduScholarship", next)}
             placeholder="e.g. 25,000"
-            hint="Leave blank if none"
+            hint="Leave Blank If None"
           />
         </div>
         <AmountField
@@ -55,7 +55,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
           value={form.eduMargin}
           onChange={(next) => set("eduMargin", next)}
           placeholder="e.g. 1,00,000"
-          hint="Cost your family funds itself"
+          hint="Cost Your Family Funds Itself"
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
@@ -73,7 +73,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
             placeholder="e.g. 5,000"
-            hint="Enter 0 if you have no EMI"
+            hint="Enter 0 If You Have No EMI"
             required
           />
         </div>

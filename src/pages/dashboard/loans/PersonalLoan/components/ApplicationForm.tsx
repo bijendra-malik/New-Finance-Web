@@ -144,7 +144,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required />
-            <AmountField value={form.loanAmount === 0 ? "" : String(form.loanAmount)} onChange={v => set("loanAmount", parseInt(v) || 0)} placeholder="Enter Amount in INR" err={errors.loanAmount} />
+            <AmountField value={form.loanAmount === 0 ? "" : String(form.loanAmount)} onChange={v => set("loanAmount", parseInt(v) || 0)} placeholder="Enter Amount In INR" err={errors.loanAmount} />
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -162,7 +162,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
           </div>
           {form.employmentType === SALARIED && (<>
             <div id="companyName"><FieldLabel label="Company Name" required />
-              <TextField value={form.companyName} onChange={v => set("companyName", v.slice(0, 100))} maxLength={100} placeholder="Company full name" err={errors.companyName} />
+              <TextField value={form.companyName} onChange={v => set("companyName", v.slice(0, 100))} maxLength={100} placeholder="Company Full Name" err={errors.companyName} />
             </div>
             <SelectWithOther
               id="companyType" label="Company Type" required
@@ -175,7 +175,7 @@ const ApplicationForm = ({ userName = "", userEmail = "", onSubmit }: Applicatio
               otherPlaceholder="Enter company type" otherErr={errors.companyTypeOther}
             />
             <div id="monthlyNetSalary"><FieldLabel label="Monthly Net Salary" required />
-              <AmountField value={form.monthlyNetSalary === 0 ? "" : String(form.monthlyNetSalary)} onChange={v => set("monthlyNetSalary", parseInt(v) || 0)} placeholder="Enter Amount in INR"
+              <AmountField value={form.monthlyNetSalary === 0 ? "" : String(form.monthlyNetSalary)} onChange={v => set("monthlyNetSalary", parseInt(v) || 0)} placeholder="Enter Amount In INR"
                 err={errors.monthlyNetSalary} />
             </div>
             <div id="salaryReceivedAs"><FieldLabel label="Salary Received As" required />

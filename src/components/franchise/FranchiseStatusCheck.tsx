@@ -239,7 +239,7 @@ const FranchiseStatusCheck = () => {
                 setMobile(value.replace(/\D/g, "").slice(0, 10));
                 clearError("mobile");
               }}
-              placeholder="10-digit mobile number"
+              placeholder="10-Digit Mobile Number"
               error={errors.mobile}
               maxLength={10}
               inputMode="tel"

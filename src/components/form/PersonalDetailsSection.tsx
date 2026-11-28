@@ -100,7 +100,7 @@ export const PersonalDetailsSection = ({
             <div className="flex items-center rounded-(--form-field-radius) overflow-hidden"
               style={{border:`1.5px solid ${errors.mobile?FORM.error:FORM.fieldBorder}`,background:isLocked("mobile")?FORM.fieldBgDisabled:FORM.fieldBg}}>
               <span className="px-3 py-2.5 text-sm font-semibold shrink-0 border-r" style={{color:C.dark,borderColor:FORM.fieldBorder}}>🇮🇳 +91</span>
-              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-digit number" disabled={isLocked("mobile")}
+              <input type="tel" value={form.mobile} maxLength={10} placeholder="10-Digit Number" disabled={isLocked("mobile")}
                 onChange={e=>set("mobile",e.target.value.replace(/\D/g,""))}
                 className="w-full px-3 py-2.5 text-sm bg-transparent focus:outline-none disabled:cursor-not-allowed"/>
             </div><FieldError msg={errors.mobile}/>
@@ -112,7 +112,7 @@ export const PersonalDetailsSection = ({
             <DateOfBirthPicker value={form.dob} onChange={v=>set("dob",v)} err={errors.dob} disabled={isLocked("dob")}/>
           </div>
           <div id="panNumber"><FieldLabel label={panLabel} required={panRequired}/>
-            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual pan card no. - ABCDE1234F" maxLength={10} err={errors.panNumber} disabled={isLocked("panNumber")} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
+            <TextField value={form.panNumber} onChange={v=>set("panNumber",formatPAN(v))} placeholder="Individual PAN Card No. - ABCDE1234F" maxLength={10} err={errors.panNumber} disabled={isLocked("panNumber")} extraCls="uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal"/>
           </div>
           <PincodeInputField
             id="pincode" label="Current Residence Pincode"

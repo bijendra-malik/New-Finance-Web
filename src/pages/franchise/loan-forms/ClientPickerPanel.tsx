@@ -74,7 +74,7 @@ const ClientPickerPanel = ({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, mobile, email or PAN"
+          placeholder="Search By Name, Mobile, Email Or PAN"
           className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-(--brand-teal-33)"
           style={{ border: "1.5px solid var(--form-field-border, #e2e8f0)", background: "var(--form-field-bg, #fff)" }}
         />

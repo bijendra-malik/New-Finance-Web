@@ -388,14 +388,14 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
           />
           {form.npaStatus===OTS_OFFER_OPTION&&(
             <div id="otsOfferAmount"><FieldLabel label="OTS Offer By Bank" required/>
-              <AmountField value={form.otsOfferAmount===0?"":String(form.otsOfferAmount)} onChange={v=>set("otsOfferAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.otsOfferAmount}/>
+              <AmountField value={form.otsOfferAmount===0?"":String(form.otsOfferAmount)} onChange={v=>set("otsOfferAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.otsOfferAmount}/>
             </div>
           )}
           <div id="npaPrincipalLoanAmount"><FieldLabel label="NPA Principal Loan Amount" required/>
-            <AmountField value={form.npaPrincipalLoanAmount===0?"":String(form.npaPrincipalLoanAmount)} onChange={v=>set("npaPrincipalLoanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.npaPrincipalLoanAmount}/>
+            <AmountField value={form.npaPrincipalLoanAmount===0?"":String(form.npaPrincipalLoanAmount)} onChange={v=>set("npaPrincipalLoanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.npaPrincipalLoanAmount}/>
           </div>
           <div id="npaCurrentOutstandingAmount"><FieldLabel label="NPA Current Outstanding Amount" required/>
-            <AmountField value={form.npaCurrentOutstandingAmount===0?"":String(form.npaCurrentOutstandingAmount)} onChange={v=>set("npaCurrentOutstandingAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.npaCurrentOutstandingAmount}/>
+            <AmountField value={form.npaCurrentOutstandingAmount===0?"":String(form.npaCurrentOutstandingAmount)} onChange={v=>set("npaCurrentOutstandingAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.npaCurrentOutstandingAmount}/>
           </div>
         </div>
       </FormCard>
@@ -404,10 +404,10 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no other existing loans">
         <div className={`${FORM.grid} mb-6`}>
           <div id="existingEMI"><FieldLabel label="Existing Loan EMI (Total)" required/>
-            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
+            <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.existingEMI}/>
           </div>
           <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingLoanAmount}/>
+            <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.existingLoanAmount}/>
           </div>
         </div>
 
@@ -419,7 +419,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             color={C.teal}/>
 
           {hasExposure&&form.existingBanksNpa.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Bank Name (NPA)" placeholder="Enter other bank name"
+            <OtherOptionList label="Other Existing Loan Bank Name (NPA)" placeholder="Enter Other Bank Name"
               items={form.existingBanksNpaOther} onAdd={addOtherBankNpa} onRemove={removeOtherBankNpa} color={C.teal} existingOptions={masters.banks}/>
           )}
         </div>
@@ -432,7 +432,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             color={C.navy}/>
 
           {hasExposure&&form.existingLoanTypesNpa.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Types (NPA)" placeholder="Enter other loan type"
+            <OtherOptionList label="Other Existing Loan Types (NPA)" placeholder="Enter Other Loan Type"
               items={form.existingLoanTypesNpaOther} onAdd={addOtherLoanTypeNpa} onRemove={removeOtherLoanTypeNpa} color={C.navy} existingOptions={masters.existingLoanTypes}/>
           )}
         </div>
@@ -445,7 +445,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             color={C.teal}/>
 
           {hasExposure&&form.existingBanksNonNpa.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Bank Name (Non NPA)" placeholder="Enter other bank name"
+            <OtherOptionList label="Other Existing Loan Bank Name (Non NPA)" placeholder="Enter Other Bank Name"
               items={form.existingBanksNonNpaOther} onAdd={addOtherBankNonNpa} onRemove={removeOtherBankNonNpa} color={C.teal} existingOptions={masters.banks}/>
           )}
         </div>
@@ -458,7 +458,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             color={C.navy}/>
 
           {hasExposure&&form.existingLoanTypesNonNpa.includes(OTHER_OPTION)&&(
-            <OtherOptionList label="Other Existing Loan Types (Non NPA)" placeholder="Enter other loan type"
+            <OtherOptionList label="Other Existing Loan Types (Non NPA)" placeholder="Enter Other Loan Type"
               items={form.existingLoanTypesNonNpaOther} onAdd={addOtherLoanTypeNonNpa} onRemove={removeOtherLoanTypeNonNpa} color={C.navy} existingOptions={masters.existingLoanTypes}/>
           )}
         </div>
@@ -468,7 +468,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="New Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Tenure (in years)"
@@ -487,7 +487,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter property type" otherErr={errors.collateralPropertyTypeOther}
           />
           <div id="collateralPropertyMarketValue"><FieldLabel label="Collateral Property Market Value (Approx)" required/>
-            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.collateralPropertyMarketValue}/>
+            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.collateralPropertyMarketValue}/>
           </div>
           <div id="collateralPropertyAge"><FieldLabel label="Collateral Property Age (in years)" required/>
             <TextField type="number" value={form.collateralPropertyAge} onChange={v=>set("collateralPropertyAge",v.replace(/\D/g,""))}

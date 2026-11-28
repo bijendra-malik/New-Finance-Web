@@ -95,7 +95,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.fullName)}
               value={values.fullName}
               onChange={(e) => set("fullName", e.target.value)}
-              placeholder="Name as per pan card"
+              placeholder="Name As Per PAN Card"
               autoComplete="name"
               />
           </Field>
@@ -111,7 +111,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.mobile)}
               value={values.mobile}
               onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))}
-              placeholder="10-digit mobile number"
+              placeholder="10-Digit Mobile Number"
               maxLength={10}
               autoComplete="tel"
             />
@@ -169,7 +169,7 @@ export const FranchiseFields = ({
             id={fid("gst")}
             label="GST Number"
             error={errors.gstNumber}
-            hint="Optional — only if you have a GST-registered business"
+            hint="Optional — Only If You Have A GST-Registered Business"
           >
             <input
               id={fid("gst")}
@@ -206,7 +206,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.businessName)}
               value={values.businessName}
               onChange={(e) => set("businessName", e.target.value)}
-              placeholder="Your Business / Firm / Company name"
+              placeholder="Your Business / Firm / Company Name"
               autoComplete="organization"
             />
           </Field>
@@ -241,7 +241,7 @@ export const FranchiseFields = ({
               className={inputClass(!!errors.businessTypeOther)}
               value={values.businessTypeOther}
               onChange={(e) => set("businessTypeOther", e.target.value)}
-              placeholder="Enter business type"
+              placeholder="Enter Business Type"
             />
           </Field>
         );
@@ -301,7 +301,7 @@ export const FranchiseFields = ({
                 className={`${inputClass(!!errors.address)} resize-y`}
                 value={values.address}
                 onChange={(e) => set("address", e.target.value)}
-                placeholder="Full postal address as per your official documents"
+                placeholder="Full Postal Address As Per Your Official Documents"
               />
             </Field>
           </div>

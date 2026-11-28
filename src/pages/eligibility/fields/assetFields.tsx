@@ -23,7 +23,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
               min={1}
               step={1}
               value={form.goldGrams}
-              placeholder="Net weight, no stones or thread"
+              placeholder="Net Weight, No Stones Or Thread"
               onChange={(event) => set("goldGrams", event.target.value)}
               className={`${fieldClass(errors.goldGrams)} placeholder:text-[12px]`}
             />
@@ -37,7 +37,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("goldRate", next)}
             error={errors.goldRate}
             placeholder="e.g. 7,200"
-            hint="Today's rate for this purity"
+            hint="Today's Rate For This Purity"
             required
           />
         </div>
@@ -71,7 +71,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("monthlyIncome", next)}
             error={errors.monthlyIncome}
             placeholder="e.g. 60,000"
-            hint="Take-home pay that reaches your bank"
+            hint="Take-Home Pay That Reaches Your Bank"
             required
           />
           <AmountField
@@ -81,7 +81,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
             placeholder="e.g. 8,000"
-            hint="Enter 0 if you have no EMI"
+            hint="Enter 0 If You Have No EMI"
             required
           />
         </div>
@@ -98,7 +98,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("shareValue", next)}
             error={errors.shareValue}
             placeholder="e.g. 10,00,000"
-            hint="Value of the shares pledged"
+            hint="Value Of The Shares Pledged"
             required
           />
           <AmountField
@@ -107,7 +107,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 1,00,000"
-            hint="Caps the loan at what you repay"
+            hint="Caps The Loan At What You Repay"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -117,7 +117,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.shareLenderLimit}
             onChange={(next) => set("shareLenderLimit", next)}
             placeholder="e.g. 20,00,000"
-            hint="Scheme cap for this portfolio"
+            hint="Scheme Cap For This Portfolio"
           />
           <AmountField
             id="elig-share-exposure"
@@ -125,7 +125,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             value={form.shareExposure}
             onChange={(next) => set("shareExposure", next)}
             placeholder="e.g. 0"
-            hint="Deducted from the limit"
+            hint="Deducted From The Limit"
           />
         </div>
         <AmountField
@@ -135,7 +135,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("existingEmi", next)}
           error={errors.existingEmi}
           placeholder="e.g. 8,000"
-          hint="Enter 0 if you have no EMI"
+          hint="Enter 0 If You Have No EMI"
           required
         />
       </div>

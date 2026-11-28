@@ -328,7 +328,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (not less than 3 year)"
@@ -347,7 +347,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             otherPlaceholder="Enter property type" otherErr={errors.collateralPropertyTypeOther}
           />
           <div id="collateralPropertyMarketValue"><FieldLabel label="Collateral Property Market Value (Approx)" required/>
-            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.collateralPropertyMarketValue}/>
+            <AmountField value={form.collateralPropertyMarketValue===0?"":String(form.collateralPropertyMarketValue)} onChange={v=>set("collateralPropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.collateralPropertyMarketValue}/>
           </div>
           <div id="collateralPropertyAge"><FieldLabel label="Collateral Property Age (in years)" required/>
             <TextField type="number" value={form.collateralPropertyAge} onChange={v=>set("collateralPropertyAge",v.replace(/\D/g,""))}

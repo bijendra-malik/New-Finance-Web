@@ -218,7 +218,7 @@ const CaptchaField = ({ captcha, idPrefix = "captcha", className = "" }: Captcha
                     value={answer}
                     onChange={(event) => setAnswer(event.target.value)}
                     onKeyDown={(event) => { if (event.key === "Enter") void submitAnswer(); }}
-                    placeholder="Type the answer"
+                    placeholder="Type The Answer"
                     autoComplete="off"
                     spellCheck={false}
                     inputMode="numeric"

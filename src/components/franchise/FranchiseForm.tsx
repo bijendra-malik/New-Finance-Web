@@ -567,7 +567,7 @@ const FranchiseForm = ({
                 className={inputClass(!!errors.state)}
                 value={values.state}
                 onChange={(e) => set("state", e.target.value)}
-                placeholder="Your state"
+                placeholder="Your State"
                 autoComplete="address-level1"
               />
             </Field>
@@ -577,7 +577,7 @@ const FranchiseForm = ({
                 className={inputClass(!!errors.city)}
                 value={values.city}
                 onChange={(e) => set("city", e.target.value)}
-                placeholder="Your city"
+                placeholder="Your City"
                 autoComplete="address-level2"
               />
             </Field>

@@ -340,7 +340,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -349,16 +349,16 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             options={masters.leaseRentalTenureYears} maxYears={LEASE_RENTAL_MAX_TENURE_YEARS} err={errors.loanTenureYears} customErr={errors.loanTenureYearsCustom}
           />
           <div id="monthlyLeaseIncome"><FieldLabel label="Monthly Net Income Through Lease" required/>
-            <AmountField value={form.monthlyLeaseIncome} onChange={v=>set("monthlyLeaseIncome",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.monthlyLeaseIncome}/>
+            <AmountField value={form.monthlyLeaseIncome} onChange={v=>set("monthlyLeaseIncome",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.monthlyLeaseIncome}/>
           </div>
           <div id="totalLeaseAmount"><FieldLabel label="Total Amount To Be Received From Lease" required/>
-            <AmountField value={form.totalLeaseAmount} onChange={v=>set("totalLeaseAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.totalLeaseAmount}/>
+            <AmountField value={form.totalLeaseAmount} onChange={v=>set("totalLeaseAmount",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.totalLeaseAmount}/>
           </div>
           <div id="leasePropertyDuration"><FieldLabel label="Lease Property Duration" required/>
-            <TextField type="number" value={form.leasePropertyDuration} onChange={v=>set("leasePropertyDuration",v.replace(/\D/g,""))} placeholder="In years" err={errors.leasePropertyDuration}/>
+            <TextField type="number" value={form.leasePropertyDuration} onChange={v=>set("leasePropertyDuration",v.replace(/\D/g,""))} placeholder="In Years" err={errors.leasePropertyDuration}/>
           </div>
           <div id="leasePropertyMarketValue"><FieldLabel label="Lease Property Market Value (Approx)" required/>
-            <AmountField value={form.leasePropertyMarketValue===0?"":String(form.leasePropertyMarketValue)} onChange={v=>set("leasePropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.leasePropertyMarketValue}/>
+            <AmountField value={form.leasePropertyMarketValue===0?"":String(form.leasePropertyMarketValue)} onChange={v=>set("leasePropertyMarketValue",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.leasePropertyMarketValue}/>
           </div>
           <div id="leasePropertyAge"><FieldLabel label="Lease Property Age" required/>
             <TextField type="number" value={form.leasePropertyAge} onChange={v=>set("leasePropertyAge",v.replace(/\D/g,""))} placeholder="In Years" err={errors.leasePropertyAge}/>

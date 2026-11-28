@@ -36,10 +36,10 @@ export const ExistingLoanExposureSection = ({
     <FormCard title="Existing Loan Exposure" subtitle="Fill 0 if you have no existing loans">
       <div className={`${FORM.grid} mb-6`}>
         <div id="existingEMI"><FieldLabel label={emiLabel} required/>
-          <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingEMI}/>
+          <AmountField value={form.existingEMI} onChange={v=>set("existingEMI",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.existingEMI}/>
         </div>
         <div id="existingLoanAmount"><FieldLabel label="Existing Loan Amount (Total)" required/>
-          <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount in INR" err={errors.existingLoanAmount}/>
+          <AmountField value={form.existingLoanAmount} onChange={v=>set("existingLoanAmount",v.replace(/\D/g,""))} placeholder="Enter Amount In INR" err={errors.existingLoanAmount}/>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export const ExistingLoanExposureSection = ({
           color={C.teal}/>
 
         {hasExposure&&form.existingBanks.includes(OTHER_OPTION)&&(
-          <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter other bank name"
+          <OtherOptionList label="Other Existing Loan Bank Name" placeholder="Enter Other Bank Name"
             items={form.existingBanksOther} onAdd={value=>mergeForm({existingBanksOther:[...form.existingBanksOther, value]})}
             onRemove={idx=>mergeForm({existingBanksOther:form.existingBanksOther.filter((_,i)=>i!==idx)})} color={C.teal} existingOptions={banks}/>
         )}
@@ -65,7 +65,7 @@ export const ExistingLoanExposureSection = ({
           color={C.navy}/>
 
         {hasExposure&&form.existingLoanTypes.includes(OTHER_OPTION)&&(
-          <OtherOptionList label="Other Existing Loan Types" placeholder="Enter other loan type"
+          <OtherOptionList label="Other Existing Loan Types" placeholder="Enter Other Loan Type"
             items={form.existingLoanTypesOther} onAdd={value=>mergeForm({existingLoanTypesOther:[...form.existingLoanTypesOther, value]})}
             onRemove={idx=>mergeForm({existingLoanTypesOther:form.existingLoanTypesOther.filter((_,i)=>i!==idx)})} color={C.navy} existingOptions={existingLoanTypes}/>
         )}

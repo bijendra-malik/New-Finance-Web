@@ -324,7 +324,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
       <FormCard title="Loan Requirements" subtitle="How much do you need and for how long?">
         <div className={FORM.grid}>
           <div id="loanAmount"><FieldLabel label="Required Loan Amount" required/>
-            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.loanAmount}/>
+            <AmountField value={form.loanAmount===0?"":String(form.loanAmount)} onChange={v=>set("loanAmount",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.loanAmount}/>
           </div>
           <TenureYearsField
             id="loanTenureYears" label="Required Loan Tenure (in years)"
@@ -336,7 +336,7 @@ const ApplicationForm = ({userName="",userEmail="",onSubmit}:ApplicationFormProp
             <TextField value={form.shareCompanyName} onChange={v=>set("shareCompanyName",v)} placeholder="e.g. Reliance Industries" err={errors.shareCompanyName}/>
           </div>
           <div id="valueOfOneShare"><FieldLabel label="Value of one share" required/>
-            <AmountField value={form.valueOfOneShare===0?"":String(form.valueOfOneShare)} onChange={v=>set("valueOfOneShare",parseInt(v)||0)} placeholder="Enter Amount in INR" err={errors.valueOfOneShare}/>
+            <AmountField value={form.valueOfOneShare===0?"":String(form.valueOfOneShare)} onChange={v=>set("valueOfOneShare",parseInt(v)||0)} placeholder="Enter Amount In INR" err={errors.valueOfOneShare}/>
           </div>
           <div id="quantityOfShare"><FieldLabel label="Quantity of share" required/>
             <TextField type="number" value={form.quantityOfShare===0?"":String(form.quantityOfShare)}

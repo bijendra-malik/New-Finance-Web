@@ -78,7 +78,7 @@ const ApplicationDetailsStep = ({ form }: { form: ApplicationModalForm }) => {
           <Field
             label="Full Name" type="text" name="fullName"
             value={fullName} onChange={(v) => { setFullName(v); setFieldErrors((p) => ({ ...p, fullName: "" })); }}
-            placeholder="As per your PAN card" error={fieldErrors.fullName}
+            placeholder="As Per Your PAN Card" error={fieldErrors.fullName}
           />
         )}
         {!isLoginMode && (
@@ -173,7 +173,7 @@ const ApplicationDetailsStep = ({ form }: { form: ApplicationModalForm }) => {
               value={mobile}
               disabled={mobileVerified}
               onChange={(event) => handleMobileChange(event.target.value)}
-              placeholder="10-digit mobile number"
+              placeholder="10-Digit Mobile Number"
               className={`min-w-0 flex-1 px-3.5 py-2.5 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-(--brand-teal-20) focus:border-(--brand-teal) disabled:bg-(--form-field-bg-disabled) disabled:cursor-not-allowed ${fieldErrors.mobile ? "border-red-400" : "border-(--form-field-border)"}`}
             />
             {!isLoginMode && (mobileVerified ? (
