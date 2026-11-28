@@ -12,6 +12,7 @@ import { DateOfBirthPicker } from "../../components/form/FormControls";
 import { formatINRRounded } from "../../utils/formatters";
 import {
   COMMERCIAL_LTV,
+  PROJECT_MIN_CONTRIBUTION,
   assetLtvFor,
   commercialEligibility,
   educationEligibility,
@@ -24,6 +25,8 @@ import {
   projectEligibility,
   LRD_ROI,
   LRD_TENURE_YEARS,
+  WC_MARGIN,
+  WC_TURNOVER_NORM,
   shareEligibility,
   termEligibility,
   tenureText,
@@ -271,8 +274,8 @@ const EligibilityCalculatorPage = () => {
       if (num(form.projectCost) <= 0) next.projectCost = "Enter the total project cost";
       else if (num(form.projectContribution) <= 0) {
         next.projectContribution = "Enter the promoter's own contribution";
-      } else if (num(form.projectContribution) < num(form.projectCost) * 0.2) {
-        next.projectContribution = "Promoter contribution must be at least 20% of the project cost";
+      } else if (num(form.projectContribution) < num(form.projectCost) * PROJECT_MIN_CONTRIBUTION) {
+        next.projectContribution = `Promoter contribution must be at least ${Math.round(PROJECT_MIN_CONTRIBUTION * 100)}% of the project cost`;
       }
     }
     if (product.family === "commercial") {
@@ -369,7 +372,7 @@ const EligibilityCalculatorPage = () => {
         : result.product.family === "commercial"
           ? `Based on a commercial property valued at ${formatINRRounded(num(form.propertyValue))}${num(form.commercialRent) > 0 ? ` let for ${formatINRRounded(num(form.commercialRent))} a month` : ""}.`
           : result.product.family === "turnover"
-            ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover, assessed at the standard 18.75%.`
+            ? `Based on ${formatINRRounded(num(form.turnover))} of projected annual turnover, assessed at the standard ${Math.round(WC_TURNOVER_NORM * 10000) / 100}%.`
     : result.product.family === "gold"
       ? `Based on ${form.goldGrams} g of ${form.goldCarat}K gold at ${formatINRRounded(num(form.goldRate))} per gram.`
       : result.product.family === "wc"
@@ -416,8 +419,8 @@ const EligibilityCalculatorPage = () => {
               ]
             : result.product.family === "turnover"
               ? [
-                  { label: "Working capital requirement", value: formatINRRounded(num(form.turnover) * 0.1875) },
-                  { label: "Margin", value: "25% (standard)" },
+                  { label: "Working capital requirement", value: formatINRRounded(num(form.turnover) * WC_TURNOVER_NORM) },
+                  { label: "Margin", value: `${Math.round(WC_MARGIN * 100)}% (standard)` },
                   { label: "Rate", value: `${result.outcome.roi}% p.a.` },
                 ]
               : result.product.family === "lrd"
@@ -484,13 +487,13 @@ const EligibilityCalculatorPage = () => {
                   </p>
                   {result.outcome.eligible ? (
                     <p
-                      className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[32px] font-bold leading-none tabular-nums sm:text-[40px]"
+                      className="mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[28px] font-bold leading-none tabular-nums sm:text-[40px]"
                       style={SERIF}
                     >
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 sm:text-[12px]">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-white/70 sm:text-[12px] sm:tracking-[0.14em]">
                         Approx.
                       </span>
-                      {formatINRRounded(result.outcome.headline)}
+                      <span className="whitespace-nowrap">{formatINRRounded(result.outcome.headline)}</span>
                     </p>
                   ) : (
                     <p className="mt-2 text-[26px] font-bold leading-tight">We can't estimate an amount yet</p>
@@ -600,7 +603,7 @@ const EligibilityCalculatorPage = () => {
                         inputMode="numeric"
                         maxLength={3}
                         autoComplete="off"
-                        placeholder="300 to 900 — your latest score"
+                        placeholder="300 To 900 — Your Latest Score"
                         value={form.creditScore}
                         onChange={(event) => set("creditScore", event.target.value.replace(/\D/g, ""))}
                         className={`${fieldClass(errors.creditScore)} placeholder:text-[12px]`}
@@ -646,7 +649,7 @@ const EligibilityCalculatorPage = () => {
                       label="Full name"
                       value={form.fullName}
                       onChange={(next) => set("fullName", next)}
-                      placeholder="As per your PAN card"
+                      placeholder="As Per Your PAN Card"
                       error={errors.fullName}
                       required
                     />
@@ -658,7 +661,7 @@ const EligibilityCalculatorPage = () => {
                     onChange={(next) => set("mobile", next.replace(/\D/g, ""))}
                     inputMode="tel"
                     maxLength={10}
-                    placeholder="10-digit mobile number"
+                    placeholder="10-Digit Mobile Number"
                     error={errors.mobile}
                     required
                   />
@@ -678,6 +681,7 @@ const EligibilityCalculatorPage = () => {
                         type="checkbox"
                         checked={form.authorized}
                         onChange={(event) => set("authorized", event.target.checked)}
+                        aria-required="true"
                         className="mt-0.5 h-4 w-4 shrink-0"
                         style={{ accentColor: "var(--brand-navy)" }}
                       />
@@ -686,7 +690,8 @@ const EligibilityCalculatorPage = () => {
                         to the{" "}
                         <Link to="/terms-of-use" className="font-semibold text-(--brand-navy) underline">
                           Terms of Use
-                        </Link>.
+                        </Link>
+                        .<span aria-hidden="true" className="ml-0.5 text-red-500">*</span>
                       </span>
                     </label>
                     <FieldError>{errors.authorized}</FieldError>
