@@ -1,7 +1,7 @@
 import type { FormState } from "../formState";
 import { type ProductSpec } from "../models";
-import { DSCR_MIN } from "../models";
-import { AmountField } from "../fieldControls";
+import { DSCR_MIN, PROJECT_MIN_CONTRIBUTION, WC_BANK_SHARE, WC_TURNOVER_NORM, WC_TURNOVER_REQUIREMENT } from "../models";
+import { AmountField, InfoTooltip } from "../fieldControls";
 
 interface Props {
   product: ProductSpec;
@@ -9,6 +9,14 @@ interface Props {
   errors: Record<string, string>;
   set: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
 }
+
+const DscrTooltip = () => (
+  <InfoTooltip label="What is DSCR?">
+    DSCR (Debt Service Coverage Ratio) is the monthly rent or projected cash flow divided by the loan's EMI, so it
+    shows how many times over the income covers the repayment. Lenders want at least {DSCR_MIN}× cover, so the EMI
+    is capped at that monthly figure ÷ {DSCR_MIN} and the loan is sized from that EMI over the tenure.
+  </InfoTooltip>
+);
 
 const BusinessFields = ({ product, form, errors, set }: Props) => (
   <>
@@ -22,7 +30,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("turnover", next)}
             error={errors.turnover}
             placeholder="e.g. 2,00,00,000"
-            hint="Next 12 months' turnover"
+            hint="Next 12 Months' Turnover"
             required
           />
           <AmountField
@@ -32,7 +40,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("stock", next)}
             error={errors.stock}
             placeholder="e.g. 20,00,000"
-            hint="Paid stock at cost"
+            hint="Paid Stock At Cost"
             required={form.odMode === "drawingPower"}
           />
         </div>
@@ -44,7 +52,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("debtors", next)}
             error={errors.debtors}
             placeholder="e.g. 10,00,000"
-            hint="Within the last 90 days"
+            hint="Within The Last 90 Days"
             required={form.odMode === "drawingPower"}
           />
           <AmountField
@@ -53,7 +61,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.otherCurrentLiabilities}
             onChange={(next) => set("otherCurrentLiabilities", next)}
             placeholder="e.g. 4,00,000"
-            hint="Excluding bank loans"
+            hint="Excluding Bank Loans"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -63,7 +71,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.odLenderLimit}
             onChange={(next) => set("odLenderLimit", next)}
             placeholder="e.g. 50,00,000"
-            hint="Bank policy cap"
+            hint="Bank Policy Cap"
           />
           <AmountField
             id="elig-wc-existing-limit"
@@ -71,7 +79,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.odExistingLimit}
             onChange={(next) => set("odExistingLimit", next)}
             placeholder="e.g. 5,00,000"
-            hint="Deducted from the limit"
+            hint="Deducted From The Limit"
           />
         </div>
 
@@ -99,7 +107,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           </div>
           <p className="mt-2 text-[11.5px] leading-4 text-slate-500">
             {form.odMode === "turnover"
-              ? "25% of turnover is the requirement and the bank funds 75% of it — 18.75% of turnover."
+              ? `${Math.round(WC_TURNOVER_REQUIREMENT * 100)}% of turnover is the requirement and the bank funds ${Math.round(WC_BANK_SHARE * 100)}% of it — ${Math.round(WC_TURNOVER_NORM * 10000) / 100}% of turnover.`
               : "Stock and receivables less the bank's margin and deductions, capped by the turnover norm."}
           </p>
         </div>
@@ -111,7 +119,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.odMargin}
             onChange={(next) => set("odMargin", next)}
             placeholder="e.g. 5,00,000"
-            hint="Your own contribution"
+            hint="Your Own Contribution"
           />
         )}
       </div>
@@ -127,7 +135,8 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("projectCost", next)}
             error={errors.projectCost}
             placeholder="e.g. 5,00,00,000"
-            hint="Total cost of the project"
+            hint="Total Cost Of The Project"
+            required
           />
           <AmountField
             id="elig-project-contribution"
@@ -136,7 +145,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("projectContribution", next)}
             error={errors.projectContribution}
             placeholder="e.g. 1,50,00,000"
-            hint="Minimum 20% is required"
+            hint={`Minimum ${Math.round(PROJECT_MIN_CONTRIBUTION * 100)}% Is Required`}
             required
           />
         </div>
@@ -146,7 +155,8 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           value={form.projectCashFlow}
           onChange={(next) => set("projectCashFlow", next)}
           placeholder="e.g. 12,00,000"
-          hint={`Caps the loan at a ${DSCR_MIN}× DSCR`}
+          hint={`Caps The Loan At A ${DSCR_MIN}× DSCR`}
+          tooltip={<DscrTooltip />}
         />
       </div>
     )}
@@ -161,7 +171,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("propertyValue", next)}
             error={errors.propertyValue}
             placeholder="e.g. 2,00,00,000"
-            hint="Today's market value"
+            hint="Today's Market Value"
             required
           />
           <AmountField
@@ -170,7 +180,8 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.commercialRent}
             onChange={(next) => set("commercialRent", next)}
             placeholder="e.g. 1,00,000"
-            hint={`Caps at a ${DSCR_MIN}× DSCR on the rent`}
+            hint={`Caps At A ${DSCR_MIN}× DSCR On The Rent`}
+            tooltip={<DscrTooltip />}
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -180,7 +191,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.monthlyIncome}
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 1,50,000"
-            hint="Caps the loan at what you repay"
+            hint="Caps The Loan At What You Repay"
           />
           <AmountField
             id="elig-commercial-emi"
@@ -189,7 +200,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("existingEmi", next)}
             error={errors.existingEmi}
             placeholder="e.g. 20,000"
-            hint="Enter 0 if you have no EMI"
+            hint="Enter 0 If You Have No EMI"
             required
           />
         </div>
@@ -199,7 +210,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           value={form.commercialCoApplicant}
           onChange={(next) => set("commercialCoApplicant", next)}
           placeholder="e.g. 60,000"
-          hint="Added to your income"
+          hint="Added To Your Income"
         />
       </div>
     )}
@@ -213,7 +224,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("turnover", next)}
           error={errors.turnover}
           placeholder="e.g. 3,00,00,000"
-          hint="Next 12 months' turnover"
+          hint="Next 12 Months' Turnover"
           required
         />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -224,7 +235,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("wcCurrentAssets", next)}
             error={errors.wcCurrentAssets}
             placeholder="e.g. 60,00,000"
-            hint="Inventory plus receivables"
+            hint="Inventory Plus Receivables"
             required={form.wcMethod === "workingCapital"}
           />
           <AmountField
@@ -233,7 +244,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.wcCurrentLiabilities}
             onChange={(next) => set("wcCurrentLiabilities", next)}
             placeholder="e.g. 20,00,000"
-            hint="Trade creditors and dues"
+            hint="Trade Creditors And Dues"
           />
         </div>
         <div>
@@ -260,7 +271,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           </div>
           <p className="mt-2 text-[11.5px] leading-4 text-slate-500">
             {form.wcMethod === "turnover"
-              ? "18.75% of projected turnover sets the limit."
+              ? `${Math.round(WC_TURNOVER_NORM * 10000) / 100}% of projected turnover sets the limit.`
               : "Current assets less current liabilities, financed after your margin, capped by the turnover norm."
             }
           </p>
@@ -273,7 +284,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.wcLenderLimit}
             onChange={(next) => set("wcLenderLimit", next)}
             placeholder="e.g. 1,00,00,000"
-            hint="Bank policy cap"
+            hint="Bank Policy Cap"
           />
           <AmountField
             id="elig-wct-existing-limit"
@@ -281,7 +292,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             value={form.wcExistingLimit}
             onChange={(next) => set("wcExistingLimit", next)}
             placeholder="e.g. 10,00,000"
-            hint="Deducted from the limit"
+            hint="Deducted From The Limit"
           />
         </div>
       </div>
