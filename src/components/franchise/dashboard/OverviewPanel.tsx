@@ -62,7 +62,7 @@ const OverviewPanel = ({
         <StatCard
           label="Customers"
           value={String(customers.length)}
-          hint="Registered under your franchise ID"
+          hint="Registered Under Your Franchise ID"
           icon="user"
           accent="linear-gradient(90deg,var(--brand-teal),var(--brand-navy))"
         />
@@ -76,14 +76,14 @@ const OverviewPanel = ({
         <StatCard
           label="In progress"
           value={String(inProgress)}
-          hint="Submitted, under review or processing"
+          hint="Submitted, Under Review Or Processing"
           icon="clock"
           accent="linear-gradient(90deg,#e0a800,#f6c453)"
         />
         <StatCard
           label="Approved / disbursed"
           value={String(positive)}
-          hint="Sanctioned, disbursed or closed"
+          hint="Sanctioned, Disbursed Or Closed"
           icon="check"
           accent="linear-gradient(90deg,#26ae90,#7bd9c4)"
         />
@@ -98,19 +98,19 @@ const OverviewPanel = ({
           <QuickAction
             icon="user-plus"
             label="Register a customer"
-            hint="Add a client to your franchise registry"
+            hint="Add A Client To Your Franchise Registry"
             onClick={() => goToSection("customers")}
           />
           <QuickAction
             icon="pen-line"
             label="Apply for a loan"
-            hint="File any product on a customer's behalf"
+            hint="File Any Product On A Customer's Behalf"
             onClick={() => goToSection("apply")}
           />
           <QuickAction
             icon="layers"
             label="Track applications"
-            hint="Review every loan and its live status"
+            hint="Review Every Loan And Its Live Status"
             onClick={() => goToSection("loans")}
           />
         </div>

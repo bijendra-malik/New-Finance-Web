@@ -752,7 +752,7 @@ const FranchiseFilingDashboard = () => {
           </p>
           {customer && (
             <p className="mt-3">
-              <LockBadge hint="Filed under your franchise ID" />
+              <LockBadge hint="Filed Under Your Franchise ID" />
             </p>
           )}
         </div>

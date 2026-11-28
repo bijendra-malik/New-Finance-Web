@@ -366,9 +366,9 @@ const DashboardShell = <T,>({
                 </dl>
 
                 <div className="py-1.5">
-                  <ProfileAction icon="📄" label="My applications" hint="Every application you have submitted"
+                  <ProfileAction icon="📄" label="My applications" hint="Every Application You Have Submitted"
                     onClick={() => { setProfileOpen(false); navigate("/applications"); }} />
-                  <ProfileAction icon="🔎" label="Check application status" hint="Verify your mobile to see the latest update"
+                  <ProfileAction icon="🔎" label="Check application status" hint="Verify Your Mobile To See The Latest Update"
                     onClick={() => { setProfileOpen(false); navigate("/application-status"); }} />
                   <ProfileAction icon="🏠" label="Back to home"
                     onClick={() => { setProfileOpen(false); navigate("/"); }} />
