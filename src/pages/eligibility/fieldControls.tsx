@@ -1,13 +1,52 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { amountInWords, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 import { fieldClass, placeholderWith } from "./formState";
 
+const TOOLTIP_EDGE = 12;
+
 export const InfoTooltip = ({ label, children }: { label: string; children: ReactNode }) => {
   const [open, setOpen] = useState(false);
-  const show = () => setOpen(true);
-  const hide = () => setOpen(false);
+  const [shift, setShift] = useState(0);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const panelRef = useRef<HTMLSpanElement>(null);
+
+  // Sit the panel beside its icon, nudging it left only as far as needed to stay on screen.
+  const place = useCallback(() => {
+    const anchor = anchorRef.current;
+    const panel = panelRef.current;
+    if (!anchor || !panel) return;
+    const width = panel.offsetWidth;
+    const button = anchor.getBoundingClientRect();
+    // Stay inside the card when there is one, and always inside the screen.
+    const card = anchor.closest("section")?.getBoundingClientRect();
+    const viewportRight = window.innerWidth - TOOLTIP_EDGE;
+    const viewportLeft = TOOLTIP_EDGE;
+    const minLeft = card ? Math.max(viewportLeft, card.left + TOOLTIP_EDGE) : viewportLeft;
+    const maxRight = card ? Math.min(viewportRight, card.right - TOOLTIP_EDGE) : viewportRight;
+    let left = button.left;
+    if (left + width > maxRight) left = button.right - width;
+    if (left < minLeft) left = minLeft;
+    if (left + width > maxRight) left = Math.max(viewportLeft, maxRight - width);
+    setShift(Math.round(left - button.left));
+  }, []);
+
+  const show = () => {
+    place();
+    setOpen(true);
+  };
+  const hide = () => {
+    setOpen(false);
+    setShift(0);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [open, place]);
+
   return (
-    <span className="inline-flex" onMouseEnter={show} onMouseLeave={hide}>
+    <span ref={anchorRef} className="relative inline-flex" onMouseEnter={show} onMouseLeave={hide}>
       <button
         type="button"
         aria-label={label}
@@ -24,8 +63,10 @@ export const InfoTooltip = ({ label, children }: { label: string; children: Reac
         i
       </button>
       <span
+        ref={panelRef}
         role="tooltip"
-        className={`pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal normal-case leading-4 tracking-normal text-white shadow-xl transition-opacity ${
+        style={{ transform: `translateX(${shift}px)` }}
+        className={`pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal normal-case leading-4 tracking-normal text-white shadow-xl transition-opacity ${
           open ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -38,7 +79,7 @@ export const InfoTooltip = ({ label, children }: { label: string; children: Reac
 export const FieldLabel = ({
   htmlFor, children, required, tooltip,
 }: { htmlFor: string; children: ReactNode; required?: boolean; tooltip?: ReactNode }) => (
-  <div className="relative mb-1.5 flex items-center gap-1.5">
+  <div className="mb-1.5 flex items-center gap-1.5">
     <label htmlFor={htmlFor} className="block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
       {children}
       {required && <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>}
