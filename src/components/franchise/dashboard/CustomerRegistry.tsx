@@ -109,7 +109,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
             >
               <FranchiseIcon name="user" filled className="h-6 w-6" />
             </span>
-            <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No customers yet</h3>
+            <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No Customers Yet</h3>
             <p className="mx-auto mt-1.5 text-[13px] leading-relaxed text-slate-500">
               Register your first customer with their name, PAN, contact and address — then file any loan product on
               their behalf.
@@ -121,7 +121,7 @@ const CustomerRegistry = ({ customers, loading, error, onReload, onNotice, onApp
         ) : filtered.length === 0 ? (
           <div className="px-6 py-10 text-center">
             <p className="text-[13px] font-bold text-slate-700">No customer matches “{query.trim()}”</p>
-            <p className="mt-1 text-[12px] text-slate-500">Try a different name, mobile number, email or PAN.</p>
+            <p className="mt-1 text-[12px] text-slate-500">Try A Different Name, Mobile Number, Email Or PAN.</p>
             <Button variant="outline" size="sm" className="mt-3" onClick={() => setQuery("")}>
               Clear search
             </Button>

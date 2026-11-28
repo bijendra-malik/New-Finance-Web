@@ -168,7 +168,7 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
             >
               <FranchiseIcon name="layers" filled className="h-6 w-6" />
             </span>
-            <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No loans filed yet</h3>
+            <h3 className="mt-3 text-[15px] font-extrabold text-slate-800">No Loans Filed Yet</h3>
             <p className="mx-auto mt-1.5 text-[13px] leading-relaxed text-slate-500">
               Open Apply Loan, pick a product and a registered customer — the application will appear here with its
               live status.
@@ -176,8 +176,8 @@ const AllLoansSection = ({ loans, loading, error, onReload }: AllLoansSectionPro
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-6 py-10 text-center">
-            <p className="text-[13px] font-bold text-slate-700">No applications match these filters</p>
-            <p className="mt-1 text-[12px] text-slate-500">Try a different search term or filter.</p>
+            <p className="text-[13px] font-bold text-slate-700">No Applications Match These Filters</p>
+            <p className="mt-1 text-[12px] text-slate-500">Try A Different Search Term Or Filter.</p>
             <Button
               variant="outline"
               size="sm"

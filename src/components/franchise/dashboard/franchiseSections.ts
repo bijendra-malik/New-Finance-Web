@@ -1,5 +1,3 @@
-/** The dashboard's left-panel sections and how the URL maps onto them. */
-
 import type { FranchiseIconName } from "../FranchiseIcon";
 
 export type Section = "overview" | "customers" | "loans" | "notifications" | "apply" | "profile" | "plan";
@@ -9,43 +7,43 @@ export const SECTIONS: { id: Section; label: string; icon: FranchiseIconName; de
     id: "overview",
     label: "Overview",
     icon: "scale",
-    description: "Your franchise at a glance — customers, filings and agreement status.",
+    description: "Your Franchise At A Glance — Customers, Filings And Agreement Status.",
   },
   {
     id: "customers",
     label: "Customers",
     icon: "user",
-    description: "Register clients once, then file any loan product for them.",
+    description: "Register Clients Once, Then File Any Loan Product For Them.",
   },
   {
     id: "loans",
     label: "All Loans",
     icon: "layers",
-    description: "Every application filed under your franchise ID, with its live status.",
+    description: "Every Application Filed Under Your Franchise ID, With Its Live Status.",
   },
   {
     id: "notifications",
     label: "Notifications",
     icon: "bell",
-    description: "Every customer registration and loan status change under your franchise.",
+    description: "Every Customer Registration And Loan Status Change Under Your Franchise.",
   },
   {
     id: "apply",
     label: "Apply Loan",
     icon: "pen-line",
-    description: "Pick a product and file it on behalf of a registered customer.",
+    description: "Pick A Product And File It On Behalf Of A Registered Customer.",
   },
   {
     id: "profile",
     label: "My Details",
     icon: "handshake",
-    description: "Your personal details and franchise account information.",
+    description: "Your Personal Details And Franchise Account Information.",
   },
   {
     id: "plan",
     label: "My Plan",
     icon: "plans",
-    description: "Your current plan, the time left on it, and every published plan.",
+    description: "Your Current Plan, The Time Left On It, And Every Published Plan.",
   },
 ];
 

@@ -69,19 +69,19 @@ const OverviewPanel = ({
         <StatCard
           label="Applications"
           value={String(loans.length)}
-          hint={totalLoanValue > 0 ? `${formatRupeesCompact(totalLoanValue)} requested in total` : "Loans filed across all products"}
+          hint={totalLoanValue > 0 ? `${formatRupeesCompact(totalLoanValue)} Requested In Total` : "Loans Filed Across All Products"}
           icon="layers"
           accent="linear-gradient(90deg,var(--brand-navy),var(--brand-navy-light))"
         />
         <StatCard
-          label="In progress"
+          label="In Progress"
           value={String(inProgress)}
           hint="Submitted, Under Review Or Processing"
           icon="clock"
           accent="linear-gradient(90deg,#e0a800,#f6c453)"
         />
         <StatCard
-          label="Approved / disbursed"
+          label="Approved / Disbursed"
           value={String(positive)}
           hint="Sanctioned, Disbursed Or Closed"
           icon="check"
@@ -92,24 +92,24 @@ const OverviewPanel = ({
       {/* Quick actions */}
       <section aria-labelledby="quick-actions-heading" className="rounded-2xl border border-slate-200 bg-white p-5">
         <h2 id="quick-actions-heading" className="text-[13px] font-extrabold uppercase tracking-wider text-slate-500">
-          Quick actions
+          Quick Actions
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
           <QuickAction
             icon="user-plus"
-            label="Register a customer"
+            label="Register A Customer"
             hint="Add A Client To Your Franchise Registry"
             onClick={() => goToSection("customers")}
           />
           <QuickAction
             icon="pen-line"
-            label="Apply for a loan"
+            label="Apply For A Loan"
             hint="File Any Product On A Customer's Behalf"
             onClick={() => goToSection("apply")}
           />
           <QuickAction
             icon="layers"
-            label="Track applications"
+            label="Track Applications"
             hint="Review Every Loan And Its Live Status"
             onClick={() => goToSection("loans")}
           />
@@ -122,12 +122,12 @@ const OverviewPanel = ({
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div>
               <h2 id="recent-loans-heading" className="text-[15px] font-extrabold text-slate-800">
-                Recent applications
+                Recent Applications
               </h2>
-              <p className="mt-0.5 text-[11.5px] text-slate-500">The latest loans filed under your franchise.</p>
+              <p className="mt-0.5 text-[11.5px] text-slate-500">The Latest Loans Filed Under Your Franchise.</p>
             </div>
             <Button variant="link" size="sm" onClick={() => goToSection("loans")}>
-              View all →
+              View All →
             </Button>
           </div>
 
@@ -143,9 +143,9 @@ const OverviewPanel = ({
             </p>
           ) : recentLoans.length === 0 ? (
             <div className="px-5 py-8 text-center">
-              <p className="text-[13px] font-bold text-slate-700">No applications yet</p>
-              <p className="mt-1 text-[12px] text-slate-500">File your first loan to see it tracked here.</p>
-              <Button size="sm" className="mt-3" onClick={() => goToSection("apply")}>Apply for a loan</Button>
+              <p className="text-[13px] font-bold text-slate-700">No Applications Yet</p>
+              <p className="mt-1 text-[12px] text-slate-500">File Your First Loan To See It Tracked Here.</p>
+              <Button size="sm" className="mt-3" onClick={() => goToSection("apply")}>Apply For A Loan</Button>
             </div>
           ) : (
             <div className="contain-paint overflow-x-auto">
@@ -181,12 +181,12 @@ const OverviewPanel = ({
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
             <div>
               <h2 id="recent-customers-heading" className="text-[15px] font-extrabold text-slate-800">
-                Newest customers
+                Newest Customers
               </h2>
-              <p className="mt-0.5 text-[11.5px] text-slate-500">Registered most recently.</p>
+              <p className="mt-0.5 text-[11.5px] text-slate-500">Registered Most Recently.</p>
             </div>
             <Button variant="link" size="sm" onClick={() => goToSection("customers")}>
-              View all →
+              View All →
             </Button>
           </div>
 
@@ -202,9 +202,9 @@ const OverviewPanel = ({
             </p>
           ) : recentCustomers.length === 0 ? (
             <div className="px-5 py-8 text-center">
-              <p className="text-[13px] font-bold text-slate-700">No customers yet</p>
-              <p className="mt-1 text-[12px] text-slate-500">Register your first client to get started.</p>
-              <Button size="sm" className="mt-3" onClick={() => goToSection("customers")}>Register customer</Button>
+              <p className="text-[13px] font-bold text-slate-700">No Customers Yet</p>
+              <p className="mt-1 text-[12px] text-slate-500">Register Your First Client To Get Started.</p>
+              <Button size="sm" className="mt-3" onClick={() => goToSection("customers")}>Register Customer</Button>
             </div>
           ) : (
             <ul className="divide-y divide-slate-100">

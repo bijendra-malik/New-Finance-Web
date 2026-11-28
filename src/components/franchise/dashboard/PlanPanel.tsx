@@ -53,7 +53,7 @@ export const CurrentPlanCard = ({ profile, months }: { profile: Profile; months?
             <FranchiseIcon name="plans" className="h-5 w-5" filled />
           </span>
           <div className="min-w-0">
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Current plan</p>
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Current Plan</p>
             <h2 id="current-plan-heading" className="mt-0.5 text-lg font-extrabold text-slate-800">
               {plan?.name?.trim() || "Plan not reported"}
             </h2>
@@ -119,9 +119,9 @@ export const CurrentPlanCard = ({ profile, months }: { profile: Profile; months?
         )}
 
         <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <Fact label="Plan fee" value={planFeeLabel(profile) ?? "Not reported"} />
+          <Fact label="Plan Fee" value={planFeeLabel(profile) ?? "Not reported"} />
           <Fact label="Renewal" value={planRenewalLabel(profile) ?? "As applicable"} />
-          <Fact label="Valid until" value={term.known ? formatDate(term.endISO) : "—"} />
+          <Fact label="Valid Until" value={term.known ? formatDate(term.endISO) : "—"} />
         </dl>
       </div>
     </section>
@@ -149,14 +149,14 @@ const PlanPanel = ({ profile }: { profile: Profile }) => {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div>
             <h2 id="plan-catalogue-heading" className="text-[15px] font-extrabold text-slate-800">
-              Franchise plans
+              Franchise Plans
             </h2>
             <p className="mt-0.5 text-[11.5px] text-slate-500">
-              Every published plan, with its fee and renewal terms. Fees exclude GST.
+              Every Published Plan, With Its Fee And Renewal Terms. Fees Exclude GST.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={reload} loading={loading}>
-            Refresh plans
+            Refresh Plans
           </Button>
         </div>
 
@@ -175,7 +175,7 @@ const PlanPanel = ({ profile }: { profile: Profile }) => {
         ) : error && plans.length === 0 ? (
           <div role="alert" className="px-5 py-6">
             <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text)" }}>
-              Could not load the franchise plans
+              Could Not Load The Franchise Plans
             </p>
             <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{error}</p>
             <Button variant="link" size="sm" onClick={reload}>
@@ -209,7 +209,7 @@ const PlanPanel = ({ profile }: { profile: Profile }) => {
                           className="rounded-full px-1.5 py-0.5 text-[9.5px] font-bold"
                           style={{ background: "var(--brand-teal-14)", color: "var(--brand-navy)" }}
                         >
-                          Best value
+                          Best Value
                         </span>
                       )}
                     </p>

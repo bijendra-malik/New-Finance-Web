@@ -12,8 +12,8 @@ import { clearApplySessionPending, dropApplySession, isApplySessionPending } fro
 type Tab = "application" | "credit-score";
 
 const TABS: { key: Tab; label: string; short: string; icon: string; desc: string }[] = [
-  { key: "application", label: "Application Form", short: "Application", icon: "📝", desc: "Fill your loan details" },
-  { key: "credit-score", label: "Credit Score",     short: "Credit Score", icon: "🎯", desc: "Check eligibility & submit" },
+  { key: "application", label: "Application Form", short: "Application", icon: "📝", desc: "Fill Your Loan Details" },
+  { key: "credit-score", label: "Credit Score",     short: "Credit Score", icon: "🎯", desc: "Check Eligibility & Submit" },
 ];
 
 const lockIcon = (
@@ -311,7 +311,7 @@ const DashboardShell = <T,>({
                 <p className="text-sm font-semibold leading-tight truncate max-w-25" style={{ color: "#1e293b" }}>
                   {user.name}
                 </p>
-                <p className="text-[10.5px] leading-tight font-semibold" style={{ color: "#94a3b8" }}>View profile</p>
+                <p className="text-[10.5px] leading-tight font-semibold" style={{ color: "#94a3b8" }}>View Profile</p>
               </div>
               <svg
                 className={`w-3.5 h-3.5 transition-transform ml-1 ${profileOpen ? "rotate-180" : ""}`}
@@ -362,15 +362,15 @@ const DashboardShell = <T,>({
                   <ProfileDetail label="Customer ID" value={user.customerId} />
                   <ProfileDetail label="Mobile" value={user.mobile ? `+91 ${user.mobile}` : undefined} />
                   <ProfileDetail label="Email" value={user.email} />
-                  <ProfileDetail label="Applying for" value={productName} />
+                  <ProfileDetail label="Applying For" value={productName} />
                 </dl>
 
                 <div className="py-1.5">
-                  <ProfileAction icon="📄" label="My applications" hint="Every Application You Have Submitted"
+                  <ProfileAction icon="📄" label="My Applications" hint="Every Application You Have Submitted"
                     onClick={() => { setProfileOpen(false); navigate("/applications"); }} />
-                  <ProfileAction icon="🔎" label="Check application status" hint="Verify Your Mobile To See The Latest Update"
+                  <ProfileAction icon="🔎" label="Check Application Status" hint="Verify Your Mobile To See The Latest Update"
                     onClick={() => { setProfileOpen(false); navigate("/application-status"); }} />
-                  <ProfileAction icon="🏠" label="Back to home"
+                  <ProfileAction icon="🏠" label="Back To Home"
                     onClick={() => { setProfileOpen(false); navigate("/"); }} />
                 </div>
                 <div className="border-t border-slate-100 py-1.5">
@@ -384,7 +384,7 @@ const DashboardShell = <T,>({
 
         {/* Stepper summary */}
         <div className="px-5 py-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Your progress</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Your Progress</p>
           <ol className="mt-3 space-y-3">
             {tabs.map(t => (
               <li key={t.key} className="flex items-start gap-3">

@@ -308,31 +308,31 @@ const FranchiseFilingDashboard = () => {
       label: "Customer",
       short: "Customer",
       icon: <FranchiseIcon name="user" className="h-4 w-4" />,
-      desc: "Who this application is filed for",
+      desc: "Who This Application Is Filed For",
     },
     {
       key: "form",
       label: "Application Form",
       short: "Application",
       icon: <FranchiseIcon name="pen-line" className="h-4 w-4" />,
-      desc: `${product.name} details — the customer portal's own form`,
+      desc: `${product.name} Details — The Customer Portal's Own Form`,
     },
     {
       key: "credit-score",
       label: "Credit Score",
       short: "Credit Score",
       icon: <FranchiseIcon name="scale" className="h-4 w-4" />,
-      desc: "Check eligibility and submit",
+      desc: "Check Eligibility And Submit",
     },
   ];
 
   const locked = (key: StepKey): string => {
-    if (key === "client") return proceeded ? "Locked — filed for this customer" : "";
+    if (key === "client") return proceeded ? "Locked — Filed For This Customer" : "";
     if (key === "form") {
-      if (proceeded) return "Locked — details are final";
-      return customer ? "" : "Choose the customer first";
+      if (proceeded) return "Locked — Details Are Final";
+      return customer ? "" : "Choose The Customer First";
     }
-    return proceeded ? "" : "Available after you proceed from the form";
+    return proceeded ? "" : "Available After You Proceed From The Form";
   };
 
   const ProductForm = PRODUCT_FORMS[product.key] ?? null;

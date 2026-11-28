@@ -394,7 +394,7 @@ const FranchisorDashboardPage = () => {
               )}
               {profileError && (
                 <div className="rounded-xl px-4 py-3" style={{ background: "var(--form-error-bg)", border: "1px solid var(--form-error-border)" }}>
-                  <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text)" }}>Live profile unavailable</p>
+                  <p className="text-[12.5px] font-bold" style={{ color: "var(--form-error-text)" }}>Live Profile Unavailable</p>
                   <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{profileError}</p>
                   <a
                     href={`mailto:${FRANCHISE_EMAIL}?subject=${encodeURIComponent(`Franchisee portal — account ${session.franchiseId}`)}`}

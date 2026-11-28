@@ -199,7 +199,7 @@ const NotificationsPanel = ({
               onChange={(event) => changeMonth(event.target.value)}
               className={CONTROL}
             >
-              <option value="">All months</option>
+              <option value="">All Months</option>
               {monthOptions().map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -213,7 +213,7 @@ const NotificationsPanel = ({
             onClick={handleMarkAll}
             disabled={unreadCount === 0 || items.length === 0 || markingAll}
           >
-            {markingAll ? "Marking…" : "Mark all as read"}
+            {markingAll ? "Marking…" : "Mark All As Read"}
           </Button>
         </div>
       </div>
@@ -244,12 +244,12 @@ const NotificationsPanel = ({
             <FranchiseIcon name="bell" className="h-5 w-5" />
           </span>
           <p className="mt-3 text-[13px] font-bold text-slate-700">
-            {month ? "No notifications in this month" : "No notifications yet"}
+            {month ? "No Notifications In This Month" : "No Notifications Yet"}
           </p>
           <p className="mx-auto mt-1 max-w-sm text-[12px] leading-relaxed text-slate-500">
             {month
-              ? "Pick another month or switch to all months to see the rest."
-              : "Register a customer or file a loan and every change will be listed here."}
+              ? "Pick Another Month Or Switch To All Months To See The Rest."
+              : "Register A Customer Or File A Loan And Every Change Will Be Listed Here."}
           </p>
           {month && (
             <button
@@ -257,7 +257,7 @@ const NotificationsPanel = ({
               onClick={() => changeMonth("")}
               className="mt-2 text-[12px] font-bold text-(--brand-navy) hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-(--brand-teal-33)"
             >
-              Show all months
+              Show All Months
             </button>
           )}
         </div>

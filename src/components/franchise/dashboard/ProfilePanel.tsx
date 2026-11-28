@@ -62,11 +62,11 @@ const ProfilePanel = ({ profile, session }: ProfilePanelProps) => {
       </div>
 
       <div className="px-5 py-4">
-        <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Personal details</h3>
+        <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Personal Details</h3>
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
           <Detail label="Mobile" value={mobile} />
           <Detail label="Email" value={email} breakAll />
-          <Detail label="Date of birth" value={formatDate(profile?.dob)} />
+          <Detail label="Date Of Birth" value={formatDate(profile?.dob)} />
           <Detail label="PAN" value={profile?.panNumber} />
           <Detail label="Location" value={locationLabel(profile)} />
           <Detail label="Country" value={country} />
@@ -74,11 +74,11 @@ const ProfilePanel = ({ profile, session }: ProfilePanelProps) => {
       </div>
 
       <div className="border-t border-slate-100 px-5 py-4">
-        <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Franchise account</h3>
+        <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Franchise Account</h3>
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-3">
           <Detail label="Plan" value={profile?.plan?.name ?? profile?.package} />
-          <Detail label="Agreement approved" value={formatDate(profile?.franchiseApprovedAt)} />
-          <Detail label="Last login" value={formatDate(profile?.lastLogin)} />
+          <Detail label="Agreement Approved" value={formatDate(profile?.franchiseApprovedAt)} />
+          <Detail label="Last Login" value={formatDate(profile?.lastLogin)} />
         </dl>
       </div>
     </section>
