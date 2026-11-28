@@ -150,6 +150,31 @@ export const PlainField = ({
   );
 };
 
+export const SelectField = ({
+  id, label, value, onChange, options, error, required = false,
+}: {
+  id: string; label: string; value: string; onChange: (next: string) => void;
+  options: readonly { value: string; label: string }[]; error?: string; required?: boolean;
+}) => (
+  <div>
+    <FieldLabel htmlFor={id} required={required}>{label}</FieldLabel>
+    <select
+      id={id}
+      aria-required={required || undefined}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={`${fieldClass(error)} cursor-pointer`}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+    <FieldError>{error}</FieldError>
+  </div>
+);
+
 export const Card = ({ title, note, badge, children }: { title: string; note: string; badge?: string; children: ReactNode }) => (
   <section className="rounded-2xl border border-(--border-subtle) bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:p-7">
     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">

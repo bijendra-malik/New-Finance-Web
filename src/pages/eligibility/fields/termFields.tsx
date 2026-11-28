@@ -1,6 +1,6 @@
 import type { FormState } from "../formState";
 import { FOIR_CAP, RENTAL_HAIRCUT, VEHICLE_FOIR, type ProductSpec } from "../models";
-import { AmountField, PlainField } from "../fieldControls";
+import { AmountField, PlainField, SelectField } from "../fieldControls";
 import { FoirTooltip, LtvTooltip, RentalHaircutTooltip } from "./policyTooltips";
 import { LAP_CITIES, LAP_PROPERTY_TYPES, LAP_USAGES } from "../formState";
 import { SALARIED } from "../../../constants/masters";
@@ -95,25 +95,31 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
 
         {product.key === "lap" && (
           <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property type</p>
-              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
-                {LAP_PROPERTY_TYPES.map((option) => {
-                  const active = option === form.lapPropertyType;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => set("lapPropertyType", option)}
-                      aria-pressed={active}
-                      className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <SelectField
+                id="elig-lap-property-type"
+                label="Property type"
+                value={form.lapPropertyType}
+                onChange={(next) => set("lapPropertyType", next)}
+                options={LAP_PROPERTY_TYPES.map((option) => ({ value: option, label: option }))}
+                required
+              />
+              <SelectField
+                id="elig-lap-city"
+                label="City category"
+                value={form.lapCity}
+                onChange={(next) => set("lapCity", next)}
+                options={LAP_CITIES}
+                required
+              />
+              <SelectField
+                id="elig-lap-usage"
+                label="Property usage"
+                value={form.lapUsage}
+                onChange={(next) => set("lapUsage", next)}
+                options={LAP_USAGES.map((option) => ({ value: option, label: option }))}
+                required
+              />
             </div>
 
             {form.lapPropertyType === "Other" && (
@@ -127,48 +133,6 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                 required
               />
             )}
-
-            <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">City category</p>
-              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
-                {LAP_CITIES.map((option) => {
-                  const active = option.value === form.lapCity;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => set("lapCity", option.value)}
-                      aria-pressed={active}
-                      className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Property usage</p>
-              <div className="flex flex-col gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200 sm:flex-row sm:flex-wrap">
-                {LAP_USAGES.map((option) => {
-                  const active = option === form.lapUsage;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => set("lapUsage", option)}
-                      aria-pressed={active}
-                      className={`flex-1 cursor-pointer rounded-lg px-3 py-2 text-[12px] font-bold transition-all ${active ? "bg-(--brand-navy) text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
-                        }`}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               {form.lapUsage === "Rented out" && (

@@ -14,9 +14,9 @@ export const INCOME_COPY: Record<string, { label: string; hint: string }> = {
 };
 export const LAP_PROPERTY_TYPES = ["Residential", "Commercial", "Industrial", "Other"] as const;
 export const LAP_CITIES = [
-  { value: "A", label: "Category A (metro)" },
-  { value: "B", label: "Category B (large city)" },
-  { value: "C", label: "Category C (smaller town)" },
+  { value: "A", label: "Metro" },
+  { value: "B", label: "Large City" },
+  { value: "C", label: "Smaller Town" },
 ] as const;
 export const LAP_USAGES = ["Self-occupied", "Rented out"] as const;
 
