@@ -1,6 +1,7 @@
 import type { FormState } from "../formState";
-import { RENTAL_HAIRCUT, type ProductSpec } from "../models";
+import { FOIR_CAP, RENTAL_HAIRCUT, VEHICLE_FOIR, type ProductSpec } from "../models";
 import { AmountField, PlainField } from "../fieldControls";
+import { FoirTooltip, LtvTooltip, RentalHaircutTooltip } from "./policyTooltips";
 import { LAP_CITIES, LAP_PROPERTY_TYPES, LAP_USAGES } from "../formState";
 import { SALARIED } from "../../../constants/masters";
 
@@ -53,6 +54,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
             error={errors.monthlyIncome}
             placeholder={occupation === SALARIED ? "e.g. 75,000" : "e.g. 12,00,000"}
             hint={incomeHint}
+            tooltip={<FoirTooltip cap={product.key === "vehicleLoan" ? VEHICLE_FOIR : FOIR_CAP} />}
             required
           />
           <AmountField
@@ -80,6 +82,13 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
               product.key === "lap"
                 ? `Up To ${Math.round(assetLtv * 100)}% Funding Against Current Market Value Of The Property`
                 : undefined
+            }
+            tooltip={
+              <LtvTooltip
+                pct={assetLtv}
+                subject={product.key === "vehicleLoan" ? "on-road price" : "property value"}
+                note={product.key === "lap" ? "Property type and city category move that percentage." : undefined}
+              />
             }
           />
         )}
@@ -171,6 +180,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
                   error={errors.lapRent}
                   placeholder="e.g. 25,000"
                   hint={`${Math.round(RENTAL_HAIRCUT * 100)}% Of Rent Counts As Income`}
+                  tooltip={<RentalHaircutTooltip />}
                   required
                 />
               )}

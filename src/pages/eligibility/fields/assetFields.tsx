@@ -1,6 +1,7 @@
 import type { FormState } from "../formState";
-import { type ProductSpec } from "../models";
+import { SHARE_LTV, type ProductSpec } from "../models";
 import { AmountField, FieldLabel, FieldError } from "../fieldControls";
+import { FoirTooltip, GoldLtvTooltip, LtvTooltip } from "./policyTooltips";
 import { CARATS, fieldClass } from "../formState";
 
 interface Props {
@@ -16,7 +17,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <FieldLabel htmlFor="elig-gold-weight" required>Gold weight (grams)</FieldLabel>
+            <FieldLabel htmlFor="elig-gold-weight" required tooltip={<GoldLtvTooltip />}>Gold weight (grams)</FieldLabel>
             <input
               id="elig-gold-weight"
               type="number"
@@ -72,6 +73,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             error={errors.monthlyIncome}
             placeholder="e.g. 60,000"
             hint="Take-Home Pay That Reaches Your Bank"
+            tooltip={<FoirTooltip />}
             required
           />
           <AmountField
@@ -99,6 +101,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             error={errors.shareValue}
             placeholder="e.g. 10,00,000"
             hint="Value Of The Shares Pledged"
+            tooltip={<LtvTooltip pct={SHARE_LTV} subject="market value" note="Only approved shares are accepted as security." />}
             required
           />
           <AmountField
@@ -108,6 +111,7 @@ const AssetFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 1,00,000"
             hint="Caps The Loan At What You Repay"
+            tooltip={<FoirTooltip />}
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

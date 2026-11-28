@@ -1,6 +1,7 @@
 import type { FormState } from "../formState";
-import { type ProductSpec, type EligibilityOutcome } from "../models";
+import { LRD_DEFAULT_LTV, LRD_LTV_MAX, type ProductSpec, type EligibilityOutcome } from "../models";
 import { AmountField, InfoTooltip, PlainField } from "../fieldControls";
+import { LtvTooltip } from "./policyTooltips";
 import { formatINRRounded } from "../../../utils/formatters";
 
 interface Props {
@@ -15,7 +16,7 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
   <>
     {product.family === "lrd" && (
       <div className="space-y-4">
-        <div className="relative flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Lease details</p>
           <InfoTooltip label="What is lease rental discounting?">
             Lease Rental Discounting lets a property owner borrow against the rent a tenant pays. Rent for the remaining
@@ -54,6 +55,13 @@ const LrdFields = ({ product, form, errors, set, lrdLive }: Props) => (
             error={errors.lrdPropertyValue}
             placeholder="e.g. 2,50,00,000"
             hint="Current Market Value"
+            tooltip={
+              <LtvTooltip
+                pct={LRD_DEFAULT_LTV}
+                subject="property value"
+                note={`Lenders stretch that to ${Math.round(LRD_LTV_MAX * 100)}% at most.`}
+              />
+            }
             required
           />
           <AmountField

@@ -1,6 +1,14 @@
 import type { FormState } from "../formState";
-import { type ProductSpec } from "../models";
-import { AmountField } from "../fieldControls";
+import { EDUCATION_FOIR_CAP, type ProductSpec } from "../models";
+import { AmountField, InfoTooltip } from "../fieldControls";
+import { FoirTooltip } from "./policyTooltips";
+
+const EducationMarginTooltip = () => (
+  <InfoTooltip label="How is the margin money applied?">
+    The loan is the course cost less scholarships and this margin, then checked against the guardian&apos;s income at a{" "}
+    {Math.round(EDUCATION_FOIR_CAP * 100)}% FOIR.
+  </InfoTooltip>
+);
 
 interface Props {
   product: ProductSpec;
@@ -56,6 +64,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("eduMargin", next)}
           placeholder="e.g. 1,00,000"
           hint="Cost Your Family Funds Itself"
+          tooltip={<EducationMarginTooltip />}
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
@@ -65,6 +74,7 @@ const EducationFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 80,000"
             hint="Guardian's Monthly Net Income"
+            tooltip={<FoirTooltip cap={EDUCATION_FOIR_CAP} />}
           />
           <AmountField
             id="elig-edu-emi"

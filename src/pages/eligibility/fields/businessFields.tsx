@@ -1,7 +1,11 @@
 import type { FormState } from "../formState";
 import { type ProductSpec } from "../models";
-import { DSCR_MIN, PROJECT_MIN_CONTRIBUTION, WC_BANK_SHARE, WC_TURNOVER_NORM, WC_TURNOVER_REQUIREMENT } from "../models";
+import {
+  COMMERCIAL_LTV, DSCR_MIN, DEBTOR_MARGIN, PROJECT_MIN_CONTRIBUTION, STOCK_MARGIN,
+  WC_BANK_SHARE, WC_MARGIN, WC_TURNOVER_NORM, WC_TURNOVER_REQUIREMENT,
+} from "../models";
 import { AmountField, InfoTooltip } from "../fieldControls";
+import { FoirTooltip, LtvTooltip, TurnoverNormTooltip } from "./policyTooltips";
 
 interface Props {
   product: ProductSpec;
@@ -18,6 +22,28 @@ const DscrTooltip = () => (
   </InfoTooltip>
 );
 
+const OdMarginTooltip = () => (
+  <InfoTooltip label="How is the borrower's margin applied?">
+    Stock is counted at {Math.round((1 - STOCK_MARGIN) * 100)}% and receivables at{" "}
+    {Math.round((1 - DEBTOR_MARGIN) * 100)}% after the bank's margin, and the margin you enter here is deducted on
+    top before the limit is set.
+  </InfoTooltip>
+);
+
+const WorkingCapitalMarginTooltip = () => (
+  <InfoTooltip label="How is the working-capital margin applied?">
+    The gap between current assets and current liabilities is financed after your margin — the model uses{" "}
+    {Math.round(WC_MARGIN * 100)}% unless the lender's scheme says otherwise.
+  </InfoTooltip>
+);
+
+const ProjectMarginTooltip = () => (
+  <InfoTooltip label="How much must the promoter fund?">
+    The promoter must bring at least {Math.round(PROJECT_MIN_CONTRIBUTION * 100)}% of the project cost; the loan is
+    the balance, then trimmed to what the cash flow can service at a {DSCR_MIN}× DSCR.
+  </InfoTooltip>
+);
+
 const BusinessFields = ({ product, form, errors, set }: Props) => (
   <>
     {product.family === "wc" && (
@@ -31,6 +57,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             error={errors.turnover}
             placeholder="e.g. 2,00,00,000"
             hint="Next 12 Months' Turnover"
+            tooltip={<TurnoverNormTooltip />}
             required
           />
           <AmountField
@@ -120,6 +147,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("odMargin", next)}
             placeholder="e.g. 5,00,000"
             hint="Your Own Contribution"
+            tooltip={<OdMarginTooltip />}
           />
         )}
       </div>
@@ -146,6 +174,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             error={errors.projectContribution}
             placeholder="e.g. 1,50,00,000"
             hint={`Minimum ${Math.round(PROJECT_MIN_CONTRIBUTION * 100)}% Is Required`}
+            tooltip={<ProjectMarginTooltip />}
             required
           />
         </div>
@@ -172,6 +201,13 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             error={errors.propertyValue}
             placeholder="e.g. 2,00,00,000"
             hint="Today's Market Value"
+            tooltip={
+              <LtvTooltip
+                pct={COMMERCIAL_LTV}
+                subject="property value"
+                note="The DSCR limit on the rent and your repayment capacity can only lower the final figure."
+              />
+            }
             required
           />
           <AmountField
@@ -192,6 +228,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             onChange={(next) => set("monthlyIncome", next)}
             placeholder="e.g. 1,50,000"
             hint="Caps The Loan At What You Repay"
+            tooltip={<FoirTooltip />}
           />
           <AmountField
             id="elig-commercial-emi"
@@ -211,6 +248,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           onChange={(next) => set("commercialCoApplicant", next)}
           placeholder="e.g. 60,000"
           hint="Added To Your Income"
+          tooltip={<FoirTooltip />}
         />
       </div>
     )}
@@ -225,6 +263,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
           error={errors.turnover}
           placeholder="e.g. 3,00,00,000"
           hint="Next 12 Months' Turnover"
+          tooltip={<TurnoverNormTooltip />}
           required
         />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -236,6 +275,7 @@ const BusinessFields = ({ product, form, errors, set }: Props) => (
             error={errors.wcCurrentAssets}
             placeholder="e.g. 60,00,000"
             hint="Inventory Plus Receivables"
+            tooltip={<WorkingCapitalMarginTooltip />}
             required={form.wcMethod === "workingCapital"}
           />
           <AmountField
