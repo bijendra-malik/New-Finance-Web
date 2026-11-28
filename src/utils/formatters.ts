@@ -6,7 +6,6 @@ export const formatMoney = (
   options?: Intl.NumberFormatOptions,
 ): string | undefined => {
   if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
-  // Keep the minus outside the symbol ("-₹500"), matching how Intl currency renders it.
   const sign = value < 0 ? "-" : "";
   return `${sign}₹${Math.abs(value).toLocaleString("en-IN", options)}`;
 };
@@ -44,7 +43,6 @@ export const formatPAN = (raw: string): string => {
   return out;
 };
 
-// ── Indian amount entry helpers ──────────────────────────────────────────────
 export const digitsOnly = (raw: string): string =>
   raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
@@ -75,7 +73,11 @@ export const numberToWords = (value: number): string => {
   return `${numberToWords(Math.floor(n / 10000000))} crore${n % 10000000 ? ` ${numberToWords(n % 10000000)}` : ""}`;
 };
 
-/** Formats digits with Indian separators for display. */
+export const amountInWords = (value: number): string => {
+  const words = numberToWords(value);
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : "";
+};
+
 export const formatIndianNumber = (raw: string): string => {
   const digits = digitsOnly(raw);
   if (!digits) return "";
@@ -84,7 +86,6 @@ export const formatIndianNumber = (raw: string): string => {
   return rest ? `${rest.replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${last3}` : last3;
 };
 
-// 15-character GSTIN: 2-digit state code, 5-letter + 4-digit PAN, 1 letter, entity digit, literal Z, checksum — only lets characters through where the GSTIN structure expects them.
 export const formatGSTIN = (raw: string): string => {
   const chars = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
   let out = "";
