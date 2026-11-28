@@ -6,7 +6,7 @@ import EducationFields from "./fields/educationFields";
 import BusinessFields from "./fields/businessFields";
 import LrdFields from "./fields/lrdFields";
 
-export interface EligibilityProductFieldsProps {
+interface EligibilityProductFieldsProps {
   product: ProductSpec;
   form: FormState;
   errors: Record<string, string>;

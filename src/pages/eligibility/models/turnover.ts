@@ -3,7 +3,7 @@ import { MIN_LOAN, WC_MARGIN, WC_TURNOVER_NORM, creditRefusal, holding, money, r
 
 // ── Working capital loan ──────────────────────────────────────────────────────
 
-export interface TurnoverInput {
+interface TurnoverInput {
   product: ProductSpec;
   roi?: number;
   turnover: number;

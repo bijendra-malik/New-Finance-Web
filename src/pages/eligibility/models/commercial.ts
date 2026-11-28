@@ -4,7 +4,7 @@ import { COMMERCIAL_LTV, DSCR_MIN, FOIR_CAP, MIN_LOAN, creditRefusal, emiForPrin
 
 // ── Commercial purchase ───────────────────────────────────────────────────────
 
-export interface CommercialInput {
+interface CommercialInput {
   product: ProductSpec;
   roi?: number;
   months: number;

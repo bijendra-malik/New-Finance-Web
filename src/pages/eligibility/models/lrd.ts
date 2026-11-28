@@ -4,22 +4,22 @@ import { MIN_LOAN, creditRefusal, emiForPrincipal, holding, money, roundTo } fro
 
 // ── Lease rental discounting ──────────────────────────────────────────────────
 
-export const LRD_LTV_MIN = 0.5;
+const LRD_LTV_MIN = 0.5;
 export const LRD_LTV_MAX = 0.9;
 export const LRD_DEFAULT_LTV = 0.7;
 export const LRD_ROI = 10.5;
 export const LRD_TENURE_YEARS = 10;
-export const LRD_DEFAULT_DEDUCTION = 0.1;
-export const LRD_DEFAULT_COVERAGE = 0.7;
+const LRD_DEFAULT_DEDUCTION = 0.1;
+const LRD_DEFAULT_COVERAGE = 0.7;
 
-export const presentValueOfAnnuity = (payment: number, annualRate: number, months: number): number => {
+const presentValueOfAnnuity = (payment: number, annualRate: number, months: number): number => {
   if (payment <= 0 || months <= 0) return 0;
   const monthlyRate = annualRate / 1200;
   if (monthlyRate <= 0) return payment * months;
   return (payment * (1 - Math.pow(1 + monthlyRate, -months))) / monthlyRate;
 };
 
-export interface LrdInput {
+interface LrdInput {
   product: ProductSpec;
   roi?: number;
   monthlyRent: number;

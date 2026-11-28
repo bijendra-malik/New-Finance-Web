@@ -4,7 +4,7 @@ import { DSCR_MIN, MIN_LOAN, creditRefusal, emiForPrincipal, holding, money, pri
 
 // ── Project loans ─────────────────────────────────────────────────────────────
 
-export interface ProjectInput {
+interface ProjectInput {
   product: ProductSpec;
   roi?: number;
   months: number;

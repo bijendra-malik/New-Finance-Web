@@ -1,4 +1,4 @@
-export type ModelFamily =
+type ModelFamily =
   | "term"
   | "gold"
   | "wc"
@@ -8,7 +8,7 @@ export type ModelFamily =
   | "project"
   | "commercial"
   | "turnover";
-export type AssetField = "propertyValue" | "turnover" | "vehiclePrice";
+type AssetField = "propertyValue" | "turnover" | "vehiclePrice";
 
 export const FOIR_CAP = 0.7;
 export const EDUCATION_FOIR_CAP = 0.7;
@@ -25,7 +25,6 @@ export const RENTAL_HAIRCUT = 0.75;
 
 export const DSCR_MIN = 1.25;
 export const COMMERCIAL_LTV = 0.7;
-export const WC_ASSESSMENT_PCT = 0.2;
 export const PROJECT_MIN_CONTRIBUTION = 0.2;
 export const WC_MARGIN = 0.25;
 export const WC_TURNOVER_REQUIREMENT = 0.25;
@@ -207,11 +206,8 @@ export const goldLtvFor = (value: number): number => {
   return slab ? slab.ltv : 0.75;
 };
 
-export const retirementAgeFor = (occupation: string): number =>
+const retirementAgeFor = (occupation: string): number =>
   occupation === "Salaried" ? 60 : 65;
-
-export const monthsToRetirement = (age: number, occupation: string): number =>
-  Math.max(0, (retirementAgeFor(occupation) - age) * 12);
 
 export const maturityAgeFor = (product: ProductSpec, occupation: string): number =>
   product.maturityAge ?? retirementAgeFor(occupation);
@@ -238,7 +234,7 @@ export const holding = (headlineLabel: string, message: string, suggestions: str
 
 export const CREDIT_SCORE_FLOOR = 650;
 
-export interface CreditPolicy {
+interface CreditPolicy {
   band: string;
   foirCap: number;
   securedFoirCap: number;

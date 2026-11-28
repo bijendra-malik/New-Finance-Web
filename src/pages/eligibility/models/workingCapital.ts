@@ -3,7 +3,7 @@ import { DEBTOR_MARGIN, MIN_LOAN, STOCK_MARGIN, TURNOVER_METHOD_CAP, WC_TURNOVER
 
 // ── OD / CC working capital ───────────────────────────────────────────────────
 
-export interface WorkingCapitalInput {
+interface WorkingCapitalInput {
   product: ProductSpec;
   roi?: number;
   turnover: number;

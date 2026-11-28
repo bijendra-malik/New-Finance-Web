@@ -3,7 +3,7 @@ import { CREDIT_SCORE_FLOOR, MIN_HEADROOM, MIN_LOAN, RENTAL_HAIRCUT, VEHICLE_FOI
 
 // ── Term loans ────────────────────────────────────────────────────────────────
 
-export interface TermInput {
+interface TermInput {
   product: ProductSpec;
   roi?: number;
   monthlyIncome: number;

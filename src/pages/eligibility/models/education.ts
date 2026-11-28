@@ -4,7 +4,7 @@ import { EDUCATION_FOIR_CAP, MIN_LOAN, creditRefusal, emiForPrincipal, holding, 
 
 // ── Education loans ───────────────────────────────────────────────────────────
 
-export interface EducationInput {
+interface EducationInput {
   product: ProductSpec;
   roi?: number;
   months: number;

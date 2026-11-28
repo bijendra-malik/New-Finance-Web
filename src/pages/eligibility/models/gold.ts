@@ -3,7 +3,7 @@ import { FOIR_CAP, MIN_GOLD_LOAN, MIN_HEADROOM, creditRefusal, emiForPrincipal, 
 
 // ── Gold loans ────────────────────────────────────────────────────────────────
 
-export interface GoldInput {
+interface GoldInput {
   product: ProductSpec;
   roi?: number;
   grams: number;

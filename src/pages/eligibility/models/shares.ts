@@ -6,11 +6,11 @@ import { FOIR_CAP, MIN_HEADROOM, creditRefusal, emiForPrincipal, holding, money,
 
 /** Default funding against pledged shares; RBI caps individual loans at 60%. */
 export const SHARE_LTV = 0.5;
-export const SHARE_LTV_MAX = 0.6;
-export const SHARE_LTV_MIN = 0.2;
-export const MIN_SHARE_LOAN = 25_000;
+const SHARE_LTV_MAX = 0.6;
+const SHARE_LTV_MIN = 0.2;
+const MIN_SHARE_LOAN = 25_000;
 
-export interface ShareInput {
+interface ShareInput {
   product: ProductSpec;
   roi?: number;
   marketValue: number;

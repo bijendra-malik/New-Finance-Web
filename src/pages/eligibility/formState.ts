@@ -27,11 +27,6 @@ export const num = (value: string): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
-export const optionalNum = (value: string): number | undefined => {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
-};
-
 export const maxTenureFor = (product: ProductSpec, age: number, occupation: string): number => {
   if (product.family === "gold") return 12;
   return Math.max(12, Math.min(product.maxTenureMonths, monthsToMaturity(age, product, occupation) || 12));
