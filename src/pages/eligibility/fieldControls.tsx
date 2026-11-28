@@ -1,26 +1,39 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { amountInWords, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 import { fieldClass, placeholderWith } from "./formState";
 
-export const InfoTooltip = ({ label, children }: { label: string; children: ReactNode }) => (
-  <span className="inline-flex">
-    <span className="group inline-flex">
+export const InfoTooltip = ({ label, children }: { label: string; children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+  const show = () => setOpen(true);
+  const hide = () => setOpen(false);
+  return (
+    <span className="inline-flex" onMouseEnter={show} onMouseLeave={hide}>
       <button
         type="button"
         aria-label={label}
-        className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-500 transition-colors group-hover:border-(--brand-teal) group-hover:text-(--brand-teal)"
+        onClick={show}
+        onFocus={show}
+        onBlur={hide}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") hide();
+        }}
+        className={`flex h-4 w-4 cursor-help items-center justify-center rounded-full border text-[9px] font-bold leading-none transition-colors ${
+          open ? "border-(--brand-teal) text-(--brand-teal)" : "border-slate-300 text-slate-500"
+        }`}
       >
         i
       </button>
       <span
         role="tooltip"
-        className="pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal normal-case leading-4 tracking-normal text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+        className={`pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal normal-case leading-4 tracking-normal text-white shadow-xl transition-opacity ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
       >
         {children}
       </span>
     </span>
-  </span>
-);
+  );
+};
 
 export const FieldLabel = ({
   htmlFor, children, required, tooltip,
