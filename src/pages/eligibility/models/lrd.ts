@@ -1,6 +1,6 @@
 import { tenureText } from "./term";
-import type { Cap, EligibilityOutcome, ModelFamily, ProductSpec } from "./core";
-import { DSCR_MIN, MIN_LOAN, creditRefusal, emiForPrincipal, holding, money, roundTo } from "./core";
+import type { Cap, EligibilityOutcome, ProductSpec } from "./core";
+import { MIN_LOAN, creditRefusal, emiForPrincipal, holding, money, roundTo } from "./core";
 
 // ── Lease rental discounting ──────────────────────────────────────────────────
 
@@ -126,27 +126,4 @@ export const lrdEligibility = (input: LrdInput): EligibilityOutcome => {
     suggestions: [],
     lease,
   };
-};
-
-export const formulaFor = (family: ModelFamily): string => {
-  switch (family) {
-    case "education":
-      return "Loan = course fees + hostel and living costs + other eligible expenses − scholarships − margin money";
-    case "project":
-      return "Loan = min(project cost − promoter contribution, principal serviced by projected cash flow at a " + `${DSCR_MIN}× DSCR)`;
-    case "commercial":
-      return "Loan = min(repayment capacity at the assumed FOIR, property value × LTV, DSCR limit on the rent)";
-    case "turnover":
-      return "Turnover method: limit = turnover × 18.75% · Working-capital method: requirement = current assets − current liabilities, financed = requirement × (1 − margin %) · Limit = min(turnover norm, financed requirement, lender cap)";
-    case "wc":
-      return "Turnover method: requirement = turnover × 25%, bank finance = requirement × 75% (18.75% of turnover) · Drawing power = eligible stock + eligible receivables − margin − deductions · Limit = min(turnover norm, drawing power)";
-    case "lrd":
-      return "Net rent = rent × (1 − deduction) · Supported EMI = net rent × coverage · Loan = min(present value of that EMI over the remaining lease, property value × LTV)"
-    case "share":
-      return "Loan = market value of approved shares × LTV (50%)";
-    case "gold":
-      return "Value = net weight × today's rate for the selected purity · Loan = value × LTV (85% ≤ ₹2.5L, 80% ≤ ₹5L, 75% above)";
-    default:
-      return "Loan = present value of the affordable EMI at the product rate and tenure";
-  }
 };
