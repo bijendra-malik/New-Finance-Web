@@ -1,7 +1,7 @@
 import axiosInstance from "./axiosInstance";
 import { getApiErrorMessage } from "../utils/apiError";
 
-export interface ContactEnquiryPayload {
+interface ContactEnquiryPayload {
   name: string;
   mobile: string;
   email: string;
@@ -10,7 +10,7 @@ export interface ContactEnquiryPayload {
   source: string;
 }
 
-export interface ContactEnquiryResponse {
+interface ContactEnquiryResponse {
   success: boolean;
   message?: string;
 }

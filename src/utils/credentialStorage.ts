@@ -1,10 +1,10 @@
 import { onSessionReset } from "./sessionReset";
 
-export type CredentialFlow = "customer-status" | "franchise-status" | "franchisee-verification";
+type CredentialFlow = "customer-status" | "franchise-status" | "franchisee-verification";
 
 const FLOWS: CredentialFlow[] = ["customer-status", "franchise-status", "franchisee-verification"];
 
-export interface StoredCredentials {
+interface StoredCredentials {
   fullName?: string;
   email?: string;
   mobile?: string;

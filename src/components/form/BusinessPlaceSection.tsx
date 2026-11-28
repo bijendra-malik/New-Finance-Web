@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { FieldLabel, PincodeInputField, SelectField, SelectWithOther } from "./FormControls";
 import { OTHER_OPTION } from "../../constants/masters";
 
-export interface BusinessPlaceSlice {
+interface BusinessPlaceSlice {
   businessState: string;
   businessCity: string;
   businessPincode: string;

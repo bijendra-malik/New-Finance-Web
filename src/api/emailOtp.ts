@@ -1,11 +1,11 @@
 /** Email OTP calls — served same-origin by api/email-otp/* (nodemailer). */
 
-export interface EmailOtpChallenge {
+interface EmailOtpChallenge {
   expiresAt: number;
   signature: string;
 }
 
-export interface EmailOtpResponse {
+interface EmailOtpResponse {
   success: boolean;
   message: string;
   challenge?: EmailOtpChallenge;

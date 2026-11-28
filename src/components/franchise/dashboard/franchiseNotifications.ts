@@ -6,7 +6,7 @@ import type { FranchiseIconName } from "../FranchiseIcon";
 
 export type NotificationTarget = "loans" | "customers";
 
-export type NotificationKind = "loan" | "customer" | "other";
+type NotificationKind = "loan" | "customer" | "other";
 
 export const NOTIFICATION_ICON: Record<NotificationKind, FranchiseIconName> = {
   loan: "layers",
@@ -14,7 +14,7 @@ export const NOTIFICATION_ICON: Record<NotificationKind, FranchiseIconName> = {
   other: "bell",
 };
 
-export interface NotificationTone {
+interface NotificationTone {
   background: string;
   border: string;
   color: string;
@@ -56,7 +56,7 @@ export const NOTIFICATION_TONE: Record<FranchiseNotificationOutcome, Notificatio
 const READ_KEY_PREFIX = "indexia_franchise_updates_read:";
 const MAX_STORED_IDS = 200;
 
-export const timeValue = (iso?: string): number => {
+const timeValue = (iso?: string): number => {
   if (!iso) return 0;
   const time = new Date(iso).getTime();
   return Number.isNaN(time) ? 0 : time;
@@ -105,7 +105,7 @@ export const formatDateTime = (iso?: string): string => {
   });
 };
 
-export const monthKeyOf = (iso?: string): string => {
+const monthKeyOf = (iso?: string): string => {
   const time = timeValue(iso);
   if (!time) return "";
   const date = new Date(time);
@@ -118,7 +118,7 @@ export interface NotificationReadState {
   months: Record<string, string>;
 }
 
-export interface ReadableNotification {
+interface ReadableNotification {
   id: string;
   at?: string;
   isRead?: boolean;

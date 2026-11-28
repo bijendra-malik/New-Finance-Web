@@ -1,6 +1,6 @@
 import axiosInstance from "./axiosInstance";
 
-export interface RegistrationPayload {
+interface RegistrationPayload {
   name: string;
   email: string;
   mobile: string;
@@ -17,7 +17,7 @@ export interface AuthActionResponse {
   data?: { draftId?: string } | null;
 }
 
-export interface VerifyOTPPayload {
+interface VerifyOTPPayload {
   mobile: string;
   otp: string;
 }
@@ -39,7 +39,7 @@ export interface ApiUser {
   updatedAt: string;
 }
 
-export interface VerifyOTPResponse {
+interface VerifyOTPResponse {
   success: boolean;
   token: string;
   user: ApiUser;
@@ -81,7 +81,7 @@ export const verifyOTP = async (
 
 // ── Login (POST /auth/login/…) ─────────────────────────────────────────────
 
-export interface LoginPayload {
+interface LoginPayload {
   mobile: string;
 }
 

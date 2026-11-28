@@ -22,7 +22,7 @@ export interface LeaseRentalApplication extends ApplicantDetails, ExistingLoanAm
   updatedAt?: string;
 }
 
-export type LeaseRentalPayload = Omit<LeaseRentalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "leaseRentalDiscounting" };
+type LeaseRentalPayload = Omit<LeaseRentalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "leaseRentalDiscounting" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

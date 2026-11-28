@@ -3,7 +3,7 @@ export const SCORE_MAX = 900;
 
 export type CreditBand = "poor" | "average" | "good" | "excellent";
 
-export interface BandMeta {
+interface BandMeta {
   label: string;
   shortLabel: string;
   range: [number, number];
@@ -68,7 +68,7 @@ export const bandForScore = (score: number): CreditBand => {
   return "poor";
 };
 
-export interface ScoreRating {
+interface ScoreRating {
   label: string;
   color: string;
   tip: string;

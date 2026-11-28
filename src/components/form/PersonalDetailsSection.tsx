@@ -10,7 +10,7 @@ import { formatPAN } from "../../utils/formatters";
 import { accountFieldDefaults, apiUserFieldDefaults } from "../../utils/accountProfile";
 import { useApplicantPrefill } from "../../context/applicantPrefillContext";
 
-export type PersonalDetailsField =
+type PersonalDetailsField =
   | "fullName" | "mobile" | "email" | "dob" | "panNumber"
   | "state" | "city" | "pincode" | "residenceStatus" | "residenceStatusOther";
 

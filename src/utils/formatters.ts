@@ -63,7 +63,7 @@ const underThousand = (n: number): string => {
     .join(" ");
 };
 
-export const numberToWords = (value: number): string => {
+const numberToWords = (value: number): string => {
   const n = Math.floor(value);
   if (!Number.isFinite(n) || n <= 0) return "";
   if (n < 100) return underHundred(n);

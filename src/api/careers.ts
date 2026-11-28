@@ -1,6 +1,6 @@
 /** Careers application — POST /api/careers/apply (emails HR with the resume). */
 
-export interface CareerApplicationPayload {
+interface CareerApplicationPayload {
   fullName: string;
   email: string;
   phone: string;
@@ -11,7 +11,7 @@ export interface CareerApplicationPayload {
   resume: { name: string; data: string };
 }
 
-export interface CareerApplicationResponse {
+interface CareerApplicationResponse {
   success: boolean;
   message: string;
 }

@@ -14,7 +14,7 @@ export interface DetailSection {
   content: React.ReactNode;
 }
 
-export interface ShowDetailLayoutProps {
+interface ShowDetailLayoutProps {
   loanName: string;
   breadcrumb: string;
   bannerTitle: string;

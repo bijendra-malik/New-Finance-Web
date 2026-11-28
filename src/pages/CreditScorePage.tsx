@@ -15,7 +15,7 @@ import {
 import { clearApplySessionPending } from "../utils/applySession";
 import { loanKeyFor } from "../constants/loanSlugs";
 
-export interface CreditScorePageState {
+interface CreditScorePageState {
   product?: string;
   requestedProduct?: string;
   from?: string;

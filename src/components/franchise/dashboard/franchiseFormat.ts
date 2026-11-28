@@ -94,7 +94,7 @@ export const loanRemark = (loan: FranchiseCustomerLoan): string | undefined => {
   return pickString(row, ["remarks", "remark", "statusMessage", "message", "note", "description"]);
 };
 
-export const loanDraftId = (loan: FranchiseCustomerLoan): string | undefined => {
+const loanDraftId = (loan: FranchiseCustomerLoan): string | undefined => {
   const row = loan as Row;
   const direct = pickString(row, ["draftId", "draft_id", "draftID"]);
   if (direct) return direct;

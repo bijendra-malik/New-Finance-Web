@@ -35,7 +35,7 @@ export const isAtMostAge = (dob: string, maxAge = 65, today = new Date()): boole
   return age >= 0 && age <= maxAge;
 };
 
-export interface TenureDraft {
+interface TenureDraft {
   loanTenureYears: number;
   loanTenureYearsCustom?: number;
 }
@@ -59,7 +59,7 @@ export const validateTenure = (
   }
 };
 
-export interface LoanAmountDraft {
+interface LoanAmountDraft {
   loanAmount: number;
 }
 
@@ -73,7 +73,7 @@ export const validateLoanAmount = (
   }
 };
 
-export interface PersonalDetailsDraft {
+interface PersonalDetailsDraft {
   fullName: string; mobile: string; email: string; dob: string; panNumber: string;
   state: string; city: string; pincode: string;
   residenceStatus: string; residenceStatusOther: string;

@@ -21,7 +21,7 @@ export interface CommercialPurchaseApplication extends ApplicantDetails, Existin
   updatedAt?: string;
 }
 
-export type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "commercialPurchase" };
+type CommercialPurchasePayload = Omit<CommercialPurchaseApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "commercialPurchase" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

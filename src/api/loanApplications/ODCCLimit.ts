@@ -21,7 +21,7 @@ export interface ODCCLimitApplication extends ApplicantDetails, ExistingLoanAmou
   updatedAt?: string;
 }
 
-export type ODCCLimitPayload = Omit<ODCCLimitApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "odCcLimit" };
+type ODCCLimitPayload = Omit<ODCCLimitApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "odCcLimit" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

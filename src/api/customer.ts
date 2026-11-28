@@ -14,7 +14,7 @@ export interface CreditScoreResponse {
   application?: unknown;
 }
 
-export interface DraftActionResponse {
+interface DraftActionResponse {
   success: boolean;
   message?: string;
 }

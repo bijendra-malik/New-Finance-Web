@@ -18,9 +18,9 @@ import { inputClass } from "./franchiseFormConfig";
  * stay in FranchiseForm, which passes them in through props.
  */
 
-export type PincodeStatus = "idle" | "verifying" | "notFound" | "error";
+type PincodeStatus = "idle" | "verifying" | "notFound" | "error";
 
-export interface FranchiseFieldsProps {
+interface FranchiseFieldsProps {
   /** Which fields to render, in order. */
   keys: FieldKey[];
   values: FranchiseFormValues;

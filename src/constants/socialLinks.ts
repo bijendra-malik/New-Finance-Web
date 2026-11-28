@@ -7,7 +7,7 @@ import {
   FaYoutube,
 } from "react-icons/fa6";
 
-export interface SocialLink {
+interface SocialLink {
   name: string;
   handle: string;
   url: string;

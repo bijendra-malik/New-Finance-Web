@@ -18,7 +18,7 @@ const parseDate = (value?: string | null): Date | null => {
 };
 
 /** Add whole months to a date without rolling into the next month. */
-export const addMonths = (date: Date, months: number): Date => {
+const addMonths = (date: Date, months: number): Date => {
   const result = new Date(date.getTime());
   const day = result.getDate();
   result.setDate(1);
@@ -29,12 +29,12 @@ export const addMonths = (date: Date, months: number): Date => {
 };
 
 /** The day this agreement started, from the most specific date reported. */
-export const planStartDate = (profile: Profile): Date | null =>
+const planStartDate = (profile: Profile): Date | null =>
   parseDate(profile?.franchiseApprovedAt) ??
   parseDate(profile?.franchiseAppliedAt) ??
   parseDate(profile?.createdAt);
 
-export interface PlanWindow {
+interface PlanWindow {
   startISO?: string;
   endISO?: string;
   months: number;

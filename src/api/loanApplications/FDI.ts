@@ -24,7 +24,7 @@ export interface FDIApplication extends ApplicantDetails, ExistingLoanAmounts, E
   updatedAt?: string;
 }
 
-export type FDIPayload = Omit<FDIApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "fdiLoan" };
+type FDIPayload = Omit<FDIApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "fdiLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

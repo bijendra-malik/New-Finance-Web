@@ -2,7 +2,7 @@ import { useRef } from "react";
 import type { ClipboardEvent, KeyboardEvent } from "react";
 import { cx } from "./cx";
 
-export interface CodeBoxesProps {
+interface CodeBoxesProps {
   idPrefix: string;
   label: string;
   value: string;

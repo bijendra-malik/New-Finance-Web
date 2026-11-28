@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import type { ComponentType, LazyExoticComponent } from "react";
 
-export interface ProductFormProps {
+interface ProductFormProps {
   userName?: string;
   userEmail?: string;
   onSubmit?: (id: string, application: unknown) => void;

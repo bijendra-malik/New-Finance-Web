@@ -1,6 +1,6 @@
 import { DETAIL_ACCENT as ACCENT } from "../../constants/theme";
 
-export type BulletItem = string | readonly [string, string | undefined];
+type BulletItem = string | readonly [string, string | undefined];
 
 const isTuple = (item: BulletItem): item is readonly [string, string | undefined] =>
   typeof item !== "string";
@@ -100,7 +100,7 @@ export const NumberedList = ({
   </ol>
 );
 
-export interface NumberedStep {
+interface NumberedStep {
   num: string | number;
   title: string;
   desc: string;

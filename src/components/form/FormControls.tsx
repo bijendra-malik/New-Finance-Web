@@ -90,7 +90,7 @@ interface NumberSelectFieldProps {
   value: number; onChange: (v: number) => void; options: readonly number[]; placeholder: string; err?: string;
   formatOption?: (n: number) => string;
 }
-export const NumberSelectField = memo(({ value, onChange, options, placeholder, err, formatOption }: NumberSelectFieldProps) => (
+const NumberSelectField = memo(({ value, onChange, options, placeholder, err, formatOption }: NumberSelectFieldProps) => (
   <>
     <select value={value || ""} onChange={e => onChange(parseInt(e.target.value))}
       className={FORM.field}

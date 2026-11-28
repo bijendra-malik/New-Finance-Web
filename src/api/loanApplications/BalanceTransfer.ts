@@ -18,7 +18,7 @@ export interface BalanceTransferApplication extends ApplicantDetails, ExistingLo
   updatedAt?: string;
 }
 
-export type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "balanceTransfer" };
+type BalanceTransferPayload = Omit<BalanceTransferApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "balanceTransfer" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

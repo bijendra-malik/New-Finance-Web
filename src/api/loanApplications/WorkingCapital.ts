@@ -21,7 +21,7 @@ export interface WorkingCapitalApplication extends ApplicantDetails, ExistingLoa
   updatedAt?: string;
 }
 
-export type WorkingCapitalPayload = Omit<WorkingCapitalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "workingCapital" };
+type WorkingCapitalPayload = Omit<WorkingCapitalApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "workingCapital" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

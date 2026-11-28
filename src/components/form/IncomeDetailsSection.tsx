@@ -7,7 +7,7 @@ import { MULTIPLE_TRANSACTION_BANKS, OTHER_OPTION, SALARIED, SELF_EMPLOYED_BUSIN
 import type { Masters } from "../../constants/masters";
 import { formatGSTIN, formatPAN } from "../../utils/formatters";
 
-export interface IncomeDetailsSlice {
+interface IncomeDetailsSlice {
   employmentType: string;
   companyName: string; companyType: string; companyTypeOther: string;
   monthlyNetSalary: number; salaryReceivedAs: string;

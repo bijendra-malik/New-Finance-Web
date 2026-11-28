@@ -9,9 +9,9 @@ import { accountFieldDefaults } from "../utils/accountProfile";
 import { getApiErrorMessage } from "../utils/apiError";
 import { MOBILE_REGEX, PAN_REGEX } from "../utils/validation";
 
-export type StatusCheckStage = "verify" | "otp" | "result";
+type StatusCheckStage = "verify" | "otp" | "result";
 
-export interface StatusCheckErrors {
+interface StatusCheckErrors {
   customerId?: string;
   panNumber?: string;
   mobile?: string;

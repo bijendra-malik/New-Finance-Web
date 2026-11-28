@@ -9,7 +9,7 @@ interface NotificationActionHandlers {
   onMarkAllRead: (month?: string) => void;
 }
 
-export interface NotificationActions {
+interface NotificationActions {
   pendingIds: string[];
   markingAll: boolean;
   error: string | null;

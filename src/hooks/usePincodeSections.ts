@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export const PINCODE_CITY_MISMATCH = "Selected city does not match the verified pincode";
+const PINCODE_CITY_MISMATCH = "Selected city does not match the verified pincode";
 
-export interface VerifiedPincode {
+interface VerifiedPincode {
   pincode: string;
   city: string;
 }
 
-export const PINCODE_SECTIONS = {
+const PINCODE_SECTIONS = {
   residence:          { pincodeKey: "pincode",                   stateKey: "state",                   cityKey: "city" },
   business:           { pincodeKey: "businessPincode",           stateKey: "businessState",           cityKey: "businessCity" },
   buyingProperty:     { pincodeKey: "buyingPropertyPincode",     stateKey: "buyingPropertyState",     cityKey: "buyingPropertyCity" },
@@ -16,7 +16,7 @@ export const PINCODE_SECTIONS = {
   parent:             { pincodeKey: "parentPincode",             stateKey: "parentState",             cityKey: "parentCity" },
 } as const;
 
-export type PincodeSectionName = keyof typeof PINCODE_SECTIONS;
+type PincodeSectionName = keyof typeof PINCODE_SECTIONS;
 
 interface UsePincodeSectionsArgs {
   set: (key: string, value: string) => void;

@@ -1,13 +1,13 @@
 import type { ComponentType } from "react";
 import DashboardShell from "./DashboardShell";
 
-export interface LoanDashboardFormProps<T> {
+interface LoanDashboardFormProps<T> {
   userName?: string;
   userEmail?: string;
   onSubmit?: (id: string, app: T) => void;
 }
 
-export interface LoanDashboardConfig<T> {
+interface LoanDashboardConfig<T> {
   productName: string;
   icon: string;
   applicationDesc?: string;

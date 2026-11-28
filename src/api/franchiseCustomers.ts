@@ -23,7 +23,7 @@ import type { CreditScoreResponse } from "./customer";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 /** The eight fields POST /franchise/customer/register requires. */
-export interface FranchiseCustomerPayload {
+interface FranchiseCustomerPayload {
   fullName: string;
   mobile: string;
   panNumber: string;
@@ -45,14 +45,14 @@ export interface FranchiseCustomer extends FranchiseCustomerPayload {
   updatedAt?: string;
 }
 
-export interface FranchiseCustomersResponse {
+interface FranchiseCustomersResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomer[] | { customers?: FranchiseCustomer[] };
   customers?: FranchiseCustomer[];
 }
 
-export interface RegisterCustomerResponse {
+interface RegisterCustomerResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomer;
@@ -69,7 +69,7 @@ export interface FranchiseCustomerLoan {
   [key: string]: unknown;
 }
 
-export interface CustomerLoansResponse {
+interface CustomerLoansResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomerLoan[] |
@@ -79,7 +79,7 @@ export interface CustomerLoansResponse {
   };
 }
 
-export interface FranchiseLoanListResponse {
+interface FranchiseLoanListResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomerLoan[] |
@@ -91,7 +91,7 @@ export interface FranchiseLoanListResponse {
   applications?: FranchiseCustomerLoan[];
 }
 
-export interface FranchiseCustomerDetailsResponse {
+interface FranchiseCustomerDetailsResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomer |
@@ -101,7 +101,7 @@ export interface FranchiseCustomerDetailsResponse {
   customer?: FranchiseCustomer;
 }
 
-export interface FranchiseStatusResponse {
+interface FranchiseStatusResponse {
   success: boolean;
   message?: string;
   status?: string;
@@ -120,7 +120,7 @@ export interface FranchiseCustomerDraft {
   [key: string]: unknown;
 }
 
-export interface FranchiseCustomerDraftResponse {
+interface FranchiseCustomerDraftResponse {
   success: boolean;
   message?: string;
   data?: FranchiseCustomerDraft | { draft?: FranchiseCustomerDraft } | null;
@@ -248,11 +248,11 @@ export const registerFranchiseCustomer = async (
   }
 };
 
-export interface FranchiseCustomerOtpRequestPayload {
+interface FranchiseCustomerOtpRequestPayload {
   mobile: string;
 }
 
-export interface FranchiseCustomerOtpVerifyPayload {
+interface FranchiseCustomerOtpVerifyPayload {
   mobile: string;
   otp: string;
 }

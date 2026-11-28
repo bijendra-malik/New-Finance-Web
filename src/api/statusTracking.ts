@@ -1,22 +1,22 @@
 import axiosInstance from "./axiosInstance";
 
-export interface CustomerStatusOtpRequest {
+interface CustomerStatusOtpRequest {
   customerId: string;
   panNumber: string;
   mobile: string;
 }
 
-export interface FranchiseStatusOtpRequest {
+interface FranchiseStatusOtpRequest {
   panNumber: string;
   mobile: string;
 }
 
-export interface StatusOtpVerifyRequest {
+interface StatusOtpVerifyRequest {
   mobile: string;
   otp: string;
 }
 
-export interface StatusOtpSentResponse {
+interface StatusOtpSentResponse {
   success: boolean;
   message: string;
   mobileMasked?: string;
@@ -25,7 +25,7 @@ export interface StatusOtpSentResponse {
 
 // ── Customer (loan application) status ─────────────────────────────────────────
 
-export interface CustomerStatusTimelineEntry {
+interface CustomerStatusTimelineEntry {
   step?: string;
   at?: string;
 }

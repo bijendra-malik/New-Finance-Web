@@ -1,6 +1,6 @@
 /** Careers catalogue — used by the careers page and the apply form. */
 
-export interface CareerRole {
+interface CareerRole {
   title: string;
   team: string;
   location: string;

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Field, SelectField, TextField } from "../ui/FieldRenderer";
 import { PincodeInputField } from "./FormControls";
 
-export interface LocationSlice {
+interface LocationSlice {
   state: string;
   city: string;
 }

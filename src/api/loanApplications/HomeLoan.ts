@@ -3,12 +3,12 @@ import type { LoanDocumentMeta } from "./shared";
 
 // Home Loan Aligned with the backend's HomeLoan document (POST /home-loan/apply, GET /home-loan/applications). transactionBankName is a plain string for a single bank, or an object for "Multiple Transaction Banks".
 
-export interface HomeLoanTransactionBank {
+interface HomeLoanTransactionBank {
   displayName: string;
   banks: string[];
 }
 
-export interface HomeLoanPayload {
+interface HomeLoanPayload {
   product: "home";
   loanAmount: number;
   loanTenure: number;

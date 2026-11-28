@@ -3,7 +3,7 @@ import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, Busi
 
 // ── Business Loan ─────────────────────────────────────────────────────────────
 
-export interface BusinessLoanPayload {
+interface BusinessLoanPayload {
   product: "business";
   loanAmount: number;
   loanTenure: number;

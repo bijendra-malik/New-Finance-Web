@@ -1,7 +1,7 @@
 import { formatMoney } from "../../utils/formatters";
 import { stripOther } from "../../utils/validation";
 
-export interface SuccessRow {
+interface SuccessRow {
   label: string;
   value?: string | number | null;
   omit?: boolean;
@@ -82,7 +82,7 @@ interface CommonApp {
   monthlySalary?: number; otherBankList?: string[]; otherLoanList?: string[];
 }
 
-export interface SuccessSectionOptions {
+interface SuccessSectionOptions {
   loanSectionTitle?: string;
   amountLabel?: string;
   extraLoanRows?: SuccessRow[];

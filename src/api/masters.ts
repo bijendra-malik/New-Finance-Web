@@ -3,7 +3,7 @@ import axiosInstance from "./axiosInstance";
 import { OTHER_OPTION, BANK_NAMES } from "../constants/masters";
 import type { Masters } from "../constants/masters";
 
-export interface MastersApiResponse {
+interface MastersApiResponse {
   success: boolean;
   data: Masters;
 }
@@ -44,7 +44,7 @@ export const fetchMasters = (): Promise<Masters> => {
   return mastersPromise;
 };
 
-export interface LocationMasterResponse {
+interface LocationMasterResponse {
   success: boolean;
   data: { _id: string; name: string }[];
 }
@@ -97,7 +97,7 @@ export const fetchCountriesByContinent = (continentId: string): Promise<Country[
   return promise;
 };
 
-export interface PincodeInfoResponse {
+interface PincodeInfoResponse {
   success: boolean;
   message?: string;
   data: {
@@ -120,7 +120,7 @@ export interface PincodeVerification {
 }
 
 
-export const INDIA = "India";
+const INDIA = "India";
 
 const nameToId = (list: { _id: string; name: string }[], name: string): string | null =>
   list.find(item => item.name.toLowerCase() === name.trim().toLowerCase())?._id ?? null;
@@ -242,13 +242,13 @@ export const verifyPincode = (pincode: string): Promise<PincodeVerification> => 
 };
 
 // GET /employment-types/{loanType} → employment types registered for that loan.
-export interface EmploymentTypesResponse {
+interface EmploymentTypesResponse {
   success: boolean;
   data: { loanType: string; employmentTypes: string[] };
 }
 
 const employmentTypesPromises = new Map<string, Promise<string[]>>();
-export const fetchEmploymentTypes = (loanType: string): Promise<string[]> => {
+const fetchEmploymentTypes = (loanType: string): Promise<string[]> => {
   const key = loanType.trim().toLowerCase();
   let promise = employmentTypesPromises.get(key);
   if (!promise) {
@@ -276,7 +276,7 @@ export const getEmploymentTypes = async (
   }
 };
 
-export interface CustomBankNameResponse {
+interface CustomBankNameResponse {
   success: boolean;
   message?: string;
   data?: unknown;

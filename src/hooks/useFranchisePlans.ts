@@ -3,7 +3,7 @@ import { fetchFranchisePlans, type FranchisePlansResponse } from "../api/franchi
 import { getApiErrorMessage } from "../utils/apiError";
 import type { FranchisePlan } from "../components/franchise/franchiseData";
 
-export type ApiFranchisePlan = FranchisePlansResponse["plans"][number];
+type ApiFranchisePlan = FranchisePlansResponse["plans"][number];
 const INR = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
 const currencySymbol = (currency?: string) =>
@@ -12,7 +12,7 @@ const currencySymbol = (currency?: string) =>
 export const formatPlanFee = (amount: number, currency?: string) =>
   `${currencySymbol(currency)}${INR.format(amount)}`;
 
-export const formatPlanFeeCompact = (amount: number, currency?: string) => {
+const formatPlanFeeCompact = (amount: number, currency?: string) => {
   const symbol = currencySymbol(currency);
   if (amount >= 10000000) return `${symbol}${+(amount / 10000000).toFixed(2)}Cr`;
   if (amount >= 100000) return `${symbol}${+(amount / 100000).toFixed(2)}L`;
@@ -20,7 +20,7 @@ export const formatPlanFeeCompact = (amount: number, currency?: string) => {
   return `${symbol}${INR.format(amount)}`;
 };
 
-export const toFranchisePlan = (plan: ApiFranchisePlan): FranchisePlan => {
+const toFranchisePlan = (plan: ApiFranchisePlan): FranchisePlan => {
   const months = plan.durationMonths ?? 0;
   const gstSuffix = (plan.gstPercent ?? 0) > 0 ? " + GST" : "";
   const duration =
@@ -68,7 +68,7 @@ const comparePlans = (a: ApiFranchisePlan, b: ApiFranchisePlan) => {
   return (a.name ?? "").localeCompare(b.name ?? "");
 };
 
-export interface UseFranchisePlansResult {
+interface UseFranchisePlansResult {
   plans: FranchisePlan[];
   loading: boolean;
   error: string;

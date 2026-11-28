@@ -54,7 +54,7 @@ const ProfileDetail = ({ label, value }: { label: string; value?: string }) =>
     </div>
   ) : null;
 
-export interface DashboardShellProps<T> {
+interface DashboardShellProps<T> {
   productName: string;
   icon: string;
   applicationDesc?: string;

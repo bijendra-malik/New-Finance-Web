@@ -41,7 +41,7 @@ export const loanTypes = [
   { id: "shares",    label: "Shares",     full: "Loan Against Shares",  rate: 11.0, minAmt: LOAN_AMOUNT_RANGES.loanAgainstShare.min,     maxAmt: 50_000_000,  minTenure: 1, maxTenure: 10 },
 ];
 
-export type BankRates = Record<string, number>;
+type BankRates = Record<string, number>;
 
 export interface Bank {
   id: string;

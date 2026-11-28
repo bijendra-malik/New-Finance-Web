@@ -18,7 +18,7 @@ export interface LoanAgainstShareApplication extends ApplicantDetails, ExistingL
   updatedAt?: string;
 }
 
-export type LoanAgainstSharePayload = Omit<LoanAgainstShareApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "loanAgainstShare" };
+type LoanAgainstSharePayload = Omit<LoanAgainstShareApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "loanAgainstShare" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

@@ -15,7 +15,7 @@ export interface CreditCardApplication extends ApplicantDetails, ExistingLoanAmo
   updatedAt?: string;
 }
 
-export type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "creditCard" };
+type CreditCardPayload = Omit<CreditCardApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "creditCard" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

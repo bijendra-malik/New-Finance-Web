@@ -20,7 +20,7 @@ export interface ProjectLoanApplication extends ApplicantDetails, ExistingLoanAm
   updatedAt?: string;
 }
 
-export type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "projectLoan" };
+type ProjectLoanPayload = Omit<ProjectLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "projectLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

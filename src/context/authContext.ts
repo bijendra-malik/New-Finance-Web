@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { ApiUser } from "../api/auth";
 
-export interface AuthContextType {
+interface AuthContextType {
   user: ApiUser | null;
   token: string | null;
   isLoggedIn: boolean;

@@ -34,7 +34,7 @@ export interface NPAApplication extends ApplicantDetails, ExistingLoanAmounts, S
   updatedAt?: string;
 }
 
-export type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "npaLoan" };
+type NPAPayload = Omit<NPAApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "npaLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

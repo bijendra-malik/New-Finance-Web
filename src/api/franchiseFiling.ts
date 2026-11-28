@@ -7,7 +7,7 @@ import { asRecord } from "../utils/objects";
 
 // ── File scope ───────────────────────────────────────────────────────────────
 
-export interface FranchiseFiling {
+interface FranchiseFiling {
   customerId: string;
   productKey: string;
   slug: string;
@@ -53,7 +53,7 @@ const APPLY_PATHS: Readonly<Record<string, string>> = {
   "/fdi/apply": "fdi",
 };
 
-export const productKeyForApplyPath = (url: string): string | null =>
+const productKeyForApplyPath = (url: string): string | null =>
   APPLY_PATHS[url.split("?")[0].replace(/\/+$/, "")] ?? null;
 
 const isCustomerLoanApplyPath = (url: string): boolean =>
@@ -63,7 +63,7 @@ const isCustomerLoanApplyPath = (url: string): boolean =>
 
 const filingsByRequest = new WeakMap<InternalAxiosRequestConfig, FranchiseFiling>();
 
-export const wasFranchiseFiling = (
+const wasFranchiseFiling = (
   config?: InternalAxiosRequestConfig,
 ): boolean => Boolean(config && filingsByRequest.has(config));
 

@@ -1,7 +1,7 @@
 import { LOAN_SLUGS, loanKeyFor } from "./loanSlugs";
 import type { LoanKey } from "./loanSlugs";
 
-export interface LoanRouteEntry {
+interface LoanRouteEntry {
   label: string;
   detail: string;
   dashboard: string;

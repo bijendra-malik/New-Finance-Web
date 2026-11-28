@@ -4,8 +4,8 @@ import { asRecord } from "../utils/objects";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type FranchiseNotificationKind = "loan" | "customer" | "other";
-export type FranchiseNotificationTarget = "loans" | "customers";
+type FranchiseNotificationKind = "loan" | "customer" | "other";
+type FranchiseNotificationTarget = "loans" | "customers";
 export type FranchiseNotificationOutcome = "positive" | "negative" | "pending" | "neutral";
 
 export interface FranchiseNotificationItem {
@@ -20,7 +20,7 @@ export interface FranchiseNotificationItem {
   isRead: boolean;
 }
 
-export interface FranchiseNotificationPage {
+interface FranchiseNotificationPage {
   items: FranchiseNotificationItem[];
   page: number;
   limit: number;
@@ -30,7 +30,7 @@ export interface FranchiseNotificationPage {
   unread?: number;
 }
 
-export interface FranchiseNotificationQuery {
+interface FranchiseNotificationQuery {
   page: number;
   limit: number;
   month?: string;
@@ -371,12 +371,6 @@ export const markFranchiseNotificationsRead = (
     { keys },
     "Could not mark the notification as read.",
   );
-
-/** Mark one notification read. */
-export const markFranchiseNotificationRead = (
-  notificationId: string,
-): Promise<{ ok: true } | { ok: false; message: string }> =>
-  markFranchiseNotificationsRead([notificationId]);
 
 /**
  * Mark every notification read. POST /franchise/notifications/read-all

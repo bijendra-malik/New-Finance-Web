@@ -5,7 +5,7 @@ import { OTHER_OPTION } from "../../constants/masters";
 import { THEME as C } from "../../constants/theme";
 import { FORM } from "../../constants/formStyles";
 
-export interface ExistingLoanExposureSlice {
+interface ExistingLoanExposureSlice {
   existingEMI: string;
   existingLoanAmount: string;
   existingBanks: string[];

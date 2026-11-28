@@ -23,7 +23,7 @@ export interface GoldLoanApplication extends ApplicantDetails, ExistingLoanAmoun
   updatedAt?: string;
 }
 
-export type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "goldLoan" };
+type GoldLoanPayload = Omit<GoldLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "goldLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

@@ -32,7 +32,7 @@ const Fact = ({ label, value }: { label: string; value: string }) => (
  * The partner's current plan: the term it was sold for, when it started, how
  * much of it is left and what renewal costs.
  */
-export const CurrentPlanCard = ({ profile, months }: { profile: Profile; months?: number }) => {
+const CurrentPlanCard = ({ profile, months }: { profile: Profile; months?: number }) => {
   const plan = profile?.plan;
   const term = planWindow(profile, months);
   const remaining = remainingLabel(term);

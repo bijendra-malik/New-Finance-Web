@@ -51,7 +51,7 @@ export interface EducationLoanApplication extends ExistingLoanAmounts, ExistingL
   updatedAt?: string;
 }
 
-export type EducationLoanPayload = Omit<EducationLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "educationLoan" };
+type EducationLoanPayload = Omit<EducationLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "educationLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

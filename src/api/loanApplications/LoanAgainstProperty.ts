@@ -21,7 +21,7 @@ export interface LoanAgainstPropertyApplication extends ApplicantDetails, Existi
   updatedAt?: string;
 }
 
-export type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "lap" };
+type LoanAgainstPropertyPayload = Omit<LoanAgainstPropertyApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "lap" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

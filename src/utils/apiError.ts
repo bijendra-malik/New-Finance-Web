@@ -11,7 +11,7 @@ const toUserFacingMessage = (message: unknown, fallback: string): string => {
   return text;
 };
 
-export const getApiRetryAfter = (err: unknown): string => {
+const getApiRetryAfter = (err: unknown): string => {
   const value = (
     err as { response?: { data?: { retryAfter?: { availableAt?: unknown } } } } | undefined
   )?.response?.data?.retryAfter?.availableAt;

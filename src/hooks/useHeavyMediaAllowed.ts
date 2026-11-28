@@ -6,7 +6,7 @@ interface MediaEnvironment {
   effectiveType?: string;
 }
 
-export const shouldAllowHeavyMedia = ({
+const shouldAllowHeavyMedia = ({
   reducedMotion,
   saveData,
   effectiveType,

@@ -3,7 +3,7 @@ import type { ApplicantDetails, ExistingLoanAmounts, ExistingLoanPortfolio, Loan
 
 // ── Types (aligned with the backend's PersonalLoan document) ──────────────────
 
-export interface PersonalLoanPayload {
+interface PersonalLoanPayload {
   product: "personal";
   loanAmount: number;
   loanTenure: number; // years

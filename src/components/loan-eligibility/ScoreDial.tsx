@@ -107,7 +107,7 @@ const usePrefersReducedMotion = () => {
   return reduced;
 };
 
-export interface ScoreDialProps {
+interface ScoreDialProps {
   progress: number;
   value?: number | null;
   label: string;

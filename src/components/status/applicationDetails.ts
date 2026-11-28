@@ -1,7 +1,7 @@
 import type { CustomerStatusApplication } from "../../api/statusTracking";
 import { formatInr } from "./statusFormat";
 
-export interface ApplicationDetailRow {
+interface ApplicationDetailRow {
   label: string;
   value: string;
 }
@@ -308,7 +308,7 @@ export const applicationDetailGroups = (
   return detailGroupsFromBag(visible);
 };
 
-export interface ApplicationProgress {
+interface ApplicationProgress {
   stages: string[];
   reached: number;
   rejected: boolean;

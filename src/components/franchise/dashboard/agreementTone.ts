@@ -1,6 +1,6 @@
 /** Copy and colours for the franchise agreement status shown across the dashboard. */
 
-export interface AgreementTone {
+interface AgreementTone {
   label: string;
   blurb: string;
   bg: string;

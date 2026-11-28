@@ -10,7 +10,7 @@ export interface CaptchaChallenge {
   question: string;
 }
 
-export interface CaptchaVerifyResponse {
+interface CaptchaVerifyResponse {
   success: boolean;
   message?: string;
   code?: string;
@@ -63,7 +63,7 @@ export const verifyCaptcha = async (
 };
 
 /** Attaches the parsed replacement challenge, if the backend sent one. */
-export const withReplacementChallenge = (
+const withReplacementChallenge = (
   data: CaptchaVerifyResponse,
 ): CaptchaVerifyResponse => {
   const captcha = parseCaptchaChallenge(data);

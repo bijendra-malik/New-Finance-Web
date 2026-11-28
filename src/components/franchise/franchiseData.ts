@@ -25,7 +25,7 @@ export const MAX_PAYOUTS = [
   },
 ] as const;
 
-export interface JourneyStep {
+interface JourneyStep {
   id: string;
   icon: FranchiseIconName;
   title: string;

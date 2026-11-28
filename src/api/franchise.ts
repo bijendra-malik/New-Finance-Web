@@ -67,20 +67,20 @@ export interface FranchiseEntryPayload {
 }
 
 // POST /franchise/entry response
-export interface FranchiseEntryResponse {
+interface FranchiseEntryResponse {
   success: boolean;
   message: string;
   mobileMasked?: string;
 }
 
 // POST /franchise/entry/verify
-export interface FranchiseVerifyOTPPayload {
+interface FranchiseVerifyOTPPayload {
   mobile: string;
   otp: string;
 }
 
 // POST /franchise/entry/verify response
-export interface FranchiseVerifyOTPResponse {
+interface FranchiseVerifyOTPResponse {
   success: boolean;
   message: string;
   token: string;
@@ -125,12 +125,12 @@ export interface FranchisePlansResponse {
   }[];
 }
 // POST /franchise/login
-export interface FranchiseLoginPayload {
+interface FranchiseLoginPayload {
   franchiseId: string;
   password: string;
 }
 
-export interface FranchiseLoginResponse {
+interface FranchiseLoginResponse {
   success: boolean;
   message: string;
   token?: string;

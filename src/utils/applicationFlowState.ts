@@ -1,14 +1,14 @@
 // modal, API interceptor, credit-score page, and submission hook storage logic
-export const CREDIT_SCORE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const CREDIT_SCORE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-export const creditScoreWindowMs = CREDIT_SCORE_WINDOW_MS;
+const creditScoreWindowMs = CREDIT_SCORE_WINDOW_MS;
 
 const SUBMITTED_APPLICATIONS_KEY = "indexia_submitted_applications";
 const PENDING_CREDIT_SCORE_KEY = "indexia_pending_credit_score_draft";
 
-export type ApplicationOutcome = "eligible" | "rejected";
+type ApplicationOutcome = "eligible" | "rejected";
 
-export interface SubmittedApplicationRecord {
+interface SubmittedApplicationRecord {
   at: string;
   outcome: ApplicationOutcome;
 }

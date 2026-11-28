@@ -21,7 +21,7 @@ export interface VehicleLoanApplication extends ApplicantDetails, ExistingLoanAm
   createdAt: string;
   updatedAt?: string;
 }
-export type VehicleLoanPayload = Omit<VehicleLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "vehicleLoan" };
+type VehicleLoanPayload = Omit<VehicleLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "vehicleLoan" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

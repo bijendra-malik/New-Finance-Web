@@ -36,7 +36,7 @@ export const EMPTY: FranchiseFormValues = {
 };
 
 export type FieldKey = keyof FranchiseFormValues;
-export type Variant = "franchisee" | "franchisor";
+type Variant = "franchisee" | "franchisor";
 
 /** Shared styling for a text input, tinted red when the field has an error. */
 export const inputClass = (hasError: boolean) =>
@@ -49,7 +49,7 @@ export const inputClass = (hasError: boolean) =>
 
 export type FranchiseFormPresentation = "stacked" | "horizontal" | "stepped";
 
-export interface FranchiseeStep {
+interface FranchiseeStep {
   id: string;
   label: string;
   hint: string;

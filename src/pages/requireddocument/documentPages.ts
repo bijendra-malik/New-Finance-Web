@@ -15,7 +15,7 @@ import projectBanner from "../../assets/loan-images/project-banner.webp";
 import vehicleBanner from "../../assets/loan-images/vehicle-banner.webp";
 import workingBanner from "../../assets/loan-images/working-banner.webp";
 
-export interface DocumentPageContent {
+interface DocumentPageContent {
   loanName: string;
   breadcrumb: string;
   bannerBg: string;

@@ -24,7 +24,7 @@ export interface FilmLoanApplication extends ApplicantDetails, ExistingLoanAmoun
   updatedAt?: string;
 }
 
-export type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "filmFunding" };
+type FilmLoanPayload = Omit<FilmLoanApplication, "_id" | "status" | "createdAt" | "updatedAt"> & { product: "filmFunding" };
 
 // ── API Call ────────────────────────────────────────────────────────────────
 

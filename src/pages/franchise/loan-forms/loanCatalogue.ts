@@ -3,7 +3,7 @@
 // (/franchisor-dashboard/apply/<key>), so it must match PRODUCT_FORMS in
 // productForms.ts and the backend's product key.
 
-export interface LoanProduct {
+interface LoanProduct {
   key: string;
   name: string;
   icon: string;

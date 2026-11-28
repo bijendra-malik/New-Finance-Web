@@ -2,8 +2,8 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import Spinner from "./Spinner";
 import { cx } from "./cx";
 
-export type ButtonVariant = "primary" | "teal" | "outline" | "ghost" | "danger" | "link";
-export type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = "primary" | "teal" | "outline" | "ghost" | "danger" | "link";
+type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
@@ -23,7 +23,7 @@ const SIZES: Record<ButtonSize, string> = {
   lg: "min-h-12 px-6 py-3 text-base rounded-xl",
 };
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
