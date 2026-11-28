@@ -26,6 +26,7 @@ export const RENTAL_HAIRCUT = 0.75;
 export const DSCR_MIN = 1.25;
 export const COMMERCIAL_LTV = 0.7;
 export const WC_ASSESSMENT_PCT = 0.2;
+export const PROJECT_MIN_CONTRIBUTION = 0.2;
 export const WC_MARGIN = 0.25;
 export const WC_TURNOVER_REQUIREMENT = 0.25;
 export const WC_BANK_SHARE = 0.75;
