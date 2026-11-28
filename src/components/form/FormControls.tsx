@@ -5,7 +5,7 @@ import { FORM } from "../../constants/formStyles";
 import { OTHER_OPTION, MORE_THAN_TENURE_OPTION } from "../../constants/masters";
 
 export { MORE_THAN_TENURE_OPTION };
-import { toISODate, digitsOnly, formatIndianNumber } from "../../utils/formatters";
+import { toISODate, digitsOnly, formatIndianNumber, amountInWords } from "../../utils/formatters";
 import { PINCODE_REGEX } from "../../utils/validation";
 import { verifyPincode } from "../../api/masters";
 import type { PincodeVerification } from "../../api/masters";
@@ -49,16 +49,22 @@ export const TextField = memo(({ type = "text", value, onChange, placeholder, er
 ));
 TextField.displayName = "TextField";
 
-export const AmountField = memo(({ value, onChange, placeholder, err }: { value: string | number; onChange: (v: string) => void; placeholder: string; err?: string }) => (
-  <TextField
-    type="text"
-    inputMode="numeric"
-    value={formatIndianNumber(String(value))}
-    onChange={v => onChange(digitsOnly(v))}
-    placeholder={placeholder}
-    err={err}
-  />
-));
+export const AmountField = memo(({ value, onChange, placeholder, err }: { value: string | number; onChange: (v: string) => void; placeholder: string; err?: string }) => {
+  const words = amountInWords(Number(digitsOnly(String(value))));
+  return (
+    <>
+      <TextField
+        type="text"
+        inputMode="numeric"
+        value={formatIndianNumber(String(value))}
+        onChange={v => onChange(digitsOnly(v))}
+        placeholder={placeholder}
+        err={err}
+      />
+      {!err && words && <p className="mt-1 text-[11px] leading-4 text-slate-400">{words}</p>}
+    </>
+  );
+});
 AmountField.displayName = "AmountField";
 
 interface SelectFieldProps {
@@ -613,7 +619,7 @@ export const PincodeInputField = memo(({
       <TextField
         value={value}
         onChange={v => onChange(sanitizePincode(v))}
-        placeholder="Enter 6-digit pincode"
+        placeholder="Enter 6-Digit Pincode"
         err={showError}
         maxLength={6}
         inputMode="numeric"

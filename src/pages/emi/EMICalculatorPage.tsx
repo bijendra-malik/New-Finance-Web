@@ -7,7 +7,7 @@ import { T, serif, loanTypes, banks, bankById, fmt } from "./emiCalculatorData";
 import { Icon } from "./emiCalculatorIcons";
 import { Slider } from "./emiCalculatorControls";
 import { useCountUp } from "../../hooks/useCountUp";
-import { digitsOnly, formatIndianNumber } from "../../utils/formatters";
+import { amountInWords, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 
 const EMICalculatorPage = () => {
   useSEO({
@@ -205,22 +205,27 @@ const EMICalculatorPage = () => {
                           The loan amount, before interest.
                         </p>
                       </div>
-                      <div
-                        className="flex items-center gap-1 rounded-xl border bg-white px-3 py-2"
-                        style={{ borderColor: T.emerald }}
-                      >
-                        <span className="text-sm font-bold" style={{ color: T.emerald }}>{"\u20B9"}</span>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          autoComplete="off"
-                          aria-label="Loan amount"
-                          value={formatIndianNumber(String(loanAmount))}
-                          onChange={e => setLoanAmount(Number(digitsOnly(e.target.value)) || 0)}
-                          onBlur={() => setLoanAmount(v => Math.max(0, v))}
-                          className="w-32 bg-transparent text-right text-lg font-extrabold tabular-nums focus:outline-none"
-                          style={{ color: T.emerald }}
-                        />
+                      <div className="flex flex-col items-end gap-1">
+                        <div
+                          className="flex items-center gap-1 rounded-xl border bg-white px-3 py-2"
+                          style={{ borderColor: T.emerald }}
+                        >
+                          <span className="text-sm font-bold" style={{ color: T.emerald }}>{"\u20B9"}</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="off"
+                            aria-label="Loan amount"
+                            value={formatIndianNumber(String(loanAmount))}
+                            onChange={e => setLoanAmount(Number(digitsOnly(e.target.value)) || 0)}
+                            onBlur={() => setLoanAmount(v => Math.max(0, v))}
+                            className="w-32 bg-transparent text-right text-lg font-extrabold tabular-nums focus:outline-none"
+                            style={{ color: T.emerald }}
+                          />
+                        </div>
+                        <p className="text-[11px] tabular-nums" style={{ color: T.inkSoft }}>
+                          {amountInWords(loanAmount)}
+                        </p>
                       </div>
                     </div>
                     <div className="mt-4">
