@@ -106,7 +106,7 @@ const TermFields = ({ product, form, errors, set, occupation, occupationOptions,
               />
               <SelectField
                 id="elig-lap-city"
-                label="City category"
+                label="City"
                 value={form.lapCity}
                 onChange={(next) => set("lapCity", next)}
                 options={LAP_CITIES}
