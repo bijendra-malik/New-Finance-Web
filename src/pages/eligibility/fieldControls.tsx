@@ -1,28 +1,52 @@
 import type { ReactNode } from "react";
-import { digitsOnly, formatIndianNumber, numberToWords } from "../../utils/formatters";
+import { amountInWords, digitsOnly, formatIndianNumber } from "../../utils/formatters";
 import { fieldClass, placeholderWith } from "./formState";
 
-export const FieldLabel = ({ htmlFor, children, required }: { htmlFor: string; children: ReactNode; required?: boolean }) => (
-  <label htmlFor={htmlFor} className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-    {children}
-    {required && <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>}
-  </label>
+export const InfoTooltip = ({ label, children }: { label: string; children: ReactNode }) => (
+  <span className="inline-flex">
+    <span className="group inline-flex">
+      <button
+        type="button"
+        aria-label={label}
+        className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-500 transition-colors group-hover:border-(--brand-teal) group-hover:text-(--brand-teal)"
+      >
+        i
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-6 z-20 w-64 max-w-[calc(100vw-3rem)] rounded-xl bg-slate-900 p-3 text-[11.5px] font-normal normal-case leading-4 tracking-normal text-white opacity-0 shadow-xl transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+      >
+        {children}
+      </span>
+    </span>
+  </span>
+);
+
+export const FieldLabel = ({
+  htmlFor, children, required, tooltip,
+}: { htmlFor: string; children: ReactNode; required?: boolean; tooltip?: ReactNode }) => (
+  <div className="relative mb-1.5 flex items-center gap-1.5">
+    <label htmlFor={htmlFor} className="block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+      {children}
+      {required && <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>}
+    </label>
+    {tooltip}
+  </div>
 );
 
 export const FieldError = ({ children }: { children?: string }) =>
   children ? <p className="mt-1 text-[11.5px] font-semibold text-red-500">{children}</p> : null;
 
 export const AmountField = ({
-  id, label, value, onChange, hint, error, placeholder, required = false,
+  id, label, value, onChange, hint, error, placeholder, required = false, tooltip,
 }: {
   id: string; label: string; value: string; onChange: (next: string) => void;
-  hint?: string; error?: string; placeholder?: string; required?: boolean;
+  hint?: string; error?: string; placeholder?: string; required?: boolean; tooltip?: ReactNode;
 }) => {
-  const typed = numberToWords(Number(digitsOnly(value)));
-  const words = typed ? typed.charAt(0).toUpperCase() + typed.slice(1) : "";
+  const words = amountInWords(Number(digitsOnly(value)));
   return (
     <div>
-      <FieldLabel htmlFor={id} required={required}>{label}</FieldLabel>
+      <FieldLabel htmlFor={id} required={required} tooltip={tooltip}>{label}</FieldLabel>
       <div className={`flex items-center gap-1 rounded-xl border bg-(--surface-muted) px-3 py-2.5 transition focus-within:ring-2 ${
         error ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-100" : "border-slate-200 focus-within:border-(--brand-teal) focus-within:ring-(--brand-teal-33)"
       }`}>
